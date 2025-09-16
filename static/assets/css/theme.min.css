@@ -316,7 +316,7 @@
   --phoenix-navbar-vertical-link-hover-bg: #eff2f6;
   --phoenix-navbar-vertical-link-active-color: #3874ff;
   --phoenix-navbar-vertical-link-disable-color: #8a94ad;
-  --phoenix-navbar-vertical-width: 15.875rem;
+  --phoenix-navbar-vertical-width: 18rem;
   --phoenix-navbar-vertical-dropdown-indicator-color: #8a94ad;
   --phoenix-navbar-footer-border-color: var(--phoenix-border-color);
   --phoenix-navbar-vertical-hr-color: #e3e6ed;
@@ -28386,7 +28386,7 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
 }
 @media (min-width: 992px) {
   .navbar-vertical + .navbar-top .navbar-logo {
-    width: 15.875rem;
+    width: 18rem;
   }
 }
 .navbar-vertical .navbar-collapse.collapsing .navbar-vertical-content, .navbar-vertical .navbar-collapse.show .navbar-vertical-content {
@@ -28521,7 +28521,7 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
 }
 .navbar-vertical .navbar-vertical-footer {
   position: fixed;
-  width: 15.875rem;
+  width: 18rem;
   height: 4rem;
   display: none;
   -webkit-box-align: center;
@@ -28571,7 +28571,7 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
 }
 @media (min-width: 1540px) {
   .navbar-vertical.navbar-expand-xxl {
-    width: 15.875rem;
+    width: 18rem;
     border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
     margin: 0;
     -webkit-transition: width 0.2s ease;
@@ -28650,12 +28650,12 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
   .navbar-vertical.navbar-expand-xxl ~ .navbar-top ~ .content {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
-    margin-left: 15.875rem;
+    margin-left: 18rem;
   }
 }
 @media (min-width: 1200px) {
   .navbar-vertical.navbar-expand-xl {
-    width: 15.875rem;
+    width: 18rem;
     border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
     margin: 0;
     -webkit-transition: width 0.2s ease;
@@ -28734,12 +28734,12 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
   .navbar-vertical.navbar-expand-xl ~ .navbar-top ~ .content {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
-    margin-left: 15.875rem;
+    margin-left: 18rem;
   }
 }
 @media (min-width: 992px) {
   .navbar-vertical.navbar-expand-lg {
-    width: 15.875rem;
+    width: 18rem;
     border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
     margin: 0;
     -webkit-transition: width 0.2s ease;
@@ -28818,12 +28818,12 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
   .navbar-vertical.navbar-expand-lg ~ .navbar-top ~ .content {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
-    margin-left: 15.875rem;
+    margin-left: 18rem;
   }
 }
 @media (min-width: 768px) {
   .navbar-vertical.navbar-expand-md {
-    width: 15.875rem;
+    width: 18rem;
     border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
     margin: 0;
     -webkit-transition: width 0.2s ease;
@@ -28902,12 +28902,12 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
   .navbar-vertical.navbar-expand-md ~ .navbar-top ~ .content {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
-    margin-left: 15.875rem;
+    margin-left: 18rem;
   }
 }
 @media (min-width: 576px) {
   .navbar-vertical.navbar-expand-sm {
-    width: 15.875rem;
+    width: 18rem;
     border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
     margin: 0;
     -webkit-transition: width 0.2s ease;
@@ -28986,11 +28986,11 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
   .navbar-vertical.navbar-expand-sm ~ .navbar-top ~ .content {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
-    margin-left: 15.875rem;
+    margin-left: 18rem;
   }
 }
 .navbar-vertical.navbar-expand-xs {
-  width: 15.875rem;
+  width: 18rem;
   border-right: 1px solid var(--phoenix-navbar-vertical-border-color);
   margin: 0;
   -webkit-transition: width 0.2s ease;
@@ -29069,7 +29069,7 @@ html:not(.navbar-vertical-collapsed) .navbar-vertical.navbar-expand-xs .navbar-v
 .navbar-vertical.navbar-expand-xs ~ .navbar-top ~ .content {
   padding-left: 2.5rem;
   padding-right: 2.5rem;
-  margin-left: 15.875rem;
+  margin-left: 18rem;
 }
 .navbar-vertical .new-page-indicator {
   margin-top: -10px;
@@ -37916,7 +37916,7 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
 }
 @media (min-width: 992px) {
   [data-collapse-filemanager-sidebar] .my-files {
-    max-width: calc(100% - 15.875rem);
+    max-width: calc(100% - 18rem);
   }
   [data-collapse-filemanager-sidebar] .file-manager-sidebar .phoenix-offcanvas {
     width: 100%;
@@ -37932,7 +37932,7 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
 }
 @media (min-width: 1200px) {
   [data-collapse-filemanager-sidebar] .file-manager-sidebar {
-    width: 15.875rem;
+    width: 18rem;
     padding: 0 12px;
   }
 }
@@ -37950,11 +37950,11 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
   }
   [data-collapse-filemanager-sidebar].show-sidebar .file-manager-sidebar {
     padding: 0 12px;
-    width: 15.875rem;
+    width: 18rem;
     opacity: 1;
   }
   [data-collapse-filemanager-sidebar].show-sidebar .my-files {
-    max-width: calc(100% - 15.875rem);
+    max-width: calc(100% - 18rem);
   }
 }
 
