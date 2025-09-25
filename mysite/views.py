@@ -20,7 +20,8 @@ def experiments_list(request):
             "start_date": created,
             "last_update": updated,
             "status": exp.lifecycle_stage,
-            "artifact_uri": exp.artifact_location
+            "artifact_uri": exp.artifact_location,
+            "id": exp.experiment_id
         })
 
     p = Paginator(data, 5)
