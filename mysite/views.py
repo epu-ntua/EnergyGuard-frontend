@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render 
 from datetime import datetime
 import mlflow
@@ -21,5 +22,9 @@ def experiments_list(request):
             "status": exp.lifecycle_stage,
             "artifact_uri": exp.artifact_location
         })
+
+    p = Paginator(data, 5)
+    page_number = request.GET.get("page")
+    data = p.get_page(page_number)
 
     return render(request, 'mysite/experiments_list.html', {"experiments" : data})
