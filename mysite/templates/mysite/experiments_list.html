@@ -24,12 +24,10 @@
 
     <!-- SUBHEADER -->
     <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#"><span>All </span><span class="text-body-tertiary fw-semibold">(68817)</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span>Pending payment </span><span class="text-body-tertiary fw-semibold">(6)</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span>Unfulfilled </span><span class="text-body-tertiary fw-semibold">(17)</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span>Completed</span><span class="text-body-tertiary fw-semibold">(6,810)</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span>Refunded</span><span class="text-body-tertiary fw-semibold">(8)</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span>Failed</span><span class="text-body-tertiary fw-semibold">(2)</span></a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
+
     </ul>
     <div id="orderTable" data-list='{"valueNames":["experiment_name","collaborators","start_date","updated","type","exp_progress","status"],"page":2,"pagination":true}'>
         

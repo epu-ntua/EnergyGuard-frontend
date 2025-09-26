@@ -24,8 +24,23 @@ def experiments_list(request):
             "id": exp.experiment_id
         })
 
-    p = Paginator(data, 5)
-    page_number = request.GET.get("page")
-    data = p.get_page(page_number)
+    counts = {
+        "all": len(data),
+        "active": sum(1 for d in data if d["status"] == "active"),
+        "deleted": sum(1 for d in data if d["status"] == "deleted"),
+    }
 
-    return render(request, 'mysite/experiments_list.html', {"experiments" : data})
+    status_filter = request.GET.get("status")
+    # if status_filter:
+    #     status_data = [d for d in data if d["status"] == status_filter]
+    # status_data = [d for d in data if d["status"] == "active"]
+    if status_filter in ["active", "deleted"]:
+        filtered_data = [d for d in data if d["status"] == status_filter]
+    else:
+        filtered_data = data
+
+    p = Paginator(filtered_data, 5)
+    page_number = request.GET.get("page")
+    filtered_data = p.get_page(page_number)
+
+    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts})
