@@ -24,21 +24,21 @@ def experiments_list(request):
             "id": exp.experiment_id
         })
 
+    # Number of total/active/deleted experiments
     counts = {
         "all": len(data),
         "active": sum(1 for d in data if d["status"] == "active"),
         "deleted": sum(1 for d in data if d["status"] == "deleted"),
     }
 
+    # Filter data according to status
     status_filter = request.GET.get("status")
-    # if status_filter:
-    #     status_data = [d for d in data if d["status"] == status_filter]
-    # status_data = [d for d in data if d["status"] == "active"]
     if status_filter in ["active", "deleted"]:
         filtered_data = [d for d in data if d["status"] == status_filter]
     else:
         filtered_data = data
 
+    # Pagination implementation for 5 experiments per page
     p = Paginator(filtered_data, 5)
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
