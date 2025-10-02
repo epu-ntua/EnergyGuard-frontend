@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 # User extends AbstractUser 
 class User(AbstractUser):
@@ -149,6 +150,10 @@ class Billing(TimeStampedModel):
     payment_method = models.CharField(max_length=2, choices=PaymentMethod, default=PaymentMethod.CREDIT_CARD)
     payment_status = models.CharField(max_length=9, choices=PaymentStatus, default=PaymentStatus.PENDING)
     currency = models.CharField(max_length=3, choices=Currency, default=Currency.EUR)
+
+    def clean(self):
+        if self.billing_period_end <= self.billing_period_start:
+            raise ValidationError("Billing period end date must be after start date.")
 
     def __str__(self):
         return f"{self.customer.username} - {self.invoice}"
