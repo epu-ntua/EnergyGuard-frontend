@@ -10,6 +10,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    class Meta:
+        db_table = 'user'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+        ordering = ['username']
+        indexes = [models.Index(fields=['email']),]
 
 # Abstract class for automatic time tracking - To be inherited
 class TimeStampedModel(models.Model):
@@ -50,6 +57,7 @@ class Experiment(TimeStampedModel):
         verbose_name = 'Experiment'
         verbose_name_plural = 'Experiments'
         ordering = ["-created_at"]
+        indexes = [models.Index(fields=['name']),]
 
 
 # Intermediate model for collaborators - experiments with extra fields 
@@ -106,7 +114,8 @@ class Dataset(TimeStampedModel):
         db_table = 'dataset'
         verbose_name = 'Dataset'
         verbose_name_plural = 'Datasets'
-        ordering = ['name']
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['name']),]
 
 # Billing Table
 class Billing(TimeStampedModel):
@@ -149,3 +158,4 @@ class Billing(TimeStampedModel):
         verbose_name = 'Billing Record'
         verbose_name_plural = 'Billing Records'
         ordering = ['-billing_period_start']
+        indexes = [models.Index(fields=['invoice']),]
