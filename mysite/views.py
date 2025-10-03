@@ -44,7 +44,7 @@ def experiments_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
-    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "active_navbar_page": "experiments"})
+    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments"})
 
 def datasets_list(request):
 

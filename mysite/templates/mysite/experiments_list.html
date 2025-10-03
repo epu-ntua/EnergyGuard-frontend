@@ -24,9 +24,9 @@
 
     <!-- SUBHEADER -->
     <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'active' %}active{% endif %}" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'deleted' %}active{% endif %}" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
 
     </ul>
     <div id="orderTable" data-list='{"valueNames":["experiment_name","collaborators","start_date","updated","type","exp_progress","status"],"page":2,"pagination":true}'>
