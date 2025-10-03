@@ -95,7 +95,7 @@ class Dataset(TimeStampedModel):
     class Label(models.TextChoices):
         BUILDINGS_ENERGY_EFFICIENCY = "buildings_energy_efficiency", "Buildings & Energy Efficiency"
         SMART_GRIDS_MICROGRIDS = "smart_grids_microgrids", "Smart Grids & Microgrids"
-        RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy (Solar, Wind, Hydro, Biomass, Tidal)"
+        RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy"
         ENERGY_STORAGE_BATTERIES = "energy_storage_batteries", "Energy Storage & Batteries"
         ELECTRIC_VEHICLES_CHARGING = "electric_vehicles_charging", "Electric Vehicles & Charging"
         CLIMATE_WEATHER_DATA = "climate_weather_data", "Climate & Weather Data"
