@@ -87,15 +87,28 @@ class ExperimentCollaborator(TimeStampedModel):
 
 # Dataset Table
 class Dataset(TimeStampedModel):
+    # class Label(models.TextChoices):
+    #     BUILDINGS = "buildings", "Buildings"
+    #     SMART_GRIDS = "smart_grids", "Smart Grids"
+    #     RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy"
+    
     class Label(models.TextChoices):
-        BUILDINGS = "buildings", "Buildings"
-        SMART_GRIDS = "smart_grids", "Smart Grids"
-        RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy"
+        BUILDINGS_ENERGY_EFFICIENCY = "buildings_energy_efficiency", "Buildings & Energy Efficiency"
+        SMART_GRIDS_MICROGRIDS = "smart_grids_microgrids", "Smart Grids & Microgrids"
+        RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy (Solar, Wind, Hydro, Biomass, Tidal)"
+        ENERGY_STORAGE_BATTERIES = "energy_storage_batteries", "Energy Storage & Batteries"
+        ELECTRIC_VEHICLES_CHARGING = "electric_vehicles_charging", "Electric Vehicles & Charging"
+        CLIMATE_WEATHER_DATA = "climate_weather_data", "Climate & Weather Data"
+        ENERGY_MARKETS_PRICING = "energy_markets_pricing", "Energy Markets & Pricing"
+        IOT_SENSORS_MONITORING = "iot_sensors_monitoring", "IoT Sensors & Monitoring"
+        GRID_STABILITY_ANOMALIES = "grid_stability_anomalies", "Grid Stability & Anomalies"
+        HYBRID_CROSS_SECTOR = "hybrid_cross_sector", "Hybrid / Cross-sector datasets"
 
     class Source(models.TextChoices):
         ENERGYGUARD_DL = "energyguard_DL", "EnergyGuard Data Lake"
         DS = "DS", "Data Space"
         AI4EU = "ai4eu", "AI4EU Platform"
+        EUROPEAN_DATA_PORTAL = "european_data_portal", "European Data Portal"
         OWN_DS = "your_own_DS", "Your Own Data Space"
 
     class Status(models.TextChoices):
