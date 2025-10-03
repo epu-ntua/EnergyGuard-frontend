@@ -13,7 +13,7 @@ class User(AbstractUser):
         return self.email
     
     class Meta:
-        db_table = 'user'
+        # db_table = 'user'
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['username']
@@ -32,7 +32,10 @@ class Experiment(TimeStampedModel):
     class ExpType(models.TextChoices):
         AI_MODEL = 'ai_model', 'AI Model'
         AI_SERVICE = 'ai_service', 'AI Service'
-        WEV_APP = 'web_app', 'Web Application'
+        WEB_APP = 'web_app', 'Web Application'
+        MOBILE_APP = 'mobile_app', 'Mobile Application'
+        IoT_INTEGRATION = 'iot_integration', 'IoT Integration'
+        DATA_PIPELINE = 'data_pipeline', 'Data Pipeline'
 
     class Status(models.TextChoices):
         COMPLETED = "completed", "Completed"
@@ -43,7 +46,7 @@ class Experiment(TimeStampedModel):
     name = models.CharField(max_length=255)
     collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL, through='ExperimentCollaborator', related_name='collaborator_experiments')
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='creator_experiments')
-    exp_type = models.CharField(max_length=10, choices= ExpType, default=ExpType.AI_MODEL)
+    exp_type = models.CharField(max_length=20, choices= ExpType, default=ExpType.AI_MODEL)
     status = models.CharField(max_length=9, choices=Status, default=Status.INACTIVE)
     description = models.TextField(blank=True)
     # TODO: Implement dynamic progress calculation based on task completion
