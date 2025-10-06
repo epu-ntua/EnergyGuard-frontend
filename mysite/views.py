@@ -35,12 +35,10 @@ def experiments_list(request):
     # Filter data according to status
     status_filter = request.GET.get("status")
     if status_filter in ["active", "deleted"]:
-        filtered_data = [d for d in data if d["status"] == status_filter]
-    else:
-        filtered_data = data
+        data = [d for d in data if d["status"] == status_filter]
 
     # Pagination implementation for 5 experiments per page
-    p = Paginator(filtered_data, 5)
+    p = Paginator(data, 5)
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
@@ -50,7 +48,7 @@ def datasets_list(request):
 
     data = Dataset.objects.all()
 
-    # Number of published/private/restricted/under_review datasets
+    # Number of all/published/private/restricted/under_review datasets
     counts = {
         "all": data.count(),
         "published": data.filter(status="published").count,
@@ -58,16 +56,19 @@ def datasets_list(request):
         "restricted": data.filter(status="restricted").count,
         "under_review": data.filter(status="under_review").count,
     }
+    
+    # Sort data according to column
+    sort = request.GET.get('sort') 
+    if sort in ['name', 'created_at', 'updated', 'label', 'source']:
+        data = data.order_by(sort)
 
     # Filter data according to status
     status_filter = request.GET.get("status")
     if status_filter in ["published", "private", "restricted", "under_review"]:
-        filtered_data = data.filter(status=status_filter)
-    else:
-        filtered_data = data
+        data = data.filter(status=status_filter)
 
     # Pagination implementation for 8 datasets per page
-    p = Paginator(filtered_data, 7)
+    p = Paginator(data, 7)
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 

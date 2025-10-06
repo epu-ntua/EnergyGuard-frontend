@@ -27,15 +27,24 @@ def smart_pagination(context, page_obj, adjacent_pages=1):
         display.append(p)
         last = p
 
-    # Copy GET parameters and remove 'page'
-    querydict = context['request'].GET.copy()
-    if 'page' in querydict:
-        querydict.pop('page')
-
     # Add request to context
     return {
         'page_obj': page_obj,
         'page_list': display,
         'request': context['request'],
-        'query_string': querydict.urlencode()
+        'query_string_page': query_string (context, exclude='page'),
     }
+
+@register.simple_tag(takes_context=True)
+def query_string(context, exclude=None):
+    """
+    Returns the current GET query string, optionally excluding keys.
+    Usage: {% query_string 'page,sort' %}
+    """
+    request = context['request']
+    querydict = request.GET.copy()
+    if exclude:
+        for key in exclude.split(','):
+            querydict.pop(key, None)
+    qs = querydict.urlencode()
+    return qs + '&' if qs else ''
