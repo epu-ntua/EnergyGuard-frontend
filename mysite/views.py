@@ -32,6 +32,11 @@ def experiments_list(request):
         "deleted": sum(1 for d in data if d["status"] == "deleted"),
     }
 
+    # Sort data according to column
+    sort_filter = request.GET.get('sort') 
+    if sort_filter in ['name', 'start_date', 'last_update', 'status']:
+        data.sort(key=lambda x: x[sort_filter]) 
+
     # Filter data according to status
     status_filter = request.GET.get("status")
     if status_filter in ["active", "deleted"]:

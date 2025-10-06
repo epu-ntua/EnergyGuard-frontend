@@ -92,10 +92,16 @@
                                     <input class="form-check-input" id="checkbox-bulk-order-select" type="checkbox" data-bulk-select='{"body":"experiments-table-body"}' />
                                 </div>
                             </th>
-                            <th class="sort white-space-nowrap align-middle pe-3" scope="col" data-sort="experiment_name" style="width:25%;">EXPERIMENT NAME</th>
+                            <th class="sort white-space-nowrap align-middle pe-3" scope="col" data-sort="experiment_name" style="width:25%;">
+                                <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
+                            </th>
                             <th class="sort align-middle text-start" scope="col" data-sort="collaborators" style="width:15%;">COLLABORATORS</th>
-                            <th class="sort align-middle text-end" scope="col" data-sort="start_date" style="width:12%;">START DATE</th>
-                            <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:12%;">UPDATED</th>
+                            <th class="sort align-middle text-end" scope="col" data-sort="start_date" style="width:12%;">
+                                <a href="?{% query_string 'sort' %}sort=start_date">START DATE</a>
+                            </th>
+                            <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:12%;">
+                                <a href="?{% query_string 'sort' %}sort=last_update">UPDATED</a>
+                            </th>
                             <th class="sort align-middle text-end" scope="col" data-sort="type" style="width:8%; min-width: 100px;">TYPE</th>
                             <th class="sort align-middle text-end" scope="col" data-sort="exp_progress" style="width:13%;">PROGRESS</th>
                             <th class="sort align-middle text-end" scope="col" data-sort="status" >STATUS</th>
