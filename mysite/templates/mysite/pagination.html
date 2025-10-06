@@ -1,0 +1,19 @@
+<ul class="pagination justify-content-end">
+  {% if page_obj.has_previous %}
+    <li class="page-item"><a class='page-link' href="?page={{ page_obj.previous_page_number }}"><span class="fas fa-chevron-left"></span></a></li>
+  {% endif %}
+
+  {% for p in page_list %}
+    {% if p == '...' %}
+      <li class="page-item"><span class="dots">…</span></li>
+    {% elif p == page_obj.number %}
+      <li class="page-item active"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+    {% else %}
+      <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+    {% endif %}
+  {% endfor %}
+
+  {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><span class="fas fa-chevron-right"></span></a></li>
+  {% endif %}
+</ul>

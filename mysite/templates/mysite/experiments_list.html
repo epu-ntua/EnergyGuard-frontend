@@ -1,4 +1,5 @@
 {% extends "mysite/base.html" %}
+{% load pagination_tags %}
 
 {% block title %}Experiments List | EnergyGuard{% endblock %}
 
@@ -128,21 +129,7 @@
                     </tbody>   
                 </table>
                 <nav class="mt-3 column">
-                    <ul class="pagination justify-content-end">
-                        {% if experiments.has_previous %}
-                        <li class="page-item"><a class="page-link" href="?page={{ experiments.previous_page_number }}"><span class="fas fa-chevron-left"></span></a></li>
-                        {% endif %}
-
-                        {% for num in experiments.paginator.page_range %}
-                        <li class="page-item {% if experiments.number == num %}active{% endif %}">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                        </li>
-                        {% endfor %}
-
-                        {% if experiments.has_next %}
-                        <li class="page-item"><a class="page-link" href="?page={{ experiments.next_page_number }}"><span class="fas fa-chevron-right"></span></a></li>
-                        {% endif %}
-                    </ul>
+                    {% smart_pagination experiments %}
                 </nav>
             </div>
         </div>
