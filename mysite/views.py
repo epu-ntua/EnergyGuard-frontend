@@ -78,3 +78,6 @@ def datasets_list(request):
     filtered_data = p.get_page(page_number)
 
     return render(request, 'mysite/dataset_list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets"})
+
+def billing(request):
+    return render(request, 'mysite/billing.html', {"active_navbar_page": "billing"})
