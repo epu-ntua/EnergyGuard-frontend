@@ -71,7 +71,9 @@
     <!-- ===============================================-->
     <main class="main" id="top">
 
-        {% include "./vertical-navbar.html" %}
+        {% if show_vertical_navbar %}
+          {% include "./vertical-navbar.html" %}  
+        {% endif %}
 
         {% include "./header.html" %}
 
@@ -103,23 +105,26 @@
     <!-- ===============================================-->
     <!--    JavaScripts-->
     <!-- ===============================================-->
-    <script src="{% static 'vendors/popper/popper.min.js' %}"></script>
-    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
-    <script src="{% static 'vendors/anchorjs/anchor.min.js' %}"></script>
-    <script src="{% static 'vendors/is/is.min.js' %}"></script>
-    <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script>
-    <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
-    <script src="{% static 'vendors/list.js/list.min.js' %}"></script>
-    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>
-    <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>
-    <script src="{% static 'vendors/leaflet/leaflet.js' %}"></script>
-    <script src="{% static 'vendors/leaflet.markercluster/leaflet.markercluster.js' %}"></script>
-    <script src="{% static 'vendors/leaflet.tilelayer.colorfilter/leaflet-tilelayer-colorfilter.min.js' %}"></script>
-    <script src="{% static 'assets/js/phoenix.js' %}"></script>
-    <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script>
-    <script src="{% static 'assets/js/dashboards/ecommerce-dashboard.js' %}"></script>
+    <script src="{% static 'vendors/popper/popper.min.js' %}"></script>   <!-- For popups and dropdowns -->
+    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>   <!-- Main Bootstrap js code -->
+    <script src="{% static 'vendors/anchorjs/anchor.min.js' %}"></script>   <!-- Creates anchors automatically in headers -->
+    <script src="{% static 'vendors/is/is.min.js' %}"></script>   <!-- For validation and type checking -->
+    <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script>   <!-- Icons -->
+    <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>   <!-- Provides methods for manipulating arrays, objects, and other types of data -->
+    <script src="{% static 'vendors/list.js/list.min.js' %}"></script>  <!-- Adds search, sort, and filter to HTML lists/tables -->
+    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>   <!-- SVG icons -->
+    <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>   <!-- For date and time -->
+
+    {% block scripts %}
+    {% endblock scripts %}
+    <!-- <script src="{% static 'vendors/leaflet/leaflet.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/leaflet.markercluster/leaflet.markercluster.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/leaflet.tilelayer.colorfilter/leaflet-tilelayer-colorfilter.min.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/js/phoenix.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/js/dashboards/ecommerce-dashboard.js' %}"></script> -->
     <!-- <script src="{% static 'vendors/flatpickr/flatpickr.min.js' %}"></script>  -->
-    <script src="{% static 'assets/js/pages/project-details.js' %}"></script>
+    <!-- <script src="{% static 'assets/js/pages/project-details.js' %}"></script> -->
 
   </body>
 

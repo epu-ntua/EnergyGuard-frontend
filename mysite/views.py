@@ -48,7 +48,7 @@ def experiments_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
-    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments"})
+    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
 def datasets_list(request):
 
@@ -78,7 +78,7 @@ def datasets_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
-    return render(request, 'mysite/dataset_list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets"})
+    return render(request, 'mysite/dataset_list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets", "show_vertical_navbar": True})
 
 def currency_format(value):
     if value == Billing.Currency.USD:
@@ -106,4 +106,5 @@ def billing(request):
     else:
         currency = "€"
         total_cost_amount = 0.0
-    return render(request, 'mysite/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount})
+    return render(request, 'mysite/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount, "show_vertical_navbar": True})
+
