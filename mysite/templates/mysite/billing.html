@@ -5,8 +5,8 @@
 
 {% block content %}
 
-<div class="content px-15 pt-navbar">
-  <div class="row g-0 mx-5">
+<div class="content px-xxl-15 pt-navbar">
+  <div class="row g-0 mx-xxl-5">
     <div class="col-12 px-0 bg-body">
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-5">
@@ -25,7 +25,7 @@
                 <div class="col-12 col-sm-auto">
                   <table class="lh-sm mb-4 mb-sm-0 mb-xl-4">
                     <tbody>
-                      <tr>
+                      <!-- <tr>
                         <td class="py-1" colspan="2">
                           <div class="d-flex"><span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
                             <h5 class="text-body">Public project</h5>
@@ -40,18 +40,24 @@
                         </td>
                         <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">Gobble the Bleep Inc</a></td>
                       </tr>
+                      <tr> -->
                       <tr>
+                        <td class="align-top pt-1 pb-4" >
+                          <button class="btn btn-primary "><span class="fas fa-plus me-2"></span>Export</button>
+                        </td>
+                      </tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Budget : </h5>
+                            <h5 class="text-body mb-0 text-nowrap">Total Usage Costs : </h5>
+                            <!-- <h4>{{currency_format}} {{ sum }}</h4> -->
                           </div>
+                            <h4 class="fw-bold ps-1 py-2 text-body-highlight">{{currency_format}} {{ sum }}</h4>
                         </td>
-                        <td class="fw-bold ps-1 py-1 text-body-highlight">$8,742</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <div class="col-12 col-sm-auto">
+                <!-- <div class="col-12 col-sm-auto">
                   <table class="lh-sm">
                     <tbody>
                       <tr>
@@ -68,20 +74,20 @@
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> -->
               </div>
             </div>
-            <div>
+            <!-- <div>
               <div class="d-flex align-items-center"><span class="fa-solid fa-list-check me-2 text-body-tertiary fs-9"></span>
                 <h5 class="text-body-emphasis mb-0 me-2">91<span class="text-body fw-normal ms-2">tasks</span></h5><a class="fw-bold fs-9 mt-1" href="#!">See tasks <span class="fa-solid fa-chevron-right me-2 fs-10"></span></a>
               </div>
-            </div>
+            </div> -->
           </div>
           <div class="col-12 col-xl-9 col-xxl-8">
             <div class="row flex-between-center mb-3 g-3">
               <div class="col-auto">
-                <h4 class="text-body-emphasis">Task completed over time</h4>
-                <p class="text-body-tertiary mb-0">Hard works done across all projects</p>
+                <h4 class="text-body-emphasis">Billing Amount per month</h4>
+                <p class="text-body-tertiary mb-0">Total usage costs per month</p>
               </div>
               <div class="col-8 col-sm-4">
                 <select class="form-select form-select-sm">
@@ -93,6 +99,7 @@
             </div>
             <div class="echart-completed-task-chart" style="min-height:200px;width:100%"></div>
           </div>
+          {% comment %}
           <div class="col-12 col-sm-5 col-lg-4 col-xl-3 col-xxl-4">
             <div class="mb-5">
               <h4 class="text-body-emphasis">Work loads</h4>
@@ -378,8 +385,13 @@
             </div>
             <h4 class="text-body-emphasis mb-4">Tags</h4><span class="badge badge-tag me-2 mb-1">Unused_brain</span><span class="badge badge-tag me-2 mb-1">Machine</span><span class="badge badge-tag me-2 mb-1">Coding</span><span class="badge badge-tag me-2 mb-1">Meseeks</span><span class="badge badge-tag me-2 mb-1">Smithpeople</span><span class="badge badge-tag me-2 mb-1">Rick</span><span class="badge badge-tag me-2 mb-1">Biology</span><span class="badge badge-tag me-2 mb-1">Neurology</span><span class="badge badge-tag me-2 mb-1">Brainlessness</span><span class="badge badge-tag me-2 mb-1">Stupidity</span><span class="badge badge-tag me-2 mb-1">Jerry</span><span class="badge badge-tag me-2 mb-1">Not _the_mouse</span>
           </div>
+          {% endcomment %}
         </div>
         <h3 class="text-body-emphasis mb-4">Project overview</h3>
+        <!-- <p>{% for u in user %}
+          {{ u.currency }}
+          {% endfor %}
+        </p> -->
         <p class="text-body-secondary mb-4">The new redirection team is happy to announce that we’ve fixed all our unresponsive URLs and redirected them to new URLs. The tremendous assistance from our support team and the dev team, as well as that of the team lead’s, this team has made an impossible possible within a week. They didn’t stop for a moment, and we got our pages working again for all the valuable users. </p>
         <p class="text-body-secondary mb-0">Join us in celebrating the massive success of data transferring and getting us a huge revenue by eating out. Free public viewing and a buffet is offered for the great team as well as for the other teams working with us. We’ll be checking out places for the best option available at hands and we’ll let you know the schedule once we decide on one.<a class="fw-semibold" href="#!">read more </a></p>
       </div>
