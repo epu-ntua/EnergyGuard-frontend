@@ -6,8 +6,12 @@ from django.core.exceptions import ValidationError
 
 # User extends AbstractUser 
 class User(AbstractUser):
+    username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     updated_at = models.DateTimeField(auto_now = True)
+
+    USERNAME_FIELD = 'email' # Use email to log in
+    REQUIRED_FIELDS = ['username']  # Username is still required when creating superuser
 
     def __str__(self):
         return self.email
@@ -17,7 +21,25 @@ class User(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['username']
-        indexes = [models.Index(fields=['email']),]
+        indexes = [models.Index(fields=['email']),] # Index on email for faster lookups
+
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    company = models.CharField(max_length=100, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+    
+    class Meta:
+        db_table = 'profile'
+        verbose_name = 'Profile'
+        verbose_name_plural = 'Profiles'
+        ordering = ['user__username']
+        indexes = [models.Index(fields=['user']),]  # Index on user for faster lookups
 
 # Abstract class for automatic time tracking - To be inherited
 class TimeStampedModel(models.Model):
