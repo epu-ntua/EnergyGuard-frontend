@@ -164,10 +164,10 @@ class Billing(TimeStampedModel):
         BUSINESS = "business", "Business"
         ENTERPRISE = "enterprise", "Enterprise"
 
-    class PaymentMethod(models.TextChoices):
-        CREDIT_CARD = "CC", "Credit Card"
-        PAYPAL = "PP", "PayPal"
-        BANK_TRANSFER = "BT", "Bank Transfer"
+    # class PaymentMethod(models.TextChoices):
+    #     CREDIT_CARD = "CC", "Credit Card"
+    #     PAYPAL = "PP", "PayPal"
+    #     BANK_TRANSFER = "BT", "Bank Transfer"
 
     class PaymentStatus(models.TextChoices):
         PAID = "paid", "Paid"
@@ -185,7 +185,14 @@ class Billing(TimeStampedModel):
     amount = models.DecimalField(max_digits=6, decimal_places=2)
     invoice = models.CharField(max_length=100, unique=True)
     plan_type = models.CharField(max_length=10, choices=PlanType, default=PlanType.BUSINESS)
-    payment_method = models.CharField(max_length=2, choices=PaymentMethod, default=PaymentMethod.CREDIT_CARD)
+    # payment_method = models.CharField(max_length=2, choices=PaymentMethod, default=PaymentMethod.CREDIT_CARD)
+    payment_method_used = models.ForeignKey(
+        'PaymentMethod',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='billings_used'
+    )
     payment_status = models.CharField(max_length=9, choices=PaymentStatus, default=PaymentStatus.PENDING)
     currency = models.CharField(max_length=3, choices=Currency, default=Currency.EUR)
 
@@ -194,7 +201,7 @@ class Billing(TimeStampedModel):
             raise ValidationError("Billing period end date must be after start date.")
 
     def __str__(self):
-        return f"{self.customer.username} - {self.invoice}"
+        return f"{self.customer.email} - {self.invoice}"
 
     class Meta:
         db_table = 'billing'
@@ -202,3 +209,25 @@ class Billing(TimeStampedModel):
         verbose_name_plural = 'Billing Records'
         ordering = ['-billing_period_start']
         indexes = [models.Index(fields=['invoice']),]
+
+class PaymentMethod(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods')
+    
+    # ID from the payment gateway (e.g., Stripe, PayPal)
+    gateway_payment_method_id = models.CharField(max_length=255, unique=True, help_text="ID for this specific payment method at the payment gateway")
+    
+    card_brand = models.CharField(max_length=50, blank=True)
+    last4 = models.CharField(max_length=4, blank=True)
+    expiration_month = models.IntegerField(blank=True, null=True)
+    expiration_year = models.IntegerField(blank=True, null=True)
+    
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.card_brand} ending in {self.last4} for {self.user.email}"
+
+    class Meta:
+        verbose_name = 'Payment Method'
+        verbose_name_plural = 'Payment Methods'
+        unique_together = ('user', 'gateway_payment_method_id')
+        ordering = ['-created_at']
