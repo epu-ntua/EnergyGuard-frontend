@@ -1,9 +1,16 @@
+from core.models import User, Profile, Dataset, Billing
+from mysite.forms import UserWizardForm, ProfileWizardForm
+from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
 from django.db.models.aggregates import Sum
-from django.shortcuts import render 
+from django.db import transaction
+from django.conf import settings
+from formtools.wizard.views import SessionWizardView
 from datetime import datetime
 import mlflow
-from core.models import Dataset, Billing
+import os
 
 def home(request):
     return render(request, 'mysite/home.html', {})
@@ -110,3 +117,43 @@ def billing(request):
 
 def register(request):
     return render(request, 'mysite/registration.html', {"show_vertical_navbar": False})
+
+FORMS = [
+    ("user_info", UserWizardForm),
+    ("profile_info", ProfileWizardForm),
+]
+
+TEMPLATE_NAMES = {
+    "user_info": "mysite/registration.html",
+    "profile_info": "mysite/registration.html",
+}
+
+class RegistrationWizard(SessionWizardView):
+    # Necessary to handle ImageField or FileField in forms
+    file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
+
+    def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
+        return [TEMPLATE_NAMES[self.steps.current]]
+    
+    def get_form(self, step=None, data=None, files=None): 
+        form = super().get_form(step, data, files) 
+        return form
+    
+    def done(self, form_list, **kwargs):
+
+        user_data = self.get_cleaned_data_for_step('user_info') # Retrieve cleaned data from each step
+        profile_data = self.get_cleaned_data_for_step('profile_info')
+
+        with transaction.atomic(): 
+            user = User.objects.create_user(    # create_user method handles password hashing
+                email=user_data['email'],
+                username=user_data['username'],
+                password=user_data['password']
+            )
+            Profile.objects.create(user=user, **profile_data)
+        login(self.request, user)  # Log the user in after successful registration
+
+        return redirect('registration_success')  
+            
+def registration_success(request):
+    return render(request, 'mysite/registration_success.html', {"show_vertical_navbar": False})
