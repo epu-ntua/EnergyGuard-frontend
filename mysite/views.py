@@ -115,8 +115,6 @@ def billing(request):
         total_cost_amount = 0.0
     return render(request, 'mysite/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount, "show_vertical_navbar": True})
 
-def register(request):
-    return render(request, 'mysite/registration.html', {"show_vertical_navbar": False})
 
 FORMS = [
     ("user_info", UserWizardForm),
@@ -124,8 +122,8 @@ FORMS = [
 ]
 
 TEMPLATE_NAMES = {
-    "user_info": "mysite/registration.html",
-    "profile_info": "mysite/registration.html",
+    "user_info": "mysite/registration-step1.html",
+    "profile_info": "mysite/registration-step2.html",
 }
 
 class RegistrationWizard(SessionWizardView):
@@ -148,7 +146,7 @@ class RegistrationWizard(SessionWizardView):
             user = User.objects.create_user(    # create_user method handles password hashing
                 email=user_data['email'],
                 username=user_data['username'],
-                password=user_data['password']
+                password=user_data['password1']
             )
             Profile.objects.create(user=user, **profile_data)
         login(self.request, user)  # Log the user in after successful registration
@@ -156,4 +154,4 @@ class RegistrationWizard(SessionWizardView):
         return redirect('registration_success')  
             
 def registration_success(request):
-    return render(request, 'mysite/registration_success.html', {"show_vertical_navbar": False})
+    return render(request, 'mysite/registration-success.html', {"show_vertical_navbar": False, "registration_step": "done"})
