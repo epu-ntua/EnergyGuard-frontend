@@ -92,7 +92,7 @@
                   <div class="card theme-wizard mb-5" data-theme-wizard="data-theme-wizard">
                     <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
                       <ul class="nav justify-content-between nav-wizard nav-wizard-success">
-                        {% with step=registration_step|default:wizard.steps.current %}
+                        {% with step=wizard.steps.current %}
                         <li class="nav-item"><span class="nav-link fw-semibold {% if step == 'user_info' %}active{% endif %}">
                           <div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-lock"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Account</span></div>
                         </span></li>

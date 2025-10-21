@@ -115,6 +115,8 @@ def billing(request):
         total_cost_amount = 0.0
     return render(request, 'mysite/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount, "show_vertical_navbar": True})
 
+def register(request):
+    return render(request, 'mysite/registration.html', {"show_vertical_navbar": False})
 
 FORMS = [
     ("user_info", UserWizardForm),
@@ -149,9 +151,12 @@ class RegistrationWizard(SessionWizardView):
                 password=user_data['password1']
             )
             Profile.objects.create(user=user, **profile_data)
-        login(self.request, user)  # Log the user in after successful registration
+        #TODO: Omit login step if email verification is implemented
+        login(self.request, user)  # Automatically log the user in after successful registration
 
         return redirect('registration_success')  
             
 def registration_success(request):
-    return render(request, 'mysite/registration-success.html', {"show_vertical_navbar": False, "registration_step": "done"})
+    # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
+    wizard = {"steps": {"current": "done"}}
+    return render(request, 'mysite/registration-success.html', {"show_vertical_navbar": False, "wizard": wizard})
