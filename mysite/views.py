@@ -115,9 +115,6 @@ def billing(request):
         total_cost_amount = 0.0
     return render(request, 'mysite/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount, "show_vertical_navbar": True})
 
-def register(request):
-    return render(request, 'mysite/registration.html', {"show_vertical_navbar": False})
-
 FORMS = [
     ("user_info", UserWizardForm),
     ("profile_info", ProfileWizardForm),
@@ -159,4 +156,4 @@ class RegistrationWizard(SessionWizardView):
 def registration_success(request):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
-    return render(request, 'mysite/registration-success.html', {"show_vertical_navbar": False, "wizard": wizard})
+    return render(request, 'mysite/registration-success.html', {"wizard": wizard})
