@@ -1,0 +1,49 @@
+{% extends "mysite/base-registration.html" %}
+{% load static %}
+
+{% block title %}EnergyGuard | Sign Up{% endblock %}
+
+{% block content %}
+
+<div class="tab-content">
+    <div class="tab-pane active" role="tabpanel">
+        <form class="needs-validation" action="" method="post" novalidate>{% csrf_token %}
+            {{ wizard.management_form }}
+
+            {% if wizard.form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">{{ wizard.form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-2">
+            <label class="form-label text-body">Email*</label>
+            {{ wizard.form.email }}
+            </div>
+
+            <div class="mb-2">
+            <label class="form-label text-body">Username</label>
+            {{ wizard.form.username }}
+            </div>
+
+            <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+                <div class="mb-2 mb-sm-0">
+                <label class="form-label text-body">Password*</label>
+                {{ wizard.form.password1 }}
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="mb-2">
+                <label class="form-label text-body">Confirm Password*</label>
+                {{ wizard.form.password2 }}
+                </div>
+            </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
+                <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

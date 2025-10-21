@@ -1,0 +1,51 @@
+{% extends "mysite/base-registration.html" %}
+{% load static %}
+
+{% block title %}EnergyGuard | Sign Up{% endblock %}
+
+{% block content %}
+<div class="tab-content">
+  <div class="tab-pane active" role="tabpanel">
+    <form class="needs-validation" action="" method="post" {% if wizard.form.is_multipart %}enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+      {{ wizard.management_form }}
+
+      {% if wizard.form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">{{ wizard.form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="mb-2">
+        <label class="form-label">Profile Picture</label>
+        <!-- <h5 class="mb-2"><span class="fa-solid fa-upload me-2"></span>Upload Profile Picture</h5>
+        <p class="mb-0 fs-9 text-body-tertiary text-opacity-85 lh-sm">Upload a 300x300 jpg image with <br />a maximum size of 400KB</p> -->
+        {{ wizard.form.profile_picture }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Company</label>
+        {{ wizard.form.company }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Position</label>
+        {{ wizard.form.position }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Date of Birth</label>
+        {{ wizard.form.birth_date }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Short Biography</label>
+        {{ wizard.form.bio }}
+      </div>
+
+      <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
+        <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="btn btn-link"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
+        <button type="submit" class="btn btn-primary">Finish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock content %}
