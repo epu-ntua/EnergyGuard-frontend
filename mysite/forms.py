@@ -10,6 +10,21 @@ class UserWizardForm(UserCreationForm):
         model = User
         fields = ('email', 'username')
 
+        # widgets = {
+        #     'email': forms.EmailInput(attrs={'placeholder': 'e.g., yourname@example.com', 'class': 'form-control'}),
+        #     'username': forms.TextInput(attrs={'placeholder': 'e.g., john_doe', 'class': 'form-control'}),
+        #     # Για password/password2, μπορείς να τα ορίσεις κι αυτά αν θες, αλλά η UserCreationForm έχει defaults
+        #     'password': forms.PasswordInput(attrs={'placeholder': 'Enter your password', 'class': 'form-control'}),
+        #     'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm your password', 'class': 'form-control'})
+        # }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ['username', 'email', 'password1', 'password2']:
+            if name in self.fields:
+                css_classes = self.fields[name].widget.attrs.get('class', '')
+                self.fields[name].widget.attrs['class'] = (css_classes + ' form-control').strip()
+
 class ProfileWizardForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -19,6 +34,7 @@ class ProfileWizardForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
             'company': forms.TextInput(attrs={'class': 'form-control'}),
             'position': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
         labels = {
             'profile_picture': 'Profile Picture',
@@ -26,4 +42,9 @@ class ProfileWizardForm(forms.ModelForm):
             'bio': 'Short Biography',
         }
 
-    
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     # Ensure file input and any missing widgets carry Bootstrap styling
+    #     if 'profile_picture' in self.fields:
+    #         css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
+    #         self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()
