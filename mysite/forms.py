@@ -13,7 +13,6 @@ class UserWizardForm(UserCreationForm):
         # widgets = {
         #     'email': forms.EmailInput(attrs={'placeholder': 'e.g., yourname@example.com', 'class': 'form-control'}),
         #     'username': forms.TextInput(attrs={'placeholder': 'e.g., john_doe', 'class': 'form-control'}),
-        #     # Για password/password2, μπορείς να τα ορίσεις κι αυτά αν θες, αλλά η UserCreationForm έχει defaults
         #     'password': forms.PasswordInput(attrs={'placeholder': 'Enter your password', 'class': 'form-control'}),
         #     'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm your password', 'class': 'form-control'})
         # }
@@ -44,7 +43,6 @@ class ProfileWizardForm(forms.ModelForm):
 
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
-    #     # Ensure file input and any missing widgets carry Bootstrap styling
     #     if 'profile_picture' in self.fields:
     #         css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
     #         self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()
