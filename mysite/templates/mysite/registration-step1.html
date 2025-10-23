@@ -15,28 +15,33 @@
             {% endif %}
 
             <div class="mb-2">
-            <label class="form-label text-body">Email*</label>
-            {{ wizard.form.email }}
+                <label class="form-label text-body">Email*</label>
+                {{ wizard.form.email }}
             </div>
 
             <div class="mb-2">
-            <label class="form-label text-body">Username</label>
-            {{ wizard.form.username }}
+                <label class="form-label text-body">Username</label>
+                {{ wizard.form.username }}
             </div>
 
             <div class="row g-3 mb-3">
-            <div class="col-sm-6">
-                <div class="mb-2 mb-sm-0">
-                <label class="form-label text-body">Password*</label>
-                {{ wizard.form.password1 }}
+                <div class="col-sm-6">
+                    <div class="mb-2 mb-sm-0">
+                        <label class="form-label text-body">Password*</label>
+                        {{ wizard.form.password1 }}
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="mb-2">
+                        <label class="form-label text-body">Confirm Password*</label>
+                        {{ wizard.form.password2 }}
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-6">
-                <div class="mb-2">
-                <label class="form-label text-body">Confirm Password*</label>
-                {{ wizard.form.password2 }}
-                </div>
-            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="terms" required="required" id="bootstrap-wizard-validation-wizard-checkbox" />
+                <!-- TODO: Link to actual terms and privacy policy pages -->
+                <label class="form-check-label text-body" for="bootstrap-wizard-validation-wizard-checkbox">I accept the <a href="#!">terms </a>and <a href="#!">privacy policy</a></label>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
