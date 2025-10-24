@@ -1,8 +1,8 @@
-from django import forms
 from django.contrib.auth.forms import UserCreationForm
-
-from core.models import User, Profile, PaymentMethod
 from django.conf import settings
+from django import forms
+from core.models import User, Profile, PaymentMethod
+from .validators import strict_email_user_validator, strict_username_validator
 
 
 class UserWizardForm(UserCreationForm):
@@ -19,10 +19,14 @@ class UserWizardForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['email'].validators.append(strict_email_user_validator)
+        self.fields['username'].validators.append(strict_username_validator)
+
         for name in ['username', 'email', 'password1', 'password2']:
             if name in self.fields:
                 css_classes = self.fields[name].widget.attrs.get('class', '')
                 self.fields[name].widget.attrs['class'] = (css_classes + ' form-control').strip()
+
 
 class ProfileWizardForm(forms.ModelForm):
     class Meta:
