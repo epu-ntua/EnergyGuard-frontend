@@ -11,17 +11,23 @@
             {{ wizard.management_form }}
 
             {% if wizard.form.non_field_errors %}
-            <div class="alert alert-danger" role="alert">{{ wizard.form.non_field_errors }}</div>
+                <div class="mb-2 " role="alert">{{ wizard.form.non_field_errors }}</div>
             {% endif %}
 
             <div class="mb-2">
                 <label class="form-label text-body">Email*</label>
                 {{ wizard.form.email }}
+                {% if wizard.form.errors.email %}
+                    <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.email }}</div>
+                {% endif %}
             </div>
 
             <div class="mb-2">
                 <label class="form-label text-body">Username</label>
                 {{ wizard.form.username }}
+                {% if wizard.form.errors.username %}
+                    <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.username }}</div>
+                {% endif %}
             </div>
 
             <div class="row g-3 mb-3">
@@ -37,7 +43,12 @@
                         {{ wizard.form.password2 }}
                     </div>
                 </div>
+                {% if wizard.form.errors.password2 %}
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.password2 }}</div>
+                {% endif %}
+
             </div>
+
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="terms" required="required" id="bootstrap-wizard-validation-wizard-checkbox" />
                 <!-- TODO: Link to actual terms and privacy policy pages -->
