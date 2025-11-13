@@ -4,9 +4,8 @@
     <div class="navbar-logo">
 
       <button class="btn navbar-toggler navbar-toggler-humburger-icon hover-bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse" aria-controls="navbarVerticalCollapse" aria-expanded="false" aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span class="toggle-line"></span></span></button>
-      <!-- TODO: Να αλλάξω το href -->
-      <!-- ----------------- -->
-      <a class="navbar-brand me-1 me-sm-3" href="index.html">
+
+      <a class="navbar-brand me-1 me-sm-3" href="{% url 'home' %}">
         <div class="d-flex align-items-center">
           <div class="d-flex align-items-center">
             <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="179" class="d-none d-sm-block"/>
