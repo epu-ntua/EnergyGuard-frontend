@@ -123,6 +123,7 @@ FORMS = [
 TEMPLATE_NAMES = {
     "user_info": "mysite/registration-step1.html",
     "profile_info": "mysite/registration-step2.html",
+    "payment_info": "mysite/registration-step3.html",
 }
 
 class RegistrationWizard(SessionWizardView):
