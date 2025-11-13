@@ -10,12 +10,12 @@ class UserWizardForm(UserCreationForm):
         model = User
         fields = ('email', 'username')
 
-        # widgets = {
-        #     'email': forms.EmailInput(attrs={'placeholder': 'e.g., yourname@example.com', 'class': 'form-control'}),
-        #     'username': forms.TextInput(attrs={'placeholder': 'e.g., john_doe', 'class': 'form-control'}),
-        #     'password': forms.PasswordInput(attrs={'placeholder': 'Enter your password', 'class': 'form-control'}),
-        #     'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm your password', 'class': 'form-control'})
-        # }
+        """widgets = {
+            'email': forms.EmailInput(attrs={'placeholder': 'e.g., yourname@example.com', 'class': 'form-control'}),
+            'username': forms.TextInput(attrs={'placeholder': 'e.g., john_doe', 'class': 'form-control'}),
+            'password': forms.PasswordInput(attrs={'placeholder': 'Enter your password', 'class': 'form-control'}),
+            'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm your password', 'class': 'form-control'})
+        }"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,8 +45,8 @@ class ProfileWizardForm(forms.ModelForm):
             'bio': 'Short Biography',
         }
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     if 'profile_picture' in self.fields:
-    #         css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
-    #         self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()
+    """def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'profile_picture' in self.fields:
+            css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
+            self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()"""
