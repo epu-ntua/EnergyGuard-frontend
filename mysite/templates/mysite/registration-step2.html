@@ -6,7 +6,8 @@
 {% block content %}
 <div class="tab-content">
   <div class="tab-pane active" role="tabpanel">
-    <form class="needs-validation" action="" method="post" {% if wizard.form.is_multipart %}enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+    <form class="needs-validation" action="" method="post" {% if wizard.form.is_multipart %}enctype="multipart/form-data"{% endif %} novalidate>
+      {% csrf_token %}
       {{ wizard.management_form }}
 
       {% if wizard.form.non_field_errors %}
@@ -42,7 +43,7 @@
 
       <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
         <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="btn btn-link"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
-        <button type="submit" class="btn btn-primary">Finish</button>
+        <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
       </div>
     </form>
   </div>
