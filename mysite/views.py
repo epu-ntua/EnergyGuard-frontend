@@ -1,5 +1,5 @@
-from core.models import User, Profile, Dataset, Billing
-from mysite.forms import UserWizardForm, ProfileWizardForm
+from core.models import User, Profile, Dataset, Billing, PaymentMethod
+from mysite.forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.contrib.auth import login
@@ -118,6 +118,7 @@ def billing(request):
 FORMS = [
     ("user_info", UserWizardForm),
     ("profile_info", ProfileWizardForm),
+    ("payment_info", PaymentWizardForm)
 ]
 
 TEMPLATE_NAMES = {
@@ -141,14 +142,26 @@ class RegistrationWizard(SessionWizardView):
 
         user_data = self.get_cleaned_data_for_step('user_info') # Retrieve cleaned data from each step
         profile_data = self.get_cleaned_data_for_step('profile_info')
+        payment_data = self.get_cleaned_data_for_step('payment_info')
+
+        membership_selected = User.Membership.FREE
+        credits_amount = 100
+
+        if payment_data.get('version') == 'paid':
+            membership_selected = User.Membership.PAID
+            credits_amount = 500
 
         with transaction.atomic(): 
             user = User.objects.create_user(    # create_user method handles password hashing
                 email=user_data['email'],
                 username=user_data['username'],
-                password=user_data['password1']
+                password=user_data['password1'],
+                membership=membership_selected,
+                credits=credits_amount
             )
             Profile.objects.create(user=user, **profile_data)
+            PaymentMethod.objects.create(user=user, **payment_data)
+
         #TODO: Omit login step if email verification is implemented
         login(self.request, user)  # Automatically log the user in after successful registration
 

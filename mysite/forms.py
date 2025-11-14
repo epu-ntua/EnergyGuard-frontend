@@ -39,14 +39,22 @@ class ProfileWizardForm(forms.ModelForm):
             'position': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
-        labels = {
-            'profile_picture': 'Profile Picture',
-            'birth_date': 'Date of Birth',
-            'bio': 'Short Biography',
-        }
 
     """def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'profile_picture' in self.fields:
             css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
             self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()"""
+    
+class PaymentWizardForm(forms.ModelForm):
+    class Meta:
+        model = PaymentMethod
+        fields = ('card_number', 'cardholder_name', 'cvv', 'expiration_month', 'expiration_year')
+        widgets = {
+            'card_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'xxxx xxxx xxxx xxxx'}),
+            'cardholder_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'cvv': forms.TextInput(attrs={'class': 'form-control'}),
+            'expiration_month' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MM'}),
+            'expiration_year' : forms.TextInput(attrs={'placeholder': 'YY', 'class': 'form-control'})
+        }
+        

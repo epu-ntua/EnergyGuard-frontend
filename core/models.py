@@ -6,9 +6,16 @@ from django.core.exceptions import ValidationError
 
 # User extends AbstractUser 
 class User(AbstractUser):
+
+    class Membership(models.TextChoices):
+        FREE = 'free', 'Free'
+        PAID = 'paid', 'Paid'
+
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     updated_at = models.DateTimeField(auto_now = True)
+    membership = models.CharField(max_length=4, choices=Membership, default=Membership.FREE)
+    credits = models.PositiveIntegerField(default=0)
 
     USERNAME_FIELD = 'email' # Use email to log in
     REQUIRED_FIELDS = ['username']  # Username is still required when creating superuser
@@ -214,20 +221,19 @@ class PaymentMethod(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods')
     
     # ID from the payment gateway (e.g., Stripe, PayPal)
-    gateway_payment_method_id = models.CharField(max_length=255, unique=True, help_text="ID for this specific payment method at the payment gateway")
+    # gateway_payment_method_id = models.CharField(max_length=255, unique=True, help_text="ID for this specific payment method at the payment gateway")
     
-    card_brand = models.CharField(max_length=50, blank=True)
-    last4 = models.CharField(max_length=4, blank=True)
-    expiration_month = models.IntegerField(blank=True, null=True)
-    expiration_year = models.IntegerField(blank=True, null=True)
+    card_number = models.CharField(max_length=20, blank=True)
+    cardholder_name = models.CharField(max_length=50, blank=True)
+    cvv = models.CharField(max_length=3, blank=True)
+    expiration_month = models.CharField(max_length=2, choices=[(str(i), str(i)) for i in range(1, 13)],  blank=True, null=True)
+    expiration_year = models.CharField(max_length=2, blank=True, null=True)
     
-    is_default = models.BooleanField(default=False)
-
     def __str__(self):
-        return f"{self.card_brand} ending in {self.last4} for {self.user.email}"
+        return f"{self.user.email} - {self.cardholder_name} - **** **** **** {self.card_number[-4:]}"
 
     class Meta:
         verbose_name = 'Payment Method'
         verbose_name_plural = 'Payment Methods'
-        unique_together = ('user', 'gateway_payment_method_id')
+        unique_together = ('user', 'card_number')
         ordering = ['-created_at']
