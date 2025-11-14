@@ -1,0 +1,4 @@
+Django==5.2.7
+psycopg[binary]==3.2.10
+django-formtools==2.5.1
+mlflow==3.4.0

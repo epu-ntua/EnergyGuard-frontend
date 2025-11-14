@@ -211,3 +211,11 @@ __marimo__/
 
 # Ignore files in templates
 mysite/templates/mysite/headertest.py
+
+.idea/*
+
+#Database
+*.sqlite3
+
+#ElasticSearch
+/.idea
