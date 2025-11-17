@@ -49,12 +49,12 @@ class ProfileWizardForm(forms.ModelForm):
 class PaymentWizardForm(forms.ModelForm):
     class Meta:
         model = PaymentMethod
-        fields = ('card_number', 'cardholder_name', 'cvv', 'expiration_month', 'expiration_year')
+        fields = ('card_number', 'cardholder_name', 'expiration_month', 'expiration_year', 'cvv')
         widgets = {
             'card_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'xxxx xxxx xxxx xxxx'}),
             'cardholder_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'cvv': forms.TextInput(attrs={'class': 'form-control'}),
             'expiration_month' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MM'}),
-            'expiration_year' : forms.TextInput(attrs={'placeholder': 'YY', 'class': 'form-control'})
+            'expiration_year' : forms.TextInput(attrs={'placeholder': 'YY', 'class': 'form-control'}),
+            'cvv': forms.TextInput(attrs={'class': 'form-control'})
         }
         
