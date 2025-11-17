@@ -147,7 +147,8 @@ class RegistrationWizard(SessionWizardView):
         membership_selected = User.Membership.FREE
         credits_amount = 100
 
-        if payment_data.get('version') == 'paid':
+        version = self.request.POST.get('version')
+        if version == 'paid':
             membership_selected = User.Membership.PAID
             credits_amount = 500
 
@@ -160,10 +161,8 @@ class RegistrationWizard(SessionWizardView):
                 credits=credits_amount
             )
             Profile.objects.create(user=user, **profile_data)
-            PaymentMethod.objects.create(user=user, **payment_data)
-
-        #TODO: Omit login step if email verification is implemented
-        login(self.request, user)  # Automatically log the user in after successful registration
+            if version == 'paid':
+                PaymentMethod.objects.create(user=user, **payment_data)
 
         return redirect('registration_success')  
             
