@@ -223,9 +223,9 @@ class PaymentMethod(TimeStampedModel):
     # ID from the payment gateway (e.g., Stripe, PayPal)
     # gateway_payment_method_id = models.CharField(max_length=255, unique=True, help_text="ID for this specific payment method at the payment gateway")
     
-    card_number = models.CharField(max_length=20, blank=True)
-    cardholder_name = models.CharField(max_length=50, blank=True)
-    cvv = models.CharField(max_length=3, blank=True)
+    card_number = models.CharField(max_length=20, blank=True, null=True)
+    cardholder_name = models.CharField(max_length=50, blank=True, null=True)
+    cvv = models.CharField(max_length=3, blank=True, null=True)
     expiration_month = models.CharField(max_length=2, choices=[(str(i), str(i)) for i in range(1, 13)],  blank=True, null=True)
     expiration_year = models.CharField(max_length=2, blank=True, null=True)
     
