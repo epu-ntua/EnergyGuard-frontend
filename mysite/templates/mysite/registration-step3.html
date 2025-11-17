@@ -4,68 +4,24 @@
 {% block title %}EnergyGuard | Sign Up{% endblock %}
 
 {% block content %}
-<!-- <div class="tab-pane" role="tabpanel" aria-labelledby="bootstrap-wizard-validation-tab3" id="bootstrap-wizard-validation-tab3">
-  <form class="mb-2 needs-validation" id="wizardValidationForm3" novalidate="novalidate" data-wizard-form="3">
-    <div class="row gx-3 gy-2">
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-number">Card Number</label>
-            <input class="form-control" placeholder="XXXX XXXX XXXX XXXX" type="text" required="required" id="bootstrap-wizard-validation-card-number" />
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-name">Name</label>
-            <input class="form-control" placeholder="John Doe" name="cardName" type="text" id="bootstrap-wizard-validation-card-name" required="required" />
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-holder-country">Country</label>
-            <select class="form-select" name="customSelectCountry" id="bootstrap-wizard-validation-card-holder-country" required="required">
-                <option value="">Select your country ...</option>
-                <option value="Afghanistan">Afghanistan</option>
-                <option value="Albania">Albania</option>
-                <option value="Algeria">Algeria</option>
-            </select>
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-holder-zip-code">Zip</label>
-            <input class="form-control" placeholder="1234" name="zipCode" type="text" id="bootstrap-wizard-validation-card-holder-zip-code" required="required" />
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-exp-date">Date of Expire</label>
-            <input class="form-control" placeholder="15/2024" name="expDate" type="text" id="bootstrap-wizard-validation-card-exp-date" required="required" />
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-        <div class="col-6">
-            <label class="form-label" for="bootstrap-wizard-validation-card-cvv">CVV</label>
-            <input class="form-control" placeholder="123" name="cvv" maxlength="3" pattern="[0-9]{3}" type="number" id="bootstrap-wizard-validation-card-cvv" required="required" />
-            <div class="invalid-feedback">This field is required.</div>
-        </div>
-    </div>
-    <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
-        <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="btn btn-link"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
-        <button type="submit" class="btn btn-primary px-6 px-sm-6">Finish</button>
-      </div>
-  </form>
-</div> -->
 
 <div class="tab-pane active" role="tabpanel">
     <form id="payment-form" class="mb-2" action="" method="post">
         {% csrf_token %}
-        
+
         {{ wizard.management_form }}
 
         <div class="row gx-3 gy-2">
             <div class="col-12 d-flex gap-3 ">
                 <div class="form-check">
-                    <label class="form-check-label" for="paid_version">Paid Version</label>
-                    <input class="form-check-input" type="radio" name="version" id="paid_version" value="free">
+                    <label class="form-check-label" for="free_version">Free Version</label>
+                    <input class="form-check-input" type="radio" name="version" id="free_version" value="free" checked>
                 </div>
                 <div class="form-check">
-                    <label class="form-check-label" for="free_version">Free Version</label>
-                    <input class="form-check-input" type="radio" name="version" id="free_version" value="paid" checked>
+                    <label class="form-check-label" for="paid_version">Paid Version</label>
+                    <input class="form-check-input" type="radio" name="version" id="paid_version" value="paid">
                 </div>
+
             </div>
         </div>
         <div id="card-details-container" class="row gx-3 gy-2">
@@ -83,9 +39,9 @@
                     <div class="d-flex g-2">
                         <div>{{ wizard.form.expiration_month }}</div>
                         <div>{{ wizard.form.expiration_year }}</div>
-                    </div> 
+                    </div>
                 </div>
-                
+
             </div>
             <div class="col-6">
                 <label class="form-label">CVV</label>
@@ -94,48 +50,42 @@
         </div>
 
         <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
-          {% if wizard.steps.prev %}
+            {% if wizard.steps.prev %}
             <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="btn btn-link">
                 <span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back
             </button>
-          {% endif %}
-          <button type="submit" id="submit-button" class="btn btn-primary px-6 px-sm-6">Finish</button>
+            {% endif %}
+            <button type="submit" id="submit-button" class="btn btn-primary px-6 px-sm-6">Finish</button>
         </div>
     </form>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the elements
-    const paidRadio = document.getElementById('paid_version');
-    const freeRadio = document.getElementById('free_version');
-    const cardDetailsContainer = document.getElementById('card-details-container');
-    const cardInputs = cardDetailsContainer.querySelectorAll('input, select'); // Selects all inputs and selects inside the container
+    document.addEventListener('DOMContentLoaded', function () {
+        const paidRadio = document.getElementById('paid_version');
+        const freeRadio = document.getElementById('free_version');
+        const cardDetailsContainer = document.getElementById('card-details-container');
+        const cardInputs = cardDetailsContainer.querySelectorAll('input, select'); // Selects all inputs and selects inside the container
 
-    // Function to enable or disable card fields
-    function toggleCardFields() {
-        // If free version is checked, disable fields. Otherwise, enable them.
-        const isFree = freeRadio.checked;
-        
-        cardInputs.forEach(input => {
-            input.disabled = isFree;
-        });
+        function toggleCardFields() {
+            // If free version is checked, disable fields. Otherwise, enable them.
+            const isFree = freeRadio.checked;
 
-        // Optional: Add a class to visually grey out the disabled section
-        if (isFree) {
-            cardDetailsContainer.style.opacity = '0.5';
-        } else {
-            cardDetailsContainer.style.opacity = '1';
+            cardInputs.forEach(input => {
+                input.disabled = isFree;
+            });
+
+            // Add a class to visually grey out the disabled section
+            cardDetailsContainer.style.opacity = isFree ? '0.5' : '1';
         }
-    }
 
-    // Add event listeners to the radio buttons
-    paidRadio.addEventListener('change', toggleCardFields);
-    freeRadio.addEventListener('change', toggleCardFields);
+        // Add event listeners to the radio buttons
+        paidRadio.addEventListener('change', toggleCardFields);
+        freeRadio.addEventListener('change', toggleCardFields);
 
-    // Run the function once on page load to set the initial state
-    toggleCardFields();
-});
+        // Run the function once on page load to set the initial state
+        toggleCardFields();
+    });
 </script>
 
 {% endblock content %}
