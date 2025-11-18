@@ -60,6 +60,10 @@
     </form>
 </div>
 
+{% endblock content %}
+
+{% block scripts %}
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const paidRadio = document.getElementById('paid_version');
@@ -88,4 +92,4 @@
     });
 </script>
 
-{% endblock content %}
+{% endblock scripts %}
