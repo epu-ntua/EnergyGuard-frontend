@@ -1,0 +1,201 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <!-- ===============================================-->
+    <!--    Document Title-->
+    <!-- ===============================================-->
+    <title>EnergyGuard | Login</title>
+
+
+    <!-- ===============================================-->
+    <!--    Favicons-->
+    <!-- ===============================================-->
+    <!-- άλλαξα μόνο το href -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/logo/EnergyGuard_logo-192x174' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/img/logo/EnergyGuard_logo 32x24.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/img/logo/EnergyGuard_logo-16x12.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/logo/EnergyGuard_logo-16x12.png' %}">
+    <!-- tab logo -->
+    <link rel="manifest" href="{% static 'assets/img/favicons/manifest.json' %}">
+
+    <!-- δεν αλλαξα τπτ -->
+    <meta name="msapplication-TileImage" content="{% static 'assets/img/favicons/mstile-150x150.png' %}">
+    <meta name="theme-color" content="#ffffff">
+    <script src="{% static 'vendors/simplebar/simplebar.min.js' %}"></script>
+    <script src="{% static 'assets/js/config.js' %}"></script>
+
+
+    <!-- ===============================================-->
+    <!--    Stylesheets-->
+    <!-- ===============================================-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&amp;display=swap"
+        rel="stylesheet">
+    <link href="{% static 'vendors/simplebar/simplebar.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link href="{% static 'assets/css/theme-rtl.min.css' %}" type="text/css" rel="stylesheet" id="style-rtl">
+    <link href="{% static 'assets/css/theme.min.css' %}" type="text/css" rel="stylesheet" id="style-default">
+    <link href="{% static 'assets/css/user-rtl.min.css' %}" type="text/css" rel="stylesheet" id="user-style-rtl">
+    <link href="{% static 'assets/css/user.min.css' %}" type="text/css" rel="stylesheet" id="user-style-default">
+    <script>
+        var phoenixIsRTL = window.config.config.phoenixIsRTL;
+        if (phoenixIsRTL) {
+            var linkDefault = document.getElementById('style-default');
+            var userLinkDefault = document.getElementById('user-style-default');
+            linkDefault.setAttribute('disabled', true);
+            userLinkDefault.setAttribute('disabled', true);
+            document.querySelector('html').setAttribute('dir', 'rtl');
+        } else {
+            var linkRTL = document.getElementById('style-rtl');
+            var userLinkRTL = document.getElementById('user-style-rtl');
+            linkRTL.setAttribute('disabled', true);
+            userLinkRTL.setAttribute('disabled', true);
+        }
+    </script>
+    <link href="{% static 'vendors/leaflet/leaflet.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/leaflet.markercluster/MarkerCluster.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/leaflet.markercluster/MarkerCluster.Default.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+
+        <!-- {% if show_vertical_navbar %}
+          {% include "./vertical-navbar.html" %}  
+        {% endif %} -->
+
+        {% include "./header.html" %}
+
+        <!----------------->
+        <!-- Page Content-->
+        <!----------------->
+        <div class="content mt-8">
+            <h2 class="lh-sm text-center fw-medium">Login</h2>
+            <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="250"
+                class="d-none d-sm-block mx-auto" />
+            <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="180"
+                class="d-block d-sm-none mx-auto" />
+
+            <div class="row mb-9 g-4">
+                <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4 col-xxl-3 mx-auto">
+                    <div class="card-body p-0">
+                        <div class="p-4 code-to-copy">
+                            <div class="card theme-wizard mb-5">
+
+                                <div class="card-body py-4">
+                                    <div class="tab-content">
+
+                                        <div class="tab-pane active" role="tabpanel">
+                                            <form method="post" action="{% url 'login' %}">
+                                                {% csrf_token %}
+
+                                                <div class="mb-3 mt-3">
+                                                    <label class="form-label mb-2">Enter username of email</label>
+                                                    {{ form.email_or_username }}
+                                                </div>
+                                                <div class="mb-4">
+                                                    <label class="form-label mb-2">Enter password</label>
+                                                    {{ form.password }}
+                                                </div>
+                                                <div class="mb-5 d-flex justify-content-between">
+                                                    <div>
+                                                        {{ form.remember_me }}
+                                                        <label for="id_remember_me" class="form-check-label ms-1">Remember
+                                                            me</label>
+                                                    </div>
+                                                    <div>
+                                                        <!-- TODO: Implement password reset functionality -->
+                                                        <a href="#" class="fs-9">Forgot password?</a>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-5 text-center">
+                                                    <button type="submit"
+                                                        class="btn btn-primary px-6 px-sm-6 container">Sign
+                                                        In</button>
+                                                </div>
+                                                <div class="my-3 text-center">
+                                                    <!-- TODO: Social Auth Integration -->
+                                                    <button type="button"
+                                                        class="container btn btn-outline-primary px-6 px-sm-6"><span
+                                                            class="me-1"><i
+                                                                class="fa-brands fa-google fa-lg"></i></span>Sign
+                                                        In With Google</button>
+                                                </div>
+                                                <div class="mt-5 mb-3 text-center">
+                                                    <p class="fs-9">Don't have an account? <a
+                                                            href="{% url 'register' %}">Sign Up</a></p>
+                                                </div>
+
+                                                <input type="hidden" name="next" value="{{ next }}">
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include "mysite/footer.html" %}
+        </div>
+
+        <script>
+            var navbarTopStyle = window.config.config.phoenixNavbarTopStyle;
+            var navbarTop = document.querySelector('.navbar-top');
+            if (navbarTopStyle === 'darker') {
+                navbarTop.setAttribute('data-navbar-appearance', 'darker');
+            }
+
+            var navbarVerticalStyle = window.config.config.phoenixNavbarVerticalStyle;
+            var navbarVertical = document.querySelector('.navbar-vertical');
+            if (navbarVertical && navbarVerticalStyle === 'darker') {
+                navbarVertical.setAttribute('data-navbar-appearance', 'darker');
+            }
+        </script>
+
+    </main>
+
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <script src="{% static 'vendors/popper/popper.min.js' %}"></script> <!-- For popups and dropdowns -->
+    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script> <!-- Main Bootstrap js code -->
+    <script src="{% static 'vendors/anchorjs/anchor.min.js' %}"></script>
+    <!-- Creates anchors automatically in headers -->
+    <script src="{% static 'vendors/is/is.min.js' %}"></script> <!-- For validation and type checking -->
+    <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script> <!-- Icons -->
+    <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
+    <!-- Provides methods for manipulating arrays, objects, and other types of data -->
+    <script src="{% static 'vendors/list.js/list.min.js' %}"></script>
+    <!-- Adds search, sort, and filter to HTML lists/tables -->
+    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script> <!-- SVG icons -->
+    <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script> <!-- For date and time -->
+    <script src="{% static 'assets/js/phoenix.js' %}"></script>
+
+    <!-- <script src="{% static 'vendors/leaflet/leaflet.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/leaflet.markercluster/leaflet.markercluster.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/leaflet.tilelayer.colorfilter/leaflet-tilelayer-colorfilter.min.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/js/dashboards/ecommerce-dashboard.js' %}"></script> -->
+    <!-- <script src="{% static 'vendors/flatpickr/flatpickr.min.js' %}"></script>  -->
+    <!-- <script src="{% static 'assets/js/pages/project-details.js' %}"></script> -->
+
+</body>
+
+</html>
