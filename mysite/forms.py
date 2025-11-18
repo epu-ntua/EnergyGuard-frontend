@@ -1,4 +1,5 @@
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django import forms
 from core.models import User, Profile, PaymentMethod
@@ -58,14 +59,18 @@ class PaymentWizardForm(forms.ModelForm):
             'cvv': forms.TextInput(attrs={'class': 'form-control'})
         }
 
-class AuthenticationForm(forms.Form):
-    email_or_username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com or username'})
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '*********'})
-    )
+class CustomAuthenticationForm(AuthenticationForm):
     remember_me = forms.BooleanField(
         required=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['username'].widget.attrs.update(
+            {'class': 'form-control', 'placeholder': 'name@example.com or username'}
+        )
+        self.fields['password'].widget.attrs.update(
+            {'class': 'form-control', 'placeholder': '*********'}
+        )
