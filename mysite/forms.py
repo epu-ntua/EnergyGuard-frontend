@@ -57,4 +57,15 @@ class PaymentWizardForm(forms.ModelForm):
             'expiration_year' : forms.TextInput(attrs={'placeholder': 'YY', 'class': 'form-control'}),
             'cvv': forms.TextInput(attrs={'class': 'form-control'})
         }
-        
+
+class AuthenticationForm(forms.Form):
+    email_or_username = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com or username'})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '*********'})
+    )
+    remember_me = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
