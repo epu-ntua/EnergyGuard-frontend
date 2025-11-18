@@ -1,8 +1,8 @@
 from core.models import User, Profile, Dataset, Billing, PaymentMethod
-from mysite.forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm
+from mysite.forms import *
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.db.models.aggregates import Sum
 from django.db import transaction
@@ -170,3 +170,23 @@ def registration_success(request):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
     return render(request, 'mysite/registration-success.html', {"wizard": wizard})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            identifier = form.cleaned_data['email_or_username']
+            pwd = form.cleaned_data['password']
+            user = authenticate(request, username=identifier, password=pwd)
+            if not user:
+                try:
+                    u = User.objects.get(username=identifier)
+                    user = authenticate(request, username=u.email, password=pwd)
+                except User.DoesNotExist:
+                    pass
+            if user:
+                login(request, user)
+                return redirect('home')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'mysite/login.html', {'form': form})
