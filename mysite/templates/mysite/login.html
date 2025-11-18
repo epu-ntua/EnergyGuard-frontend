@@ -103,8 +103,8 @@
                                                 {% csrf_token %}
 
                                                 <div class="mb-3 mt-3">
-                                                    <label class="form-label mb-2">Enter username of email</label>
-                                                    {{ form.email_or_username }}
+                                                    <label class="form-label mb-2">Enter username or email</label>
+                                                    {{ form.username }}
                                                 </div>
                                                 <div class="mb-4">
                                                     <label class="form-label mb-2">Enter password</label>
@@ -113,14 +113,22 @@
                                                 <div class="mb-5 d-flex justify-content-between">
                                                     <div>
                                                         {{ form.remember_me }}
-                                                        <label for="id_remember_me" class="form-check-label ms-1">Remember
-                                                            me</label>
+                                                        <label for="id_remember_me"
+                                                            class="form-check-label ms-1">Remember me</label>
                                                     </div>
                                                     <div>
                                                         <!-- TODO: Implement password reset functionality -->
                                                         <a href="#" class="fs-9">Forgot password?</a>
                                                     </div>
                                                 </div>
+
+                                                {% if form.non_field_errors %}
+                                                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">
+                                                    {% for error in form.non_field_errors %}
+                                                    {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
 
                                                 <div class="mt-5 text-center">
                                                     <button type="submit"
@@ -142,9 +150,7 @@
 
                                                 <input type="hidden" name="next" value="{{ next }}">
                                             </form>
-
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
