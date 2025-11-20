@@ -1,4 +1,4 @@
-from core.models import User, Profile, Dataset, Billing, PaymentMethod
+from core.models import User, Profile, Dataset, Billing, PaymentMethod, Experiment
 from mysite.forms import *
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
@@ -57,6 +57,21 @@ def experiments_list(request):
     filtered_data = p.get_page(page_number)
 
     return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
+
+def experiment_details(request, experiment_id):
+
+    experiment = Experiment.objects.filter(pk=experiment_id).first()
+
+    experiment_details = {
+        "name": experiment.name,
+        "start_date": experiment.created_at,
+        "last_update": experiment.updated_at,
+        "status": experiment.status,
+        "description": experiment.description,
+        "progress": experiment.progress,
+        "type": experiment.get_exp_type_display(),
+    }
+    return render(request, 'mysite/experiment_details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
 def datasets_list(request):
 
