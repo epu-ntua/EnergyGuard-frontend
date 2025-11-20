@@ -156,7 +156,10 @@ class RegistrationWizard(SessionWizardView):
         with transaction.atomic(): 
             user = User.objects.create_user(    # create_user method handles password hashing
                 email=user_data['email'],
-                username=user_data['username'],
+                # Auto-generate username from email for AbstractUser compatibility
+                username=user_data['email'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
                 password=user_data['password1'],
                 membership=membership_selected,
                 credits=credits_amount
