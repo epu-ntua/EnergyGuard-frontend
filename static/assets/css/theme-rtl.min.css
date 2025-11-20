@@ -42,7 +42,7 @@
   --phoenix-danger: #fa3b1d;
   --phoenix-light: #eff2f6;
   --phoenix-dark: #141824;
-  --phoenix-primary-rgb: 56, 116, 255;
+  --phoenix-primary-rgb: 79, 212, 241;
   --phoenix-secondary-rgb: 49, 55, 74;
   --phoenix-success-rgb: 37, 176, 3;
   --phoenix-info-rgb: 0, 151, 235;
@@ -99,7 +99,7 @@
   --phoenix-tertiary-bg-rgb: 203, 208, 221;
   --phoenix-heading-color: var(--phoenix-emphasis-color);
   --phoenix-link-color: #4fd4f1;
-  --phoenix-link-color-rgb: 56, 116, 255;
+  --phoenix-link-color-rgb: 79, 212, 241;
   --phoenix-link-decoration: none;
   --phoenix-link-hover-color: #003cc7;
   --phoenix-link-hover-color-rgb: 0, 60, 199;
@@ -124,7 +124,7 @@
   --phoenix-box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.075);
   --phoenix-focus-ring-width: 0.25rem;
   --phoenix-focus-ring-opacity: 0.25;
-  --phoenix-focus-ring-color: rgba(56, 116, 255, 0.25);
+  --phoenix-focus-ring-color: rgba(79, 212, 241, 0.25);
   --phoenix-form-valid-color: #25b003;
   --phoenix-form-valid-border-color: #25b003;
   --phoenix-form-invalid-color: #fa3b1d;
@@ -172,9 +172,9 @@
   --phoenix-light-border-subtle: #141824;
   --phoenix-dark-border-subtle: #3e465b;
   --phoenix-heading-color: var(--phoenix-emphasis-color);
-  --phoenix-link-color: #85a9ff;
+  --phoenix-link-color: #4fd4f1;
   --phoenix-link-hover-color: #85a9ff;
-  --phoenix-link-color-rgb: 133, 169, 255;
+  --phoenix-link-color-rgb: 79, 212, 241;
   --phoenix-link-hover-color-rgb: 133, 169, 255;
   --phoenix-code-color: #d63384;
   --phoenix-highlight-color: #9fa6bc;
@@ -444,7 +444,7 @@
   --phoenix-info-dark: #60c6ff;
   --phoenix-info-darker: #60c6ff;
   --phoenix-primary-lighter-rgb: 0, 60, 199;
-  --phoenix-primary-light-rgb: 56, 116, 255;
+  --phoenix-primary-light-rgb: 79, 212, 241;
   --phoenix-primary-dark-rgb: 133, 169, 255;
   --phoenix-primary-darker-rgb: 133, 169, 255;
   --phoenix-warning-lighter-rgb: 188, 56, 3;
@@ -643,10 +643,10 @@
 }
 [data-bs-theme=dark] .btn-subtle-primary {
   --phoenix-btn-color: #85a9ff;
-  --phoenix-btn-bg: rgba(56, 116, 255, 0.14);
-  --phoenix-btn-border-color: rgba(56, 116, 255, 0.14);
+  --phoenix-btn-bg: rgba(79, 212, 241, 0.14);
+  --phoenix-btn-border-color: rgba(79, 212, 241, 0.14);
   --phoenix-btn-hover-color: #85a9ff;
-  --phoenix-btn-hover-bg: rgba(56, 116, 255, 0.2);
+  --phoenix-btn-hover-bg: rgba(79, 212, 241, 0.2);
   --phoenix-btn-hover-border-color: rgba(175, 199, 255, 0.226);
   --phoenix-btn-focus-shadow-rgb: 110, 153, 255;
   --phoenix-btn-active-color: #000000;
@@ -654,8 +654,8 @@
   --phoenix-btn-active-border-color: rgba(175, 199, 255, 0.226);
   --phoenix-btn-active-shadow: initial;
   --phoenix-btn-disabled-color: #fff;
-  --phoenix-btn-disabled-bg: rgba(56, 116, 255, 0.14);
-  --phoenix-btn-disabled-border-color: rgba(56, 116, 255, 0.14);
+  --phoenix-btn-disabled-bg: rgba(79, 212, 241, 0.14);
+  --phoenix-btn-disabled-border-color: rgba(79, 212, 241, 0.14);
 }
 [data-bs-theme=dark] .btn-subtle-secondary {
   --phoenix-btn-color: #cbd0dd;
@@ -3815,8 +3815,8 @@ textarea.form-control-lg {
 .form-select:focus {
   border-color: #4fd4f1;
   outline: 0;
-  -webkit-box-shadow: inset 0 1px 2px transparent, 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
-  box-shadow: inset 0 1px 2px transparent, 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
+  -webkit-box-shadow: inset 0 1px 2px transparent, 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
+  box-shadow: inset 0 1px 2px transparent, 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
 }
 .form-select[multiple], .form-select[size]:not([size="1"]) {
   padding-left: 1rem;
@@ -3904,8 +3904,8 @@ textarea.form-control-lg {
 .form-check-input:focus {
   border-color: #4fd4f1;
   outline: 0;
-  -webkit-box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
-  box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
+  -webkit-box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
 }
 .form-check-input:checked {
   background-color: #4fd4f1;
@@ -5453,8 +5453,8 @@ textarea.form-control-lg {
 }
 .nav-link:focus-visible {
   outline: 0;
-  -webkit-box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
-  box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
+  -webkit-box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
 }
 .nav-link.disabled, [data-list] li.disabled button.nav-link,
 .table-list li.disabled button.nav-link, .nav-link:disabled {
@@ -6562,7 +6562,7 @@ textarea.form-control-lg {
   --phoenix-pagination-hover-border-color: var(--phoenix-border-color);
   --phoenix-pagination-focus-color: var(--phoenix-link-hover-color);
   --phoenix-pagination-focus-bg: var(--phoenix-secondary-bg);
-  --phoenix-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
+  --phoenix-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
   --phoenix-pagination-active-color: #fff;
   --phoenix-pagination-active-bg: #4fd4f1;
   --phoenix-pagination-active-border-color: #4fd4f1;
@@ -7141,7 +7141,7 @@ textarea.form-control-lg {
   --phoenix-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
   --phoenix-btn-close-opacity: 0.5;
   --phoenix-btn-close-hover-opacity: 0.75;
-  --phoenix-btn-close-focus-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25);
+  --phoenix-btn-close-focus-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25);
   --phoenix-btn-close-focus-opacity: 1;
   --phoenix-btn-close-disabled-opacity: 0.25;
   --phoenix-btn-close-white-filter: invert(1) grayscale(100%) brightness(200%);
@@ -23316,7 +23316,7 @@ fieldset:disabled .table-list .page,
   --phoenix-btn-hover-color: #fff;
   --phoenix-btn-hover-bg: #4fd4f1;
   --phoenix-btn-hover-border-color: #4fd4f1;
-  --phoenix-btn-focus-shadow-rgb: 56, 116, 255;
+  --phoenix-btn-focus-shadow-rgb: 79, 212, 241;
   --phoenix-btn-active-color: #fff;
   --phoenix-btn-active-bg: #4fd4f1;
   --phoenix-btn-active-border-color: #4fd4f1;
@@ -24100,8 +24100,8 @@ fieldset:disabled .table-list .page,
 
 .card-form-check-input:checked + div .card {
   border: 1px solid var(--phoenix-primary-light);
-  -webkit-box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
-  box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
+  -webkit-box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
+  box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
 }
 .card-form-check-input:checked + div .card .radio-circle {
   border: 5px solid var(--phoenix-primary);
@@ -25328,8 +25328,8 @@ pre[class*=language-] {
 .is-open .choices__inner {
   border-radius: 0.375rem !important;
   border-color: #4fd4f1 !important;
-  -webkit-box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25) !important;
-  box-shadow: 0 0 0 0.25rem rgba(56, 116, 255, 0.25) !important;
+  -webkit-box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25) !important;
+  box-shadow: 0 0 0 0.25rem rgba(79, 212, 241, 0.25) !important;
   outline: 0;
 }
 
@@ -37849,8 +37849,8 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
 .files-container .file-box-wrapper .form-check-input:checked + .file-box {
   background-color: var(--phoenix-primary-bg-subtle);
   border: 1px solid var(--phoenix-primary) !important;
-  -webkit-box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
-  box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
+  -webkit-box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
+  box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
 }
 .files-container .file-box-wrapper .file-box {
   display: -webkit-box;
@@ -37970,8 +37970,8 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
 .my-files-table [data-bulk-select-row=data-bulk-select-row]:checked + .square-icon-box {
   background-color: var(--phoenix-primary-bg-subtle);
   border: 1px solid var(--phoenix-primary) !important;
-  -webkit-box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
-  box-shadow: 0px 0px 0px 4px rgba(56, 116, 255, 0.2);
+  -webkit-box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
+  box-shadow: 0px 0px 0px 4px rgba(79, 212, 241, 0.2);
 }
 
 .myfiles-action-bar {
