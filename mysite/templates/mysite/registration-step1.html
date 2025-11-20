@@ -12,18 +12,28 @@
             {{ wizard.management_form }}
 
             <div class="mb-2">
-                <label class="form-label text-body">Email*</label>
-                {{ wizard.form.email }}
-                {% if wizard.form.errors.email %}
-                    <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.email }}</div>
+                <label class="form-label text-body">First Name</label>
+                {{ wizard.form.first_name }}
+                {% if wizard.form.errors.first_name %}
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.first_name }}
+                </div>
                 {% endif %}
             </div>
 
             <div class="mb-2">
-                <label class="form-label text-body">Username</label>
-                {{ wizard.form.username }}
-                {% if wizard.form.errors.username %}
-                    <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.username }}</div>
+                <label class="form-label text-body">Last Name</label>
+                {{ wizard.form.last_name }}
+                {% if wizard.form.errors.last_name %}
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.last_name }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label text-body">Email*</label>
+                {{ wizard.form.email }}
+                {% if wizard.form.errors.email %}
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.email }}</div>
                 {% endif %}
             </div>
 
@@ -41,15 +51,18 @@
                     </div>
                 </div>
                 {% if wizard.form.errors.password2 %}
-                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.password2 }}</div>
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.password2 }}
+                </div>
                 {% endif %}
 
             </div>
 
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="terms" required="required" id="bootstrap-wizard-validation-wizard-checkbox" />
+                <input class="form-check-input" type="checkbox" name="terms" required="required"
+                    id="bootstrap-wizard-validation-wizard-checkbox" />
                 <!-- TODO: Link to actual terms and privacy policy pages -->
-                <label class="form-check-label text-body" for="bootstrap-wizard-validation-wizard-checkbox">I accept the <a href="#!">terms </a>and <a href="#!">privacy policy</a></label>
+                <label class="form-check-label text-body" for="bootstrap-wizard-validation-wizard-checkbox">I accept the
+                    <a href="#!">terms </a>and <a href="#!">privacy policy</a></label>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
