@@ -11,14 +11,13 @@ class User(AbstractUser):
         FREE = 'free', 'Free'
         PAID = 'paid', 'Paid'
 
-    username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     updated_at = models.DateTimeField(auto_now = True)
     membership = models.CharField(max_length=4, choices=Membership, default=Membership.FREE)
     credits = models.PositiveIntegerField(default=0)
 
     USERNAME_FIELD = 'email' # Use email to log in
-    REQUIRED_FIELDS = ['username']  # Username is still required when creating superuser
+    REQUIRED_FIELDS = []  
 
     def __str__(self):
         return self.email
@@ -27,7 +26,7 @@ class User(AbstractUser):
         # db_table = 'user'
         verbose_name = 'User'
         verbose_name_plural = 'Users'
-        ordering = ['username']
+        ordering = ['last_name', 'first_name']
         indexes = [models.Index(fields=['email']),] # Index on email for faster lookups
 
 class Profile(models.Model):
@@ -39,13 +38,13 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username}'s Profile"
+        return f"{self.user.last_name}, {self.user.first_name}'s Profile"
     
     class Meta:
         db_table = 'profile'
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
-        ordering = ['user__username']
+        ordering = ['user__last_name', 'user__first_name']
         indexes = [models.Index(fields=['user']),]  # Index on user for faster lookups
 
 # Abstract class for automatic time tracking - To be inherited
