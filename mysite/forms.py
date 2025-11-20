@@ -3,13 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django import forms
 from core.models import User, Profile, PaymentMethod
-from .validators import strict_email_user_validator, strict_username_validator
+from .validators import strict_email_user_validator
 
 
 class UserWizardForm(UserCreationForm):
     class Meta(UserCreationForm.Meta): # Inherit from UserCreationForm's Meta, which says not to use default forms.CharField for username. Use UsernameField instead.
         model = User
-        fields = ('email', 'username')
+        fields = ('email', 'first_name', 'last_name')
 
         """widgets = {
             'email': forms.EmailInput(attrs={'placeholder': 'e.g., yourname@example.com', 'class': 'form-control'}),
@@ -21,9 +21,8 @@ class UserWizardForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['email'].validators.append(strict_email_user_validator)
-        self.fields['username'].validators.append(strict_username_validator)
 
-        for name in ['username', 'email', 'password1', 'password2']:
+        for name in ['first_name', 'last_name', 'email', 'password1', 'password2']:
             if name in self.fields:
                 css_classes = self.fields[name].widget.attrs.get('class', '')
                 self.fields[name].widget.attrs['class'] = (css_classes + ' form-control').strip()
@@ -69,7 +68,7 @@ class CustomAuthenticationForm(AuthenticationForm):
         super().__init__(*args, **kwargs)
 
         self.fields['username'].widget.attrs.update(
-            {'class': 'form-control', 'placeholder': 'name@example.com or username'}
+            {'class': 'form-control', 'placeholder': 'name@example.com'}
         )
         self.fields['password'].widget.attrs.update(
             {'class': 'form-control', 'placeholder': '*********'}
