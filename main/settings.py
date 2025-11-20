@@ -136,3 +136,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
+# Some browsers (Chrome, for example) provide settings that allow users to continue browsing sessions after
+# closing and reopening the browser. In some cases, this can interfere with the SESSION_EXPIRE_AT_BROWSER_CLOSE
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+#Default: 1209600 (2 weeks, in seconds
+SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
