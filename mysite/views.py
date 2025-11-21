@@ -60,7 +60,13 @@ def experiments_list(request):
 
 def experiment_details(request, experiment_id):
 
-    experiment = Experiment.objects.filter(pk=experiment_id).first()
+    # Optimize query
+    experiment = (
+        Experiment.objects
+        .select_related('creator')
+        .prefetch_related('collaborators__profile')
+        .get(pk=experiment_id)
+)
 
     experiment_details = {
         "name": experiment.name,
@@ -70,6 +76,8 @@ def experiment_details(request, experiment_id):
         "description": experiment.description,
         "progress": experiment.progress,
         "type": experiment.get_exp_type_display(),
+        "id": experiment_id,
+        "collaborators": experiment.collaborators.all(),
     }
     return render(request, 'mysite/experiment_details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
