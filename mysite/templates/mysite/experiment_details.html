@@ -7,7 +7,7 @@
 
 <div class="content px-0 pt-navbar">
   <div class="row g-0">
-    <div class="col-12 col-xxl-8 px-0 bg-body">
+    <div class="col-12 col-xxl-8 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-5">
           <div class="d-flex justify-content-between">
@@ -25,13 +25,13 @@
           </div>
 
           {% if exp.status == 'completed' %}
-            <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">COMPLETED</span><span class="ms-1" data-feather="check" style="height:12.8px;width:12.8px;"></span></span>
+            <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">COMPLETED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
           {% elif exp.status == 'inactive' %}
-            <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">INACTIVE</span><span class="ms-1" data-feather="minus" style="height:12.8px;width:12.8px;"></span></span>
+            <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">INACTIVE</span><span class="ms-1" data-feather="slash" style="height:14px;width:14px;"></span></span>
           {% elif exp.status == 'cancelled' %}
-            <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">CANCELLED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
+            <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">CANCELLED</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
           {% elif exp.status == 'ongoing' %}
-            <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
+            <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
           {% endif %}
 
         </div>
@@ -118,8 +118,8 @@
           <div class="col-12 col-xl-9 col-xxl-8">
             <div class="row flex-between-center mb-3 g-3">
               <div class="col-auto">
-                <h4 class="text-body-emphasis">Task completed over time</h4>
-                <p class="text-body-tertiary mb-0">Hard works done across all projects</p>
+                <h4 class="text-body-emphasis">GPU usage over time</h4>
+                <p class="text-body-tertiary mb-0">Overall GPU usage last month</p>
               </div>
               <div class="col-8 col-sm-4">
                 <select class="form-select form-select-sm">
@@ -130,6 +130,9 @@
               </div>
             </div>
             <div class="echart-completed-task-chart" style="min-height:200px;width:100%"></div>
+            <div class="mt-4 text-end">
+              <a href="#"><button type="button" class="btn btn-info p-1">View usage statistics</button></a>
+            </div>
           </div>
           <!-- Trustworthy graph -->
           <div class="col-12 col-sm-5 col-lg-4 col-xl-3 col-xxl-4">
@@ -145,7 +148,7 @@
                   <div class="col">
                     <div class="d-flex align-items-center">
                       <div class="bullet-item me-2 bg-primary"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Shantinan Mekalan</h6>
+                      <h6 class="text-body fw-semibold flex-1 mb-0">Cybersecurity</h6>
                     </div>
                   </div>
                   <div class="col-auto">
@@ -156,7 +159,7 @@
                   <div class="col">
                     <div class="d-flex align-items-center">
                       <div class="bullet-item me-2 bg-primary-lighter"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Makena Zikonn</h6>
+                      <h6 class="text-body fw-semibold flex-1 mb-0">Explainability</h6>
                     </div>
                   </div>
                   <div class="col-auto">
@@ -167,7 +170,7 @@
                   <div class="col">
                     <div class="d-flex align-items-center">
                       <div class="bullet-item me-2 bg-info"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Meena Kumari</h6>
+                      <h6 class="text-body fw-semibold flex-1 mb-0">Bias</h6>
                     </div>
                   </div>
                   <div class="col-auto">
@@ -261,17 +264,14 @@
               {% endfor %}
             </div>
 
-            <h4 class="text-body-emphasis mb-4">Tags</h4><span
-              class="badge badge-tag me-2 mb-1">Unused_brain</span><span
-              class="badge badge-tag me-2 mb-1">Machine</span><span class="badge badge-tag me-2 mb-1">Coding</span><span
-              class="badge badge-tag me-2 mb-1">Meseeks</span><span
-              class="badge badge-tag me-2 mb-1">Smithpeople</span><span
-              class="badge badge-tag me-2 mb-1">Rick</span><span class="badge badge-tag me-2 mb-1">Biology</span><span
-              class="badge badge-tag me-2 mb-1">Neurology</span><span
-              class="badge badge-tag me-2 mb-1">Brainlessness</span><span
-              class="badge badge-tag me-2 mb-1">Stupidity</span><span
-              class="badge badge-tag me-2 mb-1">Jerry</span><span class="badge badge-tag me-2 mb-1">Not
-              _the_mouse</span>
+            <h4 class="text-body-emphasis mb-4">Tags</h4>
+            <span class="badge badge-tag me-2 mb-1">Forecast</span>
+            <span class="badge badge-tag me-2 mb-1">AI</span>
+            <span class="badge badge-tag me-2 mb-1">Coding</span>
+            <span class="badge badge-tag me-2 mb-1">Coding</span>
+            <span class="badge badge-tag me-2 mb-1">Load</span>
+            <span class="badge badge-tag me-2 mb-1">Prediction</span>
+            <span class="badge badge-tag me-2 mb-1">LLM</span>
           </div>
         </div>
         <h3 class="text-body-emphasis mb-4">Project overview</h3>
@@ -281,7 +281,9 @@
         </p>
       </div>
     </div>
-    <div class="col-12 col-xxl-4 px-0 border-start-xxl border-top-sm">
+
+    <!-- Recent activity and files -->
+    <!-- <div class="col-12 col-xxl-4 px-0 border-start-xxl border-top-sm">
       <div class="bg-light dark__bg-gray-1100 h-100">
         <div class="p-4 p-lg-6">
           <h3 class="text-body-highlight mb-4 fw-bold">Recent activity</h3>
@@ -430,7 +432,8 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
+
   </div>
 </div>
 {% endblock %}
