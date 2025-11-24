@@ -5,13 +5,6 @@
 
 {% block content %}
 <div class="content">
-    <!-- <nav class="mb-3" aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="#!">Page 1</a></li>
-        <li class="breadcrumb-item"><a href="#!">Page 2</a></li>
-        <li class="breadcrumb-item active">Default</li>
-        </ol>
-    </nav> -->
     <div class="mb-9">
 
         <!-- HEADER -->
@@ -31,7 +24,7 @@
             <li class="nav-item"><a class="nav-link {%if status_filter == 'deleted' %}active{% endif %}" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
 
         </ul>
-        <div id="orderTable" data-list='{"valueNames":["experiment_name","collaborators","start_date","updated","type","exp_progress","status"],"page":2,"pagination":true}'>
+        <div id="orderTable">
             
             <!-- SEARCH AND FILTERS -->
             <div class="mb-4">
@@ -40,7 +33,7 @@
                     <div class="col-auto">
                         <div class="search-box">
                             <form class="position-relative">
-                                <input class="form-control search-input search" type="search" placeholder="Search orders" aria-label="Search" />
+                                <input class="form-control search-input search" type="search" placeholder="Search experiments" aria-label="Search" />
                                 <span class="fas fa-search search-box-icon"></span>
 
                             </form>
@@ -90,22 +83,22 @@
                             <tr>
                                 <th class="white-space-nowrap fs-9 align-middle ps-0" style="width:26px;">
                                     <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" id="checkbox-bulk-order-select" type="checkbox" data-bulk-select='{"body":"experiments-table-body"}' />
+                                        <input class="form-check-input" type="checkbox"/>
                                     </div>
                                 </th>
-                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" data-sort="experiment_name" style="width:25%;">
+                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:25%;">
                                     <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
                                 </th>
-                                <th class="sort align-middle text-start" scope="col" data-sort="collaborators" style="width:15%;">COLLABORATORS</th>
-                                <th class="sort align-middle text-end" scope="col" data-sort="start_date" style="width:12%;">
+                                <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:12%;">
                                     <a href="?{% query_string 'sort' %}sort=start_date">START DATE</a>
                                 </th>
                                 <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:12%;">
                                     <a href="?{% query_string 'sort' %}sort=last_update">UPDATED</a>
                                 </th>
-                                <th class="sort align-middle text-end" scope="col" data-sort="type" style="width:8%; min-width: 100px;">TYPE</th>
-                                <th class="sort align-middle text-end" scope="col" data-sort="exp_progress" style="width:13%;">PROGRESS</th>
-                                <th class="sort align-middle text-end" scope="col" data-sort="status" >STATUS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:13%;">PROGRESS</th>
+                                <th class="sort align-middle text-end" scope="col">STATUS</th>
                             </tr>
                         </thead>
                         <tbody class="list" id="experiments-table-body">
@@ -113,17 +106,16 @@
                             <tr class="hover-actions-trigger btn-reveal-trigger position-static">
                                 <td class="fs-9 align-middle px-0 py-3">
                                     <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox" data-bulk-select-row='{"experiment_name": "{{ exp.name }}"","collaborators":"{{ exp.artifact_uri }}",\
-                                        "start_date":"{{ exp.start_date }}","updated":"{{ exp.last_update }}","type":"Type","exp_progress":"Progress bar","status":"{{ exp.status }}"}' />
+                                        <input class="form-check-input" type="checkbox" />
                                     </div>
                                 </td>
-                                <td class="experiment_name align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="https://mlflow.toolbox.epu.ntua.gr/#/experiments/{{ exp.id }}?searchFilter=&orderByKey=attributes.start_time&orderByAsc=false&startTime=ALL&lifecycleFilter=Active&modelVersionFilter=All+Runs&datasetsFilter=W10%3D">{{ exp.name }}</a></td>
-                                <td class="collaborators align-middle fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
-                                <td class="start_date align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
-                                <td class="updated align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
-                                <td class="type align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
-                                <td class="exp_progress align-middle white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
-                                <td class="status align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
+                                <td class="align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
+                                <td class="align-middle fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
+                                <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
+                                <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
                                     {% if exp.status == 'active' %}
                                         <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
                                     {% elif exp.status == 'deleted' %}

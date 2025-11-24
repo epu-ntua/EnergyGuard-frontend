@@ -5,13 +5,6 @@
 
 {% block content %}
 <div class="content">
-    <!-- <nav class="mb-3" aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="#!">Page 1</a></li>
-        <li class="breadcrumb-item"><a href="#!">Page 2</a></li>
-        <li class="breadcrumb-item active">Default</li>
-        </ol>
-    </nav> -->
     <div class="mb-9">
 
         <!-- HEADER -->
@@ -42,7 +35,7 @@
                     <div class="col-auto">
                         <div class="search-box">
                             <form class="position-relative">
-                                <input class="form-control search-input search" type="search" placeholder="Search orders" aria-label="Search" />
+                                <input class="form-control search-input search" type="search" placeholder="Search datasets" aria-label="Search" />
                                 <span class="fas fa-search search-box-icon"></span>
 
                             </form>
@@ -119,12 +112,11 @@
                             <tr class="hover-actions-trigger btn-reveal-trigger position-static">
                                 <td class="fs-9 align-middle px-0 py-3">
                                     <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox" data-bulk-select-row='{"dataset_name": "{{ d.name }}"","collaborators":"{{ d.users }}",\
-                                        "created_at":"{{ d.created_at }}","updated":"{{ d.updated_at }}","label":"{{ d.label }}","source":{{ d.source }},"status":"{{ d.status }}"}' />
+                                        <input class="form-check-input" type="checkbox"/>
                                     </div>
                                 </td>
-                                <td class="dataset_name align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="">{{ d.name }}</a></td>
-                                <td class="collaborators align-middle fw-semibold text-body-highlight">
+                                <td class="align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="">{{ d.name }}</a></td>
+                                <td class="align-middle fw-semibold text-body-highlight">
                                     {% for user in d.users.all %}
                                         {{ user.username }}{% if not forloop.last %}, {% endif %}
                                     {% endfor %}
@@ -132,11 +124,11 @@
                                         No collaborators
                                     {% endif %}
                                 </td>
-                                <td class="created_at align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.created_at|date:"M j, Y" }}</td>
-                                <td class="updated align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.updated_at|date:"M j, Y" }}</td>
-                                <td class="label align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.get_label_display }}</td>
-                                <td class="source align-middle white-space-nowrap text-body fs-9 ps-4 text-end">{{ d.get_source_display }}</td>
-                                <td class="status align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.created_at|date:"M j, Y" }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.updated_at|date:"M j, Y" }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ d.get_label_display }}</td>
+                                <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">{{ d.get_source_display }}</td>
+                                <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
                                     {% if d.status == 'published' %}
                                         <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
                                     {% elif d.status == 'private' %}
