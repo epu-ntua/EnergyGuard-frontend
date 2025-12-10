@@ -6,8 +6,10 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
 from django.db.models.aggregates import Sum
+from django.db.models import Q
 from django.db import transaction
 from django.conf import settings
+from django.http import JsonResponse
 from formtools.wizard.views import SessionWizardView
 from datetime import datetime
 import mlflow
@@ -56,7 +58,7 @@ def experiments_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
-    return render(request, 'mysite/experiments_list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
+    return render(request, 'mysite/experiments-list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
 def experiment_details(request, experiment_id):
 
@@ -79,19 +81,19 @@ def experiment_details(request, experiment_id):
         "id": experiment_id,
         "collaborators": experiment.collaborators.all(),
     }
-    return render(request, 'mysite/experiment_details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
+    return render(request, 'mysite/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
-def datasets_list(request):
+"""def datasets_list(request):
 
     data = Dataset.objects.all()
 
     # Number of all/published/private/restricted/under_review datasets
     counts = {
         "all": data.count(),
-        "published": data.filter(status="published").count,
-        "private": data.filter(status="private").count,
-        "restricted": data.filter(status="restricted").count,
-        "under_review": data.filter(status="under_review").count,
+        "published": data.filter(status="published").count(),
+        "private": data.filter(status="private").count(),
+        "restricted": data.filter(status="restricted").count(),
+        "under_review": data.filter(status="under_review").count(),
     }
     
     # Sort data according to column
@@ -109,7 +111,88 @@ def datasets_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)
 
-    return render(request, 'mysite/dataset_list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+    return render(request, 'mysite/dataset-list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets", "show_vertical_navbar": True})"""
+
+def datasets_list(request):
+    # DataTables AJAX branch
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
+        draw = int(request.GET.get("draw", 1))
+        start = int(request.GET.get("start", 0))
+        length = int(request.GET.get("length", 10))
+        search_value = request.GET.get("search[value]", "")
+        status_filter = request.GET.get("status")
+
+        order_col = request.GET.get("order[0][column]", "3")
+        order_dir = request.GET.get("order[0][dir]", "desc")
+        column_map = {
+            "1": "name",
+            "2": "users__first_name",
+            "3": "created_at",
+            "4": "updated_at",
+            "5": "label",
+            "6": "source",
+            "7": "status",
+        }
+        ordering = column_map.get(order_col, "created_at")
+        if order_dir == "desc":
+            ordering = f"-{ordering}"
+
+        qs = Dataset.objects.prefetch_related("users").all()
+        if status_filter in ["published", "private", "restricted", "under_review"]:
+            qs = qs.filter(status=status_filter)
+
+        records_total = qs.count()
+
+        if search_value:
+            qs = qs.filter(
+                Q(name__icontains=search_value)
+                | Q(label__icontains=search_value)
+                | Q(source__icontains=search_value)
+                | Q(status__icontains=search_value)
+                | Q(users__username__icontains=search_value)
+            ).distinct()
+
+        records_filtered = qs.count()
+        qs = qs.order_by(ordering)[start:start + length]
+
+        data = []
+        for d in qs:
+            collaborators = ", ".join(d.users.values_list("username", flat=True)) or "No collaborators"
+            data.append({
+                "id": d.id,
+                "name": d.name,
+                "users": collaborators,
+                "created_at": d.created_at.strftime("%b %d, %Y"),
+                "updated_at": d.updated_at.strftime("%b %d, %Y"),
+                "label": d.get_label_display(),
+                "source": d.get_source_display(),
+                "status": d.status,
+                "status_badge": f'<span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">{d.status.replace("_", " ").upper()}</span></span>',
+            })
+
+        return JsonResponse({
+            "draw": draw,
+            "recordsTotal": records_total,
+            "recordsFiltered": records_filtered,
+            "data": data,
+        })
+
+    # Initial page render (no paginator)
+    data = Dataset.objects.all()
+    counts = {
+        "all": data.count(),
+        "published": data.filter(status="published").count(),
+        "private": data.filter(status="private").count(),
+        "restricted": data.filter(status="restricted").count(),
+        "under_review": data.filter(status="under_review").count(),
+    }
+    status_filter = request.GET.get("status")
+    return render(request, "mysite/datasets-list.html", {
+        "dataset_num": counts,
+        "status_filter": status_filter,
+        "active_navbar_page": "datasets",
+        "show_vertical_navbar": True,
+    })
 
 def currency_format(value):
     if value == Billing.Currency.USD:
