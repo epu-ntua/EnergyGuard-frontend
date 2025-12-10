@@ -51,11 +51,6 @@
                     <table class="table table-sm fs-9 mb-0" id="datasetsList">
                         <thead>
                             <tr>
-                                <th class="white-space-nowrap fs-9 align-middle ps-0" style="width:26px;">
-                                    <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox" />
-                                    </div>
-                                </th>
                                 <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:25%;">
                                     <a href="">DATASET NAME</a>
                                 </th>
@@ -140,8 +135,6 @@ $(function () {
             type: "GET"
         },
         columns: [
-            { data: null, orderable: false, searchable: false,
-            render: () => '<input class="form-check-input" type="checkbox"/>' },
             { data: "name", render: data => `<a class="py-0" href="#">${data}</a>` },
             { data: "users" },
             { data: "created_at", className: "text-end" },
@@ -154,7 +147,7 @@ $(function () {
         createdRow: row => $('td', row).addClass('align-middle py-3'),
         layout: {
             topStart: null,     // Remove "pageLength" from the top left
-            topEnd: null,
+            topEnd: null,       // Remove "searchBox" from the top right
             bottomEnd: {
                 paging: {
                     boundaryNumbers: false,
