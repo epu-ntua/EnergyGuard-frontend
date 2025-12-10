@@ -1,0 +1,169 @@
+{% extends "mysite/base.html" %}
+
+{% block title %}Datasets List | EnergyGuard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="mb-9">
+
+        <!-- HEADER -->
+        <div class="row g-3 mb-4 ">
+            <div class="col-auto me-4">
+                <h2 class="mb-0">Datasets</h2>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary"><span class="fas fa-plus me-2"></span>Add new dataset</button>
+            </div>
+        </div>
+
+        <!-- SUBHEADER -->
+        <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
+            <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
+            <li class="nav-item"><a class="nav-link {%if status_filter == 'published' %}active{% endif %}" href="?status=published"><span>Published</span><span class="text-body-tertiary fw-semibold">({{dataset_num.published}})</span></a></li>
+            <li class="nav-item"><a class="nav-link {%if status_filter == 'private' %}active{% endif %}" href="?status=private"><span>Private </span><span class="text-body-tertiary fw-semibold">({{dataset_num.private}})</span></a></li>
+            <li class="nav-item"><a class="nav-link {%if status_filter == 'restricted' %}active{% endif %}" href="?status=restricted"><span>Restricted </span><span class="text-body-tertiary fw-semibold">({{dataset_num.restricted}})</span></a></li>
+            <li class="nav-item"><a class="nav-link {%if status_filter == 'under_review' %}active{% endif %}" href="?status=under_review"><span>Under Review </span><span class="text-body-tertiary fw-semibold">({{dataset_num.under_review}})</span></a></li>
+
+        </ul>
+        <div id="orderTable" >
+            
+            <!-- SEARCH BAR -->
+            <div class="mb-4">
+                <div class="row g-3">
+                    <div class="col-auto">
+                        <div class="search-box">
+                            <form class="position-relative" id="datasetSearchForm" onsubmit="return false;">
+                                <input id="datasetSearchInput" class="form-control search-input search" type="search" placeholder="Search datasets" aria-label="Search" />
+                                <span class="fas fa-search search-box-icon"></span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                <div class="table-responsive scrollbar mx-n1 px-1">
+                    <table class="table table-sm fs-9 mb-0" id="datasetsList">
+                        <thead>
+                            <tr>
+                                <th class="white-space-nowrap fs-9 align-middle ps-0" style="width:26px;">
+                                    <div class="form-check mb-0 fs-8">
+                                        <input class="form-check-input" type="checkbox" />
+                                    </div>
+                                </th>
+                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:25%;">
+                                    <a href="">DATASET NAME</a>
+                                </th>
+                                <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:10%;">
+                                    <a href="">CREATED</a>
+                                </th>
+                                <th class="sort align-middle text-end" scope="col" style="width:8%;">
+                                    <a href="">UPDATED</a>
+                                </th>
+                                <th class="sort align-middle text-end" scope="col" style="width:16%; min-width: 100px;">
+                                    <a href="">LABEL</a>
+                                </th>
+                                <th class="sort align-middle text-end" scope="col" style="width:14%;">
+                                    <a href="">SOURCE</a>
+                                </th>
+                                <th class="sort align-middle text-end" scope="col">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- {% for d in dataset %}
+                            <tr class="hover-actions-trigger btn-reveal-trigger position-static">
+                                <td class="fs-9 align-middle px-0 py-3">
+                                    <div class="form-check mb-0 fs-8">
+                                        <input class="form-check-input" type="checkbox"/>
+                                    </div>
+                                </td>
+                                <td class="align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="">{{ name }}</a></td>
+                                <td class="align-middle fw-semibold text-body-highlight">
+                                    {% for user in d.users.all %}
+                                        {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    {% if d.users.count == 0 %}
+                                        No collaborators
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ created_at|date:"M j, Y" }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ updated_at|date:"M j, Y" }}</td>
+                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ get_label_display }}</td>
+                                <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">{{ get_source_display }}</td>
+                                <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
+                                    {% if d.status == 'published' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% elif d.status == 'private' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">PRIVATE</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% elif d.status == 'restricted' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">RESTRICTED</span><span class="ms-1" data-feather="lock" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% elif d.status == 'under_review' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="eye" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %} -->
+                            
+                        </tbody>   
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+
+<script>
+$(function () {
+    
+    $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
+    const statusParam = new URLSearchParams(window.location.search).get('status') || '';
+
+    const table = $('#datasetsList').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{% url 'datasets_list' %}",
+            data: function (d) { d.status = statusParam; },
+            type: "GET"
+        },
+        columns: [
+            { data: null, orderable: false, searchable: false,
+            render: () => '<input class="form-check-input" type="checkbox"/>' },
+            { data: "name", render: data => `<a class="py-0" href="#">${data}</a>` },
+            { data: "users" },
+            { data: "created_at", className: "text-end" },
+            { data: "updated_at", className: "text-end" },
+            { data: "label", className: "text-end" },
+            { data: "source", className: "text-end" },
+            { data: "status_badge", className: "text-end", searchable: false }
+        ],
+        order: [[3, "desc"]], // Sort by column index 3 (created_at) descending.
+        createdRow: row => $('td', row).addClass('align-middle py-3'),
+        layout: {
+            topStart: null,
+            topEnd: null,
+            bottomEnd: {
+                paging: {
+                    boundaryNumbers: false,
+                }
+            }
+        }
+    });
+
+    $('#datasetSearchInput').on('keyup change', function () {
+        table.search(this.value).draw();
+    });
+
+});
+</script>
+{% endblock %}
