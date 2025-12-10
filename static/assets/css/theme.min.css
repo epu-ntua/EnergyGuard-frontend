@@ -101,8 +101,8 @@
   --phoenix-link-color: #4fd4f1;
   --phoenix-link-color-rgb: 79, 212, 241;
   --phoenix-link-decoration: none;
-  --phoenix-link-hover-color: #003cc7;
-  --phoenix-link-hover-color-rgb: 0, 60, 199;
+  --phoenix-link-hover-color: #4990aa;            /* modified */
+  --phoenix-link-hover-color-rgb: 73, 144, 170;   /* modified */
   --phoenix-link-hover-decoration: underline;
   --phoenix-code-color: #d63384;
   --phoenix-highlight-color: #31374a;
@@ -173,9 +173,9 @@
   --phoenix-dark-border-subtle: #3e465b;
   --phoenix-heading-color: var(--phoenix-emphasis-color);
   --phoenix-link-color: #4fd4f1;
-  --phoenix-link-hover-color: #85a9ff;
+  --phoenix-link-hover-color: #e0f2f7;
   --phoenix-link-color-rgb: 79, 212, 241;
-  --phoenix-link-hover-color-rgb: 133, 169, 255;
+  --phoenix-link-hover-color-rgb: 224, 242, 247;
   --phoenix-code-color: #d63384;
   --phoenix-highlight-color: #9fa6bc;
   --phoenix-highlight-bg: #664d03;
@@ -23204,9 +23204,9 @@ fieldset:disabled .table-list .page,
   --phoenix-btn-color: #fff;
   --phoenix-btn-bg: #4fd4f1;
   --phoenix-btn-border-color: transparent;
-  --phoenix-btn-hover-color: #fff;
-  --phoenix-btn-hover-bg: #004dff;
-  --phoenix-btn-hover-border-color: rgba(0, 0, 0, 0.2);
+  --phoenix-btn-hover-color: #4fd4f1;                     /* Changed from #000 to #4fd4f1 */
+  --phoenix-btn-hover-border-color: rgba(79, 212, 241);   /* Changed from rgba(0, 0, 0, 0.2) to rgba(79, 212, 241) */
+  --phoenix-btn-hover-bg: transparent                     /* Changed from #3ac0e8 to transparent */;
   --phoenix-btn-focus-shadow-rgb: 255, 255, 255;
   --phoenix-btn-active-color: #fff;
   --phoenix-btn-active-bg: #2d5dcc;
