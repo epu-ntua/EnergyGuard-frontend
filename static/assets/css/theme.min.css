@@ -38245,4 +38245,14 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
   width: 3rem;
   height: 3rem;
 }
+
+.dt-info {
+    font-size: 0.75rem;  
+}
+.dt-paging {
+    font-size: 0.8rem;  
+}
+/* .dt-paging-button {
+    font-size: 0.75rem;  
+} */
 /*# sourceMappingURL=theme.min.css.map */
