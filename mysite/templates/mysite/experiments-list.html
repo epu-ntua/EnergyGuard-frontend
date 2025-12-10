@@ -81,12 +81,7 @@
                     <table class="table table-sm fs-9 mb-0">
                         <thead>
                             <tr>
-                                <th class="white-space-nowrap fs-9 align-middle ps-0" style="width:26px;">
-                                    <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox"/>
-                                    </div>
-                                </th>
-                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:25%;">
+                                <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:25%;">
                                     <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
                                 </th>
                                 <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
@@ -104,18 +99,13 @@
                         <tbody class="list" id="experiments-table-body">
                             {% for exp in experiments %}
                             <tr class="hover-actions-trigger btn-reveal-trigger position-static">
-                                <td class="fs-9 align-middle px-0 py-3">
-                                    <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox" />
-                                    </div>
-                                </td>
-                                <td class="align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
-                                <td class="align-middle fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
-                                <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
-                                <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
+                                <td class="align-middle py-3 white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
+                                <td class="align-middle py-3 fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
+                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
+                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
+                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
+                                <td class="align-middle py-3 white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
+                                <td class="align-middle py-3 white-space-nowrap text-end fw-bold text-body-tertiary">
                                     {% if exp.status == 'active' %}
                                         <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
                                     {% elif exp.status == 'deleted' %}
