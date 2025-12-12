@@ -23217,6 +23217,23 @@ fieldset:disabled .table-list .page,
   --phoenix-btn-disabled-border-color: transparent;
 }
 
+.btn-purple {
+  --phoenix-btn-color: #fff;
+  --phoenix-btn-bg: #9483e8;
+  --phoenix-btn-border-color: transparent;
+  --phoenix-btn-hover-color: #fff;                     
+  --phoenix-btn-hover-border-color: rgba(159, 143, 235, 0.2);
+  --phoenix-btn-hover-bg: #9f8fff;
+  --phoenix-btn-focus-shadow-rgb: 159, 143, 235;
+  --phoenix-btn-active-color: #9f8fff;
+  --phoenix-btn-active-bg: #9f8fff;
+  --phoenix-btn-active-border-color: rgba(0, 0, 0, 0.25);
+  --phoenix-btn-active-shadow: initial;
+  --phoenix-btn-disabled-color: #fff;
+  --phoenix-btn-disabled-bg: #9483e8;
+  --phoenix-btn-disabled-border-color: transparent;
+}
+
 .btn-secondary {
   --phoenix-btn-color: #fff;
   --phoenix-btn-bg: #31374a;
