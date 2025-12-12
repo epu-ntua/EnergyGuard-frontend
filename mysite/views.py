@@ -293,3 +293,6 @@ def login_view(request):
         form = CustomAuthenticationForm()
 
     return render(request, 'mysite/login.html', {'form': form})
+
+def collaboration_hub(request):
+    return render(request, 'mysite/collaboration-hub..html', {"active_navbar_page": "collaboration_hub", "show_vertical_navbar": True})
