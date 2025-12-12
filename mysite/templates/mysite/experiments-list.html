@@ -18,14 +18,12 @@
         </div>
 
         <!-- SUBHEADER -->
-        <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-            <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
-            <li class="nav-item"><a class="nav-link {%if status_filter == 'active' %}active{% endif %}" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
-            <li class="nav-item"><a class="nav-link {%if status_filter == 'deleted' %}active{% endif %}" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
-
-        </ul>
-        <div id="orderTable">
-            
+         <div class="d-flex justify-content-between">
+            <ul class="nav nav-links mb-lg-2 mx-n3">
+                <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
+                <li class="nav-item"><a class="nav-link {%if status_filter == 'active' %}active{% endif %}" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
+                <li class="nav-item"><a class="nav-link {%if status_filter == 'deleted' %}active{% endif %}" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
+            </ul>
             <!-- SEARCH AND FILTERS -->
             <div class="mb-4">
                 <div class="row g-3">
@@ -75,7 +73,8 @@
                     </div> -->
                 </div>
             </div>
-
+        </div>
+        <div>
             <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                 <div class="table-responsive scrollbar mx-n1 px-1">
                     <table class="table table-sm fs-9 mb-0">
