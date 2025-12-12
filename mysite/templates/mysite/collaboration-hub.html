@@ -1,0 +1,89 @@
+{% extends "mysite/base.html" %}
+
+{% block title %}Collaboration Hub | EnergyGuard{% endblock %}
+
+{% block content %}   
+<div class="content px-0 pt-navbar">
+    <div class="row col-12 col-xxl-8 px-0 bg-body mx-auto">
+        <div class="px-4 px-lg-6 pt-6 pb-9">
+            <div class="mb-5">
+                <h2 class="text-body-emphasis fw-bolder mb-2">Collaboration Hub</h2>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mt-15">
+                    <h3>Forums</h3>
+                    <div class="ms-2 col-11">
+                        <!-- TODO: Implement link redirection -->
+                        <a href="#" class="card-link">
+                            <div class="card hover-actions-trigger mt-5">
+                                <div class="card-body pb-0 pt-3">
+                                    <h4 class="mb-2 lh-sm me-5 text-primary">AI and Ethics</h4>
+                                    <p>Discussion on fairness and bias in AI models</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- TODO: Implement link redirection -->
+                        <a href="#" class="card-link">
+                            <div class="card hover-actions-trigger mt-3">
+                                <div class="card-body pb-0 pt-3">
+                                    <h4 class="mb-2 lh-sm me-5 text-primary">Data Sharing</h4>
+                                    <p>Best practices for data anonymization</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- TODO: Implement link redirection -->
+                        <a href="#" class="card-link">
+                            <div class="card hover-actions-trigger mt-3">
+                                <div class="card-body pb-0 pt-3">
+                                    <h4 class="mb-2 lh-sm me-5 text-primary">Grid Optimization</h4>
+                                    <p>Strategies for AI-driven grid management</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-6 mt-15">
+                    <h3>Events</h3>
+                    <div class="ms-2 col-11">
+                        <!-- TODO: Implement link redirection -->
+                        <a href="#" class="card-link">
+                            <div class="card hover-actions-trigger mt-5">
+                                <div class="card-body pb-0 pt-3">
+                                    <h4 class="mb-2 lh-sm me-5 text-primary">Data Privacy Workshop</h4>
+                                    <p>Learn about privacy-preserving techniques for AI</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- TODO: Implement link redirection -->
+                        <a href="#" class="card-link">
+                            <div class="card hover-actions-trigger mt-3">
+                                <div class="card-body pb-0 pt-3">
+                                    <h4 class="mb-2 lh-sm me-5 text-primary">AI in Energy Hackathon</h4>
+                                    <p>Develop AI solutions for renewable energy management</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mt-10">
+                    <h3>Partner Matching</h3>
+                    <div class="ms-2 col-11">
+                        <div class="card hover-actions-trigger mt-5">
+                            <div class="card-body ">
+                                <p>Find collaboration opportunities with SMEs, researchers and companies through DeployAI’s Business Navigator based on your expertise and needs.</p>
+                                <!-- TODO: Add link -->
+                                <a href="#" class="btn btn-primary mt-3" target="_blank">Connect to DeployAI</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "mysite/footer.html" %}
+</div>
+
+
+{% endblock content %}
