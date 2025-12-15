@@ -76,16 +76,18 @@ def experiment_details(request, experiment_id):
         )
 
         experiment_details = {
-        "name": experiment.name,
-        "start_date": experiment.created_at,
-        "last_update": experiment.updated_at,
-        "status": experiment.status,
-        "description": experiment.description,
-        "progress": experiment.progress,
-        "type": experiment.get_exp_type_display(),
-        "id": experiment_id,
-        "collaborators": experiment.collaborators.all(),
-    }
+            "name": experiment.name,
+            "start_date": experiment.created_at,
+            "last_update": experiment.updated_at,
+            "status": experiment.status,
+            "description": experiment.description,
+            "progress": experiment.progress,
+            "type": experiment.get_exp_type_display(),
+            "id": experiment_id,
+            "collaborators": experiment.collaborators.all(),
+            "visibility": experiment.visibility,
+            "company": experiment.creator.profile.company if hasattr(experiment.creator, 'profile') else None
+        }
     except Experiment.DoesNotExist:
         return redirect('error_does_not_exist', error= "Experiment not found")  # or render an error page
     
@@ -229,7 +231,9 @@ def dataset_details(request, dataset_id):
             "status": dataset.status,
             "label": dataset.get_label_display(),
             "source": dataset.get_source_display(),
-            "collaborators": dataset.users.all()
+            "collaborators": dataset.users.all(),
+            "visibility": dataset.visibility,
+            "description": dataset.description,
         }
     else:
         return redirect('error_does_not_exist', error= "Dataset not found")

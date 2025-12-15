@@ -11,29 +11,38 @@
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-5">
           <div class="d-flex justify-content-between">
-            <h2 class="text-body-emphasis fw-bolder mb-2">{{ dt.name }}</h2>
-
-            <!-- TODO: Replace 3 Dots above graph -->
-            <div class="btn-reveal-trigger">
-              <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-                data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
-                data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-              <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
-                  class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
-                  href="#!">Download</a><a class="dropdown-item" href="#!">Report abuse</a></div>
+            <div>
+              <div class="d-flex justify-content-start mb-2">
+                <h2 class="text-body-emphasis fw-bolder me-5">{{ dt.name }}</h2>
+                <!-- TODO: Replace 3 Dots above graph -->
+                <div class="btn-reveal-trigger">
+                  <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                    data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
+                    data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
+                  <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
+                      class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
+                      href="#!">Download</a><a class="dropdown-item" href="#!">Report</a></div>
+                </div>
+              </div>
+              
+              <div>
+                {% if dt.status == 'published' %}
+                  <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
+                {% elif dt.status == 'restricted' %}
+                  <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">RESTRICTED</span><span class="ms-1" data-feather="slash" style="height:14px;width:14px;"></span></span>
+                {% elif dt.status == 'private' %}
+                  <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">PRIVATE</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
+                {% elif dt.status == 'under_review' %}
+                  <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="text-end">
+              <!-- <a href=""><button class="btn btn-danger py-2 px-3"><i class="fa-solid fa-download me-2"></i>Download</button></a> -->
+               <a href=""><button class="btn btn-subtle-info px-2" style="width:80%;"><i class="fa-solid fa-gears me-2"></i>Run experiment with this dataset</button></a>
             </div>
           </div>
-
-          {% if dt.status == 'published' %}
-            <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
-          {% elif dt.status == 'restricted' %}
-            <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">RESTRICTED</span><span class="ms-1" data-feather="slash" style="height:14px;width:14px;"></span></span>
-          {% elif dt.status == 'private' %}
-            <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">PRIVATE</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
-          {% elif dt.status == 'under_review' %}
-            <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
-          {% endif %}
-
         </div>
         <div class="row gx-0 gx-sm-5 gy-3 mb-4">
           <!-- Details -->
@@ -46,7 +55,8 @@
                       <tr>
                         <td class="py-1" colspan="2">
                           <div class="d-flex"><span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body">Public Dataset</h5>
+                            <h5 class="text-body">
+                              {% if dt.visibility %}Public{% else %}Private{% endif %} Dataset</h5>
                           </div>
                         </td>
                       </tr>
@@ -107,13 +117,17 @@
 
                 <!-- Preview Button -->
                 <div class="col-12 col-sm-auto mt-2">
-                  <!-- TODO: Add functionality to link -->
-                  <a href="#">
-                    <button class="btn btn-warning py-1 px-4" type="button">Preview</button>
-                  </a>
+                  <div>
+                     <!-- TODO: Add functionality to link -->
+                    <a href="#"><button class="btn btn-warning py-1 px-4 container" type="button"><i class="fa-solid fa-eye me-2"></i>Preview</button></a>
+                  </div>
+                  <div class="mt-2">
+                    <!-- TODO: Add functionality to link -->
+                    <a href=""><button class="btn btn-danger py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download</button></a>
+                  </div>
                 </div>
                 <!-- Collaborators -->
-                <div class="col-12 col-sm-auto mt-7">
+                <div class="col-12 col-sm-auto mt-4">
                   <h4 class="text-body-emphasis mb-4">Collaborators</h4>
                   <div class="d-flex mb-8">
 
@@ -213,21 +227,27 @@
           <!-- Metadata Table -->
           <div class="col-12 col-xl-9 col-xxl-8">
             <div class="row flex-between-center mb-3 g-3">
-              <div class="col-auto">
-                <h4 class="text-body-emphasis">Metadata Table</h4>
-                <p class="text-body-tertiary mb-0">Overall GPU usage last month</p>
-              </div>
-              <div class="col-8 col-sm-4">
-                <select class="form-select form-select-sm">
-                  <option>Mar 1 - 31, 2022</option>
-                  <option>April 1 - 30, 2022</option>
-                  <option>May 1 - 31, 2022</option>
-                </select>
-              </div>
+              <h4 class="text-body-emphasis col-auto">Metadata Table</h4>
             </div>
-            <div class="echart-completed-task-chart" style="min-height:200px;width:100%"></div>
-            <div class="mt-4 text-end">
-              <a href="#"><button type="button" class="btn btn-purple p-1">View usage statistics</button></a>
+            <div>
+              <table>
+                <thead>
+                  <tr class="fs-9">
+                    <th class="pe-6">FEATURE NAME</th>
+                    <th class="pe-6">UNIT</th>
+                    <th class="pe-6">DESCRIPTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for key, value in metadata.items %}
+                  <tr class="fs-9">
+                    <td class="fw-bold">{{ key }}</td>
+                    <td>{{ value.0 }}</td>
+                    <td>{{ value.1 }}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -238,159 +258,6 @@
         </p>
       </div>
     </div>
-
-    <!-- Recent activity and files -->
-    <!-- <div class="col-12 col-xxl-4 px-0 border-start-xxl border-top-sm">
-      <div class="bg-light dark__bg-gray-1100 h-100">
-        <div class="p-4 p-lg-6">
-          <h3 class="text-body-highlight mb-4 fw-bold">Recent activity</h3>
-          <div class="timeline-vertical timeline-with-details">
-            <div class="timeline-item position-relative">
-              <div class="row g-md-3">
-                <div class="col-12 col-md-auto d-flex">
-                  <div class="timeline-item-date order-1 order-md-0 me-md-4">
-                    <p class="fs-10 fw-semibold text-body-tertiary text-opacity-85 text-end">01 DEC, 2023<br
-                        class="d-none d-md-block" /> 10:30 AM</p>
-                  </div>
-                  <div class="timeline-item-bar position-md-relative me-3 me-md-0">
-                    <div class="icon-item icon-item-sm rounded-7 shadow-none bg-primary-subtle"><span
-                        class="fa-solid fa-chess text-primary-dark fs-10"></span></div><span
-                      class="timeline-bar border-end border-dashed"></span>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="timeline-item-content ps-6 ps-md-3">
-                    <h5 class="fs-9 lh-sm">Phoenix Template: Unleashing Creative Possibilities</h5>
-                    <p class="fs-9">by <a class="fw-semibold" href="#!">Shantinon Mekalan</a></p>
-                    <p class="fs-9 text-body-secondary mb-5">Discover limitless creativity with the Phoenix
-                      template! Our latest update offers an array of innovative features and design options.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item position-relative">
-              <div class="row g-md-3">
-                <div class="col-12 col-md-auto d-flex">
-                  <div class="timeline-item-date order-1 order-md-0 me-md-4">
-                    <p class="fs-10 fw-semibold text-body-tertiary text-opacity-85 text-end">05 DEC, 2023<br
-                        class="d-none d-md-block" /> 12:30 AM</p>
-                  </div>
-                  <div class="timeline-item-bar position-md-relative me-3 me-md-0">
-                    <div class="icon-item icon-item-sm rounded-7 shadow-none bg-primary-subtle"><span
-                        class="fa-solid fa-dove text-primary-dark fs-10"></span></div><span
-                      class="timeline-bar border-end border-dashed"></span>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="timeline-item-content ps-6 ps-md-3">
-                    <h5 class="fs-9 lh-sm">Empower Your Digital Presence: The Phoenix Template Unveiled</h5>
-                    <p class="fs-9">by <a class="fw-semibold" href="#!">Bookworm22</a></p>
-                    <p class="fs-9 text-body-secondary mb-5">Unveiling the Phoenix template, a game-changer for your
-                      digital presence. With its powerful features and sleek design,</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item position-relative">
-              <div class="row g-md-3">
-                <div class="col-12 col-md-auto d-flex">
-                  <div class="timeline-item-date order-1 order-md-0 me-md-4">
-                    <p class="fs-10 fw-semibold text-body-tertiary text-opacity-85 text-end">15 DEC, 2023<br
-                        class="d-none d-md-block" /> 2:30 AM</p>
-                  </div>
-                  <div class="timeline-item-bar position-md-relative me-3 me-md-0">
-                    <div class="icon-item icon-item-sm rounded-7 shadow-none bg-primary-subtle"><span
-                        class="fa-solid fa-dungeon text-primary-dark fs-10"></span></div>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="timeline-item-content ps-6 ps-md-3">
-                    <h5 class="fs-9 lh-sm">Phoenix Template: Simplified Design, Maximum Impact</h5>
-                    <p class="fs-9">by <a class="fw-semibold" href="#!">Sharuka Nijibum</a></p>
-                    <p class="fs-9 text-body-secondary mb-0">Introducing the Phoenix template, where simplified
-                      design meets maximum impact. Elevate your digital presence with its sleek and intuitive
-                      features.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="px-4 px-lg-6">
-          <h4 class="mb-3">Files</h4>
-        </div>
-        <div class="border-top px-4 px-lg-6 py-4">
-          <div class="me-n3">
-            <div class="d-flex flex-between-center">
-              <div class="d-flex mb-1"><span class="fa-solid fa-image me-2 text-body-tertiary fs-9"></span>
-                <p class="text-body-highlight mb-0 lh-1">Silly_sight_1.png</p>
-              </div>
-              <div class="btn-reveal-trigger">
-                <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-                  data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
-                  data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-                <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
-                    class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
-                    href="#!">Download</a><a class="dropdown-item" href="#!">Report abuse</a></div>
-              </div>
-            </div>
-            <div class="d-flex fs-9 text-body-tertiary mb-2 flex-wrap"><span>768 kb</span><span
-                class="text-body-quaternary mx-1">| </span><a href="#!">Shantinan Mekalan </a><span
-                class="text-body-quaternary mx-1">| </span><span class="text-nowrap">21st Dec, 12:56 PM</span></div>
-            <img class="rounded-2" src="../../assets/img/generic/40.png" alt="" style="width:320px" />
-          </div>
-        </div>
-        <div class="border-top px-4 px-lg-6 py-4">
-          <div class="me-n3">
-            <div class="d-flex flex-between-center">
-              <div>
-                <div class="d-flex align-items-center mb-1"><span
-                    class="fa-solid fa-image me-2 fs-9 text-body-tertiary"></span>
-                  <p class="text-body-highlight mb-0 lh-1">All_images.zip</p>
-                </div>
-                <div class="d-flex fs-9 text-body-tertiary mb-0 flex-wrap"><span>12.8 mb</span><span
-                    class="text-body-quaternary mx-1">| </span><a href="#!">Yves Tanguy </a><span
-                    class="text-body-quaternary mx-1">| </span><span class="text-nowrap">19th Dec, 08:56 PM</span>
-                </div>
-              </div>
-              <div class="btn-reveal-trigger">
-                <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-                  data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
-                  data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-                <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
-                    class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
-                    href="#!">Download</a><a class="dropdown-item" href="#!">Report abuse</a></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="border-top px-4 px-lg-6 py-4 ">
-          <div class="me-n3">
-            <div class="d-flex flex-between-center">
-              <div>
-                <div class="d-flex align-items-center mb-1 flex-wrap"><span
-                    class="fa-solid fa-file-lines me-2 fs-9 text-body-tertiary"></span>
-                  <p class="text-body-highlight mb-0 lh-1">Project.txt</p>
-                </div>
-                <div class="d-flex fs-9 text-body-tertiary mb-0 flex-wrap"><span>123 kb</span><span
-                    class="text-body-quaternary mx-1">| </span><a href="#!">Shantinan Mekalan </a><span
-                    class="text-body-quaternary mx-1">| </span><span class="text-nowrap">12th Dec, 12:56 PM</span>
-                </div>
-              </div>
-              <div class="btn-reveal-trigger">
-                <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-                  data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
-                  data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-                <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
-                    class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
-                    href="#!">Download</a><a class="dropdown-item" href="#!">Report abuse</a></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
   </div>
   {% include "./footer.html" %}
 </div>
