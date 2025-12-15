@@ -134,7 +134,7 @@ $(function () {
             type: "GET"
         },
         columns: [
-            { data: "name", render: data => `<a class="py-0" href="#">${data}</a>` },
+            { data: "name", render: (data, type, row) => `<a class="py-0" href="/dataset/${row.id}/">${data}</a>` },
             { data: "users" },
             { data: "created_at", className: "text-end" },
             { data: "updated_at", className: "text-end" },
