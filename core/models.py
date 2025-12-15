@@ -151,6 +151,7 @@ class Dataset(TimeStampedModel):
     status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list')
     experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets')
+    visibility = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
