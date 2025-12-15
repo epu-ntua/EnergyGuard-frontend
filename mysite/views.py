@@ -60,17 +60,22 @@ def experiments_list(request):
 
     return render(request, 'mysite/experiments-list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
+def error_does_not_exist(request, error=None):
+    return render(request, 'mysite/error-does-not-exist.html', {"error": error})
+
+
 def experiment_details(request, experiment_id):
 
     # Optimize query
-    experiment = (
-        Experiment.objects
-        .select_related('creator')
-        .prefetch_related('collaborators__profile')
-        .get(pk=experiment_id)
-)
+    try:
+        experiment = (
+            Experiment.objects
+            .select_related('creator')
+            .prefetch_related('collaborators__profile')
+            .get(pk=experiment_id)
+        )
 
-    experiment_details = {
+        experiment_details = {
         "name": experiment.name,
         "start_date": experiment.created_at,
         "last_update": experiment.updated_at,
@@ -81,6 +86,9 @@ def experiment_details(request, experiment_id):
         "id": experiment_id,
         "collaborators": experiment.collaborators.all(),
     }
+    except Experiment.DoesNotExist:
+        return redirect('error_does_not_exist', error= "Experiment not found")  # or render an error page
+    
     return render(request, 'mysite/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
 
 """def datasets_list(request):
@@ -195,20 +203,38 @@ def datasets_list(request):
     })
 
 def dataset_details(request, dataset_id):
+
+    metadata = {
+        "id": ( "-" , "Unique identifier of the building record" ),
+        "address": ("-", "Full address of the building"),
+        "cadastre_number": ("-", "Official cadastre number of the building"),
+        "construction_year": ("year", "Year when the building was constructed"),
+        "total_area": ("m²", "Total area of the building in square meters"),
+        "renovation_year": ("year", "Year of the last renovation"),
+        "total_renovation_cost": ("€", "Total cost of renovations in euros"),
+        "initial_consumption": ("kWh/m²", "Energy consumption before renovation"),
+        "estimated_savings": ("%", "Estimated energy savings after renovation"),
+        "achieved_savings": ("%", "Actual energy savings after renovation"),
+        "initial_energy_class": ("A, B, C,...", "Energy class before renovation"),
+        "final_energy_class": ("A, B, C,...", "Energy class after renovation"),
+    }
     dataset = Dataset.objects.filter(pk=dataset_id).first()  # avoid exception if not found
 
-    dataset_details = {
-        "id": dataset.id,
-        "name": dataset.name,
-        "created_at": dataset.created_at,
-        "updated_at": dataset.updated_at,
-        "status": dataset.status,
-        "label": dataset.get_label_display(),
-        "source": dataset.get_source_display(),
-        "collaborators": dataset.users.all()
-    }
+    if dataset:
+        dataset_details = {
+            "id": dataset.id,
+            "name": dataset.name,
+            "created_at": dataset.created_at,
+            "updated_at": dataset.updated_at,
+            "status": dataset.status,
+            "label": dataset.get_label_display(),
+            "source": dataset.get_source_display(),
+            "collaborators": dataset.users.all()
+        }
+    else:
+        return redirect('error_does_not_exist', error= "Dataset not found")
 
-    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "metadata": metadata, "active_navbar_page": "datasets", "show_vertical_navbar": True})
 
 def currency_format(value):
     if value == Billing.Currency.USD:

@@ -13,4 +13,5 @@ urlpatterns = [
     path('collaboration-hub/', views.collaboration_hub, name='collaboration_hub'),
     path('documentation/', views.documentation, name='documentation'),
     path('dataset/<int:dataset_id>/', views.dataset_details, name='dataset_details'),
+    path('error-not-exist/<str:error>/', views.error_does_not_exist, name='error_does_not_exist'),
 ]
