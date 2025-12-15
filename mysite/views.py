@@ -194,6 +194,22 @@ def datasets_list(request):
         "show_vertical_navbar": True,
     })
 
+def dataset_details(request, dataset_id):
+    dataset = Dataset.objects.filter(pk=dataset_id).first()  # avoid exception if not found
+
+    dataset_details = {
+        "id": dataset.id,
+        "name": dataset.name,
+        "created_at": dataset.created_at,
+        "updated_at": dataset.updated_at,
+        "status": dataset.status,
+        "label": dataset.get_label_display(),
+        "source": dataset.get_source_display(),
+        "collaborators": dataset.users.all()
+    }
+
+    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+
 def currency_format(value):
     if value == Billing.Currency.USD:
         return "$"
