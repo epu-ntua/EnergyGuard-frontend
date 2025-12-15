@@ -77,6 +77,7 @@ class Experiment(TimeStampedModel):
     exp_type = models.CharField(max_length=20, choices= ExpType, default=ExpType.AI_MODEL)
     status = models.CharField(max_length=9, choices=Status, default=Status.INACTIVE)
     description = models.TextField(blank=True)
+    visibility = models.BooleanField(default=False)
     # TODO: Implement dynamic progress calculation based on task completion
     # CURRENT: Static progress - FUTURE: Auto-calculated from experiment stages
     progress = models.PositiveBigIntegerField(default=0, validators=[MaxValueValidator(100)]) 
@@ -152,6 +153,7 @@ class Dataset(TimeStampedModel):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list')
     experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets')
     visibility = models.BooleanField(default=False)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
