@@ -154,6 +154,7 @@ class Dataset(TimeStampedModel):
     experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets')
     visibility = models.BooleanField(default=False)
     description = models.TextField(blank=True)
+    metadata = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return self.name
