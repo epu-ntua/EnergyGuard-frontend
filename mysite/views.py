@@ -206,20 +206,6 @@ def datasets_list(request):
 
 def dataset_details(request, dataset_id):
 
-    metadata = {
-        "id": ( "-" , "Unique identifier of the building record" ),
-        "address": ("-", "Full address of the building"),
-        "cadastre_number": ("-", "Official cadastre number of the building"),
-        "construction_year": ("year", "Year when the building was constructed"),
-        "total_area": ("m²", "Total area of the building in square meters"),
-        "renovation_year": ("year", "Year of the last renovation"),
-        "total_renovation_cost": ("€", "Total cost of renovations in euros"),
-        "initial_consumption": ("kWh/m²", "Energy consumption before renovation"),
-        "estimated_savings": ("%", "Estimated energy savings after renovation"),
-        "achieved_savings": ("%", "Actual energy savings after renovation"),
-        "initial_energy_class": ("A, B, C,...", "Energy class before renovation"),
-        "final_energy_class": ("A, B, C,...", "Energy class after renovation"),
-    }
     dataset = Dataset.objects.filter(pk=dataset_id).first()  # avoid exception if not found
 
     if dataset:
@@ -234,11 +220,12 @@ def dataset_details(request, dataset_id):
             "collaborators": dataset.users.all(),
             "visibility": dataset.visibility,
             "description": dataset.description,
+            "metadata": dataset.metadata
         }
     else:
         return redirect('error_does_not_exist', error= "Dataset not found")
 
-    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "metadata": metadata, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})
 
 def currency_format(value):
     if value == Billing.Currency.USD:
