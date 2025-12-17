@@ -1,0 +1,288 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}EnergyGuard | Home{% endblock %}</title>
+
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/img/logo/EnergyGuard_logo 32x24.png' %}">
+
+    <!-- Preconnect for Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <!-- The Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&amp;display=swap"
+        rel="stylesheet">
+    <!-- Main CSS -->
+    <link href="{% static 'assets/css/theme.min.css' %}" type="text/css" rel="stylesheet" id="style-default">
+    <link href="{% static 'assets/css/user.min.css' %}" type="text/css" rel="stylesheet" id="user-style-default">
+    <!-- It sets the browser’s address bar color on Android Chrome, Mobile browsers, Some desktop browsers -->
+    <meta name="theme-color" content="#ffffff">
+    <!-- For Unicons ( <i class="...."></i> ) -->
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+
+    <script src="{% static 'assets/js/config.js' %}"></script>
+    {% block head %}
+    {% endblock head %}
+  </head>
+
+  <body class="--phoenix-scroll-margin-top: 1.2rem;">
+
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+
+        <div class="bg-body-emphasis sticky-top">
+            <nav class="navbar navbar-expand-lg container-small px-3 px-lg-7 px-xxl-3">
+
+                <!-- ENERGYGUARD logo -->
+                <a class="navbar-brand flex-1 flex-lg-grow-0" href="{% url 'home' %}">
+                    <div class="d-flex align-items-center me-4">
+                        <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="160" />
+                        <!-- <h5 class="logo-text ms-2">phoenix</h5> -->
+                    </div>
+                </a>
+                
+                <div class="d-lg-none">
+                    <div class="theme-control-toggle fa-icon-wait px-2">
+                        <input class="form-check-input ms-0 theme-control-toggle-input" type="checkbox" data-theme-control="phoenixTheme" value="dark" id="themeControlToggleSm" />
+                        <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggleSm" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="moon"></span></label>
+                        <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggleSm" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="sun"></span></label>
+                    </div>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- Search Bar for sm screens -->
+                    <div class="border-bottom border-translucent border-bottom-lg-0 mb-2">
+                        <div class="search-box d-inline d-lg-none">
+                            <form class="position-relative">
+                                <input class="form-control search-input search rounded-pill my-4" type="search" placeholder="Search" aria-label="Search" />
+                                <span class="fas fa-search search-box-icon"></span>
+
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Left Side of header -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" aria-current="page" href="{% url 'home' %}">Home</a></li>
+                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Services</a></li>
+                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Join now</a></li>
+                        <li class="nav-item"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="">About the project</a></li>
+                    </ul>
+                    <!-- Right Side of header -->
+                    <div class="d-grid d-lg-flex align-items-center">
+                        <!-- Dark mode icon -->
+                        <div class="nav-item d-flex align-items-center d-none d-lg-block pe-2">
+                            <div class="theme-control-toggle fa-icon-wait px-2">
+                                <input class="form-check-input ms-0 theme-control-toggle-input" type="checkbox" data-theme-control="phoenixTheme" value="dark" id="themeControlToggle" />
+                                <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="moon"></span></label>
+                                <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="sun"></span></label>
+                            </div>
+                        </div>
+                        <!-- Search icon -->
+                        <a class="text-body-quaternary text-body-tertiary-hover px-2 d-none d-lg-inline lh-sm" href="#" data-bs-toggle="modal" data-bs-target="#searchBoxModal">
+                            <span data-feather="search" style="height: 20px; width: 20px;"></span>
+                        </a>
+                        <!-- Sign in -->
+                        <a class="btn btn-link text-body order-1 order-lg-0 ps-4 me-lg-2 fs-8-5" href="{% url 'login' %}">Sign in</a>
+                        <!-- Sign up -->
+                        <a class="btn btn-phoenix-primary order-0 fs-8-5" href="{% url 'register' %}"><span class="fw-bold">Sign up</span></a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Search bar modal -->
+        <!-- <div class="modal fade" id="searchBoxModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-phoenix-modal="data-phoenix-modal" style="--phoenix-backdrop-opacity: 1;">
+            <div class="modal-dialog">
+            <div class="modal-content mt-15 rounded-pill">
+                <div class="modal-body p-0">
+                <div class="search-box navbar-top-search-box" data-list='{"valueNames":["title"]}' style="width: auto;">
+                    <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
+                    <input class="form-control search-input fuzzy-search rounded-pill form-control-lg" type="search" placeholder="Search..." aria-label="Search" />
+                    <span class="fas fa-search search-box-icon"></span>
+
+                    </form>
+                    <div class="btn-close position-absolute end-0 top-50 translate-middle cursor-pointer shadow-none" data-bs-dismiss="search">
+                    <button class="btn btn-link p-0" aria-label="Close"></button>
+                    </div>
+                    <div class="dropdown-menu border start-0 py-0 overflow-hidden w-100">
+                    <div class="scrollbar-overlay" style="max-height: 30rem;">
+                        <div class="list pb-3">
+                        <h6 class="dropdown-header text-body-highlight fs-10 py-2">24 <span class="text-body-quaternary">results</span></h6>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Recently Searched </h6>
+                        <div class="py-2"><a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"><span class="fa-solid fa-clock-rotate-left" data-fa-transform="shrink-2"></span> Store Macbook</div>
+                            </div>
+                            </a>
+                            <a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"> <span class="fa-solid fa-clock-rotate-left" data-fa-transform="shrink-2"></span> MacBook Air - 13″</div>
+                            </div>
+                            </a>
+
+                        </div>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Products</h6>
+                        <div class="py-2"><a class="dropdown-item py-2 d-flex align-items-center" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="file-thumbnail me-2"><img class="h-100 w-100 object-fit-cover rounded-3" src="../../assets/img/products/60x60/3.png" alt="" /></div>
+                            <div class="flex-1">
+                                <h6 class="mb-0 text-body-highlight title">MacBook Air - 13″</h6>
+                                <p class="fs-10 mb-0 d-flex text-body-tertiary"><span class="fw-medium text-body-tertiary text-opactity-85">8GB Memory - 1.6GHz - 128GB Storage</span></p>
+                            </div>
+                            </a>
+                            <a class="dropdown-item py-2 d-flex align-items-center" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="file-thumbnail me-2"><img class="img-fluid" src="../../assets/img/products/60x60/3.png" alt="" /></div>
+                            <div class="flex-1">
+                                <h6 class="mb-0 text-body-highlight title">MacBook Pro - 13″</h6>
+                                <p class="fs-10 mb-0 d-flex text-body-tertiary"><span class="fw-medium text-body-tertiary text-opactity-85">30 Sep at 12:30 PM</span></p>
+                            </div>
+                            </a>
+
+                        </div>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Quick Links</h6>
+                        <div class="py-2"><a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"><span class="fa-solid fa-link text-body" data-fa-transform="shrink-2"></span> Support MacBook House</div>
+                            </div>
+                            </a>
+                            <a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"> <span class="fa-solid fa-link text-body" data-fa-transform="shrink-2"></span> Store MacBook″</div>
+                            </div>
+                            </a>
+
+                        </div>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Files</h6>
+                        <div class="py-2"><a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"><span class="fa-solid fa-file-zipper text-body" data-fa-transform="shrink-2"></span> Library MacBook folder.rar</div>
+                            </div>
+                            </a>
+                            <a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"> <span class="fa-solid fa-file-lines text-body" data-fa-transform="shrink-2"></span> Feature MacBook extensions.txt</div>
+                            </div>
+                            </a>
+                            <a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"> <span class="fa-solid fa-image text-body" data-fa-transform="shrink-2"></span> MacBook Pro_13.jpg</div>
+                            </div>
+                            </a>
+
+                        </div>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Members</h6>
+                        <div class="py-2"><a class="dropdown-item py-2 d-flex align-items-center" href="../../pages/members.html">
+                            <div class="avatar avatar-l status-online  me-2 text-body">
+                                <img class="rounded-circle " src="../../assets/img/team/40x40/10.webp" alt="" />
+
+                            </div>
+                            <div class="flex-1">
+                                <h6 class="mb-0 text-body-highlight title">Carry Anna</h6>
+                                <p class="fs-10 mb-0 d-flex text-body-tertiary">anna@technext.it</p>
+                            </div>
+                            </a>
+                            <a class="dropdown-item py-2 d-flex align-items-center" href="../../pages/members.html">
+                            <div class="avatar avatar-l  me-2 text-body">
+                                <img class="rounded-circle " src="../../assets/img/team/40x40/12.webp" alt="" />
+
+                            </div>
+                            <div class="flex-1">
+                                <h6 class="mb-0 text-body-highlight title">John Smith</h6>
+                                <p class="fs-10 mb-0 d-flex text-body-tertiary">smith@technext.it</p>
+                            </div>
+                            </a>
+
+                        </div>
+                        <hr class="my-0" />
+                        <h6 class="dropdown-header text-body-highlight fs-9 border-bottom border-translucent py-2 lh-sm">Related Searches</h6>
+                        <div class="py-2"><a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"><span class="fa-brands fa-firefox-browser text-body" data-fa-transform="shrink-2"></span> Search in the Web MacBook</div>
+                            </div>
+                            </a>
+                            <a class="dropdown-item" href="../../apps/e-commerce/landing/product-details.html">
+                            <div class="d-flex align-items-center">
+
+                                <div class="fw-normal text-body-highlight title"> <span class="fa-brands fa-chrome text-body" data-fa-transform="shrink-2"></span> Store MacBook″</div>
+                            </div>
+                            </a>
+
+                        </div>
+                        </div>
+                        <div class="text-center">
+                        <p class="fallback fw-bold fs-7 d-none">No Result Found.</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div> -->
+
+
+        <!----------------->
+        <!-- Page Content-->
+        <!----------------->
+        {% block content %}
+        {% endblock %}
+
+        <script>
+          var navbarTopStyle = window.config.config.phoenixNavbarTopStyle;
+          var navbarTop = document.querySelector('.navbar-top');
+          if (navbarTopStyle === 'darker') {
+            navbarTop.setAttribute('data-navbar-appearance', 'darker');
+          }
+
+          var navbarVerticalStyle = window.config.config.phoenixNavbarVerticalStyle;
+          var navbarVertical = document.querySelector('.navbar-vertical');
+          if (navbarVertical && navbarVerticalStyle === 'darker') {
+            navbarVertical.setAttribute('data-navbar-appearance', 'darker');
+          }
+        </script>
+
+        {% include "./chat.html" %}
+
+
+    </main>
+
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <script src="{% static 'vendors/popper/popper.min.js' %}"></script>   <!-- For popups and dropdowns -->
+    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>   <!-- Main Bootstrap js code -->
+    <script src="{% static 'vendors/anchorjs/anchor.min.js' %}"></script>   <!-- Creates anchors automatically in headers -->
+    <script src="{% static 'vendors/is/is.min.js' %}"></script>   <!-- For validation and type checking -->
+    <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script>   <!-- Icons -->
+    <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>   <!-- Provides methods for manipulating arrays, objects, and other types of data -->
+    <script src="{% static 'vendors/list.js/list.min.js' %}"></script>  <!-- Adds search, sort, and filter to HTML lists/tables -->
+    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>   <!-- SVG icons -->
+    <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>   <!-- For date and time -->
+    <script src="{% static 'assets/js/phoenix.js' %}"></script>
+
+
+    {% block scripts %}
+    {% endblock scripts %}
+
+  </body>
+
+</html>
