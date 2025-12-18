@@ -16,7 +16,7 @@ import mlflow
 import os
 
 def home(request):
-    return render(request, 'mysite/home.html', {})
+    return render(request, 'mysite/index.html', {})
 
 def experiments_list(request):
 
