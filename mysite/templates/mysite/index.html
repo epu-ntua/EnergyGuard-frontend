@@ -1,6 +1,5 @@
 {% extends "mysite/home-base.html" %}
 {% load static %}
-{% static 'assets/img/bg/bg-23.png' as bg_23 %}
 
 {% block content %}
 
@@ -9,24 +8,83 @@
         <div class="row align-items-center">
             <div class="col-12 col-lg-auto order-0 order-md-1 text-end order-1">
                 <div class="position-relative p-5 p-md-7 d-lg-none">
-                    <div class="bg-holder" style="background-image: url('{{ bg_23 }}'); background-size: contain;"></div>
+                    <!-- <div class="bg-holder" style="background-image: url('{% static 'assets/img/bg/bg-23.png' %}'); background-size: contain;"></div> -->
                     <!--/.bg-holder-->
 
-                    <div class="position-relative"><img class="w-100 shadow-lg d-dark-none rounded-2" src="../../assets/img/bg/bg-31.png" alt="hero-header" /><img class="w-100 shadow-lg d-light-none rounded-2" src="../../assets/img/bg/bg-30.png" alt="hero-header" /></div>
+                    <!-- <div class="position-relative">
+                        <img class="w-100 shadow-lg d-dark-none rounded-2" src="{% static 'assets/img/bg/bg-31.png' %}" alt="bbbbbbbbbbb" />
+                        <img class="w-100 shadow-lg d-light-none rounded-2" src="{% static 'assets/img/bg/bg-30.png' %}" alt="AAAAAAAAAAAAAA" />
+                    </div> -->
                 </div>
+                <!-- <img src="{% static 'assets/img/bg/bg-23.png' %}" alt=""> -->
                 <div class="hero-image-container position-absolute top-0 bottom-0 end-0 d-none d-lg-block">
                     <div class="position-relative h-100 w-100">
-                        <div class="position-absolute h-100 top-0 d-flex align-items-center end-0 hero-image-container-bg"><img class="pt-7 pt-md-0 w-100" src="../../assets/img/bg/bg-1-2.png" alt="hero-header" /></div>
-                        <div class="position-absolute h-100 top-0 d-flex align-items-center end-0"><img class="pt-7 pt-md-0 w-100 shadow-lg d-dark-none rounded-2" src="../../assets/img/bg/bg-28.png" alt="hero-header" /><img class="pt-7 pt-md-0 w-100 shadow-lg d-light-none rounded-2" src="../../assets/img/bg/bg-29.png" alt="hero-header" /></div>
+                        <div class="position-absolute h-100 top-0 d-flex align-items-center end-0 hero-image-container-bg">
+                            <img class="pt-7 pt-md-0 w-100" src="{% static 'assets/img/bg/bg-1-2.png' %}" alt="hero-header" />
+                        </div>
+                        <div class="position-absolute h-100 top-0 d-flex align-items-center end-0">
+                            <img class="pt-7 pt-md-0 w-100 shadow-lg d-dark-none rounded-2" src="{% static 'assets/img/bg/bg-28.png' %}" alt="hero-header" />
+                            <img class="pt-7 pt-md-0 w-100 shadow-lg d-light-none rounded-2" src="{% static 'assets/img/bg/bg-28.png' %}" alt="hero-header" />
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-lg-6 text-lg-start text-center pt-8 pb-6 order-0 position-relative">
-                <h1 class="fs-3 fs-lg-2 fs-md-1 fs-lg-2 fs-xl-1 fs fw-black mb-4"><span class="text-primary me-3">Elegance</span>for<br />your web app</h1>
-                <p class="mb-5">Standard, modern and Elegant solution for your next web app so you don’t have to look further. Sign up or check the demo below.</p><a class="btn btn-lg btn-primary rounded-pill me-3" href="#!" role="button">Sign up</a><a class="btn btn-link me-2 fs-8 p-0" href="#!" role="button">Check Demo<span class="fa-solid fa-angle-right ms-2 fs-9"></span></a>
+                <h1 class="fs-3 fs-lg-2 fs-md-2 fs-lg-3 fs-xl-2 fs  mb-4"><span class="text-primary me-3">AI Testing Experimentation Facilities</span>for<br />the Energy Sector</h1>
+                <p class="mb-5">EnergyGuard provides AI Testing and Experimentation Facilities across Europe to help SME, startups and entrepreneurs test and validate their AI solutions so they can reach the energy market</p>
+                <a class="btn btn-lg btn-primary rounded-pill me-3" href="#!" role="button">Sign up</a>
+                <a class="btn btn-link me-2 fs-8 p-0" href="#!" role="button">Check Demo<span class="fa-solid fa-angle-right ms-2 fs-9"></span></a>
             </div>
         </div>
     </div>
-    </section>
+</section>
+
+<section class="py-5 pt-xl-13 bg-body-emphasis">
+    <div class="container-small px-lg-7 px-xxl-3">
+        <div class="row g-0">
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-bottom border-translucent border-end">
+                    <img class="w-50" src="{% static 'assets/img/partners/iccs.png' %}" alt="ICCS" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-bottom border-translucent border-end-md">
+                    <img class="w-50" src="{% static 'assets/img/partners/cea.png' %}" alt="CEAy" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-bottom border-translucent border-end border-end-md">
+                    <img class="w-50" src="{% static 'assets/img/partners/ceder.png' %}" alt="CEDER" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-bottom border-translucent border-end-lg-0">
+                    <img class="w-50" src="{% static 'assets/img/partners/nester.png' %}" alt="NESTER" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-end border-bottom border-translucent border-bottom-md-0">
+                    <img class="w-50" src="{% static 'assets/img/partners/lux.png' %}" alt="LUX" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-end-md border-bottom border-translucent border-bottom-md-0">
+                    <img class="w-50" src="{% static 'assets/img/partners/cartif.png' %}" alt="CARTIF" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-end border-translucent">
+                    <img class="w-50" src="{% static 'assets/img/partners/anastasia-fylla.png' %}" alt="AF" />
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-lg-5 d-flex flex-center h-100 border-1 border-dashed border-end-lg-0 border-translucent">
+                    <img class="w-50" src="{% static 'assets/img/partners/bluenergy.png' %}" alt="BLUENERGY" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end of .container-->
+</section>
 
 {% endblock content %}
