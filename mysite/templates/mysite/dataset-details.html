@@ -9,7 +9,7 @@
   <div class="row g-0">
     <div class="col-12 col-xxl-8 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
-        <div class="mb-5">
+        <div class="mb-6">
           <div class="d-flex justify-content-between">
             <div>
               <div class="d-flex justify-content-start mb-2">
@@ -39,7 +39,6 @@
             </div>
             
             <div class="text-end">
-              <!-- <a href=""><button class="btn btn-danger py-2 px-3"><i class="fa-solid fa-download me-2"></i>Download</button></a> -->
                <a href=""><button class="btn btn-subtle-info px-2" style="width:80%;"><i class="fa-solid fa-gears me-2"></i>Run experiment with this dataset</button></a>
             </div>
           </div>
@@ -54,30 +53,36 @@
                     <tbody>
                       <tr>
                         <td class="py-1" colspan="2">
-                          <div class="d-flex"><span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body">
-                              {% if dt.visibility %}Public{% else %}Private{% endif %} Dataset</h5>
+                          {% if dt.visibility %}
+                          <div class="d-flex"><span class="fa-solid fa-earth-europe me-2 text-body-tertiary fs-9"></span>
+                            <h5 class="text-body">Public Dataset</h5>
                           </div>
+                          {% else %}
+                          <div class="d-flex"><span class="fa-solid fa-lock me-2 text-body-tertiary fs-9"></span>
+                            <h5 class="text-body">Private Dataset</h5>
+                          </div>
+                          {% endif %}
                         </td>
                       </tr>
                       <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Company :</h5>
+                            <h5 class="text-body mb-0 text-nowrap">Published by :</h5>
                           </div>
                         </td>
+                        <!-- TODO: Replaced with real data -->
                         <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">ICCS</a></td>
                       </tr>
 
-                      <!-- TODO: Replace with real data -->
                       <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span
                               class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Budget : </h5>
+                            <h5 class="text-body mb-0 text-nowrap">Cost : </h5>
                           </div>
                         </td>
-                        <td class="fw-bold ps-1 py-1 text-body-highlight">$ - </td>
+                        <!-- TODO: Replace with real data -->
+                        <td class="fw-bold ps-1 py-1 text-body-highlight"> 50 €</td>
                       </tr>
                     </tbody>
                   </table>
@@ -116,23 +121,28 @@
                 </div>
 
                 <!-- Preview Button -->
-                <div class="col-12 col-sm-auto mt-2">
-                  <div>
+                <div class="col-12 col-sm-auto mt-4">
+                  <div style="width:70%;">
                      <!-- TODO: Add functionality to link -->
                     <a href="#"><button class="btn btn-warning py-1 px-4 container" type="button"><i class="fa-solid fa-eye me-2"></i>Preview</button></a>
                   </div>
-                  <div class="mt-2">
+                  <div class="mt-2" style="width:70%;">
                     <!-- TODO: Add functionality to link -->
                     <a href=""><button class="btn btn-danger py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download</button></a>
                   </div>
+                  <div class="mt-2" style="width:70%;">
+                    <!-- TODO: Add functionality to link -->
+                    <!-- <a href=""><button class="btn btn-subtle-info py-1 px-4 container"><img src="{% static 'assets/img/general/data-space.png' %}" class="me-2" width="5%"></img>Get access through Data Space</button></a> -->
+                    <a href="">
+                      <button class="btn btn-primary py-1 px-2"><i class="fa-solid fa-database me-2"></i>Get access through Data Space</button></a>
+
+                  </div>
                 </div>
                 <!-- Collaborators -->
-                <div class="col-12 col-sm-auto mt-4">
+                <!-- <div class="col-12 col-sm-auto mt-4">
                   <h4 class="text-body-emphasis mb-4">Collaborators</h4>
                   <div class="d-flex mb-8">
-
-                    <!-- Collaborators' icons -->
-
+                    
                     {% for collaborator in dt.collaborators %}
                     <div class="dropdown"><a class="dropdown-toggle dropdown-caret-none d-inline-block outline-none" href="#"
                         role="button" data-bs-toggle="dropdown" aria-dtanded="false" data-bs-auto-close="outside">
@@ -146,71 +156,11 @@
                           {% endwith %}
                         </div>
                       </a>
-                      <!-- Dropdown for collaborator
-                      <div class="dropdown-menu avatar-dropdown-menu p-0 overflow-hidden" style="width: 320px;">
-                        <div class="position-relative">
-                          <div class="bg-holder z-n1"
-                            style="background-image:url(../../assets/img/bg/bg-32.png);background-size: auto;">
-                          </div>
-                          
-
-                          <div class="p-3">
-                            <div class="text-end">
-                              <button class="btn p-0 me-2"><span class="fa-solid fa-user-plus text-white"></span></button>
-                              <button class="btn p-0"><span class="fa-solid fa-ellipsis text-white"></span></button>
-                            </div>
-                            <div class="text-center">
-                              <div class="avatar avatar-xl status-online position-relative me-2 me-sm-0 me-xl-2 mb-2"><img
-                                  class="rounded-circle border border-light-subtle" src="../../assets/img//team/30.webp"
-                                  alt="" /></div>
-                              <h6 class="text-white">Milind Mikuja</h6>
-                              <p class="text-light text-opacity-50 fw-semibold fs-10 mb-2">@tyrion222</p>
-                              <div class="d-flex flex-center mb-3">
-                                <h6 class="text-white mb-0">224 <span
-                                    class="fw-normal text-light text-opacity-75">connections</span></h6><span
-                                  class="fa-solid fa-circle text-body-tertiary mx-1"
-                                  data-fa-transform="shrink-10 up-2"></span>
-                                <h6 class="text-white mb-0">23 <span
-                                    class="fw-normal text-light text-opacity-75">mutual</span></h6>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="bg-body-emphasis">
-                          <div class="p-3 border-bottom border-translucent">
-                            <div class="d-flex justify-content-between">
-                              <div class="d-flex">
-                                <button class="btn btn-phoenix-secondary btn-icon btn-icon-lg me-2"><span
-                                    class="fa-solid fa-phone"></span></button>
-                                <button class="btn btn-phoenix-secondary btn-icon btn-icon-lg me-2"><span
-                                    class="fa-solid fa-message"></span></button>
-                                <button class="btn btn-phoenix-secondary btn-icon btn-icon-lg"><span
-                                    class="fa-solid fa-video"></span></button>
-                              </div>
-                              <button class="btn btn-phoenix-primary"><span class="fa-solid fa-envelope me-2"></span>Send
-                                Email</button>
-                            </div>
-                          </div>
-                          <ul class="nav d-flex flex-column py-3 border-bottom">
-                            <li class="nav-item"><a class="nav-link px-3 d-flex flex-between-center" href="#!"> <span
-                                  class="me-2 text-body d-inline-block" data-feather="clipboard"></span><span
-                                  class="text-body-highlight flex-1">Assigned Projects</span><span
-                                  class="fa-solid fa-chevron-right fs-11"></span></a></li>
-                            <li class="nav-item"><a class="nav-link px-3 d-flex flex-between-center" href="#!"> <span
-                                  class="me-2 text-body" data-feather="pie-chart"></span><span
-                                  class="text-body-highlight flex-1">View activiy</span><span
-                                  class="fa-solid fa-chevron-right fs-11"></span></a></li>
-                          </ul>
-                        </div>
-                        <div class="p-3 d-flex justify-content-between"><a class="btn btn-link p-0 text-decoration-none"
-                            href="#!">Details </a><a class="btn btn-link p-0 text-decoration-none text-danger"
-                            href="#!">Unassign </a></div>
-                      </div> -->
                     </div>
                     {% endfor %}
-                  </div>
+                  </div> -->
                   <!-- Tags -->
-                  <h4 class="text-body-emphasis mb-4">Tags</h4>
+                  <!-- <h4 class="text-body-emphasis mb-4">Tags</h4>
                   <span class="badge badge-tag me-2 mb-1">Forecast</span>
                   <span class="badge badge-tag me-2 mb-1">AI</span>
                   <span class="badge badge-tag me-2 mb-1">Coding</span>
@@ -218,7 +168,7 @@
                   <span class="badge badge-tag me-2 mb-1">Load</span>
                   <span class="badge badge-tag me-2 mb-1">Prediction</span>
                   <span class="badge badge-tag me-2 mb-1">LLM</span>
-                </div>
+                </div> -->
 
               </div>
             </div>
