@@ -1,5 +1,6 @@
 {% extends "mysite/base.html" %}
 {% load pagination_tags %}
+{% load static %}
 
 {% block title %}Experiments List | EnergyGuard{% endblock %}
 
@@ -8,7 +9,7 @@
     <div class="mb-9">
 
         <!-- HEADER -->
-        <div class="row g-3 mb-4 ">
+        <div class="row g-3 mb-5">
             <div class="col-auto me-4">
                 <h2 class="mb-0">Experiments</h2>
             </div>
@@ -17,112 +18,138 @@
             </div>
         </div>
 
-        <!-- SUBHEADER -->
-         <div class="d-flex justify-content-between">
-            <ul class="nav nav-links mb-lg-2 mx-n3">
-                <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'active' %}active{% endif %}" href="?status=active"><span>Active</span><span class="text-body-tertiary fw-semibold">({{experiments_num.active}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'deleted' %}active{% endif %}" href="?status=deleted"><span>Deleted </span><span class="text-body-tertiary fw-semibold">({{experiments_num.deleted}})</span></a></li>
-            </ul>
-            <!-- SEARCH AND FILTERS -->
-            <div class="mb-4">
-                <div class="row g-3">
-                    <!-- SEARCH BAR -->
-                    <div class="col-auto">
-                        <div class="search-box">
-                            <form class="position-relative">
-                                <input class="form-control search-input search" type="search" placeholder="Search experiments" aria-label="Search" />
-                                <span class="fas fa-search search-box-icon"></span>
 
-                            </form>
+        <ul class="nav nav-underline" id="myTab" role="tablist">
+            <li class="nav-item"><a class="nav-link active fs-8-5" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="true">My experiment</a></li>
+            <li class="nav-item"><a class="nav-link fs-8-5" id="publicExperiments-tab" data-bs-toggle="tab" href="#tab-publicExperiments" role="tab" aria-controls="tab-publicExperiments" aria-selected="false">Public experiments</a></li>
+        </ul>
+
+        <div class="tab-content mt-5" id="myTabContent">
+            <!-- My experiments tab -->
+            <div class="tab-pane fade show active" id="tab-myExperiments" role="tabpanel" aria-labelledby="myExperiments-tab">
+                <!-- SUBHEADER -->
+                <div class="d-flex justify-content-between">
+                    <ul class="nav nav-links mb-lg-2 mx-n3">
+                        <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link {%if status_filter == 'completed' %}active{% endif %}" href="?status=completed"><span>Completed</span><span class="text-body-tertiary fw-semibold">({{experiments_num.completed}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link {%if status_filter == 'ongoing' %}active{% endif %}" href="?status=ongoing"><span>Ongoing </span><span class="text-body-tertiary fw-semibold">({{experiments_num.ongoing}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link {%if status_filter == 'inactive' %}active{% endif %}" href="?status=inactive"><span>Inactive </span><span class="text-body-tertiary fw-semibold">({{experiments_num.inactive}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link {%if status_filter == 'cancelled' %}active{% endif %}" href="?status=cancelled"><span>Cancelled </span><span class="text-body-tertiary fw-semibold">({{experiments_num.cancelled}})</span></a></li>
+                    </ul>
+                    <!-- SEARCH AND FILTERS -->
+                    <div class="mb-3">
+                        <div class="row g-3">
+                            <!-- SEARCH BAR -->
+                            <div class="col-auto">
+                                <div class="search-box">
+                                    <form class="position-relative" id="experimentSearchForm" onsubmit="return false">
+                                        <input id="experimentSearchInput" class="form-control search-input search" type="search" placeholder="Search experiments" aria-label="Search" />
+                                        <span class="fas fa-search search-box-icon"></span>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- FILTERS -->
-                    <!-- <div class="col-auto scrollbar overflow-hidden-y flex-grow-1">
-                        <div class="btn-group position-static" role="group">
-                            
-                            <div class="btn-group position-static text-nowrap" role="group">
-                                <button class="btn btn-phoenix-secondary px-7 flex-shrink-0" type="button" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false" data-bs-reference="parent">
-                                    Payment status<span class="fas fa-angle-down ms-2"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider" />
-                                    </li>
-                                    <li><a class="dropdown-item" href="#">Separated link</a></li>
-                                </ul>
-                            </div>
-                            <div class="btn-group position-static text-nowrap" role="group">
-                                <button class="btn btn-sm btn-phoenix-secondary px-7 flex-shrink-0" type="button" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false" data-bs-reference="parent">
-                                Fulfilment status<span class="fas fa-angle-down ms-2"></span></button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider" />
-                                    </li>
-                                    <li><a class="dropdown-item" href="#">Separated link</a></li>
-                                </ul>
-                            </div>
-                            <button class="btn btn-sm btn-phoenix-secondary px-7 flex-shrink-0">More filters </button>
+                </div>
+                <div>
+                    <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                        <div class="table-responsive scrollbar mx-n1 px-1">
+                            <table class="table table-sm fs-9 mb-0" id="experimentsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:17%;">
+                                            <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
+                                        </th>
+                                        <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">
+                                            <a href="?{% query_string 'sort' %}sort=start_date">START DATE</a>
+                                        </th>
+                                        <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:10%;">
+                                            <a href="?{% query_string 'sort' %}sort=last_update">UPDATED</a>
+                                        </th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">PROGRESS</th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody >
+                                    <!-- {% for exp in experiments %}
+                                    <tr class="hover-actions-trigger btn-reveal-trigger position-static">
+                                        <td class="align-middle py-3 white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
+                                        <td class="align-middle py-3 fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
+                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
+                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
+                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
+                                        <td class="align-middle py-3 white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
+                                        <td class="align-middle py-3 white-space-nowrap text-end fw-bold text-body-tertiary">
+                                            {% if exp.status == 'active' %}
+                                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
+                                            {% elif exp.status == 'deleted' %}
+                                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">DELETED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %} -->
+                                    
+                                </tbody>   
+                            </table>
                         </div>
-                    </div> -->
+                    </div>
                 </div>
             </div>
-        </div>
-        <div>
-            <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
-                <div class="table-responsive scrollbar mx-n1 px-1">
-                    <table class="table table-sm fs-9 mb-0">
-                        <thead>
-                            <tr>
-                                <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:25%;">
-                                    <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
-                                </th>
-                                <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:12%;">
-                                    <a href="?{% query_string 'sort' %}sort=start_date">START DATE</a>
-                                </th>
-                                <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:12%;">
-                                    <a href="?{% query_string 'sort' %}sort=last_update">UPDATED</a>
-                                </th>
-                                <th class="sort align-middle text-end" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:13%;">PROGRESS</th>
-                                <th class="sort align-middle text-end" scope="col">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody class="list" id="experiments-table-body">
-                            {% for exp in experiments %}
-                            <tr class="hover-actions-trigger btn-reveal-trigger position-static">
-                                <td class="align-middle py-3 white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
-                                <td class="align-middle py-3 fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
-                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
-                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
-                                <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
-                                <td class="align-middle py-3 white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
-                                <td class="align-middle py-3 white-space-nowrap text-end fw-bold text-body-tertiary">
-                                    {% if exp.status == 'active' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% elif exp.status == 'deleted' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">DELETED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            
-                        </tbody>   
-                    </table>
-                    <nav class="mt-3 column">
-                        {% smart_pagination experiments %}
-                    </nav>
-                </div>
+            <!-- Public experiments tab -->
+            <div class="tab-pane fade" id="tab-publicExperiments" role="tabpanel" aria-labelledby="publicExperiments-tab">
+                <!-- SUBHEADER -->
+                
             </div>
         </div>
     </div>
     {% include "./footer.html" %}
 </div>
-{% endblock %}
+{% endblock content %}
+
+{% block scripts %}
+
+<script src="{% static '/jquery-3.7.1.min.js' %}"></script>
+<!-- DataTables Bootstrap 5 JS (Add this) -->
+<script src="{% static '/DataTables/datatables.min.js' %}"></script>
+<script>
+    $(function () {
+
+        $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
+        const statusParam = new URLSearchParams(window.location.search).get('status') || '';
+        const table = $('#experimentsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'experiments_list' %}",
+                data: function (d) { d.status = statusParam; },
+                "type": "GET"
+            },
+            "columns": [
+                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiment/${row.id}/">${data}</a>`},
+                { "data": "collaborators" },
+                { "data": "created_at", className: "text-end" },
+                { "data": "updated_at", className: "text-end" },
+                { "data": "type", className: "text-end" },
+                { "data": "progress", className: "text-end" },
+                { "data": "status_badge", className: "text-end", "searchable": false }
+            ],
+            createdRow: row => $('td', row).addClass('align-middle py-3'),
+            layout: {
+                topStart: null,
+                topEnd: null,
+                bottomEnd: {
+                    paging: {
+                        boundaryNumbers: false,
+                    }
+                }
+            }
+        });
+
+        $('#experimentSearchInput').on('keyup change', function () {
+            table.search(this.value).draw();
+        });
+    });
+</script>
+{% endblock scripts %}

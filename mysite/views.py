@@ -19,8 +19,7 @@ def home(request):
     return render(request, 'mysite/index.html', {})
 
 def experiments_list(request):
-
-    mlflow.set_tracking_uri("https://mlflow.toolbox.epu.ntua.gr/")
+    """mlflow.set_tracking_uri("https://mlflow.toolbox.epu.ntua.gr/")
     
     data = []
     for exp in mlflow.search_experiments():
@@ -56,9 +55,82 @@ def experiments_list(request):
     # Pagination implementation for 5 experiments per page
     p = Paginator(data, 5)
     page_number = request.GET.get("page")
-    filtered_data = p.get_page(page_number)
+    filtered_data = p.get_page(page_number)"""
 
-    return render(request, 'mysite/experiments-list.html', {"experiments" : filtered_data, "experiments_num": counts, "status_filter": status_filter, "active_navbar_page": "experiments", "show_vertical_navbar": True})
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
+        draw = int(request.GET.get("draw", 1))
+        start = int(request.GET.get("start", 0))
+        length = int(request.GET.get("length", 10))
+        search_value = request.GET.get("search[value]", "")
+        status_filter = request.GET.get("status")
+
+        order_col = request.GET.get("order[0][column]", "2")
+        order_dir = request.GET.get("order[0][dir]", "desc")
+        column_map = {
+            "1": "name",
+            "2": "collaborators__first_name",
+            "3": "created_at",
+            "4": "updated_at",
+            "5": "status",
+            "6": "type",
+            "7": "progress",
+            "8": "status"
+        }
+        ordering = column_map.get(order_col, "created_at")
+        if order_dir == "desc":
+            ordering = f"-{ordering}"
+
+        qs = Experiment.objects.select_related("creator").prefetch_related("collaborators").all()
+        if status_filter in ["completed", "ongoing", "cancelled", "inactive"]:
+            qs = qs.filter(status=status_filter)
+
+        records_total = qs.count()
+
+        if search_value:
+            qs = qs.filter(
+                Q(name__icontains=search_value)
+            ).distinct()
+
+        records_filtered = qs.count()
+        qs = qs.order_by(ordering)[start:start + length]
+
+        data = []
+        for exp in qs:
+            data.append({
+                "id": exp.id,
+                "name": exp.name,
+                "collaborators": ", ".join(exp.collaborators.values_list("first_name", flat=True)),
+                "created_at": exp.created_at.strftime("%b %d, %Y"),
+                "updated_at": exp.updated_at.strftime("%b %d, %Y"),
+                "type": exp.get_exp_type_display(),
+                "progress": exp.progress,
+                "status": exp.status,
+                "status_badge": f'<span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">{exp.status.upper()}</span></span>',
+            })
+
+        return JsonResponse({
+            "draw": draw,
+            "recordsTotal": records_total,
+            "recordsFiltered": records_filtered,
+            "data": data,
+        })
+    data = Experiment.objects.all()
+    counts = {
+        "all": data.count(),
+        "completed": data.filter(status="completed").count(),
+        "ongoing": data.filter(status="ongoing").count(),
+        "cancelled": data.filter(status="cancelled").count(),
+        "inactive": data.filter(status="inactive").count(),
+    }
+    status_filter = request.GET.get("status")
+    return render(request, 'mysite/experiments-list.html', {
+        "experiment" : data, 
+        "experiments_num": counts, 
+        "status_filter": status_filter, 
+        "active_navbar_page": "experiments", 
+        "show_vertical_navbar": True
+    })
+
 
 def error_does_not_exist(request, error=None):
     return render(request, 'mysite/error-does-not-exist.html', {"error": error})
