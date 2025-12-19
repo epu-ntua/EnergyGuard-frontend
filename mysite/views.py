@@ -99,6 +99,7 @@ def experiments_list(request):
             data.append({
                 "id": exp.id,
                 "name": exp.name,
+                "description": exp.description,
                 "collaborators": ", ".join(exp.collaborators.values_list("first_name", flat=True)),
                 "created_at": exp.created_at.strftime("%b %d, %Y"),
                 "updated_at": exp.updated_at.strftime("%b %d, %Y"),
@@ -289,7 +290,6 @@ def dataset_details(request, dataset_id):
             "status": dataset.status,
             "label": dataset.get_label_display(),
             "source": dataset.get_source_display(),
-            "collaborators": dataset.users.all(),
             "visibility": dataset.visibility,
             "description": dataset.description,
             "metadata": dataset.metadata

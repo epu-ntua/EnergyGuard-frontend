@@ -1,5 +1,4 @@
 {% extends "mysite/base.html" %}
-{% load pagination_tags %}
 {% load static %}
 
 {% block title %}Experiments List | EnergyGuard{% endblock %}
@@ -20,7 +19,7 @@
 
 
         <ul class="nav nav-underline" id="myTab" role="tablist">
-            <li class="nav-item"><a class="nav-link active fs-8-5" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="true">My experiment</a></li>
+            <li class="nav-item"><a class="nav-link active fs-8-5" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="true">My experiments</a></li>
             <li class="nav-item"><a class="nav-link fs-8-5" id="publicExperiments-tab" data-bs-toggle="tab" href="#tab-publicExperiments" role="tab" aria-controls="tab-publicExperiments" aria-selected="false">Public experiments</a></li>
         </ul>
 
@@ -57,19 +56,14 @@
                             <table class="table table-sm fs-9 mb-0" id="experimentsTable">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:17%;">
-                                            <a href="?{% query_string 'sort' %}sort=name">EXPERIMENT NAME</a>
-                                        </th>
-                                        <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
-                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">
-                                            <a href="?{% query_string 'sort' %}sort=start_date">START DATE</a>
-                                        </th>
-                                        <th class="sort align-middle text-end" scope="col" data-sort="updated" style="width:10%;">
-                                            <a href="?{% query_string 'sort' %}sort=last_update">UPDATED</a>
-                                        </th>
+                                        <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:14%;">EXPERIMENT NAME</th>
+                                        <th class="sort align-middle text-start" scope="col" style="width:12%;">DESCRIPTION</th>
+                                        <th class="sort align-middle text-start" scope="col" style="width:4%;">COLLABORATORS</th>
+                                        <th class="sort align-middle text-start" scope="col" style="width:7%;">START DATE</th>
+                                        <th class="sort align-middle text-start" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
                                         <th class="sort align-middle text-end" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
-                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">PROGRESS</th>
-                                        <th class="sort align-middle text-end" scope="col" style="width:10%;">STATUS</th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:8%;">PROGRESS</th>
+                                        <th class="sort align-middle text-end" scope="col" style="width:8%;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody >
@@ -128,11 +122,18 @@
             },
             "columns": [
                 { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiment/${row.id}/">${data}</a>`},
+                { "data": "description", className: "pe-3" },
                 { "data": "collaborators" },
                 { "data": "created_at", className: "text-end" },
                 { "data": "updated_at", className: "text-end" },
                 { "data": "type", className: "text-end" },
-                { "data": "progress", className: "text-end" },
+                { "data": "progress", render: (prog) =>
+                    `<div class="justify-content-end d-flex">
+                        <div class="progress" style="width:50%">
+                            <div class="progress-bar rounded-3 fs-10" role="progressbar" style="width: ${prog}%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>`
+                },
                 { "data": "status_badge", orderable: false, searchable: false, render: (status) => {
                     const map = {
                         completed: 'badge-phoenix-success',
