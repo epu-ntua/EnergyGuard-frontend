@@ -133,7 +133,15 @@
                 { "data": "updated_at", className: "text-end" },
                 { "data": "type", className: "text-end" },
                 { "data": "progress", className: "text-end" },
-                { "data": "status_badge", className: "text-end", "searchable": false }
+                { "data": "status_badge", orderable: false, searchable: false, render: (status) => {
+                    const map = {
+                        completed: 'badge-phoenix-success',
+                        ongoing: 'badge-phoenix-primary',
+                        cancelled: 'badge-phoenix-danger',
+                        inactive: 'badge-phoenix-warning',
+                        };
+                    return `<div class="text-end"><span class="badge badge-phoenix ${map[status] || 'badge-phoenix-secondary'} fs-10"><span class="badge-label">${status.toUpperCase()}</span></span></div>`;
+                } }
             ],
             createdRow: row => $('td', row).addClass('align-middle py-3'),
             layout: {

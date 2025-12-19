@@ -105,7 +105,7 @@ def experiments_list(request):
                 "type": exp.get_exp_type_display(),
                 "progress": exp.progress,
                 "status": exp.status,
-                "status_badge": f'<span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">{exp.status.upper()}</span></span>',
+                "status_badge": exp.status,
             })
 
         return JsonResponse({
