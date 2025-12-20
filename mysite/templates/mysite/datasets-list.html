@@ -50,12 +50,15 @@
                     <table class="table table-sm fs-9 mb-0" id="datasetsList">
                         <thead>
                             <tr>
-                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:25%;">DATASET NAME</th>
-                                <th class="sort align-middle text-start" scope="col" style="width:15%;">COLLABORATORS</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:10%;">CREATED</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:16%; min-width: 100px;">LABEL</a></th>
+                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:20%;">DATASET NAME</th>
+                                <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:7%;">CREATED</th>
+                                <!-- <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th> -->
+                                <th class="sort align-middle text-end" scope="col" style="width:13%; min-width: 100px;">LABEL</a></th>
                                 <th class="sort align-middle text-end" scope="col" style="width:14%;">SOURCE</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:16%;">PUBLISHER</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:5%;">SIZE</th>
+                                <th class="sort align-middle text-end" scope="col">DOWNLOADS</th>
                                 <th class="sort align-middle text-end" scope="col">STATUS</th>
                             </tr>
                         </thead>
@@ -127,10 +130,22 @@ $(function () {
             { data: "name", render: (data, type, row) => `<a class="py-0" href="/dataset/${row.id}/">${data}</a>` },
             { data: "users" },
             { data: "created_at", className: "text-end" },
-            { data: "updated_at", className: "text-end" },
+            // { data: "updated_at", className: "text-end" },
             { data: "label", className: "text-end" },
             { data: "source", className: "text-end" },
-            { data: "status_badge", className: "text-end", searchable: false }
+            { data: "publisher", className: "text-end" },
+            { data: "size_gb", className: "text-end" },
+            { data: "downloads", className: "text-end" },
+            { data: "status_badge", searchable: false, render: (status) => {
+                    const map = {
+                        published: 'badge-phoenix-success',
+                        under_review: 'badge-phoenix-primary',
+                        private: 'badge-phoenix-danger',
+                        restricted: 'badge-phoenix-warning',
+                        };
+                    return `<div class="text-end"><span class="badge badge-phoenix ${map[status] || 'badge-phoenix-secondary'} fs-10"><span class="badge-label">${status.toUpperCase()}</span></span></div>`;
+                }
+            }
         ],
         order: [[3, "desc"]], // Sort by column index 3 (created_at) descending.
         createdRow: row => $('td', row).addClass('align-middle py-3'),
