@@ -67,11 +67,11 @@
                       <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Published by :</h5>
+                            <h5 class="text-body mb-0 text-nowrap">Published<br> by :</h5>
                           </div>
                         </td>
                         <!-- TODO: Replaced with real data -->
-                        <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">ICCS</a></td>
+                        <td class="ps-2 py-1" ><a class="fw-semibold d-block lh-sm" style="width:70%" href="#!">{{ dt.publisher }}</a></td>
                       </tr>
 
                       <tr>
@@ -82,7 +82,7 @@
                           </div>
                         </td>
                         <!-- TODO: Replace with real data -->
-                        <td class="fw-bold ps-1 py-1 text-body-highlight"> 50 €</td>
+                        <td class="fw-bold ps-2 py-1 text-body-highlight"> 50 €</td>
                       </tr>
                     </tbody>
                   </table>
@@ -91,17 +91,9 @@
                   <table class="lh-sm">
                     <tbody>
                       <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Started : </td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.created_at|date:"M j, Y" }}</td>
-                      </tr>
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Update :</td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.updated_at|date:"M j, Y" }}</td>
-                      </tr>
-                      <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Size :</td>
                         <!-- TODO: Add dynamic value -->
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">798 samples</td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.size }} GB</td>
                       </tr>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Label :</td>
@@ -111,10 +103,18 @@
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Source :</td>
                         <td class="text-warning fw-semibold ps-3">{{ dt.source }}</td>
                       </tr>
-                      <tr>
+                      <!-- <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Url :</td>
-                        <!-- TODO: Add dynamic link -->
+                        TODO: Add dynamic link
                         <td class="text-warning fw-semibold ps-3">Open in browser</td>
+                      </tr> -->
+                      <tr>
+                        <td class="align-top py-1 text-body text-nowrap fw-bold">Started : </td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.created_at|date:"M j, Y" }}</td>
+                      </tr>
+                      <tr>
+                        <td class="align-top py-1 text-body text-nowrap fw-bold">Update :</td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.updated_at|date:"M j, Y" }}</td>
                       </tr>
                     </tbody>
                   </table>
