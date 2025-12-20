@@ -249,8 +249,12 @@ def datasets_list(request):
                 "updated_at": d.updated_at.strftime("%b %d, %Y"),
                 "label": d.get_label_display(),
                 "source": d.get_source_display(),
+                "visibility": d.visibility,
+                "size_gb": f'{d.size_gb} GB',
+                "downloads": d.downloads,
+                "publisher": d.publisher,
                 "status": d.status,
-                "status_badge": f'<span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">{d.status.replace("_", " ").upper()}</span></span>',
+                "status_badge": d.status,
             })
 
         return JsonResponse({
@@ -291,6 +295,8 @@ def dataset_details(request, dataset_id):
             "label": dataset.get_label_display(),
             "source": dataset.get_source_display(),
             "visibility": dataset.visibility,
+            "size": dataset.size_gb,
+            "publisher": dataset.publisher,
             "description": dataset.description,
             "metadata": dataset.metadata
         }
