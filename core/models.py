@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
@@ -153,6 +154,9 @@ class Dataset(TimeStampedModel):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list')
     experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets')
     visibility = models.BooleanField(default=False)
+    downloads = models.PositiveIntegerField(default=0)
+    size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
+    publisher = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     metadata = models.JSONField(blank=True, null=True)
 
