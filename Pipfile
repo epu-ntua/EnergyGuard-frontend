@@ -8,6 +8,8 @@ django = "*"
 psycopg = {extras = ["binary"], version = "*"}
 django-formtools = "*"
 django-allauth = "*"
+mozilla-django-oidc = "*"
+django-environ = "*"
 
 [dev-packages]
 
