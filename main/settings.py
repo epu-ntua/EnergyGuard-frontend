@@ -11,10 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env() # Creates manager that fetches the environment variables
+environ.Env.read_env(os.path.join(BASE_DIR, '.env')) # Reads the .env file
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -37,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mozilla_django_oidc', 
     'formtools',
     'core',
     'mysite'
@@ -143,3 +146,17 @@ AUTH_USER_MODEL = 'core.User'
 
 #Default: 1209600 (2 weeks, in seconds)
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
+
+# OIDC Settings
+# OIDC_RP_CLIENT_ID = env('OIDC_RP_CLIENT_ID')
+# OIDC_RP_CLIENT_SECRET = env('OIDC_RP_CLIENT_SECRET')
+
+# KC_URL = 'https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard'
+# OIDC_OP_AUTHORIZATION_ENDPOINT = f'{KC_URL}/protocol/openid-connect/auth'
+# OIDC_OP_TOKEN_ENDPOINT = f'{KC_URL}/protocol/openid-connect/token'
+# OIDC_OP_USER_ENDPOINT = f'{KC_URL}/protocol/openid-connect/userinfo'
+# OIDC_OP_JWKS_ENDPOINT = f'{KC_URL}/protocol/openid-connect/certs'
+# OIDC_RP_SIGN_ALGO = 'RS256'
+
+# LOGIN_REDIRECT_URL = "/"
+# LOGOUT_REDIRECT_URL = "/"
