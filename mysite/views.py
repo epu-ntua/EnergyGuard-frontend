@@ -132,6 +132,85 @@ def experiments_list(request):
         "show_vertical_navbar": True
     })
 
+def experiments_list_tabs(request):
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
+        draw = int(request.GET.get("draw", 1))
+        start = int(request.GET.get("start", 0))
+        length = int(request.GET.get("length", 10))
+        search_value = request.GET.get("search[value]", "")
+        status_filter = request.GET.get("status")
+        visibility_filter = request.GET.get("visibility", "false")
+
+        order_col = request.GET.get("order[0][column]", "2")
+        order_dir = request.GET.get("order[0][dir]", "desc")
+        column_map = {
+            "1": "name",
+            "2": "collaborators__first_name",
+            "3": "created_at",
+            "4": "updated_at",
+            "5": "status",
+            "6": "type",
+            "7": "progress",
+            "8": "status"
+        }
+        ordering = column_map.get(order_col, "created_at")
+        if order_dir == "desc":
+            ordering = f"-{ordering}"
+
+        qs = Experiment.objects.select_related("creator").prefetch_related("collaborators").filter(visibility = visibility_filter=="true")
+        if status_filter in ["completed", "ongoing", "cancelled", "inactive"]:
+            qs = qs.filter(status=status_filter)
+
+        records_total = qs.count()
+
+        if search_value:
+            qs = qs.filter(
+                Q(name__icontains=search_value)
+            ).distinct()
+
+        records_filtered = qs.count()
+        qs = qs.order_by(ordering)[start:start + length]
+
+        data = []
+        for exp in qs:
+            data.append({
+                "id": exp.id,
+                "name": exp.name,
+                "description": exp.description,
+                "collaborators": ", ".join(exp.collaborators.values_list("first_name", flat=True)),
+                "created_at": exp.created_at.strftime("%b %d, %Y"),
+                "updated_at": exp.updated_at.strftime("%b %d, %Y"),
+                "type": exp.get_exp_type_display(),
+                "progress": exp.progress,
+                "status": exp.status,
+            })
+
+        return JsonResponse({
+            "draw": draw,
+            "recordsTotal": records_total,
+            "recordsFiltered": records_filtered,
+            "data": data,
+        })
+    visibility_filter = request.GET.get("visibility", "false")
+    data = Experiment.objects.filter(visibility=visibility_filter=="true")
+    counts = {
+        "all": data.count(),
+        "completed": data.filter(status="completed").count(),
+        "ongoing": data.filter(status="ongoing").count(),
+        "cancelled": data.filter(status="cancelled").count(),
+        "inactive": data.filter(status="inactive").count(),
+    }
+    status_filter = request.GET.get("status")
+    return render(request, 'mysite/experiments-list-tabs-test.html', {
+        "experiment" : data, 
+        "experiments_num": counts, 
+        "status_filter": status_filter, 
+        "active_navbar_page": "experiments", 
+        "show_vertical_navbar": True,
+        "visibility_filter": visibility_filter
+    })
+
 
 def error_does_not_exist(request, error=None):
     return render(request, 'mysite/error-does-not-exist.html', {"error": error})

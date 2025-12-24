@@ -1,0 +1,130 @@
+{% load static %}
+
+<!-- SUBHEADER -->
+<div class="d-flex justify-content-between">
+    <ul class="nav nav-links mb-lg-2 mx-n3">
+        <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?visibility={{ visibility_param }}"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'completed' %}active{% endif %}" href="?visibility={{ visibility_param }}?status=completed"><span>Completed</span><span class="text-body-tertiary fw-semibold">({{experiments_num.completed}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'ongoing' %}active{% endif %}" href="?visibility={{ visibility_param }}?status=ongoing"><span>Ongoing </span><span class="text-body-tertiary fw-semibold">({{experiments_num.ongoing}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'inactive' %}active{% endif %}" href="?visibility={{ visibility_param }}?status=inactive"><span>Inactive </span><span class="text-body-tertiary fw-semibold">({{experiments_num.inactive}})</span></a></li>
+        <li class="nav-item"><a class="nav-link {%if status_filter == 'cancelled' %}active{% endif %}" href="?visibility={{ visibility_param }}?status=cancelled"><span>Cancelled </span><span class="text-body-tertiary fw-semibold">({{experiments_num.cancelled}})</span></a></li>
+    </ul>
+    <!-- SEARCH AND FILTERS -->
+    <div class="mb-3">
+        <div class="row g-3">
+            <!-- SEARCH BAR -->
+            <div class="col-auto">
+                <div class="search-box">
+                    <form class="position-relative" id="{{ id_name }}ExperimentSearchForm" onsubmit="return false">
+                        <input id="{{ id_name }}ExperimentSearchInput" class="form-control search-input search" type="search" placeholder="Search experiments" aria-label="Search" />
+                        <span class="fas fa-search search-box-icon"></span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+        <div class="table-responsive scrollbar mx-n1 px-1">
+            <table class="table table-sm fs-9 mb-0" id="{{ id_name }}ExperimentsTable">
+                <thead>
+                    <tr>
+                        <th class="sort white-space-nowrap align-middle py-3" scope="col" style="width:14%;">EXPERIMENT NAME</th>
+                        <th class="sort align-middle text-start" scope="col" style="width:12%;">DESCRIPTION</th>
+                        <th class="sort align-middle text-start" scope="col" style="width:4%;">COLLABORATORS</th>
+                        <th class="sort align-middle text-start" scope="col" style="width:7%;">START DATE</th>
+                        <th class="sort align-middle text-start" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
+                        <th class="sort align-middle text-end" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                        <th class="sort align-middle text-end" scope="col" style="width:8%;">PROGRESS</th>
+                        <th class="sort align-middle text-end" scope="col" style="width:8%;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody >
+                    <!-- {% for exp in experiments %}
+                    <tr class="hover-actions-trigger btn-reveal-trigger position-static">
+                        <td class="align-middle py-3 white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
+                        <td class="align-middle py-3 fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
+                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
+                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
+                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
+                        <td class="align-middle py-3 white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
+                        <td class="align-middle py-3 white-space-nowrap text-end fw-bold text-body-tertiary">
+                            {% if exp.status == 'active' %}
+                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
+                            {% elif exp.status == 'deleted' %}
+                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">DELETED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %} -->
+                    
+                </tbody>   
+            </table>
+        </div>
+    </div>
+</div>
+
+    
+
+<script src="{% static '/jquery-3.7.1.min.js' %}"></script>
+<!-- DataTables Bootstrap 5 JS (Add this) -->
+<script src="{% static '/DataTables/datatables.min.js' %}"></script>
+<script>
+    $(function () {
+
+        $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
+        const visibilityParam  = new URLSearchParams(window.location.search).get('visibility'); 
+        const statusParam = new URLSearchParams(window.location.search).get('status') || '';
+        const table = $('#{{ id_name }}ExperimentsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'experiments_list' %}",
+                data: function (d) { 
+                    d.visibility = visibilityParam == 'true';
+                    d.status = statusParam;
+                },
+                "type": "GET"
+            },
+            "columns": [
+                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiment/${row.id}/">${data}</a>`},
+                { "data": "description", className: "pe-3" },
+                { "data": "collaborators" },
+                { "data": "created_at", className: "text-end" },
+                { "data": "updated_at", className: "text-end" },
+                { "data": "type", className: "text-end" },
+                { "data": "progress", render: (prog) =>
+                    `<div class="justify-content-end d-flex">
+                        <div class="progress" style="width:50%">
+                            <div class="progress-bar rounded-3 fs-10" role="progressbar" style="width: ${prog}%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>`
+                },
+                { "data": "status", orderable: false, searchable: false, render: (status) => {
+                    const map = {
+                        completed: 'badge-phoenix-success',
+                        ongoing: 'badge-phoenix-primary',
+                        cancelled: 'badge-phoenix-danger',
+                        inactive: 'badge-phoenix-warning',
+                        };
+                    return `<div class="text-end"><span class="badge badge-phoenix ${map[status] || 'badge-phoenix-secondary'} fs-10"><span class="badge-label">${status.toUpperCase()}</span></span></div>`;
+                } }
+            ],
+            createdRow: row => $('td', row).addClass('align-middle py-3'),
+            layout: {
+                topStart: null,
+                topEnd: null,
+                bottomEnd: {
+                    paging: {
+                        boundaryNumbers: false,
+                    }
+                }
+            }
+        });
+
+        $('#{{ id_name }}ExperimentSearchInput').on('keyup change', function () {
+            table.search(this.value).draw();
+        });
+    });
+</script>
