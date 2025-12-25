@@ -1,7 +1,9 @@
-from core.models import User, Profile, Dataset, Billing, PaymentMethod, Experiment
+from accounts.models import User, Profile
+from datasets.models import Dataset
+from billing.models import Billing, PaymentMethod
+from experiments.models import Experiment
 from mysite.forms import *
 from django.core.files.storage import FileSystemStorage
-from django.core.paginator import Paginator
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect

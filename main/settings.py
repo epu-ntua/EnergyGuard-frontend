@@ -41,8 +41,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.openid_connect',
     'formtools',
     'core',
+    'accounts',
+    'datasets',
+    'experiments',
+    'billing',
     'mysite'
 ]
 
@@ -54,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -138,7 +148,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 # Some browsers (Chrome, for example) provide settings that allow users to continue browsing sessions after
 # closing and reopening the browser. In some cases, this can interfere with the SESSION_EXPIRE_AT_BROWSER_CLOSE
@@ -147,16 +157,29 @@ AUTH_USER_MODEL = 'core.User'
 #Default: 1209600 (2 weeks, in seconds)
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
 
-# OIDC Settings
-# OIDC_RP_CLIENT_ID = env('OIDC_RP_CLIENT_ID')
-# OIDC_RP_CLIENT_SECRET = env('OIDC_RP_CLIENT_SECRET')
+SITE_ID = 1 # Required for django-allauth
 
-# KC_URL = 'https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard'
-# OIDC_OP_AUTHORIZATION_ENDPOINT = f'{KC_URL}/protocol/openid-connect/auth'
-# OIDC_OP_TOKEN_ENDPOINT = f'{KC_URL}/protocol/openid-connect/token'
-# OIDC_OP_USER_ENDPOINT = f'{KC_URL}/protocol/openid-connect/userinfo'
-# OIDC_OP_JWKS_ENDPOINT = f'{KC_URL}/protocol/openid-connect/certs'
-# OIDC_RP_SIGN_ALGO = 'RS256'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
-# LOGIN_REDIRECT_URL = "/"
-# LOGOUT_REDIRECT_URL = "/"
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": "keycloak",
+                "name": "Keycloak",  
+                "client_id": env('OIDC_RP_CLIENT_ID'),
+                "secret": env('OIDC_RP_CLIENT_SECRET'),
+                "settings": {
+                    "server_url": "https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard/.well-known/openid-configuration",
+                },
+            }
+        ]
+    }
+}
+
+ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+# Redirects user to home page after logout
+ACCOUNT_LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000/"

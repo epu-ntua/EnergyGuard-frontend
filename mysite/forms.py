@@ -2,7 +2,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django import forms
-from core.models import User, Profile, PaymentMethod
+from accounts.models import User, Profile
+from billing.models import PaymentMethod
 from .validators import strict_email_user_validator
 
 
