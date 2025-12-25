@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from .models import Dataset
 from django.http import JsonResponse
+from django.contrib import messages
+
 
 # Create your views here.
 """def datasets_list(request):
@@ -112,7 +114,7 @@ def datasets_list(request):
         "under_review": data.filter(status="under_review").count(),
     }
     status_filter = request.GET.get("status")
-    return render(request, "mysite/datasets-list.html", {
+    return render(request, "datasets/datasets-list.html", {
         "dataset_num": counts,
         "status_filter": status_filter,
         "active_navbar_page": "datasets",
@@ -139,6 +141,7 @@ def dataset_details(request, dataset_id):
             "metadata": dataset.metadata
         }
     else:
-        return redirect('error_does_not_exist', error= "Dataset not found")
+        messages.error(request, "Dataset not found")
+        return redirect('home')
 
-    return render(request, 'mysite/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+    return render(request, 'datasets/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})

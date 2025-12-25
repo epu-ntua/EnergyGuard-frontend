@@ -88,7 +88,7 @@
                 "type": "GET"
             },
             "columns": [
-                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiment/${row.id}/">${data}</a>`},
+                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiments/experiment/${row.id}/">${data}</a>`},
                 { "data": "description", className: "pe-3" },
                 { "data": "collaborators" },
                 { "data": "created_at", className: "text-end" },

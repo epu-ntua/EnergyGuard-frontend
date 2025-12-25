@@ -1,13 +1,14 @@
-from django.shortcuts import render
+from formtools.wizard.views import SessionWizardView
+from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm
 from .models import User, Profile
 from billing.models import PaymentMethod
-from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm
 from django.core.files.storage import FileSystemStorage
-from formtools.wizard.views import SessionWizardView
+from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.db import transaction
 from django.contrib.auth import login
+import os
 
 # Create your views here.
 FORMS = [
@@ -17,9 +18,9 @@ FORMS = [
 ]
 
 TEMPLATE_NAMES = {
-    "user_info": "mysite/registration-step1.html",
-    "profile_info": "mysite/registration-step2.html",
-    "payment_info": "mysite/registration-step3.html",
+    "user_info": "accounts/registration-step1.html",
+    "profile_info": "accounts/registration-step2.html",
+    "payment_info": "accounts/registration-step3.html",
 }
 
 class RegistrationWizard(SessionWizardView):
@@ -67,7 +68,7 @@ class RegistrationWizard(SessionWizardView):
 def registration_success(request):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
-    return render(request, 'mysite/registration-success.html', {"wizard": wizard})
+    return render(request, 'accounts/registration-success.html', {"wizard": wizard})
 
 def login_view(request):
     if request.method == 'POST':
@@ -80,4 +81,4 @@ def login_view(request):
     else:
         form = CustomAuthenticationForm()
 
-    return render(request, 'mysite/login.html', {'form': form})
+    return render(request, 'accounts/login.html', {'form': form})

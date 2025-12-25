@@ -1,11 +1,11 @@
-{% extends "mysite/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Datasets List | EnergyGuard{% endblock %}
 
-{% block head %}
+<!-- {% block head %}
 <link href="{% static '/DataTables/datatables.min.css' %}" rel="stylesheet" />
-{% endblock head %}
+{% endblock head %} -->
 
 {% block content %}
 <div class="content">
@@ -101,7 +101,7 @@
                 </div>
             </div>
         </div>
-        {% include "./footer.html" %}
+        {% include "core/footer.html" %}
     </div>
 </div>
 {% endblock content %}
@@ -127,7 +127,7 @@ $(function () {
             type: "GET"
         },
         columns: [
-            { data: "name", render: (data, type, row) => `<a class="py-0" href="/dataset/${row.id}/">${data}</a>` },
+            { data: "name", render: (data, type, row) => `<a class="py-0" href="/datasets/dataset/${row.id}/">${data}</a>` },
             { data: "users" },
             { data: "created_at", className: "text-end" },
             // { data: "updated_at", className: "text-end" },

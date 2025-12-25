@@ -1,4 +1,4 @@
-{% extends "mysite/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}EnergyGuard | Experiment Details{% endblock %}
@@ -56,11 +56,12 @@
                             <h5 class="text-body mb-0 text-nowrap">Company :</h5>
                           </div>
                         </td>
-                        <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">{{ exp.company|default:"-"}} </a></td>
+                        <!-- <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">{{ exp.company|default:"-"}} </a></td> -->
+                        <td class="ps-1 py-1 text-start fw-semibold lh-sm d-block">{{ exp.company|default:"-"}}</td>
                       </tr>
 
                       <!-- TODO: Replace with real data -->
-                      <tr>
+                      <!-- <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span
                               class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
@@ -68,7 +69,7 @@
                           </div>
                         </td>
                         <td class="fw-bold ps-1 py-1 text-body-highlight">$8,742</td>
-                      </tr>
+                      </tr> -->
                     </tbody>
                   </table>
                 </div>
@@ -371,7 +372,7 @@
     </div> -->
 
   </div>
-  {% include "./footer.html" %}
+  {% include "core/footer.html" %}
 </div>
 {% endblock %}
 

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from .models import Experiment
 from django.http import JsonResponse
+from django.contrib import messages
 
 # Create your views here.
 def experiments_list(request):
@@ -110,7 +111,7 @@ def experiments_list(request):
         "inactive": data.filter(status="inactive").count(),
     }
     status_filter = request.GET.get("status")
-    return render(request, 'mysite/experiments-list.html', {
+    return render(request, 'experiments/experiments-list.html', {
         "experiment" : data, 
         "experiments_num": counts, 
         "status_filter": status_filter, 
@@ -188,7 +189,7 @@ def experiments_list_tabs(request):
         "inactive": data.filter(status="inactive").count(),
     }
     status_filter = request.GET.get("status")
-    return render(request, 'mysite/experiments-list-tabs-test.html', {
+    return render(request, 'experiments/experiments-list-tabs-test.html', {
         "experiment" : data, 
         "experiments_num": counts, 
         "status_filter": status_filter, 
@@ -222,6 +223,8 @@ def experiment_details(request, experiment_id):
             "company": experiment.creator.profile.company if hasattr(experiment.creator, 'profile') else None
         }
     except Experiment.DoesNotExist:
-        return redirect('error_does_not_exist', error= "Experiment not found")  # or render an error page
-    
-    return render(request, 'mysite/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})
+        # return redirect('core/error_does_not_exist', error= "Experiment not found")  # or render an error page
+        messages.error(request, "Experiment not found")
+        return redirect('home') 
+
+    return render(request, 'experiments/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_vertical_navbar": True})

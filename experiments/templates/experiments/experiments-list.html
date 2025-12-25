@@ -1,4 +1,4 @@
-{% extends "mysite/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Experiments List | EnergyGuard{% endblock %}
@@ -94,11 +94,11 @@
             <!-- Public experiments tab -->
             <div class="tab-pane fade" id="tab-publicExperiments" role="tabpanel" aria-labelledby="publicExperiments-tab">
                 <!-- SUBHEADER -->
-                
+                <p>PUBLIC EXPERIMENTS</p>
             </div>
         </div>
     </div>
-    {% include "./footer.html" %}
+    {% include "core/footer.html" %}
 </div>
 {% endblock content %}
 
@@ -121,7 +121,7 @@
                 "type": "GET"
             },
             "columns": [
-                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiment/${row.id}/">${data}</a>`},
+                { "data": "name", render: (data, type, row) => `<a class="py-0" href="/experiments/experiment/${row.id}/">${data}</a>`},
                 { "data": "description", className: "pe-3" },
                 { "data": "collaborators" },
                 { "data": "created_at", className: "text-end" },
@@ -134,7 +134,7 @@
                         </div>
                     </div>`
                 },
-                { "data": "status_badge", orderable: false, searchable: false, render: (status) => {
+                { "data": "status", orderable: false, searchable: false, render: (status) => {
                     const map = {
                         completed: 'badge-phoenix-success',
                         ongoing: 'badge-phoenix-primary',
