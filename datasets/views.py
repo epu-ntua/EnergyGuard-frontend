@@ -1,147 +1,143 @@
+from django.db.models import Q, Count
 from django.shortcuts import render, redirect
-from django.db.models import Q
+from django.utils.html import escape
+from django.views.generic import TemplateView
+from django_datatables_view.base_datatable_view import BaseDatatableView
+from django.contrib.auth import get_user_model
 from .models import Dataset
-from django.http import JsonResponse
 from django.contrib import messages
 
 
-# Create your views here.
-"""def datasets_list(request):
+class DatasetsListJson(BaseDatatableView):
+    model = Dataset
+    columns = [
+        "name",
+        # "users",
+        "created_at",
+        "label",
+        "source",
+        "publisher",
+        "size_gb",
+        "downloads",
+        "status",
+        "id",
+    ]
+    order_columns = [
+        "name",
+        # "users",
+        "created_at",
+        "label",
+        "source",
+        "publisher",
+        "size_gb",
+        "downloads",
+        "status",
+    ]
+    max_display_length = 25
 
-    data = Dataset.objects.all()
+    def get_initial_queryset(self):
+        # Prefetch related users to optimize DB queries
+        return Dataset.objects.prefetch_related("users").all()
 
-    # Number of all/published/private/restricted/under_review datasets
-    counts = {
-        "all": data.count(),
-        "published": data.filter(status="published").count(),
-        "private": data.filter(status="private").count(),
-        "restricted": data.filter(status="restricted").count(),
-        "under_review": data.filter(status="under_review").count(),
-    }
-    
-    # Sort data according to column
-    sort = request.GET.get('sort') 
-    if sort in ['name', 'created_at', 'updated', 'label', 'source']:
-        data = data.order_by(sort)
+    def render_column(self, row, column):
+        # # Render specific columns with custom HTML or formatting
+        # if column == "users":
+        #     return ", ".join(user.username for user in row.users.all()) or "No collaborators"
+        if column == "created_at":
+            return row.created_at.strftime("%b %d, %Y")
+        elif column == "label":
+            return row.get_label_display()
+        elif column == "source":
+            return row.get_source_display()
+        elif column == "size_gb":
+            return f"{row.size_gb} GB"
+        elif column == "status":
+            status = row.status.replace("_", " ").title()
+            map = {
+                "published": "badge-phoenix-success",
+                "under_review": "badge-phoenix-primary",
+                "private": "badge-phoenix-danger",
+                "restricted": "badge-phoenix-warning",
+            }
+            badge_class = map.get(row.status, "badge-phoenix-secondary")
+            return f'<div class="text-end"><span class="badge badge-phoenix {badge_class} fs-10"><span class="badge-label">{status}</span></span></div>'
+        else:
+            return super().render_column(row, column)
 
-    # Filter data according to status
-    status_filter = request.GET.get("status")
-    if status_filter in ["published", "private", "restricted", "under_review"]:
-        data = data.filter(status=status_filter)
+    def filter_queryset(self, qs):
+        # Handle search and status filtering
+        search = self.request.GET.get("search[value]")
+        if search:
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(label__icontains=search)
+                | Q(source__icontains=search)
+                | Q(status__icontains=search)
+                # | Q(users__username__icontains=search)
+            ).distinct()
 
-    # Pagination implementation for 8 datasets per page
-    p = Paginator(data, 7)
-    page_number = request.GET.get("page")
-    filtered_data = p.get_page(page_number)
-
-    return render(request, 'mysite/dataset-list.html', {"dataset" : filtered_data, "dataset_num": counts, "status_filter": status_filter, "active_navbar_page": "datasets", "show_vertical_navbar": True})"""
-
-def datasets_list(request):
-    # DataTables AJAX branch
-    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
-        draw = int(request.GET.get("draw", 1))
-        start = int(request.GET.get("start", 0))
-        length = int(request.GET.get("length", 10))
-        search_value = request.GET.get("search[value]", "")
-        status_filter = request.GET.get("status")
-
-        order_col = request.GET.get("order[0][column]", "3")
-        order_dir = request.GET.get("order[0][dir]", "desc")
-        column_map = {
-            "1": "name",
-            "2": "users__first_name",
-            "3": "created_at",
-            "4": "updated_at",
-            "5": "label",
-            "6": "source",
-            "7": "status",
-        }
-        ordering = column_map.get(order_col, "created_at")
-        if order_dir == "desc":
-            ordering = f"-{ordering}"
-
-        qs = Dataset.objects.prefetch_related("users").all()
+        status_filter = self.request.GET.get("status")
         if status_filter in ["published", "private", "restricted", "under_review"]:
             qs = qs.filter(status=status_filter)
 
-        records_total = qs.count()
+        return qs
 
-        if search_value:
-            qs = qs.filter(
-                Q(name__icontains=search_value)
-                | Q(label__icontains=search_value)
-                | Q(source__icontains=search_value)
-                | Q(status__icontains=search_value)
-                | Q(users__username__icontains=search_value)
-            ).distinct()
 
-        records_filtered = qs.count()
-        qs = qs.order_by(ordering)[start:start + length]
-
-        data = []
-        for d in qs:
-            collaborators = ", ".join(d.users.values_list("username", flat=True)) or "No collaborators"
-            data.append({
-                "id": d.id,
-                "name": d.name,
-                "users": collaborators,
-                "created_at": d.created_at.strftime("%b %d, %Y"),
-                "updated_at": d.updated_at.strftime("%b %d, %Y"),
-                "label": d.get_label_display(),
-                "source": d.get_source_display(),
-                "visibility": d.visibility,
-                "size_gb": f'{d.size_gb} GB',
-                "downloads": d.downloads,
-                "publisher": d.publisher,
-                "status": d.status,
-                "status_badge": d.status,
-            })
-
-        return JsonResponse({
-            "draw": draw,
-            "recordsTotal": records_total,
-            "recordsFiltered": records_filtered,
-            "data": data,
-        })
-
-    # Initial page render (no paginator)
-    data = Dataset.objects.all()
+def datasets_list(request):
+    # Prepare context for initial page load (dataset counts, etc.)
+    qs = Dataset.objects.all()
     counts = {
-        "all": data.count(),
-        "published": data.filter(status="published").count(),
-        "private": data.filter(status="private").count(),
-        "restricted": data.filter(status="restricted").count(),
-        "under_review": data.filter(status="under_review").count(),
+        "all": qs.count(),
+        "published": qs.filter(status="published").count(),
+        "private": qs.filter(status="private").count(),
+        "restricted": qs.filter(status="restricted").count(),
+        "under_review": qs.filter(status="under_review").count(),
     }
     status_filter = request.GET.get("status")
-    return render(request, "datasets/datasets-list.html", {
-        "dataset_num": counts,
-        "status_filter": status_filter,
-        "active_navbar_page": "datasets",
-        "show_vertical_navbar": True,
-    })
+
+    return render(
+        request,
+        "datasets/datasets-list.html",
+        {
+            "dataset_num": counts,
+            "status_filter": status_filter,
+            "active_navbar_page": "datasets",
+            "show_vertical_navbar": True,
+        },
+    )
+
 
 def dataset_details(request, dataset_id):
-
-    dataset = Dataset.objects.filter(pk=dataset_id).first()  # avoid exception if not found
-
-    if dataset:
-        dataset_details = {
-            "id": dataset.id,
-            "name": dataset.name,
-            "created_at": dataset.created_at,
-            "updated_at": dataset.updated_at,
-            "status": dataset.status,
-            "label": dataset.get_label_display(),
-            "source": dataset.get_source_display(),
-            "visibility": dataset.visibility,
-            "size": dataset.size_gb,
-            "publisher": dataset.publisher,
-            "description": dataset.description,
-            "metadata": dataset.metadata
-        }
-    else:
+    # Fetch and display details for a single dataset
+    try:
+        dataset = Dataset.objects.prefetch_related("users").get(pk=dataset_id)
+    except Dataset.DoesNotExist:
         messages.error(request, "Dataset not found")
-        return redirect('home')
+        return redirect("home")
 
-    return render(request, 'datasets/dataset-details.html', {"dataset": dataset, "dt": dataset_details, "active_navbar_page": "datasets", "show_vertical_navbar": True})
+    dataset_details = {
+        "id": dataset.id,
+        "name": dataset.name,
+        "created_at": dataset.created_at,
+        "updated_at": dataset.updated_at,
+        "status": dataset.status,
+        "label": dataset.get_label_display(),
+        "source": dataset.get_source_display(),
+        "visibility": dataset.visibility,
+        "size": dataset.size_gb,
+        "publisher": dataset.publisher,
+        "description": dataset.description,
+        "metadata": dataset.metadata,
+        "collaborators": ", ".join(user.username for user in dataset.users.all()),
+    }
+
+    return render(
+        request,
+        "datasets/dataset-details.html",
+        {
+            "dataset": dataset,
+            "dt": dataset_details,
+            "active_navbar_page": "datasets",
+            "show_vertical_navbar": True,
+        },
+    )
