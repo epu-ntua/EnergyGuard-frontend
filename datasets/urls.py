@@ -1,7 +1,8 @@
 from django.urls import path
-from datasets import views
+from .views import datasets_list, DatasetsListJson, dataset_details
 
 urlpatterns = [
-    path('list/', views.datasets_list, name='datasets_list'),
-    path('dataset/<int:dataset_id>/', views.dataset_details, name='dataset_details'),
+    path('', datasets_list, name='datasets_list'),
+    path('data/', DatasetsListJson.as_view(), name='datasets_list_json'),
+    path('dataset/<int:dataset_id>/', dataset_details, name='dataset_details'),
 ]

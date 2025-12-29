@@ -9,6 +9,8 @@ psycopg = {extras = ["binary"], version = "*"}
 django-formtools = "*"
 django-allauth = "*"
 django-environ = "*"
+django-datatables-view = "*"
+django-datatable-view = "*"
 
 [dev-packages]
 

@@ -47,19 +47,19 @@
         <div>
             <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                 <div class="table-responsive scrollbar mx-n1 px-1">
-                    <table class="table table-sm fs-9 mb-0" id="datasetsList">
+                    <table class="table table-sm fs-9 mb-0" id="datasetsList" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
                                 <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:20%;">DATASET NAME</th>
-                                <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th>
+                                <!-- <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th> -->
                                 <th class="sort align-middle text-end" scope="col" style="width:7%;">CREATED</th>
                                 <!-- <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th> -->
                                 <th class="sort align-middle text-end" scope="col" style="width:13%; min-width: 100px;">LABEL</a></th>
-                                <th class="sort align-middle text-end" scope="col" style="width:14%;">SOURCE</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:10%;">SOURCE</th>
                                 <th class="sort align-middle text-end" scope="col" style="width:16%;">PUBLISHER</th>
                                 <th class="sort align-middle text-end" scope="col" style="width:5%;">SIZE</th>
-                                <th class="sort align-middle text-end" scope="col">DOWNLOADS</th>
-                                <th class="sort align-middle text-end" scope="col">STATUS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:5%;">DOWNLOADS</th>
+                                <th class="sort align-middle text-end" scope="col" style="width:5%;">STATUS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,63 +107,50 @@
 {% endblock content %}
 
 {% block scripts %}
-
-<script src="{% static '/jquery-3.7.1.min.js' %}"></script>
-<!-- DataTables Bootstrap 5 JS (Add this) -->
-<script src="{% static '/DataTables/datatables.min.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(function () {
-    
-    $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
-    const statusParam = new URLSearchParams(window.location.search).get('status') || '';
+    $(document).ready(function () {
+        const statusParam = new URLSearchParams(window.location.search).get('status') || '';
 
-    const table = $('#datasetsList').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: "{% url 'datasets_list' %}",
-            data: function (d) { d.status = statusParam; },
-            type: "GET"
-        },
-        columns: [
-            { data: "name", render: (data, type, row) => `<a class="py-0" href="/datasets/dataset/${row.id}/">${data}</a>` },
-            { data: "users" },
-            { data: "created_at", className: "text-end" },
-            // { data: "updated_at", className: "text-end" },
-            { data: "label", className: "text-end" },
-            { data: "source", className: "text-end" },
-            { data: "publisher", className: "text-end" },
-            { data: "size_gb", className: "text-end" },
-            { data: "downloads", className: "text-end" },
-            { data: "status_badge", searchable: false, render: (status) => {
-                    const map = {
-                        published: 'badge-phoenix-success',
-                        under_review: 'badge-phoenix-primary',
-                        private: 'badge-phoenix-danger',
-                        restricted: 'badge-phoenix-warning',
-                        };
-                    return `<div class="text-end"><span class="badge badge-phoenix ${map[status] || 'badge-phoenix-secondary'} fs-10"><span class="badge-label">${status.toUpperCase()}</span></span></div>`;
-                }
-            }
-        ],
-        order: [[3, "desc"]], // Sort by column index 3 (created_at) descending.
-        createdRow: row => $('td', row).addClass('align-middle py-3'),
-        layout: {
-            topStart: null,     // Remove "pageLength" from the top left
-            topEnd: null,       // Remove "searchBox" from the top right
-            bottomEnd: {
-                paging: {
-                    boundaryNumbers: false,
-                }
-            }
-        }
+        const table = $('#datasetsList').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{% url 'datasets_list_json' %}",
+                data: function (d) {
+                    d.status = statusParam;
+                },
+                type: "GET"
+            },
+            columns: [
+                { 
+                    data: "name", 
+                    render: function(data, type, row) {
+                        return `<a class="fw-semibold" href="/datasets/dataset/${row.id}/">${data}</a>`;
+                    }
+                },
+                // { data: "users", "orderable": false },
+                { data: "created_at", className: "text-end" },
+                { data: "label", className: "text-end" },
+                { data: "source", className: "text-end" },
+                { data: "publisher", className: "text-end" },
+                { data: "size_gb", className: "text-end" },
+                { data: "downloads", className: "text-end" },
+                { data: "status", className: "text-end", "orderable": false },
+                { data: "id", visible: false }
+            ],
+            order: [[1, "desc"]], // Default sort by 'name' descending
+            dom: 'rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>', // Custom DOM layout
+            pageLength: 15,
+            createdRow: row => $('td', row).addClass('align-middle py-3'),
+        });
+
+        $('#datasetSearchInput').on('keyup change', function () {
+            table.search(this.value).draw();
+        });
     });
-
-    $('#datasetSearchInput').on('keyup change', function () {
-        table.search(this.value).draw();
-    });
-
-});
 </script>
 {% endblock scripts %}
