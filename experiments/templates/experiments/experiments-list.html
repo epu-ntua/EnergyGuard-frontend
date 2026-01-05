@@ -122,7 +122,7 @@
                 type: "GET"
             },
             columns: [
-                { data: "name", render: (data, type, row) => `<a class="py-0 fs-9-5" href="/experiments/experiment/${row.id}/">${data}</a>`},
+                { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-9-5" href="/experiments/experiment/${row.id}/">${data}</a>`},
                 { data: "description", className: "pe-3 fs-9-5" },
                 { data: "collaborators", className: "fs-9-5" },
                 { data: "created_at", className: "text-end fs-9-5" },
@@ -135,20 +135,12 @@
                         </div>
                     </div>`
                 },
-                { data: "status", orderable: false}
+                { data: "status", orderable: false},
+                { data: "id", visible: false }
             ],
             dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9-5 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>', // Custom DOM layout
             pageLength: 15,
             createdRow: row => $('td', row).addClass('align-middle py-3'),
-            // layout: {
-            //     topStart: null,
-            //     topEnd: null,
-            //     bottomEnd: {
-            //         paging: {
-            //             boundaryNumbers: false,
-            //         }
-            //     }
-            // }
         });
 
         $('#experimentSearchInput').on('keyup change', function () {
