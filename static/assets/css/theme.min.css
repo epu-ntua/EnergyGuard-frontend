@@ -11714,8 +11714,16 @@ textarea.form-control-lg {
   font-size: 0.8rem !important;
 }
 
+.fs-9-5 {
+  font-size: 0.7rem !important
+}
+
 .fs-10 {
   font-size: 0.64rem !important;
+}
+
+.fs-10-5 {
+  font-size: 0.57rem !important;
 }
 
 .fs-11 {
@@ -38269,5 +38277,10 @@ a[href].bg-body-secondary:hover, a[href].bg-body-secondary:focus {
 
 .dt-info {
     font-size: 0.8rem;  
+}
+
+.dataTables_paginate .page-link {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0.6rem; /* Optional: smaller padding for smaller buttons */
 }
 /*# sourceMappingURL=theme.min.css.map */
