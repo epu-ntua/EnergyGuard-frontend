@@ -24,11 +24,11 @@
         <!-- SUBHEADER -->
         <div class="d-flex justify-content-between">
             <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-                <li class="nav-item"><a class="nav-link {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'published' %}active{% endif %}" href="?status=published"><span>Published</span><span class="text-body-tertiary fw-semibold">({{dataset_num.published}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'private' %}active{% endif %}" href="?status=private"><span>Private </span><span class="text-body-tertiary fw-semibold">({{dataset_num.private}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'restricted' %}active{% endif %}" href="?status=restricted"><span>Restricted </span><span class="text-body-tertiary fw-semibold">({{dataset_num.restricted}})</span></a></li>
-                <li class="nav-item"><a class="nav-link {%if status_filter == 'under_review' %}active{% endif %}" href="?status=under_review"><span>Under Review </span><span class="text-body-tertiary fw-semibold">({{dataset_num.under_review}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'published' %}active{% endif %}" href="?status=published"><span>Published</span><span class="text-body-tertiary fw-semibold">({{dataset_num.published}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'private' %}active{% endif %}" href="?status=private"><span>Private </span><span class="text-body-tertiary fw-semibold">({{dataset_num.private}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'restricted' %}active{% endif %}" href="?status=restricted"><span>Restricted </span><span class="text-body-tertiary fw-semibold">({{dataset_num.restricted}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'under_review' %}active{% endif %}" href="?status=under_review"><span>Under Review </span><span class="text-body-tertiary fw-semibold">({{dataset_num.under_review}})</span></a></li>
             </ul>
             <!-- SEARCH BAR -->
             <div class="mb-4">
@@ -36,7 +36,7 @@
                     <div class="col-auto">
                         <div class="search-box">
                             <form class="position-relative" id="datasetSearchForm" onsubmit="return false;">
-                                <input id="datasetSearchInput" class="form-control search-input search" type="search" placeholder="Search datasets" aria-label="Search" />
+                                <input id="datasetSearchInput" class="form-control search-input search fs-9-5" type="search" placeholder="Search datasets" aria-label="Search" />
                                 <span class="fas fa-search search-box-icon"></span>
                             </form>
                         </div>
@@ -47,19 +47,19 @@
         <div>
             <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                 <div class="table-responsive scrollbar mx-n1 px-1">
-                    <table class="table table-sm fs-9 mb-0" id="datasetsList" style="table-layout: fixed; width: 100%;">
+                    <table class="table table-sm fs-9 mb-0" id="datasetsList" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th class="sort white-space-nowrap align-middle pe-3" scope="col" style="width:20%;">DATASET NAME</th>
+                                <th class="sort white-space-nowrap align-middle pe-3 fs-10" scope="col" style="width:17%;">DATASET NAME</th>
                                 <!-- <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th> -->
-                                <th class="sort align-middle text-end" scope="col" style="width:7%;">CREATED</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:6%;">CREATED</th>
                                 <!-- <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th> -->
-                                <th class="sort align-middle text-end" scope="col" style="width:13%; min-width: 100px;">LABEL</a></th>
-                                <th class="sort align-middle text-end" scope="col" style="width:10%;">SOURCE</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:16%;">PUBLISHER</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:5%;">SIZE</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:5%;">DOWNLOADS</th>
-                                <th class="sort align-middle text-end" scope="col" style="width:5%;">STATUS</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:12%;">LABEL</a></th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:10%;">SOURCE</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:15%;">PUBLISHER</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:5%;">SIZE</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:5%;">DOWNLOADS</th>
+                                <th class="sort align-middle text-end fs-10" scope="col" style="width:6%;">STATUS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -129,16 +129,19 @@
                 { 
                     data: "name", 
                     render: function(data, type, row) {
-                        return `<a class="fw-semibold" href="/datasets/dataset/${row.id}/">${data}</a>`;
+                        return `<a class="fw-semibold fs-9-5" href="/datasets/dataset/${row.id}/">${data}</a>`;
                     }
                 },
                 // { data: "users", "orderable": false },
-                { data: "created_at", className: "text-end" },
-                { data: "label", className: "text-end" },
-                { data: "source", className: "text-end" },
-                { data: "publisher", className: "text-end" },
-                { data: "size_gb", className: "text-end" },
-                { data: "downloads", className: "text-end" },
+                { data: "created_at", className: "text-end fs-9-5" },
+                { data: "label", className: "text-end fs-9-5" },
+                { data: "source", className: "text-end fs-9-5" },
+                { data: "publisher", className: "text-end fs-9-5" },
+                { data: "size_gb", render: function(data) {
+                        return data + ' GB';
+                    }, className: "text-end fs-9-5" 
+                },
+                { data: "downloads", className: "text-end fs-9-5" },
                 { data: "status", className: "text-end", "orderable": false },
                 { data: "id", visible: false }
             ],

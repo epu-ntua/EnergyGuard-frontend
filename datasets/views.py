@@ -50,7 +50,7 @@ class DatasetsListJson(BaseDatatableView):
         elif column == "source":
             return row.get_source_display()
         elif column == "size_gb":
-            return f"{row.size_gb} GB"
+            return row.size_gb
         elif column == "status":
             status = row.status.replace("_", " ").title()
             map = {
@@ -60,7 +60,7 @@ class DatasetsListJson(BaseDatatableView):
                 "restricted": "badge-phoenix-warning",
             }
             badge_class = map.get(row.status, "badge-phoenix-secondary")
-            return f'<div class="text-end"><span class="badge badge-phoenix {badge_class} fs-10"><span class="badge-label">{status}</span></span></div>'
+            return f'<div class="text-end"><span class="badge badge-phoenix {badge_class} fs-11"><span class="badge-label">{status}</span></span></div>'
         else:
             return super().render_column(row, column)
 
