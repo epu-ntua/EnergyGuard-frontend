@@ -1,7 +1,6 @@
 from django.db.models import Q, Count
 from django.shortcuts import render, redirect
 from django.utils.html import escape
-from django.views.generic import TemplateView
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.contrib.auth import get_user_model
 from .models import Dataset
