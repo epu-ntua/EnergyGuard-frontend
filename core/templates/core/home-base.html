@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default">
@@ -91,7 +92,13 @@
                         <!-- Sign in -->
                         <a class="btn btn-link text-body order-1 order-lg-0 ps-4 me-lg-2 fs-8-5" href="{% url 'login' %}">Sign in</a>
                         <!-- Sign up -->
-                        <a class="btn btn-phoenix-primary order-0 fs-8-5" href="{% url 'account_signup' %}"><span class="fw-bold">Sign up</span></a>
+                        <!-- <a class="btn btn-phoenix-primary order-0 fs-8-5" href="{% provider_login_url 'openid_connect' uid='keycloak' %}"><span class="fw-bold">Sign up</span></a> -->
+                        {% if not user.is_authenticated %}
+                            <form method="post" action="{% provider_login_url 'openid_connect' uid='keycloak' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-phoenix-primary order-0 fs-8-5">Sign up with Keycloak</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </nav>
