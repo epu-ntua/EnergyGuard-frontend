@@ -158,7 +158,7 @@ AUTH_USER_MODEL = 'accounts.User'
 #Default: 1209600 (2 weeks, in seconds)
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
 
-SITE_ID = 1 # Required for django-allauth
+SITE_ID = 2 # Required for django-allauth - in Django Admin site_id=2 corresponds to 127.0.0.1:8000
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -174,13 +174,22 @@ SOCIALACCOUNT_PROVIDERS = {
                 "client_id": env('OIDC_RP_CLIENT_ID'),
                 "secret": env('OIDC_RP_CLIENT_SECRET'),
                 "settings": {
-                    "server_url": "https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard/.well-known/openid-configuration",
+                    "server_url": "https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard",
+                    "token_auth_method": "client_secret_post", # Method to authenticate the client at the token endpoint
+                    "auth_params": {
+                            "prompt": "login",
+                        },    
                 },
             }
-        ]
+        ],
     }
 }
 
-ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 # Redirects user to home page after logout
-ACCOUNT_LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000/"
+LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_LOGOUT_ON_GET = False  # Require POST request to logout (for security reasons)
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when password is changed
+SOCIALACCOUNT_LOGOUT = True  # Logout from social account when logging out from the site
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+LOGIN_REDIRECT_URL = "/"
