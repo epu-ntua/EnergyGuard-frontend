@@ -82,7 +82,7 @@
                           </div>
                         </td>
                         <!-- TODO: Replace with real data -->
-                        <td class="fw-bold ps-2 py-1 text-body-highlight"> 350 €</td>
+                        <td class="fw-bold ps-2 py-1 text-body-highlight"> 100 credits </td>
                       </tr>
                     </tbody>
                   </table>
@@ -126,10 +126,16 @@
                      <!-- TODO: Add functionality to link -->
                     <a href="#"><button class="btn btn-warning py-1 px-4 container" type="button"><i class="fa-solid fa-eye me-2"></i>Preview</button></a>
                   </div>
+                  
                   <div class="mt-2" style="width:70%;">
-                    <!-- TODO: Add functionality to link -->
-                    <a href=""><button class="btn btn-danger py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download</button></a>
+                    {% if not dt.downloaded %}
+                    <a href="{% url 'dataset_download' dataset.id %}"><button class="btn btn-danger py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download</button></a>
+                    {% else %}
+                    <!-- TODO: Add functionality to link (Download again without reducing user balance or increasing number of download)-->
+                    <a href=""><button class="btn btn-success py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download again</button></a>
+                    {% endif %}
                   </div>
+                  
                   <div class="mt-2" style="width:70%;">
                     <!-- TODO: Add functionality to link -->
                     <!-- <a href=""><button class="btn btn-subtle-info py-1 px-4 container"><img src="{% static 'assets/img/general/data-space.png' %}" class="me-2" width="5%"></img>Get access through Data Space</button></a> -->

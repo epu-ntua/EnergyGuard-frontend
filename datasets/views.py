@@ -1,10 +1,10 @@
-from django.db.models import Q, Count
-from django.shortcuts import render, redirect
-from django.utils.html import escape
+from django.db.models import Q
+from django.shortcuts import render, redirect, get_object_or_404
 from django_datatables_view.base_datatable_view import BaseDatatableView
-from django.contrib.auth import get_user_model
-from .models import Dataset
+from .models import Dataset, DatasetUserDownload
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import F
 
 
 class DatasetsListJson(BaseDatatableView):
@@ -38,6 +38,24 @@ class DatasetsListJson(BaseDatatableView):
         # Prefetch related users to optimize DB queries
         return Dataset.objects.prefetch_related("users").all()
 
+    def filter_queryset(self, qs):
+        # Handle search and status filtering
+        search = self.request.GET.get("search[value]")
+        if search:
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(label__icontains=search)
+                | Q(source__icontains=search)
+                | Q(status__icontains=search)
+                # | Q(users__username__icontains=search)
+            ).distinct()
+
+        status_filter = self.request.GET.get("status")
+        if status_filter in ["published", "private", "restricted", "under_review"]:
+            qs = qs.filter(status=status_filter)
+
+        return qs
+
     def render_column(self, row, column):
         # # Render specific columns with custom HTML or formatting
         # if column == "users":
@@ -62,26 +80,8 @@ class DatasetsListJson(BaseDatatableView):
             return f'<div class="text-end"><span class="badge badge-phoenix {badge_class} fs-11"><span class="badge-label">{status}</span></span></div>'
         else:
             return super().render_column(row, column)
-
-    def filter_queryset(self, qs):
-        # Handle search and status filtering
-        search = self.request.GET.get("search[value]")
-        if search:
-            qs = qs.filter(
-                Q(name__icontains=search)
-                | Q(label__icontains=search)
-                | Q(source__icontains=search)
-                | Q(status__icontains=search)
-                # | Q(users__username__icontains=search)
-            ).distinct()
-
-        status_filter = self.request.GET.get("status")
-        if status_filter in ["published", "private", "restricted", "under_review"]:
-            qs = qs.filter(status=status_filter)
-
-        return qs
-
-
+        
+@login_required
 def datasets_list(request):
     # Prepare context for initial page load (dataset counts, etc.)
     qs = Dataset.objects.all()
@@ -105,7 +105,7 @@ def datasets_list(request):
         },
     )
 
-
+@login_required
 def dataset_details(request, dataset_id):
     # Fetch and display details for a single dataset
     try:
@@ -128,6 +128,8 @@ def dataset_details(request, dataset_id):
         "description": dataset.description,
         "metadata": dataset.metadata,
         "collaborators": ", ".join(user.username for user in dataset.users.all()),
+        # "downloaded": request.user in dataset.users_downloads,
+        "downloaded": DatasetUserDownload.objects.filter(user=request.user, dataset=dataset).exists(),
     }
 
     return render(
@@ -140,3 +142,21 @@ def dataset_details(request, dataset_id):
             "show_vertical_navbar": True,
         },
     )
+
+@login_required
+def dataset_download(request, dataset_id):
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
+
+    if request.user.credits < 100:
+        messages.error(request, "Insufficient credits to download the dataset.")
+        return redirect('dataset_details', dataset_id=dataset.id)
+    
+    # F() increment to avoid race conditions
+    Dataset.objects.filter(pk=dataset.id).update(downloads=F('downloads') + 1)
+    DatasetUserDownload.objects.create(user=request.user, dataset=dataset)
+
+    request.user.credits = F('credits') - 100
+    request.user.save()
+
+    messages.success(request, f"You have successfully downloaded the dataset: {dataset.name}")
+    return redirect('dataset_details', dataset_id=dataset.id)

@@ -49,6 +49,7 @@ class Dataset(TimeStampedModel):
     publisher = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     metadata = models.JSONField(blank=True, null=True)
+    users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets')
 
     def __str__(self):
         return self.name
@@ -59,3 +60,15 @@ class Dataset(TimeStampedModel):
         verbose_name_plural = 'Datasets'
         ordering = ['-created_at']
         indexes = [models.Index(fields=['name']),]
+
+class DatasetUserDownload(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'dataset_user_download'
+        verbose_name = 'Dataset User Download'
+        verbose_name_plural = 'Dataset User Downloads'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'dataset'], name='unique_user_dataset_download')
+        ]
