@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'datasets',
     'experiments',
     'billing',
-    'mysite'
 ]
 
 MIDDLEWARE = [
