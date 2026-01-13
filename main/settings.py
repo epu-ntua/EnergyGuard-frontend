@@ -136,7 +136,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = BASE_DIR / "static"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles' # Directory where static files will be collected (for Docker and production)
 
