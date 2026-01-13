@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv
+.venv
+env
+.env_venv
+
+# Secrets (docker-compose will read the env variables, not the image)
+.env
+
+# Databases (to avoid random local db files)
+*.sqlite3
+backup.sql
+
+# Static & Media (they will be handled by Docker volumes)
+static/
+media/
