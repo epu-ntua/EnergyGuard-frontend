@@ -209,13 +209,17 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Ignore files in templates
-mysite/templates/mysite/headertest.py
+# Docker staticfiles
+staticfiles/
 
 .idea/*
 
 #Database
 *.sqlite3
+
+# Database backup
+energyguard_backup_12_jan_2026.sql
+energyguard_backup_clean.sql
 
 #ElasticSearch
 /.idea
