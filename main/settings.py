@@ -91,9 +91,11 @@ WSGI_APPLICATION = 'main.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        "OPTIONS": {
-            "service": "energyguard",
-        },
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
+        'PORT': env('POSTGRES_PORT'),
+        'HOST': env('POSTGRES_HOST'), 
     }
 }
 
