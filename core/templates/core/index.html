@@ -32,7 +32,9 @@
             <div class="col-12 col-lg-6 text-lg-start text-center pt-8 pb-6 order-0 position-relative">
                 <h1 class="fs-3 fs-lg-2 fs-md-2 fs-lg-3 fs-xl-2 fs  mb-4"><span class="text-primary me-3">AI Testing Experimentation Facilities</span>for<br />the Energy Sector</h1>
                 <p class="mb-5">EnergyGuard provides AI Testing and Experimentation Facilities across Europe to help SME, startups and entrepreneurs test and validate their AI solutions so they can reach the energy market</p>
-                <a class="btn btn-lg btn-primary rounded-pill me-3" href="{% url 'register' %}" role="button">Sign up</a>
+                {% if not user.is_authenticated %}
+                    <a class="btn btn-lg btn-primary rounded-pill me-3" href="{% url 'register' %}" role="button">Sign up</a>
+                {% endif %}
                 <a class="btn btn-link me-2 fs-8 p-0" href="#!" role="button">Check Demo<span class="fa-solid fa-angle-right ms-2 fs-9"></span></a>
             </div>
         </div>
