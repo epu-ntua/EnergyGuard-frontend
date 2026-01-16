@@ -101,7 +101,6 @@ def datasets_list(request):
             "dataset_num": counts,
             "status_filter": status_filter,
             "active_navbar_page": "datasets",
-            "show_vertical_navbar": True,
         },
     )
 
@@ -139,7 +138,6 @@ def dataset_details(request, dataset_id):
             "dataset": dataset,
             "dt": dataset_details,
             "active_navbar_page": "datasets",
-            "show_vertical_navbar": True,
         },
     )
 

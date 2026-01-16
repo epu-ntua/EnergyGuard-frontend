@@ -30,4 +30,4 @@ def billing(request):
     else:
         currency = "€"
         total_cost_amount = 0.0
-    return render(request, 'billing/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount, "show_vertical_navbar": True})
+    return render(request, 'billing/billing.html', {"user": customer_billing_info, "active_navbar_page": "billing", "currency_format": currency, "sum": total_cost_amount})
