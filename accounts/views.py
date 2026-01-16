@@ -27,6 +27,11 @@ class RegistrationWizard(SessionWizardView):
     # Necessary to handle ImageField or FileField in forms
     file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
         return [TEMPLATE_NAMES[self.steps.current]]
     
@@ -66,11 +71,15 @@ class RegistrationWizard(SessionWizardView):
         return redirect('registration_success')  
             
 def registration_success(request):
+    if request.user.is_authenticated:
+        return redirect('home')
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
     return render(request, 'accounts/registration-success.html', {"wizard": wizard})
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
