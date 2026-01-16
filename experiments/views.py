@@ -3,6 +3,7 @@ from django.db.models import Q
 from .models import Experiment
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django_datatables_view.base_datatable_view import BaseDatatableView
 
 
@@ -72,6 +73,7 @@ class ExperimentsListJson(BaseDatatableView):
             qs = qs.filter(status=status_filter)    
         return qs
 
+@login_required
 def experiments_list(request):
     """mlflow.set_tracking_uri("https://mlflow.toolbox.epu.ntua.gr/")
     
@@ -127,6 +129,7 @@ def experiments_list(request):
         "show_vertical_navbar": True
     })
 
+@login_required
 def experiments_list_tabs(request):
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
@@ -206,6 +209,7 @@ def experiments_list_tabs(request):
         "visibility_filter": visibility_filter
     })
 
+@login_required
 def experiment_details(request, experiment_id):
 
     # Optimize query
