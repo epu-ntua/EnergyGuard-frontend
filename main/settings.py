@@ -27,7 +27,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env')) # Reads the .env file
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
@@ -188,7 +188,7 @@ SOCIALACCOUNT_PROVIDERS = {
                 "settings": {
                     "server_url": "https://keycloak.toolbox.epu.ntua.gr/realms/EnergyGuard",
                     "token_auth_method": "client_secret_post", # Method to authenticate the client at the token endpoint
-                    "auth_params": {
+                    "AUTH_PARAMS": {
                             "prompt": "login",
                         },    
                 },
@@ -206,16 +206,16 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 LOGIN_REDIRECT_URL = "/"
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'ERROR',
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console'],
+#         'level': 'ERROR',
+#     },
+# }
