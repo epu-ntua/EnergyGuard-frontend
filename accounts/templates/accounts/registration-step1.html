@@ -1,5 +1,6 @@
 {% extends "./base-registration.html" %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}EnergyGuard | Sign Up{% endblock %}
 
@@ -65,10 +66,16 @@
                     <a href="#!">terms </a>and <a href="#!">privacy policy</a></label>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
+            <div class="d-flex justify-content-end gap-2 mt-5 ">
                 <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
             </div>
         </form>
+        <div class="d-flex justify-content-center gap-2 mb-3 mt-5">
+            <form method="post" action="{% provider_login_url 'openid_connect' uid='keycloak' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-phoenix-primary order-0 fs-8-5 ms-lg-2">Sign up with Keycloak</button>
+            </form>
+        </div>
     </div>
 </div>
 

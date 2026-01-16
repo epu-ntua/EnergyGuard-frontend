@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default">
@@ -98,22 +99,24 @@
                                                         class="btn btn-primary px-6 px-sm-6 container">Sign
                                                         In</button>
                                                 </div>
-                                                <div class="my-3 text-center">
-                                                    <!-- TODO: Social Auth Integration -->
-                                                    <button type="button"
-                                                        class="container btn btn-outline-primary px-6 px-sm-6"><span
-                                                            class="me-1"><i
-                                                                class="fa-brands fa-google fa-lg"></i></span>Sign
-                                                        In With Google</button>
-                                                </div>
-                                                <div class="mt-5 mb-3 text-center">
-                                                    <p class="fs-9">Don't have an account? <a
-                                                            href="{% url 'register' %}">Sign Up</a></p>
-                                                </div>
-
+                                                
                                                 <!-- TODO: Use next so Django knows where to redirect the user after they log in -->
                                                 <!-- <input type="hidden" name="next" value="{{ next }}"> -->
                                             </form>
+                                            <div class="my-3 text-center">
+                                                <!-- TODO: Social Auth Integration -->
+                                                <!-- <button type="button"class="container btn btn-outline-primary px-6 px-sm-6">
+                                                    <span class="me-1"><i class="fa-brands fa-google fa-lg"></i></span>Sign In With Google
+                                                </button> -->
+                                                    <form method="post" action="{% provider_login_url 'openid_connect' uid='keycloak' %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="container btn btn-outline-primary px-6 px-sm-6">Sign in with Keycloak</button>
+                                                    </form>
+                                            </div>
+                                            <div class="mt-5 mb-3 text-center">
+                                                <p class="fs-9">Don't have an account? <a
+                                                        href="{% url 'register' %}">Sign Up</a></p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -152,7 +155,6 @@
     <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script> <!-- Icons -->
     <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
     <!-- Provides methods for manipulating arrays, objects, and other types of data -->
-    <script src="{% static 'vendors/list.js/list.min.js' %}"></script>
     <!-- Adds search, sort, and filter to HTML lists/tables -->
     <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script> <!-- SVG icons -->
     <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script> <!-- For date and time -->
