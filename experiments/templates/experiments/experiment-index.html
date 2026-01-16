@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Experiment{% endblock %}
+
+{% block content %}
+
+<div class="content px-0 pt-navbar">
+    <div class="row g-0 justify-content-center align-items-center" style="min-height: 80vh;">
+        <div id="exp" class="col-auto text-center">
+            <!-- TODO: Improve img on dark mode -->
+            <img class="" src="{% static 'assets/img/spot-illustrations/experiment-first-vector.png' %}" style="width:50%;" alt="experiment_illustration">
+            <h2 class="fw-normal mt-5 mb-4">Create a new experiment</h2>
+            <!-- TODO: Add functionality to btn -->
+            <button class="btn btn-primary">Getting started</button>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+

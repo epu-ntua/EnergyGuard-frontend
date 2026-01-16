@@ -86,7 +86,7 @@ def login_view(request):
             user = form.get_user()
             if user:
                 login(request, user)
-                return redirect('home')
+                return redirect('experiment_index')
     else:
         form = CustomAuthenticationForm()
 
