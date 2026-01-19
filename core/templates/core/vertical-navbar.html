@@ -9,21 +9,21 @@
                     <!-- parent pages-->
                     <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#nv-home" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="nv-home">
                         <div class="d-flex align-items-center">
-                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-icon"><span data-feather="pie-chart"></span></span><span class="nav-link-text">Home</span>
+                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-icon"><span data-feather="pie-chart"></span></span><span class="nav-link-text fs-9 py-1">Home</span>
                         </div>
                         </a>
                         <div class="parent-wrapper label-1">
                             <ul class="nav collapse parent show" data-bs-parent="#navbarVerticalCollapse" id="nv-home">
-                                <li class="collapsed-nav-item-title d-none fs-9-5">Home
+                                <li class="collapsed-nav-item-title d-none">Home
                                 </li>
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'experiments' %}active{% endif %}" href="{% url 'experiments_list' %}">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Experiments Dashboard</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Experiments Dashboard</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'datasets' %}active{% endif %}" href="{% url 'datasets_list' %}">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Datasets Dashboard</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Datasets Dashboard</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
@@ -34,7 +34,7 @@
                                 <li class="nav-item">
                                     <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#assets" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="assets">
                                         <div class="d-flex align-items-center">
-                                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-text fs-9-5">Assets</span>
+                                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-text fs-9 py-1">Assets</span>
                                         </div>
                                         </a>
                                         <div class="parent-wrapper label-1">
@@ -42,19 +42,19 @@
                                                 <!-- <li class="collapsed-nav-item-title d-none">Evaluate AI Applications
                                                 </li> -->
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'models' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Models</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Models</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
                                                 </li>
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'metrics' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Metrics</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Metrics</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
                                                 </li>
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'apis' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Energy APIs</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Energy APIs</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
@@ -66,19 +66,19 @@
                                 </li>
 
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'billing' %}active{% endif %}" href="{% url 'billing' %}">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Billing Overview</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Billing Overview</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'usage' %}active{% endif %}" href="#">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Usage Statistics</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Usage Statistics</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'carbon' %}active{% endif %}" href="#">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Carbon Emission Calculator</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Carbon Emission Calculator</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
@@ -90,7 +90,7 @@
                                 <li class="nav-item">
                                     <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#evaluateAI" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="evaluateAI">
                                         <div class="d-flex align-items-center">
-                                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-text fs-9-5">Trustworthy AI Assessment</span>
+                                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-text fs-9 py-1">Trustworthy AI Assessment</span>
                                         </div>
                                         </a>
                                         <div class="parent-wrapper label-1">
@@ -98,19 +98,19 @@
                                                 <!-- <li class="collapsed-nav-item-title d-none">Evaluate AI Applications
                                                 </li> -->
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'questionnaire' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">AI Act Questionnaire</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">AI Act Questionnaire</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
                                                 </li>
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'acceptance' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Code Analysis</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Code Analysis</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
                                                 </li>
                                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'trustworthy' %}active{% endif %}" href="#">
-                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Trustwothiness Report</span>
+                                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Trustwothiness Report</span>
                                                     </div>
                                                 </a>
                                                 <!-- more inner pages-->
@@ -124,13 +124,13 @@
 
                                 
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'collaboration_hub' %}active{% endif %}" href="{% url 'collaboration_hub' %}">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Collaboration Hub</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Collaboration Hub</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'documentation' %}active{% endif %}" href="{% url 'documentation' %}">
-                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9-5">Documentation</span>
+                                    <div class="d-flex align-items-center"><span class="nav-link-text fs-9 py-1">Documentation</span>
                                     </div>
                                 </a>
                                 <!-- more inner pages-->
@@ -146,6 +146,6 @@
 
     <!-- Vertical Navbar Footer -->
     <div class="navbar-vertical-footer">
-        <button class="btn navbar-vertical-toggle border-0 fw-semibold w-100 white-space-nowrap d-flex align-items-center"><span class="uil uil-left-arrow-to-left fs-8"></span><span class="uil uil-arrow-from-right fs-8"></span><span class="navbar-vertical-footer-text ms-2">Collapsed View</span></button>
+        <button class="btn navbar-vertical-toggle border-0 fw-semibold w-100 white-space-nowrap d-flex align-items-center"><span class="uil uil-left-arrow-to-left fs-9 py-1"></span><span class="uil uil-arrow-from-right fs-9 py-1"></span><span class="navbar-vertical-footer-text ms-2">Collapsed View</span></button>
     </div>
 </nav>
