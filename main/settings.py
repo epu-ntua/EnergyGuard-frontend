@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'datasets',
     'experiments',
     'billing',
+    'assets',
 ]
 
 MIDDLEWARE = [
@@ -204,7 +205,7 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when pa
 SOCIALACCOUNT_LOGOUT = True  # Logout from social account when logging out from the site
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/experiments/"  # Redirect to experiments default page after login
 
 # LOGGING = {
 #     'version': 1,
@@ -219,3 +220,12 @@ LOGIN_REDIRECT_URL = "/"
 #         'level': 'ERROR',
 #     },
 # }
+
+# Email Settings
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = env('EMAIL_HOST')
+# EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+# EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+# EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+# DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
