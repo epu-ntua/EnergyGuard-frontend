@@ -75,11 +75,23 @@ class CustomAuthenticationForm(AuthenticationForm):
             {'class': 'form-control', 'placeholder': '*********'}
         )
 
+
 class ProfileForm(forms.Form):
-    company = forms.CharField(max_length=100, required=False, 
-                              widget=forms.Select(attrs={'class': 'form-select', 'id': 'company', 'name': 'company'}, choices=Profile.CompanyChoices))
-    position = forms.CharField(max_length=100, required=False, 
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'position', 'name': 'position'}))
+    full_name = forms.CharField(
+        max_length=150, 
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'full_name', 'name': 'full_name'})
+    )
+    company = forms.CharField(
+        max_length=100, 
+        required=False, 
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'company', 'name': 'company'}, choices=Profile.CompanyChoices))
+    
+    position = forms.CharField(
+        max_length=100, 
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'position', 'name': 'position'}))
+    
     year_of_birth = forms.ChoiceField(
         required=False,
         choices=[('', 'Select Year')] + [(year, year) for year in range(2020, 1959, -1)], 
@@ -100,5 +112,6 @@ class ProfileForm(forms.Form):
         choices=[('', 'Select Day')] + [(i, i) for i in range(1, 32)],
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'day', 'name': 'day_of_birth'})
     )
-    short_bio = forms.CharField(required=False, 
-                                widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'id': 'short_bio', 'name': 'short_bio'}))
+    short_bio = forms.CharField(
+        required=False, 
+        widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'id': 'short_bio', 'name': 'short_bio'}))

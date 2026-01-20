@@ -1,6 +1,7 @@
 from formtools.wizard.views import SessionWizardView
 from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm, ProfileForm
 from .models import User, Profile
+from .utils import get_time_since_joined
 from billing.models import PaymentMethod
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render
@@ -10,6 +11,8 @@ from django.db import transaction
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 import os
+from datetime import date
+
 
 # Create your views here.
 FORMS = [
@@ -95,36 +98,41 @@ def login_view(request):
 
 @login_required
 def profile(request):
-    from datetime import date
-    months_since_joined = (date.today().year - request.user.date_joined.year) * 12 + (date.today().month - request.user.date_joined.month)
-
+    # Get time since joined using utility function
+    joined_display = get_time_since_joined(request.user.date_joined)
+    last_login = get_time_since_joined(request.user.last_login)
+    
     # Get or create the user's profile
     user_profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         form = ProfileForm(request.POST)
         if form.is_valid():
-            company = form.cleaned_data.get('company')
-            position = form.cleaned_data.get('position')
             year_of_birth = form.cleaned_data.get('year_of_birth')
             month_of_birth = form.cleaned_data.get('month_of_birth')
             day_of_birth = form.cleaned_data.get('day_of_birth')
-            short_bio = form.cleaned_data.get('short_bio')
 
             # Update Profile model
-            if company:
+            if full_name := form.cleaned_data.get('full_name'):
+                name_parts = full_name.split()
+                if len(name_parts) >= 2:
+                    request.user.first_name = name_parts[0]
+                    # TODO: Check this again
+                    # Handle middle names
+                    request.user.last_name = ' '.join(name_parts[1:])
+                    request.user.save()
+            if company:= form.cleaned_data.get('company'):
                 user_profile.company = company
-            if position:
+            if position:= form.cleaned_data.get('position'):
                 user_profile.position = position
             # Convert string values to integers and create date object
             # Check that values are not empty strings
             if year_of_birth and year_of_birth != '' and month_of_birth and month_of_birth != '' and day_of_birth and day_of_birth != '':
                 try:
-                    from datetime import date as date_class
-                    user_profile.birth_date = date_class(int(year_of_birth), int(month_of_birth), int(day_of_birth))
+                    user_profile.birth_date = date(int(year_of_birth), int(month_of_birth), int(day_of_birth))
                 except (ValueError, TypeError) as e:
                     pass  # Skip if invalid date
-            if short_bio:
+            if short_bio:= form.cleaned_data.get('short_bio'):
                 user_profile.bio = short_bio
             user_profile.save()
             return redirect('profile')
@@ -133,7 +141,9 @@ def profile(request):
             'company': user_profile.company or '',
             'position': user_profile.position or '',
             'short_bio': user_profile.bio or '',
+            'full_name': f"{request.user.first_name} {request.user.last_name}" or ''
         }
+
         if user_profile.birth_date:
             initial_data['year_of_birth'] = str(user_profile.birth_date.year)
             initial_data['month_of_birth'] = str(user_profile.birth_date.month)
@@ -142,4 +152,4 @@ def profile(request):
         form = ProfileForm(initial=initial_data)
 
 
-    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "months_since_joined": months_since_joined, "form": form, "profile": user_profile})
+    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "joined_display": joined_display, "last_login": last_login,  "form": form, "profile": user_profile})

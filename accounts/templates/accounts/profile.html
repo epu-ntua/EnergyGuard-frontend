@@ -18,7 +18,28 @@
                     <div class="row g-2 g-sm-3">
                         <div class="col-auto">
                             <!-- TODO: Add delete customer functionality -->
-                            <button class="btn btn-phoenix-danger"><span class="fas fa-trash-alt me-2"></span>Delete customer</button>
+                            <!-- <button class="btn btn-phoenix-danger"><span class="fas fa-trash-alt me-2"></span>Delete account</button> -->
+                            
+                            <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#verticallyCentered"><span class="fas fa-trash-alt me-2"></span>Delete account</button>
+                            <div class="modal fade" id="verticallyCentered" tabindex="-1" aria-labelledby="verticallyCenteredModalLabel" aria-hidden="true" style="display: none;">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="verticallyCenteredModalLabel">Delete Account</h5>
+                                            <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-body-tertiary lh-lg mb-0">This choice will permanently delete your account and all associated data. Are you sure you want to continue?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <!-- TODO: Add delete account functionality -->
+                                            <button class="btn btn-phoenix-danger" type="submit">Yes</button>
+                                            <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
                         </div>
                         <div class="col-auto">
                             <!-- TODO: Add reset password functionality -->
@@ -46,7 +67,7 @@
                                     </div>
                                     <div class="col-12 col-sm-auto flex-1">
                                         <h3>{{ request.user.first_name }} {{ request.user.last_name }}</h3>
-                                        <p class="text-body-secondary">Joined {{ months_since_joined }} months ago</p>
+                                        <p class="text-body-secondary">Joined {{ joined_display }}</p>
                                         <div>
                                             <!-- TODO: Add social media links -->
                                             <a class="me-2" href="#!"><span class="fab fa-linkedin-in text-body-quaternary text-opacity-75 text-primary-hover"></span></a>
@@ -64,7 +85,7 @@
                                 </div>
                                 <div class="text-end">
                                     <h6 class="mb-2 text-body-secondary">Last Activity</h6>
-                                    <h4 class="fs-7 text-body-highlight mb-0">1 week ago</h4>
+                                    <h4 class="fs-7 text-body-highlight mb-0">{{ last_login }}</h4>
                                 </div>
                                 <div class="text-end">
                                     <h6 class="mb-2 text-body-secondary">Total Experiments</h6>
@@ -75,41 +96,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="col-12 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="border-bottom border-dashed">
-                            <h4 class="mb-3">Default Address
-                                <button class="btn btn-link p-0" type="button"> <span class="fas fa-edit fs-9 ms-3 text-body-quaternary"></span></button>
-                            </h4>
-                            </div>
-                            <div class="pt-4 mb-7 mb-lg-4 mb-xl-7">
-                            <div class="row justify-content-between">
-                                <div class="col-auto">
-                                <h5 class="text-body-highlight">Address</h5>
-                                </div>
-                                <div class="col-auto">
-                                <p class="text-body-secondary">Vancouver, British Columbia<br />Canada</p>
-                                </div>
-                            </div>
-                            </div>
-                            <div class="border-top border-dashed pt-4">
-                            <div class="row flex-between-center mb-2">
-                                <div class="col-auto">
-                                <h5 class="text-body-highlight mb-0">Email</h5>
-                                </div>
-                                <div class="col-auto"><a class="lh-1" href="mailto:shatinon@jeemail.com">shatinon@jeemail.com</a></div>
-                            </div>
-                            <div class="row flex-between-center">
-                                <div class="col-auto">
-                                <h5 class="text-body-highlight mb-0">Phone</h5>
-                                </div>
-                                <div class="col-auto"><a href="tel:+1234567890">+1234567890</a></div>
-                            </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
             </div>
     
             <!-- Tabs -->
@@ -128,8 +114,8 @@
                             {% csrf_token %}
                             <div class="row gx-3 gy-4 mb-5">
                                 <div class="col-12 col-lg-6">
-                                    <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="fullName">Full name</label>
-                                    <input class="form-control" id="fullName" type="text" placeholder="Full name" />
+                                    <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="full_name">Full name</label>
+                                    {{ form.full_name }}
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="company">Company</label>
