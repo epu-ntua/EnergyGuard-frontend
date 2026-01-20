@@ -38,31 +38,31 @@
     <!-- ===============================================-->
     <main class="main" id="top">
 
-        {% include "./vertical-navbar.html" %}  
+      {% include "./vertical-navbar.html" %}  
 
-        {% include "./header.html" %}
+      {% include "./header.html" %}
 
-        <!----------------->
-        <!-- Page Content-->
-        <!----------------->
-        {% block content %}
-        {% endblock %}
+      <!----------------->
+      <!-- Page Content-->
+      <!----------------->
+      {% block content %}
+      {% endblock %}
 
-        <script>
-          var navbarTopStyle = window.config.config.phoenixNavbarTopStyle;
-          var navbarTop = document.querySelector('.navbar-top');
-          if (navbarTopStyle === 'darker') {
-            navbarTop.setAttribute('data-navbar-appearance', 'darker');
-          }
+      <script>
+        var navbarTopStyle = window.config.config.phoenixNavbarTopStyle;
+        var navbarTop = document.querySelector('.navbar-top');
+        if (navbarTopStyle === 'darker') {
+          navbarTop.setAttribute('data-navbar-appearance', 'darker');
+        }
 
-          var navbarVerticalStyle = window.config.config.phoenixNavbarVerticalStyle;
-          var navbarVertical = document.querySelector('.navbar-vertical');
-          if (navbarVertical && navbarVerticalStyle === 'darker') {
-            navbarVertical.setAttribute('data-navbar-appearance', 'darker');
-          }
-        </script>
+        var navbarVerticalStyle = window.config.config.phoenixNavbarVerticalStyle;
+        var navbarVertical = document.querySelector('.navbar-vertical');
+        if (navbarVertical && navbarVerticalStyle === 'darker') {
+          navbarVertical.setAttribute('data-navbar-appearance', 'darker');
+        }
+      </script>
 
-        {% include "./chat.html" %}
+      {% include "./chat.html" %}
 
 
     </main>
