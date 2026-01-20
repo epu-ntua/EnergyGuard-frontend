@@ -1,5 +1,5 @@
 from formtools.wizard.views import SessionWizardView
-from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm
+from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm, ProfileForm
 from .models import User, Profile
 from billing.models import PaymentMethod
 from django.core.files.storage import FileSystemStorage
@@ -95,5 +95,51 @@ def login_view(request):
 
 @login_required
 def profile(request):
-    months_since_joined = (request.user.date_joined.today().year - request.user.date_joined.year) * 12 + (request.user.date_joined.today().month - request.user.date_joined.month)
-    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "months_since_joined": months_since_joined})
+    from datetime import date
+    months_since_joined = (date.today().year - request.user.date_joined.year) * 12 + (date.today().month - request.user.date_joined.month)
+
+    # Get or create the user's profile
+    user_profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST)
+        if form.is_valid():
+            company = form.cleaned_data.get('company')
+            position = form.cleaned_data.get('position')
+            year_of_birth = form.cleaned_data.get('year_of_birth')
+            month_of_birth = form.cleaned_data.get('month_of_birth')
+            day_of_birth = form.cleaned_data.get('day_of_birth')
+            short_bio = form.cleaned_data.get('short_bio')
+
+            # Update Profile model
+            if company:
+                user_profile.company = company
+            if position:
+                user_profile.position = position
+            # Convert string values to integers and create date object
+            # Check that values are not empty strings
+            if year_of_birth and year_of_birth != '' and month_of_birth and month_of_birth != '' and day_of_birth and day_of_birth != '':
+                try:
+                    from datetime import date as date_class
+                    user_profile.birth_date = date_class(int(year_of_birth), int(month_of_birth), int(day_of_birth))
+                except (ValueError, TypeError) as e:
+                    pass  # Skip if invalid date
+            if short_bio:
+                user_profile.bio = short_bio
+            user_profile.save()
+            return redirect('profile')
+    else:
+        initial_data = {
+            'company': user_profile.company or '',
+            'position': user_profile.position or '',
+            'short_bio': user_profile.bio or '',
+        }
+        if user_profile.birth_date:
+            initial_data['year_of_birth'] = str(user_profile.birth_date.year)
+            initial_data['month_of_birth'] = str(user_profile.birth_date.month)
+            initial_data['day_of_birth'] = str(user_profile.birth_date.day)
+        
+        form = ProfileForm(initial=initial_data)
+
+
+    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "months_since_joined": months_since_joined, "form": form, "profile": user_profile})

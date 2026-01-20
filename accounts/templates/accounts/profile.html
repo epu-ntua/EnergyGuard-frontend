@@ -122,114 +122,58 @@
                 </div>
                 <div class="tab-content" id="profileTabContent">
     
-    
                     <!-- Personal Info Tab Content -->               
                     <div class="tab-pane fade show active" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
-                        <div class="row gx-3 gy-4 mb-5">
-                            <div class="col-12 col-lg-6">
-                                <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="fullName">Full name</label>
-                                <input class="form-control" id="fullName" type="text" placeholder="Full name" />
-                            </div>
-                            <div class="col-12 col-lg-6">
-                                <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="gender">Company</label>
-                                <select class="form-select" id="company">
-                                    <option value="select-company" selected>{{ request.user.company }}</option>
-                                    <!-- <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="non-binary">Non-binary</option>
-                                    <option value="not-to-say">Prefer not to say</option> -->
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-6">
-                                <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="position">Position</label>
-                                <input class="form-control" id="position" type="text" placeholder="Position" />
-                            </div>
-                            <div class="col-12 col-lg-6">
-                                <div class="row g-2 gy-lg-0">
-                                    <label class="form-label text-body-highlight fs-8 ps-1 text-capitalize lh-sm mb-1">Date of birth</label>
-                                    <div class="col-6 col-sm-2 col-lg-3 col-xl-2">
-                                        <select class="form-select" id="date">
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                            <option value="13">13</option>
-                                            <option value="14">14</option>
-                                            <option value="15">15</option>
-                                            <option value="16">16</option>
-                                            <option value="17">17</option>
-                                            <option value="18">18</option>
-                                            <option value="19">19</option>
-                                            <option value="20">20</option>
-                                            <option value="21">21</option>
-                                            <option value="22">22</option>
-                                            <option value="23">23</option>
-                                            <option value="24">24</option>
-                                            <option value="25">25</option>
-                                            <option value="26">26</option>
-                                            <option value="27">27</option>
-                                            <option value="28">28</option>
-                                            <option value="29">29</option>
-                                            <option value="30">30</option>
-                                            <option value="31">31</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-6 col-sm-2 col-lg-3 col-xl-2">
-                                        <select class="form-select" id="month">
-                                            <option value="Jan">Jan</option>
-                                            <option value="Feb">Feb</option>
-                                            <option value="Mar">Mar</option>
-                                            <option value="Apr">Apr</option>
-                                            <option value="May">May</option>
-                                            <option value="Jun">Jun</option>
-                                            <option value="Jul">Jul</option>
-                                            <option value="Aug">Aug</option>
-                                            <option value="Sep">Sep</option>
-                                            <option value="Oct">Oct</option>
-                                            <option value="Nov">Nov</option>
-                                            <option value="Dec">Dec</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-8 col-lg-6 col-xl-8">
-                                        <select class="form-select" id="year" name="year">
-                                            {% if request.user.year_of_birth %}
-                                                <option value="{{ request.user.year_of_birth }}">{{ request.user.year_of_birth }}</option>
-                                            {% endif %}
-                                            {% for year in years %}
-                                                <option value="{{ year }}">{{ year }}</option>
-                                            {% endfor %}
-                                        </select>
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <div class="row gx-3 gy-4 mb-5">
+                                <div class="col-12 col-lg-6">
+                                    <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="fullName">Full name</label>
+                                    <input class="form-control" id="fullName" type="text" placeholder="Full name" />
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="company">Company</label>
+                                    {{ form.company }}
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="position">Position</label>
+                                    {{ form.position }}
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="row g-2 gy-lg-0">
+                                        <label class="form-label text-body-highlight fs-8 ps-1 text-capitalize lh-sm mb-1">Date of birth</label>
+                                        <div class="col-6 col-sm-2 col-lg-3 col-xl-2">
+                                            {{ form.day_of_birth }}
+                                        </div>
+                                        <div class="col-6 col-sm-2 col-lg-3 col-xl-2">
+                                            {{ form.month_of_birth }}
+                                        </div>
+                                        <div class="col-12 col-sm-8 col-lg-6 col-xl-8">
+                                            {{ form.year_of_birth }}
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="col-12">
+                                    <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="short_bio">Short Bio</label>
+                                     {{ form.short_bio }}
+                                </div>
+                                <!-- <div class="col-12 col-lg-4">
+                                    <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="facebook">Facebook</label>
+                                    <input class="form-control" id="facebook" type="text" placeholder="Facebook" />
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="instagram">Instagram</label>
+                                    <input class="form-control" id="instagram" type="text" placeholder="Instagram" />
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="twitter">Twitter</label>
+                                    <input class="form-control" id="twitter" type="text" placeholder="Twitter" />
+                                </div> -->
                             </div>
-                            <div class="col-12">
-                                <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="short_bio">Short Bio</label>
-                                <input class="form-control" id="short_bio" type="text" placeholder="Bio" />
+                            <div class="text-end">
+                                <button class="btn btn-primary px-7">Save changes</button>
                             </div>
-                            <!-- <div class="col-12 col-lg-4">
-                                <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="facebook">Facebook</label>
-                                <input class="form-control" id="facebook" type="text" placeholder="Facebook" />
-                            </div>
-                            <div class="col-12 col-lg-4">
-                                <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="instagram">Instagram</label>
-                                <input class="form-control" id="instagram" type="text" placeholder="Instagram" />
-                            </div>
-                            <div class="col-12 col-lg-4">
-                                <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="twitter">Twitter</label>
-                                <input class="form-control" id="twitter" type="text" placeholder="Twitter" />
-                            </div> -->
-                        </div>
-                        <div class="text-end">
-                            <button class="btn btn-primary px-7">Save changes</button>
-                        </div>
+                        </form>
                     </div>
     
                     <!-- Billing Tab Content -->
@@ -410,14 +354,6 @@
 
 {% block scripts %}
 
-<script>
-  const select = document.querySelector('select[name="year"]');
-  for (let year = 2025; year >= 1960; year--) {
-    const option = document.createElement('option');
-    option.value = year;
-    option.textContent = year;
-    select.appendChild(option);
-  }
-</script>
+
 
 {% endblock scripts %}
