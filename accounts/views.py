@@ -8,6 +8,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect
 from django.db import transaction
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 import os
 
 # Create your views here.
@@ -91,3 +92,8 @@ def login_view(request):
         form = CustomAuthenticationForm()
 
     return render(request, 'accounts/login.html', {'form': form})
+
+@login_required
+def profile(request):
+    months_since_joined = (request.user.date_joined.today().year - request.user.date_joined.year) * 12 + (request.user.date_joined.today().month - request.user.date_joined.month)
+    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "months_since_joined": months_since_joined})
