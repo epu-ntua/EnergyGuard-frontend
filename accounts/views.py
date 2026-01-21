@@ -98,8 +98,6 @@ class RegistrationWizard(SessionWizardView):
         return redirect('registration_success')  
             
 def registration_success(request):
-    if request.user.is_authenticated:
-        return redirect('home')
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
     return render(request, 'accounts/registration-success.html', {"wizard": wizard})
@@ -199,9 +197,15 @@ def profile(request):
 
     return render(request, 'accounts/profile.html', {"active_navbar_page": None, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
 
-class PlatformEntryView(LoginRequiredMixin, SessionWizardView):
+class PlatformEntryView(SessionWizardView):
     # Necessary to handle ImageField or FileField in forms
     file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
+
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
         return [ENTRY_TEMPLATE_NAMES[self.steps.current]]
