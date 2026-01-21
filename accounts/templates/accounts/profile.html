@@ -58,11 +58,7 @@
                                     <div class="col-12 col-sm-auto">
                                         <input class="d-none" id="avatarFile" type="file" />
                                         <label class="cursor-pointer avatar avatar-5xl" for="avatarFile">
-                                            {%if request.user.profile_picture %}
-                                            <img class="rounded-circle" src="{{ request.user.profile_picture }}" alt="avatar"/>
-                                            {%else%}
-                                            <img class="rounded-circle" src="{% static 'assets/img/team/avatar.webp' %}" alt="default_avatar"/>
-                                            {%endif%}
+                                            {% include "accounts/user-avatar.html" %}
                                         </label>
                                     </div>
                                     <div class="col-12 col-sm-auto flex-1">
