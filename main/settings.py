@@ -205,7 +205,7 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when pa
 SOCIALACCOUNT_LOGOUT = True  # Logout from social account when logging out from the site
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-LOGIN_REDIRECT_URL = "/experiments/"  # Redirect to experiments default page after login
+LOGIN_REDIRECT_URL = "account_keycloak_redirect"  # Redirect to custom view that handles logic
 
 # LOGGING = {
 #     'version': 1,

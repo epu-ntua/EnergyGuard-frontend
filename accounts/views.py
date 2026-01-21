@@ -10,21 +10,44 @@ from django.shortcuts import render, redirect
 from django.db import transaction
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from allauth.socialaccount.signals import pre_social_login
+from django.dispatch import receiver
 import os
 from datetime import date
 
 
 # Create your views here.
-FORMS = [
+# Signal handler to track new Keycloak signups
+@receiver(pre_social_login)
+def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
+    """
+    Signal fired before social login completes.
+    Marks new signups in the session.
+    """
+    if sociallogin.account.provider == 'keycloak':
+        # Check if this is a new user (doesn't have a user object yet)
+        if not sociallogin.is_existing:
+            request.session['keycloak_new_signup'] = True
+
+
+REGISTRATION_FORMS = [
     ("user_info", UserWizardForm),
     ("profile_info", ProfileWizardForm),
     ("payment_info", PaymentWizardForm)
 ]
-
-TEMPLATE_NAMES = {
+REGISTRATION_TEMPLATE_NAMES = {
     "user_info": "accounts/registration-step1.html",
     "profile_info": "accounts/registration-step2.html",
     "payment_info": "accounts/registration-step3.html",
+}
+ENTRY_FORMS = [
+    ("entry_profile_info", ProfileWizardForm),
+    ("entry_payment_info", PaymentWizardForm)
+]
+ENTRY_TEMPLATE_NAMES = {
+    "entry_profile_info": "accounts/platform-entry-step1.html",
+    "entry_payment_info": "accounts/platform-entry-step2.html",
 }
 
 class RegistrationWizard(SessionWizardView):
@@ -37,7 +60,7 @@ class RegistrationWizard(SessionWizardView):
         return super().dispatch(request, *args, **kwargs)
     
     def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
-        return [TEMPLATE_NAMES[self.steps.current]]
+        return [REGISTRATION_TEMPLATE_NAMES[self.steps.current]]
     
     def get_form(self, step=None, data=None, files=None): 
         form = super().get_form(step, data, files) 
@@ -95,6 +118,27 @@ def login_view(request):
         form = CustomAuthenticationForm()
 
     return render(request, 'accounts/login.html', {'form': form})
+
+def keycloak_redirect(request):
+    """
+    Custom redirect handler for Keycloak login/signup.
+    Redirects new signups to platform entry wizard
+    Redirects existing users to experiments
+    """
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    is_new_signup = request.session.pop('keycloak_new_signup', False)
+    
+    # Also check if user has a profile - new users won't have one
+    has_profile = Profile.objects.filter(user=request.user).exists()
+    
+    if is_new_signup or not has_profile:
+        # New user signup - redirect to platform entry wizard
+        return redirect('platform_entry')
+    else:
+        # Existing user login - redirect to experiments
+        return redirect('experiment_index')
 
 @login_required
 def profile(request):
@@ -154,3 +198,37 @@ def profile(request):
 
 
     return render(request, 'accounts/profile.html', {"active_navbar_page": None, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
+
+class PlatformEntryView(LoginRequiredMixin, SessionWizardView):
+    # Necessary to handle ImageField or FileField in forms
+    file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
+
+    def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
+        return [ENTRY_TEMPLATE_NAMES[self.steps.current]]
+    
+    def get_form(self, step=None, data=None, files=None): 
+        form = super().get_form(step, data, files) 
+        return form
+    
+    def done(self, form_list, **kwargs):
+        print("Entering done method of PlatformEntryView") # Debugging line
+
+        profile_data = self.get_cleaned_data_for_step('entry_profile_info')
+        payment_data = self.get_cleaned_data_for_step('entry_payment_info')
+
+        membership_selected = User.Membership.FREE
+        credits_amount = 100
+
+        version = self.request.POST.get('version')
+        if version == 'paid':
+            membership_selected = User.Membership.PAID
+            credits_amount = 500
+
+        with transaction.atomic(): 
+            user = self.request.user
+            print(user)
+            Profile.objects.create(user=user, **profile_data)
+            if version == 'paid':
+                PaymentMethod.objects.create(user=user, **payment_data)
+
+        return redirect('registration_success')  
