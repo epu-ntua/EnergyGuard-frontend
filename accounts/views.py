@@ -1,7 +1,8 @@
 from formtools.wizard.views import SessionWizardView
-from .forms import UserWizardForm, ProfileWizardForm, PaymentWizardForm, CustomAuthenticationForm, ProfileForm
+from .forms import *
 from .models import User, Profile
 from .utils import get_time_since_joined
+from core.views import BaseWizardView
 from billing.models import PaymentMethod
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render
@@ -195,37 +196,9 @@ def profile(request):
 
     return render(request, 'accounts/profile.html', {"show_sidebar": False, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
 
-class PlatformEntryView(SessionWizardView):
-    # Necessary to handle ImageField or FileField in forms
-    file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
-
-    def dispatch(self, request, *args, **kwargs):
-        # Check if user is authenticated
-        if not request.user.is_authenticated:
-            return redirect('login')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_template_names(self): # Change default template names according to the current step, by overriding get_template_names method
-        return [ENTRY_TEMPLATE_NAMES[self.steps.current]]
-    
-    def get_form(self, step=None, data=None, files=None): 
-        form = super().get_form(step, data, files) 
-        return form
-    
-    def get_context_data(self, form, **kwargs):
-        context = super().get_context_data(form=form, **kwargs)
-        steps = []
-        for step_name in self.steps.all:
-            meta = ENTRY_STEP_METADATA.get(step_name, {})
-            steps.append(
-                {
-                    "name": step_name,
-                    "title": meta.get("title", step_name.replace("_", " ").title()),
-                    "icon": meta.get("icon", "fa-user"),
-                }
-            )
-        context["wizard_steps"] = steps
-        return context
+class PlatformEntryView(BaseWizardView):
+    template_names = ENTRY_TEMPLATE_NAMES
+    step_metadata = ENTRY_STEP_METADATA
     
     def done(self, form_list, **kwargs):
         print("Entering done method of PlatformEntryView") # Debugging line
@@ -255,6 +228,9 @@ def keycloak_registration_success(request, *args, **kwargs):
     wizard = {"steps": {"current": "done"}}
     wizard_steps = ENTRY_STEP_METADATA.values()
     return render(request, 'accounts/registration-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
+
+# ----------------Keycloak---------------- #
+
 
 # Signal handler to track new Keycloak signups
 @receiver(pre_social_login)
