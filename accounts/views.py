@@ -195,7 +195,7 @@ def profile(request):
         form = ProfileForm(initial=initial_data)
 
 
-    return render(request, 'accounts/profile.html', {"active_navbar_page": None, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
+    return render(request, 'accounts/profile.html', {"show_sidebar": False, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
 
 class PlatformEntryView(SessionWizardView):
     # Necessary to handle ImageField or FileField in forms

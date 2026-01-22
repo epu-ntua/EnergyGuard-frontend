@@ -125,7 +125,8 @@ def experiments_list(request):
     return render(request, 'experiments/experiments-list.html', {
         "experiments_num": counts, 
         "status_filter": status_filter, 
-        "active_navbar_page": "experiments"
+        "active_navbar_page": "experiments",
+        "show_sidebar": True
     })
 
 @login_required
@@ -204,6 +205,7 @@ def experiments_list_tabs(request):
         "experiments_num": counts, 
         "status_filter": status_filter, 
         "active_navbar_page": "experiments", 
+        "show_sidebar": True,
         "visibility_filter": visibility_filter
     })
 
@@ -241,4 +243,4 @@ def experiment_details(request, experiment_id):
 
 @login_required
 def experiment_index(request):
-    return render(request, 'experiments/experiment-index.html', {"active_navbar_page": "experiments"})
+    return render(request, 'experiments/experiment-index.html', {"active_navbar_page": "experiments", "show_sidebar": True})

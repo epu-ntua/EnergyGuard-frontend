@@ -38,7 +38,9 @@
     <!-- ===============================================-->
     <main class="main" id="top">
 
-      {% include "./vertical-navbar.html" %}  
+      {% if show_sidebar %}
+        {% include "./vertical-navbar.html" %}  
+      {% endif %}
 
       {% include "./header.html" %}
 
