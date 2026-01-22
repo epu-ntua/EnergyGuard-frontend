@@ -8,11 +8,14 @@ from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.db import transaction
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from allauth.socialaccount.signals import pre_social_login
+from allauth.socialaccount.models import SocialAccount
 from django.dispatch import receiver
+from django.views.decorators.http import require_POST
+from urllib.parse import urlencode
 import os
 from datetime import date
 
@@ -137,6 +140,30 @@ def keycloak_redirect(request):
     else:
         # Existing user login - redirect to experiments
         return redirect('experiment_index')
+
+@require_POST   # Only allow POST requests for logout
+def keycloak_logout(request):
+    post_logout_redirect_uri = request.build_absolute_uri(getattr(settings, "LOGOUT_REDIRECT_URL", "/") or "/") 
+    end_session_url = None
+    client_id = None
+
+    provider_config = (settings.SOCIALACCOUNT_PROVIDERS.get("openid_connect", {}).get("APPS", [{}])[0])
+    server_url = provider_config.get("settings", {}).get("server_url")
+    client_id = provider_config.get("client_id")
+
+    if server_url:
+        end_session_url = f"{server_url}/protocol/openid-connect/logout"
+
+    if not end_session_url:
+        return redirect(post_logout_redirect_uri)
+
+    django_logout(request)
+
+    params = {"post_logout_redirect_uri": post_logout_redirect_uri}
+    if client_id:
+        params["client_id"] = client_id
+
+    return redirect(f"{end_session_url}?{urlencode(params)}")
 
 @login_required
 def profile(request):
