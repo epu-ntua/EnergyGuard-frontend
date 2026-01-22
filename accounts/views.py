@@ -19,21 +19,9 @@ from urllib.parse import urlencode
 import os
 from datetime import date
 
-
 # Create your views here.
-# Signal handler to track new Keycloak signups
-@receiver(pre_social_login)
-def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
-    """
-    Signal fired before social login completes.
-    Marks new signups in the session.
-    """
-    if sociallogin.account.provider == 'keycloak':
-        # Check if this is a new user (doesn't have a user object yet)
-        if not sociallogin.is_existing:
-            request.session['keycloak_new_signup'] = True
 
-
+# Registration Wizard
 REGISTRATION_FORMS = [
     ("user_info", UserWizardForm),
     ("profile_info", ProfileWizardForm),
@@ -44,6 +32,13 @@ REGISTRATION_TEMPLATE_NAMES = {
     "profile_info": "accounts/registration-step2.html",
     "payment_info": "accounts/registration-step3.html",
 }
+REGISTRATION_STEP_METADATA = {
+    "user_info": {"title": "Account", "icon": "fa-lock"},
+    "profile_info": {"title": "Personal", "icon": "fa-user"},
+    "payment_info": {"title": "Billing", "icon": "fa-credit-card"},
+}
+
+# Platform Entry Wizard
 ENTRY_FORMS = [
     ("entry_profile_info", ProfileWizardForm),
     ("entry_payment_info", PaymentWizardForm)
@@ -51,6 +46,11 @@ ENTRY_FORMS = [
 ENTRY_TEMPLATE_NAMES = {
     "entry_profile_info": "accounts/platform-entry-step1.html",
     "entry_payment_info": "accounts/platform-entry-step2.html",
+}
+
+ENTRY_STEP_METADATA = {
+    "entry_profile_info": {"title": "Profile", "icon": "fa-user"},
+    "entry_payment_info": {"title": "Billing", "icon": "fa-credit-card"},
 }
 
 class RegistrationWizard(SessionWizardView):
@@ -68,6 +68,21 @@ class RegistrationWizard(SessionWizardView):
     def get_form(self, step=None, data=None, files=None): 
         form = super().get_form(step, data, files) 
         return form
+
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form=form, **kwargs)
+        steps = []
+        for step_name in self.steps.all:
+            meta = REGISTRATION_STEP_METADATA.get(step_name, {})
+            steps.append(
+                {
+                    "name": step_name,
+                    "title": meta.get("title", step_name.replace("_", " ").title()),
+                    "icon": meta.get("icon", "fa-user"),
+                }
+            )
+        context["wizard_steps"] = steps
+        return context
     
     def done(self, form_list, **kwargs):
 
@@ -97,13 +112,14 @@ class RegistrationWizard(SessionWizardView):
             Profile.objects.create(user=user, **profile_data)
             if version == 'paid':
                 PaymentMethod.objects.create(user=user, **payment_data)
-
-        return redirect('registration_success')  
+        
+        return redirect('registration_success')
             
-def registration_success(request):
+def platform_registration_success(request, *args, **kwargs):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
     wizard = {"steps": {"current": "done"}}
-    return render(request, 'accounts/registration-success.html', {"wizard": wizard})
+    wizard_steps = REGISTRATION_STEP_METADATA.values()
+    return render(request, 'accounts/registration-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -119,51 +135,6 @@ def login_view(request):
         form = CustomAuthenticationForm()
 
     return render(request, 'accounts/login.html', {'form': form})
-
-def keycloak_redirect(request):
-    """
-    Custom redirect handler for Keycloak login/signup.
-    Redirects new signups to platform entry wizard
-    Redirects existing users to experiments
-    """
-    if not request.user.is_authenticated:
-        return redirect('login')
-    
-    is_new_signup = request.session.pop('keycloak_new_signup', False)
-    
-    # Also check if user has a profile - new users won't have one
-    has_profile = Profile.objects.filter(user=request.user).exists()
-    
-    if is_new_signup or not has_profile:
-        # New user signup - redirect to platform entry wizard
-        return redirect('platform_entry')
-    else:
-        # Existing user login - redirect to experiments
-        return redirect('experiment_index')
-
-@require_POST   # Only allow POST requests for logout
-def keycloak_logout(request):
-    post_logout_redirect_uri = request.build_absolute_uri(getattr(settings, "LOGOUT_REDIRECT_URL", "/") or "/") 
-    end_session_url = None
-    client_id = None
-
-    provider_config = (settings.SOCIALACCOUNT_PROVIDERS.get("openid_connect", {}).get("APPS", [{}])[0])
-    server_url = provider_config.get("settings", {}).get("server_url")
-    client_id = provider_config.get("client_id")
-
-    if server_url:
-        end_session_url = f"{server_url}/protocol/openid-connect/logout"
-
-    if not end_session_url:
-        return redirect(post_logout_redirect_uri)
-
-    django_logout(request)
-
-    params = {"post_logout_redirect_uri": post_logout_redirect_uri}
-    if client_id:
-        params["client_id"] = client_id
-
-    return redirect(f"{end_session_url}?{urlencode(params)}")
 
 @login_required
 def profile(request):
@@ -241,6 +212,21 @@ class PlatformEntryView(SessionWizardView):
         form = super().get_form(step, data, files) 
         return form
     
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form=form, **kwargs)
+        steps = []
+        for step_name in self.steps.all:
+            meta = ENTRY_STEP_METADATA.get(step_name, {})
+            steps.append(
+                {
+                    "name": step_name,
+                    "title": meta.get("title", step_name.replace("_", " ").title()),
+                    "icon": meta.get("icon", "fa-user"),
+                }
+            )
+        context["wizard_steps"] = steps
+        return context
+    
     def done(self, form_list, **kwargs):
         print("Entering done method of PlatformEntryView") # Debugging line
 
@@ -262,4 +248,67 @@ class PlatformEntryView(SessionWizardView):
             if version == 'paid':
                 PaymentMethod.objects.create(user=user, **payment_data)
 
-        return redirect('registration_success')  
+        return redirect('registration_success') 
+
+def keycloak_registration_success(request, *args, **kwargs):
+    # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
+    wizard = {"steps": {"current": "done"}}
+    wizard_steps = ENTRY_STEP_METADATA.values()
+    return render(request, 'accounts/registration-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
+
+# Signal handler to track new Keycloak signups
+@receiver(pre_social_login)
+def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
+    """
+    Signal fired before social login completes.
+    Marks new signups in the session.
+    """
+    if sociallogin.account.provider == 'keycloak':
+        # Check if this is a new user (doesn't have a user object yet)
+        if not sociallogin.is_existing:
+            request.session['keycloak_new_signup'] = True
+
+def keycloak_redirect(request):
+    """
+    Custom redirect handler for Keycloak login/signup.
+    Redirects new signups to platform entry wizard
+    Redirects existing users to experiments
+    """
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    is_new_signup = request.session.pop('keycloak_new_signup', False)
+    
+    # Also check if user has a profile - new users won't have one
+    has_profile = Profile.objects.filter(user=request.user).exists()
+    
+    if is_new_signup or not has_profile:
+        # New user signup - redirect to platform entry wizard
+        return redirect('platform_entry')
+    else:
+        # Existing user login - redirect to experiments
+        return redirect('experiment_index')
+
+@require_POST   # Only allow POST requests for logout
+def keycloak_logout(request):
+    post_logout_redirect_uri = request.build_absolute_uri(getattr(settings, "LOGOUT_REDIRECT_URL", "/") or "/") 
+    end_session_url = None
+    client_id = None
+
+    provider_config = (settings.SOCIALACCOUNT_PROVIDERS.get("openid_connect", {}).get("APPS", [{}])[0])
+    server_url = provider_config.get("settings", {}).get("server_url")
+    client_id = provider_config.get("client_id")
+
+    if server_url:
+        end_session_url = f"{server_url}/protocol/openid-connect/logout"
+
+    if not end_session_url:
+        return redirect(post_logout_redirect_uri)
+
+    django_logout(request)
+
+    params = {"post_logout_redirect_uri": post_logout_redirect_uri}
+    if client_id:
+        params["client_id"] = client_id
+
+    return redirect(f"{end_session_url}?{urlencode(params)}")

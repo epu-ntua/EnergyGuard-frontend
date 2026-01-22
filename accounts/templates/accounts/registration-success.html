@@ -1,21 +1,22 @@
-{% extends "./platform-entry-base.html" %}
+{% extends "core/base-wizard.html" %}
 {% load static %}
 
 {% block title %}EnergyGuard | Sign Up Completed{% endblock %}
 
 {% block content %}
-<div class="tab-content">
-  <div class="tab-pane active" role="tabpanel">
-    <div class="row flex-center pb-8 pt-4 gx-3 gy-4">
-      <div class="col-12 col-sm-auto">
-        <div class="text-center text-sm-start"><img class="d-dark-none" src="{% static 'assets/img/spot-illustrations/38.webp' %}" alt="" width="220" /><img class="d-light-none" src="{% static 'assets/img/spot-illustrations/dark_38.webp' %}" alt="" width="220" /></div>
+<div class="tab-pane active" role="tabpanel">
+  <div class="row flex-center pb-8 pt-4 gx-3 gy-4">
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <img class="d-dark-none" src="{% static 'assets/img/spot-illustrations/38.webp' %}" alt="" width="220" />
+        <img class="d-light-none" src="{% static 'assets/img/spot-illustrations/dark_38.webp' %}" alt="" width="220" />
       </div>
-      <div class="col-12 col-sm-auto">
-        <div class="text-center text-sm-start">
-          <h5 class="mb-3">You are all set!</h5>
-          <p class="text-body-emphasis fs-9">Now you can access your account<br />anytime anywhere</p>
-          <a class="btn btn-primary px-6" href="{% url 'home' %}">Go to Home</a>
-        </div>
+    </div>
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <h5 class="mb-3">You are all set!</h5>
+        <p class="text-body-emphasis fs-9">Now you can access your account<br />anytime anywhere</p>
+        <a class="btn btn-primary px-6" href="{% url 'home' %}">Go to Home</a>
       </div>
     </div>
   </div>
