@@ -1,0 +1,24 @@
+{% extends "core/base-wizard.html" %}
+{% load static %}
+
+{% block title %}Add Dataset | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="tab-pane active" role="tabpanel">
+  <div class="row flex-center pb-8 pt-4 gx-3 gy-4">
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <img class="d-dark-none" src="{% static 'assets/img/spot-illustrations/38.webp' %}" alt="" width="220" />
+        <img class="d-light-none" src="{% static 'assets/img/spot-illustrations/dark_38.webp' %}" alt="" width="220" />
+      </div>
+    </div>
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <h5 class="mb-3">Thank you for submitting your dataset!</h5>
+        <p class="text-body-emphasis fs-9">In the next few days you will receive<br />the result of your submission</p>
+        <a class="btn btn-primary px-6" href="{% url 'home' %}">New application</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
