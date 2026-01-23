@@ -176,9 +176,9 @@ DATASET_FORMS = [
     ('metadata', MetadataDatasetForm),
 ]
 DATASET_STEP_METADATA = {
-    'general_info': {'title': 'General', 'icon': 'fa-info'},
+    'general_info': {'title': 'General', 'icon': 'fa-info-circle'},
     'upload_files': {'title': 'Upload', 'icon': 'fa-upload'},
-    'metadata': {'title': 'Metadata', 'icon': 'fa-info-circle'},
+    'metadata': {'title': 'Metadata', 'icon': 'fa-sheet-plastic'},
 }
 
 class AddDatasetView(LoginRequiredMixin, BaseWizardView):
