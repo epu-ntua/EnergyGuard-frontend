@@ -114,7 +114,7 @@ class RegistrationWizard(SessionWizardView):
             if version == 'paid':
                 PaymentMethod.objects.create(user=user, **payment_data)
         
-        return redirect('registration_success')
+        return redirect('platform_registration_success')
             
 def platform_registration_success(request, *args, **kwargs):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
@@ -221,7 +221,7 @@ class PlatformEntryView(BaseWizardView):
             if version == 'paid':
                 PaymentMethod.objects.create(user=user, **payment_data)
 
-        return redirect('registration_success') 
+        return redirect('keycloak_registration_success') 
 
 def keycloak_registration_success(request, *args, **kwargs):
     # Provide a minimal wizard-like context so base template can resolve wizard.steps.current
