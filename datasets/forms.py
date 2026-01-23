@@ -12,6 +12,12 @@ class GeneralDatasetForm(forms.ModelForm):
             'visibility': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = [('', 'Select Label')] + list(self.fields['label'].choices)
+        self.fields['label'].choices = choices
+        self.fields['label'].initial = ''
+
 class MetadataDatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
