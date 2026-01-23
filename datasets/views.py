@@ -208,3 +208,8 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
 
         return redirect('dataset-upload-success')
 
+@login_required
+def dataset_upload_success(request):
+    wizard = {"steps": {"current": "done"}}
+    wizard_steps = DATASET_STEP_METADATA.values()
+    return render(request, 'datasets/upload-dataset-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
