@@ -166,9 +166,9 @@ def dataset_download(request, dataset_id):
     return redirect('dataset_details', dataset_id=dataset.id)
 
 DATASET_TEMPLATE_NAMES = {
-    'general_info': "datasets/add-dataset-step1.html",
-    'upload_files': "datasets/add-dataset-step2.html",
-    'metadata': "datasets/add-dataset-step3.html",
+    'general_info': "datasets/upload-dataset-step1.html",
+    'upload_files': "datasets/upload-dataset-step2.html",
+    'metadata': "datasets/upload-dataset-step3.html",
 }
 DATASET_FORMS = [
     ('general_info', GeneralDatasetForm),
