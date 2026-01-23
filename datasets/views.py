@@ -1,10 +1,14 @@
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django_datatables_view.base_datatable_view import BaseDatatableView
 from .models import Dataset, DatasetUserDownload
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
+from .forms import GeneralDatasetForm, FileUploadDatasetForm, MetadataDatasetForm
+from core.views import BaseWizardView
+from django.db import transaction
+from django_datatables_view.base_datatable_view import BaseDatatableView
 
 
 class DatasetsListJson(BaseDatatableView):
@@ -160,3 +164,47 @@ def dataset_download(request, dataset_id):
 
     messages.success(request, f"You have successfully downloaded the dataset: {dataset.name}")
     return redirect('dataset_details', dataset_id=dataset.id)
+
+DATASET_TEMPLATE_NAMES = {
+    'general_info': "datasets/add-dataset-step1.html",
+    'upload_files': "datasets/add-dataset-step2.html",
+    'metadata': "datasets/add-dataset-step3.html",
+}
+DATASET_FORMS = [
+    ('general_info', GeneralDatasetForm),
+    ('upload_files', FileUploadDatasetForm),
+    ('metadata', MetadataDatasetForm),
+]
+DATASET_STEP_METADATA = {
+    'general_info': {'title': 'General', 'icon': 'fa-info'},
+    'upload_files': {'title': 'Upload', 'icon': 'fa-upload'},
+    'metadata': {'title': 'Metadata', 'icon': 'fa-info-circle'},
+}
+
+class AddDatasetView(LoginRequiredMixin, BaseWizardView):
+    template_names = DATASET_TEMPLATE_NAMES
+    step_metadata = DATASET_STEP_METADATA
+
+    def done(self, form_list, **kwargs):
+        # Process and save dataset after all steps are completed
+
+        general_data = self.get_cleaned_data_for_step('general_info') 
+        upload_data = self.get_cleaned_data_for_step('upload_files') 
+        metadata_data = self.get_cleaned_data_for_step('metadata') 
+
+        with transaction.atomic():
+            dataset = Dataset.objects.create(
+                name=general_data['name'],
+                data_file=upload_data['data_file'],
+                label=general_data['label'],
+                source='your_own_DS',
+                status='under_review',
+                visibility=general_data['visibility'],
+                size_gb=upload_data['data_file'].size / (1024 * 1024 * 1024),
+                publisher=self.request.user.username,
+                description=general_data['description'],
+                metadata=metadata_data['metadata'],
+            )
+
+        return redirect('dataset-upload-success')
+
