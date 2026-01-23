@@ -26,23 +26,25 @@
 
             <div class="mb-3">
                 <p class="col-12 fs-9">Dataset Type</p>
-                <div class="row gx-2 mb-3">
-                    <div class="col-4">
-                        <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                            <p class="mb-0 fw-bold">FEATURE NAME</p>
-                            <p class="mb-0">Name of column</p>
+                <div id="boxes" class="mb-3">
+                    <div class="row gx-2 mb-2">
+                        <div class="col-4">
+                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
+                                <p class="mb-0 fw-bold">FEATURE NAME</p>
+                                <p class="mb-0">Name of column</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                            <p class="mb-0 fw-bold">UNIT</p>
-                            <p class="mb-0">Measurement unit</p>
+                        <div class="col-4">
+                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
+                                <p class="mb-0 fw-bold">UNIT</p>
+                                <p class="mb-0">Measurement unit</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                            <p class="mb-0 fw-bold">DESCRIPTION</p>
-                            <p class="mb-0">Description of column</p>
+                        <div class="col-4">
+                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
+                                <p class="mb-0 fw-bold">DESCRIPTION</p>
+                                <p class="mb-0">Description of column</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -60,3 +62,42 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+  function addRow() {
+    var container = document.getElementById('boxes');
+    var row = document.createElement('div');
+    row.innerHTML = `
+    <div class="text-end mb-0">
+        <button type="button" class="btn btn-danger px-2 py-0" onclick="removeRow(this)"><span class="fw-bolder fs-8">-</span></button>
+    </div>
+    <div class="row gx-2 mb-1">
+        <div class="col-4">
+            <div class="fs-9 text-body-quaternary">
+                <input type="text" name="feature_name[]" class="form-control form-control-sm">
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="fs-9 text-body-quaternary">
+                <input type="text" name="feature_unit[]" class="form-control form-control-sm">
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="fs-9 text-body-quaternary">
+                <input type="text" name="feature_description[]" class="form-control form-control-sm">
+            </div>
+        </div>
+    </div>
+    `;
+    container.appendChild(row);
+  }
+
+    function removeRow(button) {
+        var remove_row = button.parentNode;
+        var data_row = remove_row.nextElementSibling;
+        data_row.remove();
+        remove_row.remove();
+    }
+</script>
+{% endblock scripts %}
