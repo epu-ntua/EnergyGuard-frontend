@@ -38,18 +38,19 @@ class Dataset(TimeStampedModel):
         UNDER_REVIEW = "under_review", "Under Review"
 
     name = models.CharField(max_length=255)
+    data_file = models.FileField(upload_to='datasets/', default='')
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
     status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list')
-    experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list') # Users who have access to this dataset
+    experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets') # Experiments that have used this dataset
     visibility = models.BooleanField(default=False)
-    downloads = models.PositiveIntegerField(default=0)
+    downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
     publisher = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     metadata = models.JSONField(blank=True, null=True)
-    users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets')
+    users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets') # Users who have downloaded this dataset
 
     def __str__(self):
         return self.name
