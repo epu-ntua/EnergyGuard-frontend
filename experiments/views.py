@@ -239,7 +239,7 @@ def experiment_details(request, experiment_id):
         messages.error(request, "Experiment not found")
         return redirect('home') 
 
-    return render(request, 'experiments/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments"})
+    return render(request, 'experiments/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_sidebar": True})
 
 @login_required
 def experiment_index(request):
