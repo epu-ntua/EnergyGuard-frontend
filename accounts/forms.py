@@ -115,3 +115,12 @@ class ProfileForm(forms.Form):
     short_bio = forms.CharField(
         required=False, 
         widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'id': 'short_bio', 'name': 'short_bio'}))
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ('profile_picture',)
+        widgets = {
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
+        }

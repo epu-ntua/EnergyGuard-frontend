@@ -10,4 +10,5 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('keycloak-redirect/', views.keycloak_redirect, name='account_keycloak_redirect'),
     path('platform-entry/', views.PlatformEntryView.as_view(views.ENTRY_FORMS), name='platform_entry'),
+    path('profile/update-picture/', views.update_profile_picture, name='update_profile_picture'),
 ]

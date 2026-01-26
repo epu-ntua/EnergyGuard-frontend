@@ -56,10 +56,17 @@
                             <div class="border-bottom border-dashed pb-4">
                                 <div class="row align-items-center g-3 g-sm-5 text-center text-sm-start">
                                     <div class="col-12 col-sm-auto">
-                                        <input class="d-none" id="avatarFile" type="file" />
-                                        <label class="cursor-pointer avatar avatar-5xl" for="avatarFile">
-                                            {% include "accounts/user-avatar.html" %}
-                                        </label>
+                                        <form action="{% url 'update_profile_picture' %}" method="post" enctype="multipart/form-data" id="avatarForm">
+                                            {% csrf_token %}
+                                            <input class="d-none" id="avatarFile" type="file" name="profile_picture" onchange="document.getElementById('avatarForm').submit()"/>
+                                            <label class="cursor-pointer avatar avatar-5xl" for="avatarFile">
+                                                {%if request.user.profile.profile_picture %}
+                                                    <img class="rounded-circle" src="{{ request.user.profile.profile_picture.url }}" alt="avatar"/>
+                                                {%else%}
+                                                    <img class="rounded-circle" src="{% static 'assets/img/team/avatar.webp' %}" alt="default_avatar"/>
+                                                {%endif%}
+                                            </label>
+                                        </form>
                                     </div>
                                     <div class="col-12 col-sm-auto flex-1">
                                         <h3>{{ request.user.first_name }} {{ request.user.last_name }}</h3>
@@ -335,7 +342,5 @@
 {% endblock content %}
 
 {% block scripts %}
-
-
 
 {% endblock scripts %}

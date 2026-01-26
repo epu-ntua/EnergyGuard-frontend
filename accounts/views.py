@@ -196,6 +196,19 @@ def profile(request):
 
     return render(request, 'accounts/profile.html', {"show_sidebar": False, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
 
+@login_required
+def update_profile_picture(request):
+    if request.method == 'POST':
+        # Get the old picture path before it gets updated
+        old_picture_path = request.user.profile.profile_picture.path if request.user.profile.profile_picture else None
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            # Delete old profile picture if it exists
+            if old_picture_path and os.path.exists(old_picture_path):
+                os.remove(old_picture_path)
+            form.save()
+    return redirect('profile')
+
 class PlatformEntryView(BaseWizardView):
     template_names = ENTRY_TEMPLATE_NAMES
     step_metadata = ENTRY_STEP_METADATA
