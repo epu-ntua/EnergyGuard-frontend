@@ -169,10 +169,12 @@
 </section>
 
 <div class="position-relative">
-    <div class="bg-holder z-2 d-none d-md-block" style="background-image:url(../../assets/img/bg/13.png);background-size:auto;background-position:right;"></div>
+    {% static 'assets/img/bg/13.png' as bg_image_13 %}
+    <div class="bg-holder z-2 d-none d-md-block" style="background-image:url('{{ bg_image_13 }}');background-size:auto;background-position:right;"></div>
     <!--/.bg-holder-->
 
-    <div class="bg-holder z-2 d-none d-md-block d-lg-none d-xl-block" style="background-image:url(../../assets/img/bg/bg-12.png);background-size:auto;background-position:left;"></div>
+    {% static 'assets/img/bg/bg-12.png' as bg_image_12 %}
+    <div class="bg-holder z-2 d-none d-md-block d-lg-none d-xl-block" style="background-image:url('{{ bg_image_12 }}');background-size:auto;background-position:left;"></div>
     <!--/.bg-holder-->
 
     <div class="bottom-0 start-0 end-0 bg-body-emphasis">
@@ -189,13 +191,14 @@
                     <p class="mb-5">You may now concentrate on the functionality and other <br class="d-none d-sm-block" />aspects of your AI products thanks to EnergyGuard strength<br class="d-none d-sm-block" />before leaving the validation to us. It is simple to complete<br class="d-none d-sm-block" />the work after checking and double-checking.</p>
                 </div>
                 <div class="col-lg-6 z-2">
+                    {% static 'assets/img/bg/bg-2.png' as testimonial_bg %}
                     <div class="carousel slide" id="carouselExampleIndicators" data-bs-ride="carousel">
                         <div class="carousel-inner">
                             <div class="carousel-item active">
                                 <div class="row g-1 g-lg-0 g-xl-1 pb-lg-3 pb-xl-0 ps-lg-1 ps-xl-0">
                                     <div class="col-lg-6 col-xl-5 text-center">
                                         <div class="testimonial-avatar-container d-inline-block position-relative">
-                                            <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-2.png);background-size:contain;"></div>
+                                            <div class="bg-holder" style="background-image:url('{{ testimonial_bg }}');background-size:contain;"></div>
                                             <!--/.bg-holder-->
                                             <img class="rounded-3 mb-lg-0 opacity-100 position-relative" src="{% static 'assets/img/team/61.webp' %}" width="153" height="153" alt="" />
                                         </div>
@@ -218,7 +221,7 @@
                                 <div class="row g-1 g-lg-0 g-xl-1 pb-lg-3 pb-xl-0 ps-lg-1 ps-xl-0">
                                     <div class="col-lg-6 col-xl-5 text-center">
                                         <div class="testimonial-avatar-container d-inline-block position-relative">
-                                            <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-2.png);background-size:contain;"></div>
+                                            <div class="bg-holder" style="background-image:url('{{ testimonial_bg }}');background-size:contain;"></div>
                                             <!--/.bg-holder-->
                                             <img class="rounded-3 mb-lg-0 opacity-100 position-relative" src="{% static 'assets/img/team/8.webp' %}" width="154" alt="" />
                                         </div>
@@ -241,7 +244,7 @@
                                 <div class="row g-1 g-lg-0 g-xl-1 pb-lg-3 pb-xl-0 ps-lg-1 ps-xl-0">
                                     <div class="col-lg-6 col-xl-5 text-center">
                                         <div class="testimonial-avatar-container d-inline-block position-relative">
-                                            <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-2.png);background-size:contain;"></div>
+                                            <div class="bg-holder" style="background-image:url('{{ testimonial_bg }}');background-size:contain;"></div>
                                             <!--/.bg-holder-->
                                             <img class="rounded-3 mb-lg-0 opacity-100 position-relative" src="{% static 'assets/img/team/35.webp' %}" width="154" alt="" />
                                         </div>
@@ -268,13 +271,16 @@
     </section>
 </div>
 <div class="position-relative">
-    <div class="bg-holder world-map-bg" style="background-image:url(../../assets/img/bg/bg-13.png);"></div>
+    {% static 'assets/img/bg/bg-13.png' as bg_world_map %}
+    <div class="bg-holder world-map-bg" style="background-image:url('{{ bg_world_map }}');"></div>
     <!--/.bg-holder-->
 
-    <div class="bg-holder z-2 opacity-25 " style="background-image:url(../../assets/img/bg/bg-right-21.png);background-size:auto;background-position:right;"></div>
+    {% static 'assets/img/bg/bg-right-21.png' as bg_right_21 %}
+    <div class="bg-holder z-2 opacity-25 " style="background-image:url('{{ bg_right_21 }}');background-size:auto;background-position:right;"></div>
     <!--/.bg-holder-->
 
-    <div class="bg-holder z-2 mt-9 opacity-25" style="background-image:url(../../assets/img/bg/bg-left-21.png);background-size:auto;background-position:left;"></div>
+    {% static 'assets/img/bg/bg-left-21.png' as bg_left_21 %}
+    <div class="bg-holder z-2 mt-9 opacity-25" style="background-image:url('{{ bg_left_21 }}');background-size:auto;background-position:left;"></div>
     <!--/.bg-holder-->
 
     <svg class="w-100 position-relative" preserveAspectRatio="none" viewBox="0 0 1920 368" xmlns="http://www.w3.org/2000/svg">
@@ -646,8 +652,9 @@
     <div class="container-small px-lg-7 px-xxl-3">
         <div class="row justify-content-center">
             <div class="col-12 text-center">
+                {% static 'assets/img/bg/bg-18.png' as bg_18 %}
                 <div class="card py-md-9 px-md-13 border-0 z-1 shadow-lg cta-card">
-                    <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-18.png);background-position:right;background-size:auto;"></div>
+                    <div class="bg-holder" style="background-image:url('{{ bg_18 }}');background-position:right;background-size:auto;"></div>
                     <!--/.bg-holder-->
 
                     <div class="card-body position-relative">
@@ -676,13 +683,16 @@
 
 
 <div class="position-relative">
-    <div class="bg-holder footer-bg" style="background-image:url(../../assets/img/bg/bg-19.png);background-size:auto;"></div>
+    {% static 'assets/img/bg/bg-19.png' as bg_19 %}
+    <div class="bg-holder footer-bg" style="background-image:url('{{ bg_19 }}');background-size:auto;"></div>
     <!--/.bg-holder-->
 
-    <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-right-20.png);background-position:right;background-size:auto;"></div>
+    {% static 'assets/img/bg/bg-right-20.png' as bg_right_20 %}
+    <div class="bg-holder" style="background-image:url('{{ bg_right_20 }}');background-position:right;background-size:auto;"></div>
     <!--/.bg-holder-->
 
-    <div class="bg-holder" style="background-image:url(../../assets/img/bg/bg-left-20.png);background-position:left;background-size:auto;"></div>
+    {% static 'assets/img/bg/bg-left-20.png' as bg_left_20 %}
+    <div class="bg-holder" style="background-image:url('{{ bg_left_20 }}');background-position:left;background-size:auto;"></div>
     <!--/.bg-holder-->
 
     <div class="position-relative">
