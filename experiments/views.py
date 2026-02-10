@@ -15,9 +15,9 @@ class ExperimentsListJson(BaseDatatableView):
         "collaborators",
         "created_at",
         "updated_at",
-        "type",
-        "progress",
-        "status",
+        "exp_type",
+        # "progress",
+        # "status",
         "id",
     ]
     order_columns = [
@@ -26,9 +26,9 @@ class ExperimentsListJson(BaseDatatableView):
         "collaborators__first_name",
         "created_at",
         "updated_at",
-        "type",
-        "progress",
-        "status",
+        "exp_type",
+        # "progress",
+        # "status",
     ]
     max_display_length = 25
 
@@ -43,19 +43,8 @@ class ExperimentsListJson(BaseDatatableView):
             return row.updated_at.strftime("%b %d, %Y")
         elif column == "collaborators":
             return ", ".join(user.first_name for user in row.collaborators.all()) or "No collaborators"
-        elif column == "type":
+        elif column == "exp_type":
             return row.get_exp_type_display()
-        elif column == "progress":
-            return row.progress
-        elif column == "status":
-            status = row.status
-            map = {
-                "completed": "badge-phoenix-success",
-                "ongoing": "badge-phoenix-primary",
-                "cancelled": "badge-phoenix-danger",
-                "inactive": "badge-phoenix-warning",
-            }
-            return f'<div class="text-end"><span class="badge badge-phoenix {map.get(status, "badge-phoenix-secondary")} fs-11"><span class="badge-label">{status.upper()}</span></span></div>'
         else:
             return super().render_column(row, column)
         
@@ -68,9 +57,9 @@ class ExperimentsListJson(BaseDatatableView):
                 Q(description__icontains=search)
             ).distinct()
         
-        status_filter = self.request.GET.get("status")
-        if status_filter in ["completed", "ongoing", "cancelled", "inactive"]:
-            qs = qs.filter(status=status_filter)    
+        type_filter = self.request.GET.get("type")
+        if type_filter in ["ai_model", "ai_service", "web_app", "mobile_app", "iot_integration", "data_pipeline"]:
+            qs = qs.filter(exp_type=type_filter)    
         return qs
 
 @login_required
@@ -116,15 +105,17 @@ def experiments_list(request):
     qs = Experiment.objects.all()
     counts = {
         "all": qs.count(),
-        "completed": qs.filter(status="completed").count(),
-        "ongoing": qs.filter(status="ongoing").count(),
-        "cancelled": qs.filter(status="cancelled").count(),
-        "inactive": qs.filter(status="inactive").count(),
+        "ai_model": qs.filter(exp_type="ai_model").count(),
+        "ai_service": qs.filter(exp_type="ai_service").count(),
+        "web_app": qs.filter(exp_type="web_app").count(),
+        "mobile_app": qs.filter(exp_type="mobile_app").count(),
+        "iot_integration": qs.filter(exp_type="iot_integration").count(),
+        "data_pipeline": qs.filter(exp_type="data_pipeline").count(),
     }
-    status_filter = request.GET.get("status")
+    type_filter = request.GET.get("type")
     return render(request, 'experiments/experiments-list.html', {
         "experiments_num": counts, 
-        "status_filter": status_filter, 
+        "type_filter": type_filter, 
         "active_navbar_page": "experiments",
         "show_sidebar": True
     })

@@ -1,7 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Experiment{% endblock %}
+{% block title %}Projects{% endblock %}
 
 {% block content %}
 
@@ -10,9 +10,15 @@
         <div id="exp" class="col-auto text-center">
             <!-- TODO: Improve img on dark mode -->
             <img class="" src="{% static 'assets/img/spot-illustrations/experiment-first-vector.png' %}" style="width:50%;" alt="experiment_illustration">
-            <h2 class="fw-normal mt-5 mb-4">Create a new experiment</h2>
+            <h2 class="fw-normal mt-5 mb-3">Create a new project</h2>
             <!-- TODO: Add functionality to btn -->
-            <button class="btn btn-primary">Getting started</button>
+            <div>
+                <button class="btn btn-primary">Getting started</button>
+            </div>
+            <div class="mt-3">
+
+                <button class="btn btn-outline-primary p-2"><i class="fa-solid fa-angle-right me-2"></i>View public projects</button>
+            </div>
         </div>
     </div>
     {% include "core/footer.html" %}
