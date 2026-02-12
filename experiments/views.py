@@ -5,7 +5,10 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django_datatables_view.base_datatable_view import BaseDatatableView
-
+from core.views import BaseWizardView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
+from .forms import *
 
 class ExperimentsListJson(BaseDatatableView):
     model = Experiment
@@ -235,3 +238,47 @@ def experiment_details(request, experiment_id):
 @login_required
 def experiment_index(request):
     return render(request, 'experiments/experiment-index.html', {"active_navbar_page": "experiments", "show_sidebar": True})
+
+EXPERIMENT_TEMPLATE_NAMES= {
+    "0": "experiments/experiment-creation-step1.html", 
+    "1":"experiments/experiment-creation-step2.html", 
+    "2": "experiments/experiment-creation-step3.html"} 
+
+EXPERIMENT_FORMS = [
+    ("0", ExperimentGeneralInfoForm),
+    ("1", ExperimentFacilitiesForm), 
+    ("2", ExperimentSandboxPackagesForm) 
+]
+
+EXPERIMENT_STEP_METADATA = { 
+    "0": {"title": "General", 'icon': 'fa-info-circle'}, 
+    "1": {"title": "Facilities", "icon": 'fa-building'}, 
+    "2": {"title": "Packages", "icon": 'fa-cubes-stacked'} }
+
+class AddExperimentView(LoginRequiredMixin, BaseWizardView):
+    template_names = EXPERIMENT_TEMPLATE_NAMES
+    step_metadata = EXPERIMENT_STEP_METADATA
+
+    def done(self, form_list, **kwargs):
+        # Process and save experiment after all steps are completed
+
+        general_info = form_list[0].cleaned_data
+        facilities = form_list[1].cleaned_data
+        sandbox_packages = form_list[2].cleaned_data
+
+        with transaction.atomic(): 
+            experiment = Experiment.objects.create( 
+                name=general_info['name'], 
+                description=general_info['description'], 
+                exp_type=general_info['exp_type'], 
+                creator=self.request.user, 
+                # visibility=general_info['visibility'] 
+            )
+        
+        return redirect('experiment_upload_success')
+    
+@login_required
+def experiment_creation_success(request): 
+    wizard = {"steps": {"current": "done"}}
+    wizard_steps = EXPERIMENT_STEP_METADATA.values()
+    return render(request, 'experiments/experiment-creation-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})

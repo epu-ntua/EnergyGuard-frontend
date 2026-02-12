@@ -1,0 +1,31 @@
+{% extends "core/base-wizard.html" %}
+{% load static %}
+
+{% block title %}Create Project{% endblock %}
+{% block wizard_title %} Create a new project{% endblock wizard_title %}
+
+{% block content %}
+<div class="tab-content">
+    <div class="tab-pane active" role="tabpanel">
+        <form class="needs-validation" action="" method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %} 
+            {{ wizard.management_form }} 
+            <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
+            <div class="mb-2"> 
+                <label class="form-label text-body">Packages</label> 
+                {{ wizard.form.package_name }} 
+                
+            </div> 
+        
+
+            <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
+                <button type="button" class="btn btn-link" onclick="document.getElementById('wizard_goto_step').value='{{ wizard.steps.prev }}'; this.form.submit();"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
+                <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+
+                

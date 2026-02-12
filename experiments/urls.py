@@ -6,4 +6,5 @@ urlpatterns = [
     path('list/', experiments_list, name='experiments_list'),
     path('data/', ExperimentsListJson.as_view(), name='experiments_list_json'),
     path('experiment/<int:experiment_id>/', experiment_details, name='experiment_details'),
+    path('experiment-creation/', AddExperimentView.as_view(EXPERIMENT_FORMS), name='experiment_creation'),
 ]
