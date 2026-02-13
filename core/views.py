@@ -7,6 +7,7 @@ from formtools.wizard.views import SessionWizardView
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect
 import os
+import tempfile
 
 # Create your views here.
 
@@ -60,7 +61,10 @@ def contact_form(request):
     
 class BaseWizardView(SessionWizardView):
     # Necessary to handle ImageField or FileField in forms
-    file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'wizard_uploads_temp'))
+    # Keep wizard step uploads out of MEDIA_ROOT (these are temporary files).
+    file_storage = FileSystemStorage(
+        location=os.path.join(tempfile.gettempdir(), 'energyguard_wizard_uploads_temp')
+    )
     template_names = {}
     step_metadata = {}
 

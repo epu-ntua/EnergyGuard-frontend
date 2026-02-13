@@ -18,8 +18,16 @@ def _setting(primary: str, fallback: str = "", default: Any = None):
     return default
 
 
+def _to_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
 def _is_fake_upload_enabled() -> bool:
-    return bool(_setting("OBJECT_STORAGE_FAKE_UPLOAD", "MINIO_FAKE_UPLOAD", default=False))
+    return _to_bool(_setting("OBJECT_STORAGE_FAKE_UPLOAD", "MINIO_FAKE_UPLOAD", default=False))
 
 
 def _build_minio_client():
