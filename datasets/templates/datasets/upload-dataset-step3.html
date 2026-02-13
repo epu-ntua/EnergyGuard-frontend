@@ -11,6 +11,13 @@
             {% csrf_token %}
             {{ wizard.management_form }}
             <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
+            {{ wizard.form.metadata_rows }}
+
+            {% if wizard.form.non_field_errors %}
+            <div class="mb-3 p-2 alert alert-danger" role="alert">
+                {{ wizard.form.non_field_errors }}
+            </div>
+            {% endif %}
 
             <div class="mb-5">
                 <label class="form-label text-body">Upload Metadata File</label>
@@ -23,6 +30,8 @@
             <div class="mb-3">
                 <p class="text-center fs-9 text-body-quaternary">or Insert metadata information manually</p>
             </div>
+
+            {{ wizard.form.metadata }}
 
             <div class="mb-3">
                 <p class="col-12 fs-9">Dataset Type</p>
@@ -68,24 +77,25 @@
   function addRow() {
     var container = document.getElementById('boxes');
     var row = document.createElement('div');
+    row.setAttribute('data-row-wrapper', 'true');
     row.innerHTML = `
     <div class="text-end mb-0">
         <button type="button" class="btn btn-danger px-2 py-0" onclick="removeRow(this)"><span class="fw-bolder fs-8">-</span></button>
     </div>
-    <div class="row gx-2 mb-1">
+    <div class="row gx-2 mb-1" data-metadata-row="true">
         <div class="col-4">
             <div class="fs-9 text-body-quaternary">
-                <input type="text" name="feature_name[]" class="form-control form-control-sm">
+                <input type="text" data-field="feature_name" class="form-control form-control-sm">
             </div>
         </div>
         <div class="col-4">
             <div class="fs-9 text-body-quaternary">
-                <input type="text" name="feature_unit[]" class="form-control form-control-sm">
+                <input type="text" data-field="feature_unit" class="form-control form-control-sm">
             </div>
         </div>
         <div class="col-4">
             <div class="fs-9 text-body-quaternary">
-                <input type="text" name="feature_description[]" class="form-control form-control-sm">
+                <input type="text" data-field="feature_description" class="form-control form-control-sm">
             </div>
         </div>
     </div>
@@ -93,11 +103,47 @@
     container.appendChild(row);
   }
 
-    function removeRow(button) {
-        var remove_row = button.parentNode;
-        var data_row = remove_row.nextElementSibling;
-        data_row.remove();
-        remove_row.remove();
+  function removeRow(button) {
+    var rowWrapper = button.closest('[data-row-wrapper="true"]');
+    if (rowWrapper) {
+      rowWrapper.remove();
     }
+  }
+
+  (function bindMetadataRowsSerializer() {
+    var metadataRowsInput = document.querySelector('input[name$="metadata_rows"]');
+    if (!metadataRowsInput) {
+      return;
+    }
+    var form = metadataRowsInput.closest('form');
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener('submit', function () {
+      var rows = [];
+      var rowElements = form.querySelectorAll('[data-metadata-row="true"]');
+
+      rowElements.forEach(function (rowElement) {
+        var featureNameInput = rowElement.querySelector('[data-field="feature_name"]');
+        var featureUnitInput = rowElement.querySelector('[data-field="feature_unit"]');
+        var featureDescriptionInput = rowElement.querySelector('[data-field="feature_description"]');
+
+        var featureName = featureNameInput ? featureNameInput.value.trim() : '';
+        var featureUnit = featureUnitInput ? featureUnitInput.value.trim() : '';
+        var featureDescription = featureDescriptionInput ? featureDescriptionInput.value.trim() : '';
+
+        if (featureName || featureUnit || featureDescription) {
+          rows.push({
+            feature_name: featureName,
+            feature_unit: featureUnit,
+            feature_description: featureDescription
+          });
+        }
+      });
+
+      metadataRowsInput.value = JSON.stringify(rows);
+    });
+  })();
 </script>
 {% endblock scripts %}

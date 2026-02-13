@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Dataset, DatasetUserDownload
@@ -9,6 +11,7 @@ from .forms import GeneralDatasetForm, FileUploadDatasetForm, MetadataDatasetFor
 from core.views import BaseWizardView
 from django.db import transaction
 from django_datatables_view.base_datatable_view import BaseDatatableView
+from .services import MinioUploadError, upload_dataset_objects
 
 
 class DatasetsListJson(BaseDatatableView):
@@ -66,6 +69,8 @@ class DatasetsListJson(BaseDatatableView):
         #     return ", ".join(user.username for user in row.users.all()) or "No collaborators"
         if column == "created_at":
             return row.created_at.strftime("%b %d, %Y")
+        elif column == "publisher":
+            return row.publisher_display
         elif column == "label":
             return row.get_label_display()
         elif column == "source":
@@ -128,7 +133,7 @@ def dataset_details(request, dataset_id):
         "source": dataset.get_source_display(),
         "visibility": dataset.visibility,
         "size": dataset.size_gb,
-        "publisher": dataset.publisher,
+        "publisher": dataset.publisher_display,
         "description": dataset.description,
         "metadata": dataset.metadata,
         "collaborators": ", ".join(user.username for user in dataset.users.all()),
@@ -191,19 +196,42 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
         general_data = self.get_cleaned_data_for_step('general_info') 
         upload_data = self.get_cleaned_data_for_step('upload_files') 
         metadata_data = self.get_cleaned_data_for_step('metadata') 
+        data_uploaded_file = upload_data['data_file']
+        metadata_uploaded_file = metadata_data.get('metadata_file')
+        metadata_json = metadata_data.get('metadata')
+
+        try:
+            upload_result = upload_dataset_objects(
+                user_name=self.request.user.username or str(self.request.user.pk),
+                dataset_name=general_data['name'],
+                data_file=data_uploaded_file,
+                metadata_file=metadata_uploaded_file,
+                metadata_json=metadata_json,
+            )
+        except MinioUploadError as exc:
+            messages.error(self.request, f"Failed to upload dataset to MinIO: {exc}")
+            return redirect('dataset_upload')
+
+        size_gb = (
+            Decimal(data_uploaded_file.size) / Decimal(1024 ** 3)
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if size_gb < Decimal("0.01"):
+            size_gb = Decimal("0.01")
 
         with transaction.atomic():
             dataset = Dataset.objects.create(
                 name=general_data['name'],
-                data_file=upload_data['data_file'],
+                data_file=upload_result['data_file_key'],
+                metadata_file=upload_result['metadata_file_key'],
+                bucket_name=upload_result['bucket_name'],
                 label=general_data['label'],
                 source='your_own_DS',
                 status='under_review',
                 visibility=general_data['visibility'],
-                size_gb=upload_data['data_file'].size / (1024 * 1024 * 1024),
-                publisher=self.request.user.username,
+                size_gb=size_gb,
+                publisher=self.request.user,
                 description=general_data['description'],
-                metadata=metadata_data['metadata'],
+                metadata=metadata_json,
             )
 
         return redirect('dataset-upload-success')
