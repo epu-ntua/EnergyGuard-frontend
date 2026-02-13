@@ -7,6 +7,7 @@ from core.models import TimeStampedModel
 
 # Create your models here.
 class Dataset(TimeStampedModel):
+    PLATFORM_PUBLISHER = "EnergyGuard"
     # class Label(models.TextChoices):
     #     BUILDINGS = "buildings", "Buildings"
     #     SMART_GRIDS = "smart_grids", "Smart Grids"
@@ -38,7 +39,11 @@ class Dataset(TimeStampedModel):
         UNDER_REVIEW = "under_review", "Under Review"
 
     name = models.CharField(max_length=255)
-    data_file = models.FileField(upload_to='datasets/', default='')
+    # MinIO object key for the primary dataset file.
+    data_file = models.CharField(max_length=1024, blank=True, default='')
+    # MinIO object key for optional metadata file.
+    metadata_file = models.CharField(max_length=1024, blank=True, default='')
+    bucket_name = models.CharField(max_length=63, default='energyguard-datasets')
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
     status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
@@ -47,13 +52,26 @@ class Dataset(TimeStampedModel):
     visibility = models.BooleanField(default=False)
     downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
-    publisher = models.CharField(max_length=255, blank=True)
+    publisher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='published_datasets',
+    )
     description = models.TextField(blank=True)
     metadata = models.JSONField(blank=True, null=True)
     users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets') # Users who have downloaded this dataset
 
     def __str__(self):
         return self.name
+
+    @property
+    def publisher_display(self) -> str:
+        if self.publisher_id:
+            full_name = self.publisher.get_full_name().strip()
+            return full_name or self.publisher.get_username()
+        return self.PLATFORM_PUBLISHER
 
     class Meta:
         db_table = 'dataset'
