@@ -30,6 +30,34 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-django_password}
     restart: always
 
+  minio:
+    image: minio/minio
+    container_name: minio-test
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: always
+
+  # This service initializes MinIO by creating the specified bucket. It waits for MinIO to be ready before executing the commands.
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
+      mc mb -p local/${OBJECT_STORAGE_BUCKET:-energyguard-datasets} || true;
+      exit 0;
+      "
+
 volumes:
   postgres_data:
   static_volume:
+  minio_data:
