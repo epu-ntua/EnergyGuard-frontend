@@ -34,7 +34,6 @@ def _build_minio_client():
     access_key = _setting("OBJECT_STORAGE_ACCESS_KEY", "MINIO_ACCESS_KEY", default="")
     secret_key = _setting("OBJECT_STORAGE_SECRET_KEY", "MINIO_SECRET_KEY", default="")
     endpoint = _setting("OBJECT_STORAGE_ENDPOINT", "MINIO_ENDPOINT")
-    region = _setting("OBJECT_STORAGE_REGION", "MINIO_REGION", default="us-east-1")
     verify_ssl = _setting("OBJECT_STORAGE_VERIFY_SSL", "MINIO_VERIFY_SSL", default=True)
 
     if not access_key or not secret_key:
@@ -50,7 +49,6 @@ def _build_minio_client():
         endpoint_url=endpoint,
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
-        region_name=region,
         verify=verify_ssl,
     )
 
