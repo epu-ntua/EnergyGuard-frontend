@@ -19,6 +19,11 @@ from django.views.decorators.http import require_POST
 from urllib.parse import urlencode
 import os
 from datetime import date
+from .keycloak_admin import KeycloakAdminClient
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -163,6 +168,20 @@ def profile(request):
                     # Handle middle names
                     request.user.last_name = ' '.join(name_parts[1:])
                     request.user.save()
+
+                    # Sync with Keycloak
+                    keycloak_client = KeycloakAdminClient()
+                    if keycloak_client.token:
+                        user_data = {
+                            "first_name": request.user.first_name,
+                            "last_name": request.user.last_name,
+                        }
+                        result = keycloak_client.update_user(request.user, user_data)
+                        if result.get("error"):
+                            logger.error(f"Keycloak sync failed for user {request.user.id}: {result.get('error')}")
+                    else:
+                        logger.error(f"Keycloak client not initialized for user {request.user.id}. Sync failed.")
+
             if company:= form.cleaned_data.get('company'):
                 user_profile.company = company
             if position:= form.cleaned_data.get('position'):
