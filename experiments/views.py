@@ -226,7 +226,7 @@ def experiment_details(request, experiment_id):
             "id": experiment_id,
             "collaborators": experiment.collaborators.all(),
             "visibility": experiment.visibility,
-            "company": experiment.creator.profile.company if hasattr(experiment.creator, 'profile') else None
+            "team": experiment.creator.profile.team if hasattr(experiment.creator, 'profile') else None
         }
     except Experiment.DoesNotExist:
         # return redirect('core/error_does_not_exist', error= "Experiment not found")  # or render an error page
