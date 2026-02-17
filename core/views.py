@@ -11,6 +11,7 @@ import os
 import tempfile
 from django.contrib.auth.decorators import login_required
 from datasets.models import Dataset
+from experiments.models import Experiment
 
 # Create your views here.
 
@@ -99,18 +100,31 @@ class BaseWizardView(SessionWizardView):
 @login_required
 def dashboard(request):
 
-    counts_by_label = {
+    projects_count = Experiment.objects.count()
+    datasets_count = Dataset.objects.filter(publisher__isnull=True).count()
+
+    datasets_counts_by_label = {
         row["label"]: row["total"]
         for row in Dataset.objects.filter(publisher__isnull=True).values("label").annotate(total=Count("id"))
     }
 
-    chart_data = [
+    datasets_chart_data = [
         {
             "category": label_display,
-            "value": counts_by_label.get(label_value, 0),
+            "value": datasets_counts_by_label.get(label_value, 0),
         }
         for label_value, label_display in Dataset.Label.choices
     ]
-    chart_data.sort(key=lambda item: item["value"], reverse=True)
+    datasets_chart_data.sort(key=lambda item: item["value"], reverse=True)
 
-    return render(request, 'core/dashboard.html', {"active_navbar_page": "dashboard", "show_sidebar": True, "chart_data": chart_data})
+    return render(
+        request,
+        'core/dashboard.html',
+        {
+            "active_navbar_page": "dashboard",
+            "show_sidebar": True,
+            "chart_data": datasets_chart_data,
+            "projects_count": projects_count,
+            "datasets_count": datasets_count,
+        },
+    )
