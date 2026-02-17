@@ -12,7 +12,7 @@ import tempfile
 # Create your views here.
 
 def home(request):
-    return render(request, 'core/index.html', {})
+    return render(request, 'core/landing-public.html', {})
 
 def error_does_not_exist(request, error=None):
     return render(request, 'core/error-does-not-exist.html', {"error": error})
