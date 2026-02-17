@@ -182,8 +182,8 @@ def profile(request):
                     else:
                         logger.error(f"Keycloak client not initialized for user {request.user.id}. Sync failed.")
 
-            if company:= form.cleaned_data.get('company'):
-                user_profile.company = company
+            if team:= form.cleaned_data.get('team'):
+                user_profile.team = team
             if position:= form.cleaned_data.get('position'):
                 user_profile.position = position
             # Convert string values to integers and create date object
@@ -199,7 +199,7 @@ def profile(request):
             return redirect('profile')
     else:
         initial_data = {
-            'company': user_profile.company or '',
+            'team': user_profile.team or '',
             'position': user_profile.position or '',
             'short_bio': user_profile.bio or '',
             'full_name': f"{request.user.first_name} {request.user.last_name}" or ''

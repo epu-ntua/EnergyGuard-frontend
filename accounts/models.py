@@ -64,7 +64,7 @@ class User(AbstractUser):
         indexes = [models.Index(fields=['email']),] # Index on email for faster lookups
 
 class Profile(models.Model):
-    class CompanyChoices(models.TextChoices):
+    class TeamChoices(models.TextChoices):
         AMAZON = 'Amazon', 'Amazon'
         MICROSOFT = 'Microsoft', 'Microsoft'
         GOOGLE = 'Google', 'Google'
@@ -73,7 +73,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    company = models.CharField(max_length=100, blank=True, choices=CompanyChoices.choices, default=CompanyChoices.OTHER)
+    team = models.CharField(max_length=100, blank=True, choices=TeamChoices.choices, default=TeamChoices.OTHER)
     position = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)

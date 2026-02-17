@@ -32,11 +32,11 @@ class UserWizardForm(UserCreationForm):
 class ProfileWizardForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('profile_picture', 'company', 'position', 'birth_date', 'bio')
+        fields = ('profile_picture', 'team', 'position', 'birth_date', 'bio')
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
-            'company': forms.Select(attrs={'class': 'form-select'}, choices=Profile.CompanyChoices),
+            'team': forms.Select(attrs={'class': 'form-select'}, choices=Profile.TeamChoices.choices),
             'position': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
@@ -82,10 +82,10 @@ class ProfileForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'full_name', 'name': 'full_name'})
     )
-    company = forms.CharField(
+    team = forms.CharField(
         max_length=100, 
         required=False, 
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'company', 'name': 'company'}, choices=Profile.CompanyChoices))
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'team', 'name': 'team'}, choices=Profile.TeamChoices.choices))
     
     position = forms.CharField(
         max_length=100, 
