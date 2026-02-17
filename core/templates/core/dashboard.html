@@ -4,12 +4,12 @@
 {% block title %}Dashboard | EnergyGuard{% endblock title %}
 
 {% block content %}
-<div class="content">
+<div class="content px-9 mt-5">
 
   <!-- TITLE -->
-  <div class="row gy-3 mb-6 justify-content-between">
+  <div class="row gy-3 mb-9 justify-content-between">
     <div class="col-md-9 col-auto">
-      <h2 class="mb-2 text-body-emphasis">Projects Dashboard</h2>
+      <h2 class="mb-2 text-body-emphasis">Dashboard</h2>
       <h5 class="text-body-tertiary fw-semibold">A snapshot of what’s available across the EnergyGuard platform</h5>
     </div>
   </div>
@@ -21,50 +21,59 @@
         
         <!-- PROJECTS -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-books text-primary-dark"></span>
-            <div class="ms-2">
-              <div class="d-flex align-items-end">
-                <h2 class="mb-0 me-2">32</h2><span class="fs-7 fw-semibold text-body">Projects</span>
+          <a href="{% url 'experiments_list' %}" class=" text-decoration-none">
+            <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil  uil-notebooks text-primary-dark"></span>
+              <div class="ms-2">
+                <div class="d-flex align-items-end">
+                  <h2 class="mb-0 me-2">32</h2><span class="fs-7 fw-semibold text-body">Projects</span>
+                </div>
+                <p class="text-body-secondary fs-9 mb-0">Created in the platform</p>
               </div>
-              <p class="text-body-secondary fs-9 mb-0">Created in the platform</p>
             </div>
-          </div>
+          </a>
         </div>
         <!-- DATASETS -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-invoice text-warning-dark"></span>
-            <div class="ms-2">
-              <div class="d-flex align-items-end">
-                <h2 class="mb-0 me-2">23</h2><span class="fs-7 fw-semibold text-body">Datasets</span>
+          <a href="{% url 'datasets_list' %}" class=" text-decoration-none">
+            <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-database text-warning-dark"></span>
+              <div class="ms-2">
+                <div class="d-flex align-items-end">
+                  <h2 class="mb-0 me-2">23</h2><span class="fs-7 fw-semibold text-body">Datasets</span>
+                </div>
+                <p class="text-body-secondary fs-9 mb-0">Ready to explore</p>
               </div>
-              <p class="text-body-secondary fs-9 mb-0">Ready to explore</p>
             </div>
-          </div>
+          </a>
         </div>
         <!-- AI MODELS -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-refresh text-danger-dark"></span>
-            <div class="ms-2">
-              <div class="d-flex align-items-end">
-                <h2 class="mb-0 me-2">3</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
+          <a href="" class=" text-decoration-none">
+            <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-cube text-danger-dark"></span>
+              <div class="ms-2">
+                <div class="d-flex align-items-end">
+                  <!-- TODO: Replace with dynamic count -->
+                  <h2 class="mb-0 me-2">3</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
+                </div>
+                <p class="text-body-secondary fs-9 mb-0">Registered & deployable</p>
               </div>
-              <p class="text-body-secondary fs-9 mb-0">Registered & deployable</p>
             </div>
-          </div>
+          </a>
         </div>
         <!-- DTs -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-users-alt text-success-dark"></span>
-            <div class="ms-2">
-              <div class="d-flex align-items-end">
-                <h2 class="mb-0 me-2">94</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
+          <a href="" class=" text-decoration-none">
+            <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-building text-success-dark"></span>
+              <div class="ms-2">
+                <div class="d-flex align-items-end">
+                  <!-- TODO: Replace with dynamic count -->
+                  <h2 class="mb-0 me-2">94</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
+                </div>
+                <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
+                <p class="text-body-secondary fs-9 mb-0">Connected to datasets/models</p>
               </div>
-              <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
-              <p class="text-body-secondary fs-9 mb-0">Connected to datasets/models</p>
             </div>
-          </div>
+          </a>
         </div>
-
       </div>
     </div>
 
@@ -72,46 +81,9 @@
       <h3 class="text-body-emphasis mb-1">Datasets Coverage by Domain</h3>
       <div class="fs-8">Distribution of datasets currently available on the platform</div>
       <div id="sortedBarChart" style="height: 420px;"></div>
+      <div class="border-0 "><a class="fw-bold fs-9 mt-3" href="{% url 'datasets_list' %}">Explore Datasets<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
     </div>
     {{ chart_data|json_script:"sorted-bar-data" }}
-    
-    <!-- <div class="col-12 col-xl-6 col-xxl-5">
-      <div class="mx-xxl-0">
-        <h3>Project: zero Roadmap</h3>
-        <p class="text-body-tertiary">Phase 2 is now ongoing</p>
-        <div class="gantt-zero-roadmap">
-          <div class="row g-2 flex-between-center mb-3">
-            <div class="col-12 col-sm-auto">
-              <div class="d-flex">
-                <div class="d-flex align-items-end me-3">
-                  <label class="form-check-label mb-0 me-2 lh-1 text-body" for="progress">Progress</label>
-                  <div class="form-check form-switch min-h-auto mb-0">
-                    <input class="form-check-input" id="progress" type="checkbox" checked="" data-gantt-progress="data-gantt-progress" />
-                  </div>
-                </div>
-                <div class="d-flex align-items-end flex-1">
-                  <label class="form-check-label mb-0 me-2 lh-1 text-body" for="links">Links</label>
-                  <div class="form-check form-switch min-h-auto flex-1 mb-0">
-                    <input class="form-check-input" id="links" type="checkbox" checked="" data-gantt-links="data-gantt-links" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-sm-auto">
-              <div class="btn-group" role="group" data-gantt-scale="data-gantt-scale">
-                <input class="btn-check" id="weekView" type="radio" name="scaleView" value="week" checked="" />
-                <label class="btn btn-phoenix-secondary bg-body-highlight-hover fs-10 py-1 mb-0" for="weekView">Week</label>
-                <input class="btn-check" id="monthView" type="radio" name="scaleView" value="month" />
-                <label class="btn btn-phoenix-secondary bg-body-highlight-hover fs-10 py-1 mb-0" for="monthView">Month</label>
-                <input class="btn-check" id="yearView" type="radio" name="scaleView" value="year" />
-                <label class="btn btn-phoenix-secondary bg-body-highlight-hover fs-10 py-1 mb-0" for="yearView">Year</label>
-              </div>
-            </div>
-          </div>
-          <div class="gantt-zero-roadmap-chart"></div>
-        </div>
-      </div>
-    </div> -->
     
     <!-- CARD -->
     <div class="col-12 col-xl-6 col-xxl-5">
@@ -128,8 +100,8 @@
           <!--/.bg-holder-->
         </div>
         <div class="d-light-none">
-          {% static 'assets/img/spot-illustrations/dark_21.png' as dark_ill_21 %}
-          <div class="bg-holder d-none d-sm-block d-xl-none d-xxl-block bg-card" style="background-image:url('{{ dark_ill_21 }}');background-position: bottom right; background-size: auto;">
+          {% static 'assets/img/spot-illustrations/21.png' as ill_21 %}
+          <div class="bg-holder d-none d-sm-block d-xl-none d-xxl-block bg-card" style="background-image:url('{{ ill_21 }}');background-position: bottom right; background-size: auto;">
           </div>
           <!--/.bg-holder-->
         </div>
@@ -150,96 +122,33 @@
     </div>
   </div>
 
-  <!-- 2ND LEVEL CARDS -->
-  <!-- <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y">
-    <div class="row">
-      <div class="col-12 col-xl-7 col-xxl-6">
+  <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y">
+    <div class="row gx-5">
+      <!-- DONUT -->
+      <div class="col-12 col-xl-5 pe-lg-6">
         <div class="row g-3 mb-3">
           <div class="col-12 col-md-6">
-            <h3 class="text-body-emphasis text-nowrap">Issues Discovered</h3>
-            <p class="text-body-tertiary mb-md-7">Newly found and yet to be solved</p>
-            <div class="d-flex align-items-center justify-content-between">
-              <p class="mb-0 fw-bold">Issue type </p>
-              <p class="mb-0 fs-9">Total count <span class="fw-bold">257</span></p>
-            </div>
-            <hr class="bg-body-secondary mb-2 mt-2" />
-            <div class="d-flex align-items-center mb-1"><span class="d-inline-block bg-info-light bullet-item me-2"></span>
-              <p class="mb-0 fw-semibold text-body lh-sm flex-1">Product design</p>
-              <h5 class="mb-0 text-body">78</h5>
-            </div>
-            <div class="d-flex align-items-center mb-1"><span class="d-inline-block bg-warning-light bullet-item me-2"></span>
-              <p class="mb-0 fw-semibold text-body lh-sm flex-1">Development</p>
-              <h5 class="mb-0 text-body">63</h5>
-            </div>
-            <div class="d-flex align-items-center mb-1"><span class="d-inline-block bg-danger-light bullet-item me-2"></span>
-              <p class="mb-0 fw-semibold text-body lh-sm flex-1">QA &amp; Testing</p>
-              <h5 class="mb-0 text-body">56</h5>
-            </div>
-            <div class="d-flex align-items-center mb-1"><span class="d-inline-block bg-success-light bullet-item me-2"></span>
-              <p class="mb-0 fw-semibold text-body lh-sm flex-1">Customer queries</p>
-              <h5 class="mb-0 text-body">36</h5>
-            </div>
-            <div class="d-flex align-items-center"><span class="d-inline-block bg-primary bullet-item me-2"></span>
-              <p class="mb-0 fw-semibold text-body lh-sm flex-1">R &amp; D</p>
-              <h5 class="mb-0 text-body">24</h5>
-            </div>
-            <button class="btn btn-outline-primary mt-5">See Details<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></button>
+              <h3 class="text-body-emphasis text-nowrap">AI Models Inventory</h3>
+              <p class="text-body-tertiary mb-md-7">How registered models are distributed by model type</p>
+              <!-- LEGEND -->
+              <div id="donutLegend" style="width: 100%; min-height: 220px;"></div>
+              <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
           </div>
           <div class="col-12 col-md-6">
             <div class="position-relative mb-sm-4 mb-xl-0">
-              <div class="echart-issue-chart" style="min-height:390px;width:100%"></div>
+              <div id="aiModelsDonutChart" style="width: 100%; height: 350px;"></div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-12 col-xl-5 col-xxl-6">
-        <h3>Project: eleven Progress</h3>
-        <p class="text-body-tertiary mb-0 mb-xl-3">Deadline &amp; progress</p>
-        <div class="echart-zero-burnout-chart" style="min-height:320px;width:100%"></div>
-      </div>
-    </div>
-  </div> -->
-
-
-
-  <!-- 3RD LEVEL CARDS -->
-  <div class="mx-lg-n4 mt-3 mb-5">
-    <div class="row g-3">
-      <div class="col-12 col-xl-6 col-xxl-7">
-        <div class="card todo-list h-100">
-          <div class="card-header border-bottom-0 pb-0">
-            <div class="row justify-content-between align-items-center mb-4">
-              <div class="col-auto">
-                <h3 class="text-body-emphasis">AI Models Inventory</h3>
-                <p class="mb-2 mb-md-0 mb-lg-2 text-body-tertiary">How registered models are distributed by model type</p>
-              </div>
-            </div>
-          </div>
-          <div class="card-body py-0 scrollbar to-do-list-body">
-            
-          </div>
-          <div class="card-footer border-0"><a class="fw-bold fs-9 mt-4" href="#!">Explore AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
-        </div>
-      </div>
-
-
-      <div class="col-12 col-xl-6 col-xxl-5">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="card-title mb-1">
-              <h3 class="text-body-emphasis">HPC Availability</h3>
-            </div>
-            <p class="text-body-tertiary mb-4">Compute resources available for training, simulation and evaluation workloads</p>
-            
-            
-
-
-          </div>
-        </div>
-      </div>
+      <!-- HPC -->
+      <div class="col-12 col-xl-7 ps-lg-6">
+        <h3>HPC Availability</h3>
+        <p class="text-body-tertiary mb-0 mb-xl-3">Compute resources available for training, simulation and evaluation workloads</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum eius, est soluta facilis doloremque possimus asperiores dolores sapiente necessitatibus in quaerat tempora totam nisi nulla, magni cumque laboriosam harum reiciendis?</p>
+      </div>  
     </div>
   </div>
-  
 
   {% include 'core/footer.html' %}
 </div>
@@ -250,8 +159,37 @@
 
 <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 
+
+<!-- Change text color in charts for dark mode -->
+<script>
+function cssColorToAmColor(cssColor) {
+  if (!cssColor) {
+    return am5.color(0x31374a);
+  }
+
+  var color = cssColor.trim();
+  if (color.charAt(0) === "#") {
+    return am5.color(parseInt(color.slice(1), 16));
+  }
+
+  var rgb = color.match(/\d+/g);
+  if (rgb && rgb.length >= 3) {
+    return am5.color((parseInt(rgb[0], 10) << 16) + (parseInt(rgb[1], 10) << 8) + parseInt(rgb[2], 10));
+  }
+
+  return am5.color(0x31374a);
+}
+
+function getThemeTextColor() {
+  var styles = getComputedStyle(document.documentElement);
+  return styles.getPropertyValue("--phoenix-emphasis-color") || styles.getPropertyValue("--phoenix-body-color");
+}
+</script>
+
+<!-- Bar Chart - Datasets -->
 <script>
 am5.ready(function() {
   var data = JSON.parse(document.getElementById("sorted-bar-data").textContent || "[]").map(function(item) {
@@ -364,7 +302,26 @@ am5.ready(function() {
     });
   }
 
+  function applyBarChartTextColors() {
+    var textColor = cssColorToAmColor(getThemeTextColor());
+    yRenderer.labels.template.setAll({ fill: textColor });
+    xAxis.get("renderer").labels.template.setAll({ fill: textColor });
+  }
+
   sortCategoryAxis();
+  applyBarChartTextColors();
+
+  var barThemeObserver = new MutationObserver(function() {
+    applyBarChartTextColors();
+  });
+  barThemeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-bs-theme"]
+  });
+
+  root.events.on("dispose", function() {
+    barThemeObserver.disconnect();
+  });
 
   chart.set("cursor", am5xy.XYCursor.new(root, {
     behavior: "none",
@@ -377,4 +334,86 @@ am5.ready(function() {
 });
 </script>
 
+<!-- Donut Chart - AI Models -->
+<script>
+am5.ready(function() {
+  var donutElement = document.getElementById("aiModelsDonutChart");
+  var donutLegendElement = document.getElementById("donutLegend");
+  if (!donutElement || !donutLegendElement) {
+    return;
+  }
+
+  var donutData = [
+    { category: "ML", value: 49 },
+    { category: "Deep Learning", value: 18 },
+    { category: "Time-series / Forecasting", value: 33 }
+  ];
+
+  var donutRoot = am5.Root.new("aiModelsDonutChart");
+  donutRoot.setThemes([am5themes_Animated.new(donutRoot)]);
+
+  var donutChart = donutRoot.container.children.push(am5percent.PieChart.new(donutRoot, {
+    innerRadius: am5.percent(60),
+    centerY: am5.percent(50),
+    y: am5.percent(46)
+  }));
+
+  var donutSeries = donutChart.series.push(am5percent.PieSeries.new(donutRoot, {
+    valueField: "value",
+    categoryField: "category",
+    alignLabels: false
+  }));
+
+  donutSeries.labels.template.set("forceHidden", true);
+  donutSeries.ticks.template.set("forceHidden", true);
+  donutSeries.data.setAll(donutData);
+
+  var legendRoot = am5.Root.new("donutLegend");
+  legendRoot.setThemes([am5themes_Animated.new(legendRoot)]);
+
+  var donutLegend = legendRoot.container.children.push(am5.Legend.new(legendRoot, {
+    width: am5.p100,
+    height: am5.p100,
+    nameField: "name",
+    fillField: "fill",
+    strokeField: "stroke",
+    layout: legendRoot.verticalLayout
+  }));
+
+  donutLegend.itemContainers.template.setAll({
+    paddingTop: 6,
+    paddingBottom: 6
+  });
+  donutLegend.valueLabels.template.set("forceHidden", true);
+
+  function applyDonutLegendTextColors() {
+    var textColor = cssColorToAmColor(getThemeTextColor());
+    donutLegend.labels.template.setAll({ fill: textColor });
+    donutLegend.valueLabels.template.setAll({ fill: textColor });
+  }
+
+  applyDonutLegendTextColors();
+
+  var donutThemeObserver = new MutationObserver(function() {
+    applyDonutLegendTextColors();
+  });
+  donutThemeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-bs-theme"]
+  });
+
+  donutRoot.events.on("dispose", function() {
+    donutThemeObserver.disconnect();
+  });
+
+  donutLegend.data.setAll(donutData.map(function(d, i) {
+    var c = donutSeries.get("colors").getIndex(i);
+    return { name: d.category + " " + d.value + "%", fill: c, stroke: c };
+  }));
+
+  donutSeries.appear(1000, 100);
+});
+</script>
+
 {% endblock scripts %}
+
