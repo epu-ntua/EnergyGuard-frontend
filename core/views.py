@@ -6,9 +6,11 @@ from django.views.decorators.http import require_http_methods
 from formtools.wizard.views import SessionWizardView
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect
+from django.db.models import Count
 import os
 import tempfile
 from django.contrib.auth.decorators import login_required
+from datasets.models import Dataset
 
 # Create your views here.
 
@@ -96,4 +98,19 @@ class BaseWizardView(SessionWizardView):
 
 @login_required
 def dashboard(request):
-    return render(request, 'core/dashboard.html', {"active_navbar_page": "dashboard", "show_sidebar": True})
+
+    counts_by_label = {
+        row["label"]: row["total"]
+        for row in Dataset.objects.filter(publisher__isnull=True).values("label").annotate(total=Count("id"))
+    }
+
+    chart_data = [
+        {
+            "category": label_display,
+            "value": counts_by_label.get(label_value, 0),
+        }
+        for label_value, label_display in Dataset.Label.choices
+    ]
+    chart_data.sort(key=lambda item: item["value"], reverse=True)
+
+    return render(request, 'core/dashboard.html', {"active_navbar_page": "dashboard", "show_sidebar": True, "chart_data": chart_data})
