@@ -52,6 +52,16 @@ class ExperimentsListJson(BaseDatatableView):
             return super().render_column(row, column)
         
     def filter_queryset(self, qs):
+        scope = self.request.GET.get("scope", "my")
+        if scope == "public":
+            qs = qs.filter(visibility=True)
+            if self.request.user.is_authenticated:
+                qs = qs.exclude(creator_id=self.request.user.id)
+        elif self.request.user.is_authenticated:
+            qs = qs.filter(creator_id=self.request.user.id)
+        else:
+            qs = qs.none()
+
         # Apply custom filtering based on request parameters
         search = self.request.GET.get("search[value]", None)
         if search:
@@ -105,20 +115,38 @@ def experiments_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)"""
 
-    qs = Experiment.objects.all()
-    counts = {
-        "all": qs.count(),
-        "ai_model": qs.filter(exp_type="ai_model").count(),
-        "ai_service": qs.filter(exp_type="ai_service").count(),
-        "web_app": qs.filter(exp_type="web_app").count(),
-        "mobile_app": qs.filter(exp_type="mobile_app").count(),
-        "iot_integration": qs.filter(exp_type="iot_integration").count(),
-        "data_pipeline": qs.filter(exp_type="data_pipeline").count(),
+    my_qs = Experiment.objects.filter(creator_id=request.user.id)
+    public_qs = Experiment.objects.filter(visibility=True).exclude(creator_id=request.user.id)
+
+    my_counts = {
+        "all": my_qs.count(),
+        "ai_model": my_qs.filter(exp_type="ai_model").count(),
+        "ai_service": my_qs.filter(exp_type="ai_service").count(),
+        "web_app": my_qs.filter(exp_type="web_app").count(),
+        "mobile_app": my_qs.filter(exp_type="mobile_app").count(),
+        "iot_integration": my_qs.filter(exp_type="iot_integration").count(),
+        "data_pipeline": my_qs.filter(exp_type="data_pipeline").count(),
     }
+    public_counts = {
+        "all": public_qs.count(),
+        "ai_model": public_qs.filter(exp_type="ai_model").count(),
+        "ai_service": public_qs.filter(exp_type="ai_service").count(),
+        "web_app": public_qs.filter(exp_type="web_app").count(),
+        "mobile_app": public_qs.filter(exp_type="mobile_app").count(),
+        "iot_integration": public_qs.filter(exp_type="iot_integration").count(),
+        "data_pipeline": public_qs.filter(exp_type="data_pipeline").count(),
+    }
+
     type_filter = request.GET.get("type")
+    active_tab = request.GET.get("tab", "my")
+    if active_tab not in ["my", "public"]:
+        active_tab = "my"
+
     return render(request, 'experiments/experiments-list.html', {
-        "experiments_num": counts, 
+        "my_experiments_num": my_counts,
+        "public_experiments_num": public_counts,
         "type_filter": type_filter, 
+        "active_tab": active_tab,
         "active_navbar_page": "experiments",
         "show_sidebar": True
     })

@@ -18,23 +18,23 @@
 
 
         <ul class="nav nav-underline" id="myTab" role="tablist">
-            <li class="nav-item me-3"><a class="nav-link active fs-7" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="true">My projects</a></li>
-            <li class="nav-item"><a class="nav-link fs-7" id="publicExperiments-tab" data-bs-toggle="tab" href="#tab-publicExperiments" role="tab" aria-controls="tab-publicExperiments" aria-selected="false">Public projects</a></li>
+            <li class="nav-item me-3"><a class="nav-link fs-7 {% if active_tab != 'public' %}active{% endif %}" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="{% if active_tab != 'public' %}true{% else %}false{% endif %}">My projects</a></li>
+            <li class="nav-item"><a class="nav-link fs-7 {% if active_tab == 'public' %}active{% endif %}" id="publicExperiments-tab" data-bs-toggle="tab" href="#tab-publicExperiments" role="tab" aria-controls="tab-publicExperiments" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public projects</a></li>
         </ul>
 
         <div class="tab-content mt-5" id="myTabContent">
             <!-- My experiments tab -->
-            <div class="tab-pane fade show active" id="tab-myExperiments" role="tabpanel" aria-labelledby="myExperiments-tab">
+            <div class="tab-pane fade {% if active_tab != 'public' %}show active{% endif %}" id="tab-myExperiments" role="tabpanel" aria-labelledby="myExperiments-tab">
                 <!-- SUBHEADER -->
                 <div class="d-flex justify-content-between">
                     <ul class="nav nav-links mb-lg-2 mx-n3">
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{experiments_num.all}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{experiments_num.ai_model}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{experiments_num.ai_service}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{experiments_num.web_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{experiments_num.mobile_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{experiments_num.iot_integration}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{experiments_num.data_pipeline}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.all}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=my&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.ai_model}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=my&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.ai_service}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=my&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.web_app}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=my&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.mobile_app}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=my&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.iot_integration}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=my&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.data_pipeline}})</span></a></li>
                     </ul>
                     <!-- SEARCH AND FILTERS -->
                     <div class="mb-3">
@@ -42,8 +42,8 @@
                             <!-- SEARCH BAR -->
                             <div class="col-auto">
                                 <div class="search-box">
-                                    <form class="position-relative" id="experimentSearchForm" onsubmit="return false">
-                                        <input id="experimentSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
+                                    <form class="position-relative" onsubmit="return false">
+                                        <input id="myExperimentSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
                                         <span class="fas fa-search search-box-icon fs-8-5"></span>
                                     </form>
                                 </div>
@@ -54,7 +54,7 @@
                 <div>
                     <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                         <div class="table-responsive scrollbar mx-n1 px-1">
-                            <table class="table table-sm fs-9 mb-0" id="experimentsTable" style="width: 100%;">
+                            <table class="table table-sm fs-9 mb-0" id="myExperimentsTable" style="width: 100%;">
                                 <thead>
                                     <tr>
                                         <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
@@ -63,39 +63,62 @@
                                         <th class="sort align-middle text-start fs-8-5" scope="col" style="width:7%;">START DATE</th>
                                         <th class="sort align-middle text-start fs-8-5" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
                                         <th class="sort align-middle text-end fs-8-5" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
-                                        <!-- <th class="sort align-middle text-end fs-10" scope="col" style="width:8%;">PROGRESS</th>
-                                        <th class="sort align-middle text-end fs-10" scope="col" style="width:6%;">STATUS</th> -->
                                     </tr>
                                 </thead>
-                                <tbody >
-                                    <!-- {% for exp in experiments %}
-                                    <tr class="hover-actions-trigger btn-reveal-trigger position-static">
-                                        <td class="align-middle py-3 white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="{% url 'experiment_details' exp.id %}">{{ exp.name }}</a></td>
-                                        <td class="align-middle py-3 fw-semibold text-body-highlight">{{ exp.artifact_uri }}</td>
-                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.start_date }}</td>
-                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ exp.last_update }}</td>
-                                        <td class="align-middle py-3 white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">Type</td>
-                                        <td class="align-middle py-3 white-space-nowrap text-body fs-9 ps-4 text-end">Progress bar</td>
-                                        <td class="align-middle py-3 white-space-nowrap text-end fw-bold text-body-tertiary">
-                                            {% if exp.status == 'active' %}
-                                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
-                                            {% elif exp.status == 'deleted' %}
-                                                <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">DELETED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %} -->
-                                    
-                                </tbody>   
+                                <tbody></tbody>   
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Public experiments tab -->
-            <div class="tab-pane fade" id="tab-publicExperiments" role="tabpanel" aria-labelledby="publicExperiments-tab">
+            <div class="tab-pane fade {% if active_tab == 'public' %}show active{% endif %}" id="tab-publicExperiments" role="tabpanel" aria-labelledby="publicExperiments-tab">
                 <!-- SUBHEADER -->
-                <p>PUBLIC</p>
+                    <div class="d-flex justify-content-between">
+                        <ul class="nav nav-links mb-lg-2 mx-n3">
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.all}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=public&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.ai_model}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=public&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.ai_service}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=public&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.web_app}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=public&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.mobile_app}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=public&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.iot_integration}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=public&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.data_pipeline}})</span></a></li>
+                        </ul>
+                        <!-- SEARCH AND FILTERS -->
+                        <div class="mb-3">
+                            <div class="row g-3">
+                                <!-- SEARCH BAR -->
+                                <div class="col-auto">
+                                    <div class="search-box">
+                                        <form class="position-relative" onsubmit="return false">
+                                            <input id="publicExperimentSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
+                                            <span class="fas fa-search search-box-icon fs-8-5"></span>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                            <div class="table-responsive scrollbar mx-n1 px-1">
+                                <table class="table table-sm fs-9 mb-0" id="publicExperimentsTable" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
+                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:12%;">DESCRIPTION</th>
+                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:10%;">COLLABORATORS</th>
+                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:7%;">START DATE</th>
+                                            <th class="sort align-middle text-start fs-8-5" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
+                                            <th class="sort align-middle text-end fs-8-5" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>   
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -114,30 +137,56 @@
 
         // $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
         const typeParam = new URLSearchParams(window.location.search).get('type') || '';
-        const table = $('#experimentsTable').DataTable({
+        const columns = [
+            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-8-5" href="/experiments/experiment/${row.id}/">${data}</a>`},
+            { data: "description", className: "pe-3 fs-8-5" },
+            { data: "collaborators", className: "fs-8-5" },
+            { data: "created_at", className: "text-end fs-8-5" },
+            { data: "updated_at", className: "text-end fs-8-5" },
+            { data: "exp_type", className: "text-end fs-8-5" },
+            { data: "id", visible: false }
+        ];
+
+        const myTable = $('#myExperimentsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
                 url: "{% url 'experiments_list_json' %}",
-                data: function (d) { d.type = typeParam; },
+                data: function (d) {
+                    d.type = typeParam;
+                    d.scope = "my";
+                },
                 type: "GET"
             },
-            columns: [
-                { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-8-5" href="/experiments/experiment/${row.id}/">${data}</a>`},
-                { data: "description", className: "pe-3 fs-8-5" },
-                { data: "collaborators", className: "fs-8-5" },
-                { data: "created_at", className: "text-end fs-8-5" },
-                { data: "updated_at", className: "text-end fs-8-5" },
-                { data: "exp_type", className: "text-end fs-8-5" },
-                { data: "id", visible: false }
-            ],
+            columns: columns,
+            dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
+            pageLength: 15,
+            createdRow: row => $('td', row).addClass('align-middle py-3'),
+        });
+
+        const publicTable = $('#publicExperimentsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{% url 'experiments_list_json' %}",
+                data: function (d) {
+                    d.type = typeParam;
+                    d.scope = "public";
+                },
+                type: "GET"
+            },
+            columns: columns,
             dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>', // Custom DOM layout
             pageLength: 15,
             createdRow: row => $('td', row).addClass('align-middle py-3'),
         });
 
-        $('#experimentSearchInput').on('keyup change', function () {
-            table.search(this.value).draw();
+        $('#myExperimentSearchInput').on('keyup change', function () {
+            myTable.search(this.value).draw();
+        });
+
+        $('#publicExperimentSearchInput').on('keyup change', function () {
+            publicTable.search(this.value).draw();
         });
     });
 </script>
