@@ -136,7 +136,7 @@ def login_view(request):
             user = form.get_user()
             if user:
                 login(request, user)
-                return redirect('experiment_index')
+                return redirect('dashboard')
     else:
         form = CustomAuthenticationForm()
 
@@ -265,37 +265,37 @@ def keycloak_registration_success(request, *args, **kwargs):
 
 
 # Signal handler to track new Keycloak signups
-@receiver(pre_social_login)
-def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
-    """
-    Signal fired before social login completes.
-    Marks new signups in the session.
-    """
-    if sociallogin.account.provider == 'keycloak':
-        # Check if this is a new user (doesn't have a user object yet)
-        if not sociallogin.is_existing:
-            request.session['keycloak_new_signup'] = True
+# @receiver(pre_social_login)
+# def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
+#     """
+#     Signal fired before social login completes.
+#     Marks new signups in the session.
+#     """
+#     if sociallogin.account.provider == 'keycloak':
+#         # Check if this is a new user (doesn't have a user object yet)
+#         if not sociallogin.is_existing:
+#             request.session['keycloak_new_signup'] = True
 
-def keycloak_redirect(request):
-    """
-    Custom redirect handler for Keycloak login/signup.
-    Redirects new signups to platform entry wizard
-    Redirects existing users to experiments
-    """
-    if not request.user.is_authenticated:
-        return redirect('login')
+# def keycloak_redirect(request):
+#     """
+#     Custom redirect handler for Keycloak login/signup.
+#     Redirects new signups to platform entry wizard
+#     Redirects existing users to experiments
+#     """
+#     if not request.user.is_authenticated:
+#         return redirect('login')
     
-    is_new_signup = request.session.pop('keycloak_new_signup', False)
+#     is_new_signup = request.session.pop('keycloak_new_signup', False)
     
-    # Also check if user has a profile - new users won't have one
-    has_profile = Profile.objects.filter(user=request.user).exists()
+#     # Also check if user has a profile - new users won't have one
+#     has_profile = Profile.objects.filter(user=request.user).exists()
     
-    if is_new_signup or not has_profile:
-        # New user signup - redirect to platform entry wizard
-        return redirect('platform_entry')
-    else:
-        # Existing user login - redirect to experiments
-        return redirect('experiment_index')
+#     if is_new_signup or not has_profile:
+#         # New user signup - redirect to platform entry wizard
+#         return redirect('platform_entry')
+#     else:
+#         # Existing user login - redirect to experiments
+#         return redirect('experiment_index')
 
 @require_POST   # Only allow POST requests for logout
 def keycloak_logout(request):
