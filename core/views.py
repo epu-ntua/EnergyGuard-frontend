@@ -8,6 +8,7 @@ from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect
 import os
 import tempfile
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -92,3 +93,7 @@ class BaseWizardView(SessionWizardView):
             )
         context["wizard_steps"] = steps
         return context
+
+@login_required
+def dashboard(request):
+    return render(request, 'core/dashboard.html', {"active_navbar_page": "dashboard", "show_sidebar": True})

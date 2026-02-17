@@ -8,4 +8,5 @@ urlpatterns = [
     path('documentation/', views.documentation, name='documentation'),
     path('contact-form/', views.contact_form, name='contact_form'),
     path('error-not-exist/<str:error>/', views.error_does_not_exist, name='error_does_not_exist'),
+    path('dashboard/', views.dashboard, name='dashboard'),
 ]

@@ -16,7 +16,7 @@
                             <ul class="nav collapse parent show" data-bs-parent="#navbarVerticalCollapse" id="nv-home">
                                 <li class="collapsed-nav-item-title d-none fs-8-5">Home
                                 </li>
-                                <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'dashboard' %}active{% endif %}" href="">
+                                <li class="nav-item"><a class="nav-link {%if active_navbar_page == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
                                     <div class="d-flex align-items-center"><span class="nav-link-text fs-8-5 py-2">Dashboard</span>
                                     </div>
                                 </a>
