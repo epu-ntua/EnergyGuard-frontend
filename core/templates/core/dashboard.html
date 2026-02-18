@@ -7,10 +7,25 @@
 <div class="content px-9 mt-5">
 
   <!-- TITLE -->
-  <div class="row gy-3 mb-9 justify-content-between">
+  <div class="row gy-3 mb-6 justify-content-between">
     <div class="col-md-9 col-auto">
       <h2 class="mb-2 text-body-emphasis">Dashboard</h2>
       <h5 class="text-body-tertiary fw-semibold">A snapshot of what’s available across the EnergyGuard platform</h5>
+    </div>
+  </div>
+
+  <div class="row mb-9 gy-6">
+    <div class="col-12">
+      <div class="d-inline-flex flex-column flex-md-row align-items-md-center gap-3 border border-2 border-dashed rounded-3 p-5">
+        <!-- WELCOME CARD -->
+        <div class="me-3">
+          <h3 class="mb-3">Welcome to EnergyGuard</h3>
+          <h4 class="fw-normal mb-0">Create your first Team to start managing projects, datasets and AI models</h4>
+        </div>
+        <div>
+          <a href=""><button class="btn btn-primary btn-lg">Create Team</button></a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -52,7 +67,7 @@
               <div class="ms-2">
                 <div class="d-flex align-items-end">
                   <!-- TODO: Replace with dynamic count -->
-                  <h2 class="mb-0 me-2">3</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
+                  <h2 class="mb-0 me-2">37</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Registered & deployable</p>
               </div>
@@ -66,7 +81,7 @@
               <div class="ms-2">
                 <div class="d-flex align-items-end">
                   <!-- TODO: Replace with dynamic count -->
-                  <h2 class="mb-0 me-2">94</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
+                  <h2 class="mb-0 me-2">24</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
                 <p class="text-body-secondary fs-9 mb-0">Connected to datasets/models</p>
@@ -110,7 +125,8 @@
           <h3 class="mb-5">Trustworthiness assessments</h3>
           <p class="text-body-tertiary fw-semibold">Assess AI Models and Digital Twins <br class="d-none d-sm-block" />across key trust dimensions (e.g., robustness, <br class="d-none d-sm-block" />explainability, safety checks).</p>
           <ul class="mb-4">
-            <li class="ls-2 mb-1"><span class="fw-bold">8 </span> Different Benchmarks</li>
+            <li class="ls-2 mb-2"><span class="fw-bold">8 </span> Different Benchmarks</li>
+            <li class="ls-2 mb-2"><span class="fw-bold">56 </span> Assessments conducted</li>
             <li class="ls-2">Man in the loop</li>
           </ul>
           <div class="py-0  z-1 ">
@@ -122,6 +138,7 @@
     </div>
   </div>
 
+  <!-- 2ND LEVEL CARDS -->
   <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y mb-5">
     <div class="row gx-5">
       <!-- DONUT -->
@@ -416,4 +433,6 @@ am5.ready(function() {
 </script>
 
 {% endblock scripts %}
+
+
 
