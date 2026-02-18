@@ -1,2 +1,34 @@
 /* prettier-ignore */
 /*# sourceMappingURL=user.min.css.map */
+:root {
+  --eg-collapsed-flyout-width: 260px;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 > .parent,
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .nav-link-text-wrapper .nav-link-text {
+  width: var(--eg-collapsed-flyout-width) !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  padding-bottom: 0 !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper > .parent {
+  width: 100% !important;
+  margin-left: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding-bottom: 0 !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper > .parent::after {
+  display: none !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper .collapsed-nav-item-title {
+  display: none !important;
+}
