@@ -85,7 +85,6 @@
                   <h2 class="mb-0 me-2">24</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
-                <p class="text-body-secondary fs-9 mb-0">Connected to datasets/models</p>
               </div>
             </div>
           </a>
@@ -147,29 +146,40 @@
 
   <!-- 2ND LEVEL CARDS -->
   <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y mb-5">
-    <div class="row gx-5">
-      <!-- DONUT -->
-      <div class="col-12 col-xl-5 pe-lg-6">
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
+    <div class="row gx-3">
+      <!-- AI models -->
+      <div class="col-12 col-xl-5 ps-lg-6 mb-3" id="model_card">
+        <div class="  rounded-3 p-4 h-100">
+          <div class="row h-100">
+            <div class="col-12 col-md-6">
               <h3 class="text-body-emphasis text-nowrap">AI Models Inventory</h3>
               <p class="text-body-tertiary mb-md-7">How registered models are distributed by model type</p>
               <!-- LEGEND -->
               <div id="donutLegend" style="width: 100%; min-height: 220px;"></div>
               <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="position-relative mb-sm-4 mb-xl-0">
-              <div id="aiModelsDonutChart" style="width: 100%; height: 350px;"></div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="position-relative mb-sm-4 mb-xl-0">
+                <div id="aiModelsDonutChart" style="width: 100%; height: 350px;"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <!-- Digital Twins -->
+      <div class="col-12 col-xl-3 ps-lg-6 mb-3" id="dt_card">
+        <div class="border border-tertiary rounded-3 p-4 h-100">
+          <h3 class="mb-4">Digital Twins</h3>
+          <p class="text-body-tertiary mb-0 mb-xl-3">Historical usage of compute resources for training, simulation and evaluation workloads</p>
+        </div>
+      </div>
       <!-- HPC -->
-      <div class="col-12 col-xl-7 ps-lg-6">
-        <h3>HPC Availability</h3>
-        <p class="text-body-tertiary mb-0 mb-xl-3">Compute resources available for training, simulation and evaluation workloads</p>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum eius, est soluta facilis doloremque possimus asperiores dolores sapiente necessitatibus in quaerat tempora totam nisi nulla, magni cumque laboriosam harum reiciendis?</p>
+      <div class="col-12 col-xl-4 ps-lg-6 mb-3" id="hpc_card">
+        <div class="border border-tertiary rounded-3 p-4 h-100">
+          <h3 class="mb-4">HPC Availability</h3>
+          <p class="text-body-tertiary mb-0 mb-xl-3">Compute resources available for training, simulation and evaluation workloads</p>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum eius, est soluta facilis doloremque possimus asperiores dolores sapiente necessitatibus in quaerat tempora totam nisi nulla, magni cumque laboriosam harum reiciendis?</p>
+        </div>
       </div>  
     </div>
   </div>
