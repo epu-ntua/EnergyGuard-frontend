@@ -23,6 +23,7 @@
           <h4 class="fw-normal mb-0">Create your first Team to start managing projects, datasets and AI models</h4>
         </div>
         <div>
+          <!-- TODO: Add link functionality -->
           <a href=""><button class="btn btn-primary btn-lg">Create Team</button></a>
         </div>
       </div>
@@ -100,7 +101,7 @@
     </div>
     {{ chart_data|json_script:"sorted-bar-data" }}
     
-    <!-- CARD -->
+    <!-- TRUSTWORTHINESS CARD -->
     <div class="col-12 col-xl-6 col-xxl-5">
       <div class="card border h-100 w-100 overflow-hidden">
         {% static 'assets/img/spot-illustrations/32.png' as ill_32 %}
@@ -123,13 +124,19 @@
         <div class="card-body px-5 position-relative">
           <div class="badge badge-phoenix fs-10 badge-phoenix-warning mb-4"><span class="fw-bold">Trustworthiness</span><span class="fa-solid fa-award ms-1"></span></div>
           <h3 class="mb-5">Trustworthiness assessments</h3>
-          <p class="text-body-tertiary fw-semibold">Assess AI Models and Digital Twins <br class="d-none d-sm-block" />across key trust dimensions (e.g., robustness, <br class="d-none d-sm-block" />explainability, safety checks).</p>
-          <ul class="mb-4">
-            <li class="ls-2 mb-2"><span class="fw-bold">8 </span> Different Benchmarks</li>
+          <p class="text-body-tertiary fw-semibold mb-4">
+            Access distinct trust benchmarks covering AI Act compliance, <br class="d-none d-sm-block" />
+            ALTAI self-assessment for the energy sector, source code analysis,<br class="d-none d-sm-block" />
+            and automated fairness, bias and robustness testing. 
+          </p>
+          <ul>
+            <li class="ls-2 mb-2"><span class="fw-bold">5 </span> Different Benchmarks</li>
             <li class="ls-2 mb-2"><span class="fw-bold">56 </span> Assessments conducted</li>
-            <li class="ls-2">Man in the loop</li>
+            <li class="ls-2 mb-2">Automated Bias & Robustness Checks</li>
+            <li class="ls-2">Human-in-the-loop Validation</li>
           </ul>
-          <div class="py-0  z-1 ">
+          <div class="py-0 z-1 mt-6">
+            <!-- TODO: Add functionality to button -->
             <button class="btn btn-outline-primary p-2">Learn how trustworthiness works<i class="fa-solid fa-angle-right ms-2"></i></button>
           </div>
         </div>
