@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'datasets',
     'projects.apps.ProjectsConfig',
     'billing',
-    'assets',
 ]
 
 MIDDLEWARE = [
