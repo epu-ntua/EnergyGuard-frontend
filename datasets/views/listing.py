@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import render
 from django_datatables_view.base_datatable_view import BaseDatatableView
 
@@ -30,7 +30,7 @@ class DatasetsListJson(BaseDatatableView):
     max_display_length = 25
 
     def get_initial_queryset(self):
-        return Dataset.objects.all()
+        return Dataset.objects.annotate(projects_count=Count("projects", distinct=True))
 
     def filter_queryset(self, qs):
         scope = self.request.GET.get("scope", "public")
@@ -67,6 +67,10 @@ class DatasetsListJson(BaseDatatableView):
         if column == "size_gb":
             return row.size_gb
         if column == "status":
+            scope = self.request.GET.get("scope", "public")
+            if scope == "public":
+                return row.projects_count
+
             status = row.status.replace("_", " ").title()
             status_badge_map = {
                 "approved": "badge-phoenix-success",
