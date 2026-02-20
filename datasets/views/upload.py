@@ -94,7 +94,7 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                     bucket_name=upload_result["bucket_name"],
                     label=general_data["label"],
                     source="your_own_DS",
-                    status="under_review",
+                    status=Dataset.Status.UNDER_REVIEW,
                     visibility=general_data["visibility"],
                     size_gb=size_gb,
                     publisher=self.request.user,

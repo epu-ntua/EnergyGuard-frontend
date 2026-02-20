@@ -77,12 +77,10 @@
                                 <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ get_label_display }}</td>
                                 <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">{{ get_source_display }}</td>
                                 <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
-                                    {% if d.status == 'published' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="clock" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% elif d.status == 'private' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">PRIVATE</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% elif d.status == 'restricted' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">RESTRICTED</span><span class="ms-1" data-feather="lock" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% if d.status == 'approved' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">APPROVED</span><span class="ms-1" data-feather="check-circle" style="height:12.8px;width:12.8px;"></span></span>
+                                    {% elif d.status == 'rejected' %}
+                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">REJECTED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
                                     {% elif d.status == 'under_review' %}
                                         <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="eye" style="height:12.8px;width:12.8px;"></span></span>
                                     {% endif %}

@@ -29,18 +29,15 @@ class Dataset(TimeStampedModel):
         OWN_DS = "your_own_DS", "Your Own Data Space"
 
     class Status(models.TextChoices):
-        PUBLISHED = "published", "Published"
-        PRIVATE = "private", "Private"
-        RESTRICTED = "restricted", "Restricted"
         UNDER_REVIEW = "under_review", "Under Review"
-        # APPROVED = "approved", "Approved"
-        # REJECTED = "rejected", "Rejected"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
-    status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
+    status = models.CharField(max_length=20, choices=Status, default=Status.UNDER_REVIEW)
     visibility = models.BooleanField(default=False)
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
     publisher = models.ForeignKey(

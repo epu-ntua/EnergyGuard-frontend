@@ -26,12 +26,10 @@
               </div>
               
               <div>
-                {% if dt.status == 'published' %}
-                  <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">PUBLISHED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
-                {% elif dt.status == 'restricted' %}
-                  <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">RESTRICTED</span><span class="ms-1" data-feather="slash" style="height:14px;width:14px;"></span></span>
-                {% elif dt.status == 'private' %}
-                  <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">PRIVATE</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
+                {% if dt.status == 'approved' %}
+                  <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">APPROVED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
+                {% elif dt.status == 'rejected' %}
+                  <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">REJECTED</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
                 {% elif dt.status == 'under_review' %}
                   <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
                 {% endif %}

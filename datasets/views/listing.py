@@ -63,10 +63,9 @@ class DatasetsListJson(BaseDatatableView):
         if column == "status":
             status = row.status.replace("_", " ").title()
             status_badge_map = {
-                "published": "badge-phoenix-success",
+                "approved": "badge-phoenix-success",
                 "under_review": "badge-phoenix-primary",
-                "private": "badge-phoenix-danger",
-                "restricted": "badge-phoenix-warning",
+                "rejected": "badge-phoenix-danger",
             }
             badge_class = status_badge_map.get(row.status, "badge-phoenix-secondary")
             return (
