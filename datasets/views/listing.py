@@ -42,9 +42,10 @@ class DatasetsListJson(BaseDatatableView):
                 | Q(status__icontains=search)
             ).distinct()
 
-        status_filter = self.request.GET.get("status")
-        if status_filter in ["published", "private", "restricted", "under_review"]:
-            qs = qs.filter(status=status_filter)
+        allowed_labels = [value for value, _ in Dataset.Label.choices]
+        label_filter = self.request.GET.get("label")
+        if label_filter in allowed_labels:
+            qs = qs.filter(label=label_filter)
 
         return qs
 
@@ -79,21 +80,27 @@ class DatasetsListJson(BaseDatatableView):
 @login_required
 def datasets_list(request):
     qs = Dataset.objects.all()
-    counts = {
-        "all": qs.count(),
-        "published": qs.filter(status="published").count(),
-        "private": qs.filter(status="private").count(),
-        "restricted": qs.filter(status="restricted").count(),
-        "under_review": qs.filter(status="under_review").count(),
-    }
-    status_filter = request.GET.get("status")
+    label_filter = request.GET.get("label")
+    allowed_labels = [value for value, _ in Dataset.Label.choices]
+    if label_filter not in allowed_labels:
+        label_filter = None
+
+    label_tabs = [
+        {
+            "value": value,
+            "display": display,
+            "count": qs.filter(label=value).count(),
+        }
+        for value, display in Dataset.Label.choices
+    ]
 
     return render(
         request,
         "datasets/datasets-list.html",
         {
-            "dataset_num": counts,
-            "status_filter": status_filter,
+            "dataset_num": {"all": qs.count()},
+            "label_filter": label_filter,
+            "label_tabs": label_tabs,
             "active_navbar_page": "datasets",
             "show_sidebar": True,
         },

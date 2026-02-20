@@ -19,11 +19,10 @@
         <!-- SUBHEADER -->
         <div class="d-flex justify-content-between">
             <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if not status_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'published' %}active{% endif %}" href="?status=published"><span>Published</span><span class="text-body-tertiary fw-semibold">({{dataset_num.published}})</span></a></li>
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'private' %}active{% endif %}" href="?status=private"><span>Private </span><span class="text-body-tertiary fw-semibold">({{dataset_num.private}})</span></a></li>
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'restricted' %}active{% endif %}" href="?status=restricted"><span>Restricted </span><span class="text-body-tertiary fw-semibold">({{dataset_num.restricted}})</span></a></li>
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if status_filter == 'under_review' %}active{% endif %}" href="?status=under_review"><span>Under Review </span><span class="text-body-tertiary fw-semibold">({{dataset_num.under_review}})</span></a></li>
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if not label_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
+                {% for tab in label_tabs %}
+                <li class="nav-item"><a class="nav-link fs-9-5 {%if label_filter == tab.value %}active{% endif %}" href="?label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.count }})</span></a></li>
+                {% endfor %}
             </ul>
             <!-- SEARCH BAR -->
             <div class="mb-4">
@@ -45,15 +44,15 @@
                     <table class="table table-sm fs-9 mb-0" id="datasetsList" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th class="sort white-space-nowrap align-middle pe-3 fs-10" scope="col" style="width:17%;">DATASET NAME</th>
+                                <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:17%;">DATASET NAME</th>
                                 <!-- <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th> -->
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:6%;">CREATED</th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">CREATED</th>
                                 <!-- <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th> -->
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:12%;">LABEL</a></th>
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:10%;">SOURCE</th>
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:15%;">PUBLISHER</th>
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:5%;">SIZE</th>
-                                <th class="sort align-middle text-end fs-10" scope="col" style="width:6%;">STATUS</th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:12%;">LABEL</a></th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SOURCE</th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:15%;">PUBLISHER</th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:5%;">SIZE</th>
+                                <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">STATUS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,7 +106,7 @@
 
 <script>
     $(document).ready(function () {
-        const statusParam = new URLSearchParams(window.location.search).get('status') || '';
+        const labelParam = new URLSearchParams(window.location.search).get('label') || '';
 
         const table = $('#datasetsList').DataTable({
             processing: true,
@@ -115,7 +114,7 @@
             ajax: {
                 url: "{% url 'datasets_list_json' %}",
                 data: function (d) {
-                    d.status = statusParam;
+                    d.label = labelParam;
                 },
                 type: "GET"
             },
@@ -123,17 +122,17 @@
                 { 
                     data: "name", 
                     render: function(data, type, row) {
-                        return `<a class="fw-semibold fs-9-5" href="/datasets/dataset/${row.id}/">${data}</a>`;
+                        return `<a class="fw-semibold fs-9" href="/datasets/dataset/${row.id}/">${data}</a>`;
                     }
                 },
                 // { data: "users", "orderable": false },
-                { data: "created_at", className: "text-end fs-9-5" },
-                { data: "label", className: "text-end fs-9-5" },
-                { data: "source", className: "text-end fs-9-5" },
-                { data: "publisher", className: "text-end fs-9-5" },
+                { data: "created_at", className: "text-end fs-9" },
+                { data: "label", className: "text-end fs-9" },
+                { data: "source", className: "text-end fs-9" },
+                { data: "publisher", className: "text-end fs-9" },
                 { data: "size_gb", render: function(data) {
                         return data + ' GB';
-                    }, className: "text-end fs-9-5" 
+                    }, className: "text-end fs-9" 
                 },
                 { data: "status", className: "text-end", "orderable": false },
                 { data: "id", visible: false }
