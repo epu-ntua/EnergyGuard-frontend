@@ -1,15 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import F
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 
-from ..models import Dataset, DatasetUserDownload
+from ..models import Dataset
 
 
 @login_required
 def dataset_details(request, dataset_id):
     try:
-        dataset = Dataset.objects.prefetch_related("users").get(pk=dataset_id)
+        dataset = Dataset.objects.get(pk=dataset_id)
     except Dataset.DoesNotExist:
         messages.error(request, "Dataset not found")
         return redirect("home")
@@ -27,10 +26,6 @@ def dataset_details(request, dataset_id):
         "publisher": dataset.publisher_display,
         "description": dataset.description,
         "metadata": dataset.metadata,
-        "collaborators": ", ".join(user.username for user in dataset.users.all()),
-        "downloaded": DatasetUserDownload.objects.filter(
-            user=request.user, dataset=dataset
-        ).exists(),
     }
 
     return render(
@@ -43,21 +38,3 @@ def dataset_details(request, dataset_id):
             "show_sidebar": True,
         },
     )
-
-
-@login_required
-def dataset_download(request, dataset_id):
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
-
-    if request.user.credits < 100:
-        messages.error(request, "Insufficient credits to download the dataset.")
-        return redirect("dataset_details", dataset_id=dataset.id)
-
-    Dataset.objects.filter(pk=dataset.id).update(downloads=F("downloads") + 1)
-    DatasetUserDownload.objects.create(user=request.user, dataset=dataset)
-
-    request.user.credits = F("credits") - 100
-    request.user.save()
-
-    messages.success(request, f"You have successfully downloaded the dataset: {dataset.name}")
-    return redirect("dataset_details", dataset_id=dataset.id)

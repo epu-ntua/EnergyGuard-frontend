@@ -57,9 +57,6 @@ class Dataset(TimeStampedModel):
     bucket_name = models.CharField(max_length=63, default='energyguard-datasets')
     metadata = models.JSONField(blank=True, null=True)
     projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
-    downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list') # Users who have access to this dataset
-    users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets') # Users who have downloaded this dataset
 
     def __str__(self):
         return self.name

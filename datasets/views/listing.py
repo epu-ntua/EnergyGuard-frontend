@@ -15,7 +15,6 @@ class DatasetsListJson(BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
-        "downloads",
         "status",
         "id",
     ]
@@ -26,13 +25,12 @@ class DatasetsListJson(BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
-        "downloads",
         "status",
     ]
     max_display_length = 25
 
     def get_initial_queryset(self):
-        return Dataset.objects.prefetch_related("users").all()
+        return Dataset.objects.all()
 
     def filter_queryset(self, qs):
         search = self.request.GET.get("search[value]")

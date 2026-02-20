@@ -1,4 +1,4 @@
-from .details import dataset_details, dataset_download
+from .details import dataset_details
 from .listing import DatasetsListJson, datasets_list
 from .upload import (
     AddDatasetView,
@@ -15,7 +15,6 @@ __all__ = [
     "DATASET_TEMPLATE_NAMES",
     "DatasetsListJson",
     "dataset_details",
-    "dataset_download",
     "dataset_upload_success",
     "datasets_list",
 ]

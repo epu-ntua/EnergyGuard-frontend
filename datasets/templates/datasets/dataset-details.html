@@ -128,12 +128,7 @@
                   </div>
                   
                   <div class="mt-2" style="width:70%;">
-                    {% if not dt.downloaded %}
-                    <a href="{% url 'dataset_download' dataset.id %}"><button class="btn btn-danger py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download</button></a>
-                    {% else %}
-                    <!-- TODO: Add functionality to link (Download again without reducing user balance or increasing number of download)-->
-                    <a href=""><button class="btn btn-success py-1 px-4 container"><i class="fa-solid fa-download me-2"></i>Download again</button></a>
-                    {% endif %}
+                    <button class="btn btn-danger py-1 px-4 container" type="button" disabled><i class="fa-solid fa-download me-2"></i>Download</button>
                   </div>
                   
                   <div class="mt-2" style="width:70%;">
