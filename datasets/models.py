@@ -2,7 +2,7 @@ from django.core.validators import MinValueValidator
 from django.conf import settings
 from django.db import models
 from decimal import Decimal
-from experiments.models import Experiment
+from projects.models import Project
 from core.models import TimeStampedModel
 
 # Create your models here.
@@ -48,7 +48,7 @@ class Dataset(TimeStampedModel):
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
     status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list') # Users who have access to this dataset
-    experiments = models.ManyToManyField(Experiment, blank=True, related_name='datasets') # Experiments that have used this dataset
+    projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
     visibility = models.BooleanField(default=False)
     downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])

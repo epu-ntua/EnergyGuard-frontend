@@ -11,7 +11,7 @@ import os
 import tempfile
 from django.contrib.auth.decorators import login_required
 from datasets.models import Dataset
-from experiments.models import Experiment
+from projects.models import Project
 
 # Create your views here.
 
@@ -103,7 +103,7 @@ class BaseWizardView(SessionWizardView):
 @login_required
 def dashboard(request):
 
-    projects_count = Experiment.objects.count()
+    projects_count = Project.objects.count()
     datasets_count = Dataset.objects.filter(publisher__isnull=True).count()
 
     datasets_counts_by_label = {

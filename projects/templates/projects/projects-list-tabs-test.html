@@ -1,0 +1,44 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Projects List | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="mb-9">
+
+        <!-- HEADER -->
+        <div class="row g-3 mb-5">
+            <div class="col-auto me-4">
+                <h2 class="mb-0">Projects</h2>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary"><span class="fas fa-plus me-2"></span>Add new project</button>
+            </div>
+        </div>
+
+        <ul class="nav nav-underline" id="myTab" role="tablist">
+            <li class="nav-item"><a class="nav-link active fs-8-5" id="myProjects-tab" data-bs-toggle="tab" href="#tab-myProjects" role="tab" aria-controls="tab-myProjects" aria-selected="true">My projects</a></li>
+            <li class="nav-item"><a class="nav-link fs-8-5" id="publicProjects-tab" data-bs-toggle="tab" href="#tab-publicProjects" role="tab" aria-controls="tab-publicProjects" aria-selected="false">Public projects</a></li>
+        </ul>
+
+        <div class="tab-content mt-5" id="myTabContent">
+            <!-- My projects tab -->
+            <div class="tab-pane fade show active" id="tab-myProjects" role="tabpanel" aria-labelledby="myProjects-tab">
+                <!-- SUBHEADER -->
+                {% include "./projects-list-tabs.html" with id_name="my" visibility_param="false"%}
+            </div>
+            <!-- Public projects tab -->
+            <div class="tab-pane fade" id="tab-publicProjects" role="tabpanel" aria-labelledby="publicProjects-tab">
+                <!-- SUBHEADER -->
+                 {% include "./projects-list-tabs.html" with id_name="public" visibility_param="true" %}
+            </div>
+        </div>
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+
+{% endblock scripts %}

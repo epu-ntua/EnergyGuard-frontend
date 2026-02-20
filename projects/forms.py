@@ -1,0 +1,18 @@
+from django import forms
+from .models import Project
+
+class ProjectGeneralInfoForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ('name', 'description', 'project_type')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter project name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter project description', 'rows': 3}),
+            'project_type': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class ProjectFacilitiesForm(forms.Form):
+    facility_name = forms.CharField( max_length=255, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter facility name'}) )
+
+class ProjectSandboxPackagesForm(forms.Form): 
+    package_name = forms.CharField( max_length=255, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter sandbox package name'}) )

@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'core',
     'accounts',
     'datasets',
-    'experiments',
+    'projects.apps.ProjectsConfig',
     'billing',
     'assets',
 ]

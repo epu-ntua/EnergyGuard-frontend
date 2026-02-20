@@ -150,7 +150,7 @@ def profile(request):
     
     # Get or create the user's profile
     user_profile, created = Profile.objects.get_or_create(user=request.user)
-    user_experiments_count = request.user.creator_experiments.count()
+    user_projects_count = request.user.creator_projects.count()
 
     if request.method == 'POST':
         form = ProfileForm(request.POST)
@@ -213,7 +213,7 @@ def profile(request):
         form = ProfileForm(initial=initial_data)
 
 
-    return render(request, 'accounts/profile.html', {"show_sidebar": False, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_experiments": user_experiments_count})
+    return render(request, 'accounts/profile.html', {"show_sidebar": False, "joined_display": joined_display, "last_login": last_login, "form": form, "profile": user_profile, "total_projects": user_projects_count})
 
 @login_required
 def update_profile_picture(request):

@@ -1,7 +1,7 @@
 {% extends "core/authenticated-base.html" %}
 {% load static %}
 
-{% block title %}EnergyGuard | Experiment Details{% endblock %}
+{% block title %}EnergyGuard | Project Details{% endblock %}
 
 {% block content %}
 
@@ -11,7 +11,7 @@
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-5">
           <div class="d-flex justify-content-between">
-            <h2 class="text-body-emphasis fw-bolder mb-2">{{ exp.name }}</h2>
+            <h2 class="text-body-emphasis fw-bolder mb-2">{{ project_details.name }}</h2>
 
             <!-- TODO: Replace 3 Dots above graph -->
             <div class="btn-reveal-trigger">
@@ -24,13 +24,13 @@
             </div>
           </div>
 
-          {% if exp.status == 'completed' %}
+          {% if project_details.status == 'completed' %}
             <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">COMPLETED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
-          {% elif exp.status == 'inactive' %}
+          {% elif project_details.status == 'inactive' %}
             <span class="badge badge-phoenix badge-phoenix-warning"><span class="badge-label">INACTIVE</span><span class="ms-1" data-feather="slash" style="height:14px;width:14px;"></span></span>
-          {% elif exp.status == 'cancelled' %}
+          {% elif project_details.status == 'cancelled' %}
             <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">CANCELLED</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
-          {% elif exp.status == 'ongoing' %}
+          {% elif project_details.status == 'ongoing' %}
             <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">ONGOING</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
           {% endif %}
 
@@ -46,7 +46,7 @@
                       <tr>
                         <td class="py-1" colspan="2">
                           <div class="d-flex"><span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body">{% if exp.visibility %}Public{% else %}Private{% endif %} Experiment</h5>
+                            <h5 class="text-body">{% if project_details.visibility %}Public{% else %}Private{% endif %} Project</h5>
                           </div>
                         </td>
                       </tr>
@@ -56,8 +56,8 @@
                             <h5 class="text-body mb-0 text-nowrap">Team :</h5>
                           </div>
                         </td>
-                        <!-- <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">{{ exp.company|default:"-"}} </a></td> -->
-                        <td class="ps-1 py-1 text-start fw-semibold lh-sm d-block">{{ exp.team|default:"-"}}</td>
+                        <!-- <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">{{ project_details.company|default:"-"}} </a></td> -->
+                        <td class="ps-1 py-1 text-start fw-semibold lh-sm d-block">{{ project_details.team|default:"-"}}</td>
                       </tr>
 
                       <!-- TODO: Replace with real data -->
@@ -78,19 +78,19 @@
                     <tbody>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Started : </td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ exp.start_date|date:"M j, Y" }}</td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ project_details.start_date|date:"M j, Y" }}</td>
                       </tr>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Update :</td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ exp.last_update|date:"M j, Y" }}</td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ project_details.last_update|date:"M j, Y" }}</td>
                       </tr>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Type :</td>
-                        <td class="text-warning text-opacity-85 fw-semibold ps-3">{{ exp.type }}</td>
+                        <td class="text-warning text-opacity-85 fw-semibold ps-3">{{ project_details.type }}</td>
                       </tr>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Progress :</td>
-                        <td class="text-warning fw-semibold ps-3">{{ exp.progress }}%</td>
+                        <td class="text-warning fw-semibold ps-3">{{ project_details.progress }}%</td>
                       </tr>
                     </tbody>
                   </table>
@@ -101,8 +101,8 @@
                   <a href="#">
                     <button class="btn btn-primary mt-1" style="width:80%;" type="button">Open in Jupyter</button>
                   </a>
-                  <!-- TODO: Add experiment's mlflow link -->
-                  <a href="https://mlflow.toolbox.epu.ntua.gr/#/experiments/{{ exp.id }}" target="_blank">
+                  <!-- TODO: Add project's mlflow link -->
+                  <a href="https://mlflow.toolbox.epu.ntua.gr/#/experiments/{{ project_details.id }}" target="_blank">
                     <button class="btn btn-purple mt-1" style="width:80%;" type="button">Open in MLFlow</button>
                   </a>
                 </div>
@@ -184,7 +184,7 @@
 
               <!-- Collaborators' icons -->
 
-              {% for collaborator in exp.collaborators %}
+              {% for collaborator in project_details.collaborators %}
               <div class="dropdown"><a class="dropdown-toggle dropdown-caret-none d-inline-block outline-none" href="#"
                   role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                   <div class="avatar avatar-xl  me-1">
@@ -213,7 +213,7 @@
         </div>
         <h3 class="text-body-emphasis mb-4">Project overview</h3>
         <p class="text-body-secondary mb-4 text-justify">
-          {{ exp.description }}
+          {{ project_details.description }}
           <!-- <a class="fw-semibold" href="#!">read more</a> -->
         </p>
       </div>

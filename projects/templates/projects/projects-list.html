@@ -12,29 +12,29 @@
                 <h1 class="mb-3">Projects</h1>
             </div>
             <div class="col-auto">
-                <a class="btn btn-primary fs-8-5" href="{% url 'experiment_creation' %}"><span class="fas fa-plus me-2"></span>Add new project</a>
+                <a class="btn btn-primary fs-8-5" href="{% url 'project_creation' %}"><span class="fas fa-plus me-2"></span>Add new project</a>
             </div>
         </div>
 
 
         <ul class="nav nav-underline" id="myTab" role="tablist">
-            <li class="nav-item me-3"><a class="nav-link fs-7 {% if active_tab != 'public' %}active{% endif %}" id="myExperiments-tab" data-bs-toggle="tab" href="#tab-myExperiments" role="tab" aria-controls="tab-myExperiments" aria-selected="{% if active_tab != 'public' %}true{% else %}false{% endif %}">My projects</a></li>
-            <li class="nav-item"><a class="nav-link fs-7 {% if active_tab == 'public' %}active{% endif %}" id="publicExperiments-tab" data-bs-toggle="tab" href="#tab-publicExperiments" role="tab" aria-controls="tab-publicExperiments" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public projects</a></li>
+            <li class="nav-item me-3"><a class="nav-link fs-7 {% if active_tab != 'public' %}active{% endif %}" id="myProjects-tab" data-bs-toggle="tab" href="#tab-myProjects" role="tab" aria-controls="tab-myProjects" aria-selected="{% if active_tab != 'public' %}true{% else %}false{% endif %}">My projects</a></li>
+            <li class="nav-item"><a class="nav-link fs-7 {% if active_tab == 'public' %}active{% endif %}" id="publicProjects-tab" data-bs-toggle="tab" href="#tab-publicProjects" role="tab" aria-controls="tab-publicProjects" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public projects</a></li>
         </ul>
 
         <div class="tab-content mt-5" id="myTabContent">
-            <!-- My experiments tab -->
-            <div class="tab-pane fade {% if active_tab != 'public' %}show active{% endif %}" id="tab-myExperiments" role="tabpanel" aria-labelledby="myExperiments-tab">
+            <!-- My projects tab -->
+            <div class="tab-pane fade {% if active_tab != 'public' %}show active{% endif %}" id="tab-myProjects" role="tabpanel" aria-labelledby="myProjects-tab">
                 <!-- SUBHEADER -->
                 <div class="d-flex justify-content-between">
                     <ul class="nav nav-links mb-lg-2 mx-n3">
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.all}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=my&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.ai_model}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=my&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.ai_service}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=my&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.web_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=my&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.mobile_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=my&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.iot_integration}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=my&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{my_experiments_num.data_pipeline}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_projects_num.all}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=my&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.ai_model}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=my&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.ai_service}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=my&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.web_app}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=my&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.mobile_app}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=my&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.iot_integration}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=my&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.data_pipeline}})</span></a></li>
                     </ul>
                     <!-- SEARCH AND FILTERS -->
                     <div class="mb-3">
@@ -43,7 +43,7 @@
                             <div class="col-auto">
                                 <div class="search-box">
                                     <form class="position-relative" onsubmit="return false">
-                                        <input id="myExperimentSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
+                                        <input id="myProjectSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
                                         <span class="fas fa-search search-box-icon fs-8-5"></span>
                                     </form>
                                 </div>
@@ -54,7 +54,7 @@
                 <div>
                     <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                         <div class="table-responsive scrollbar mx-n1 px-1">
-                            <table class="table table-sm fs-9 mb-0" id="myExperimentsTable" style="width: 100%;">
+                            <table class="table table-sm fs-9 mb-0" id="myProjectsTable" style="width: 100%;">
                                 <thead>
                                     <tr>
                                         <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
@@ -71,18 +71,18 @@
                     </div>
                 </div>
             </div>
-            <!-- Public experiments tab -->
-            <div class="tab-pane fade {% if active_tab == 'public' %}show active{% endif %}" id="tab-publicExperiments" role="tabpanel" aria-labelledby="publicExperiments-tab">
+            <!-- Public projects tab -->
+            <div class="tab-pane fade {% if active_tab == 'public' %}show active{% endif %}" id="tab-publicProjects" role="tabpanel" aria-labelledby="publicProjects-tab">
                 <!-- SUBHEADER -->
                     <div class="d-flex justify-content-between">
                         <ul class="nav nav-links mb-lg-2 mx-n3">
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.all}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=public&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.ai_model}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=public&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.ai_service}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=public&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.web_app}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=public&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.mobile_app}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=public&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.iot_integration}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=public&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{public_experiments_num.data_pipeline}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_projects_num.all}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=public&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.ai_model}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=public&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.ai_service}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=public&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.web_app}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=public&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.mobile_app}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=public&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.iot_integration}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=public&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.data_pipeline}})</span></a></li>
                         </ul>
                         <!-- SEARCH AND FILTERS -->
                         <div class="mb-3">
@@ -91,7 +91,7 @@
                                 <div class="col-auto">
                                     <div class="search-box">
                                         <form class="position-relative" onsubmit="return false">
-                                            <input id="publicExperimentSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
+                                            <input id="publicProjectSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
                                             <span class="fas fa-search search-box-icon fs-8-5"></span>
                                         </form>
                                     </div>
@@ -102,7 +102,7 @@
                     <div>
                         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
                             <div class="table-responsive scrollbar mx-n1 px-1">
-                                <table class="table table-sm fs-9 mb-0" id="publicExperimentsTable" style="width: 100%;">
+                                <table class="table table-sm fs-9 mb-0" id="publicProjectsTable" style="width: 100%;">
                                     <thead>
                                         <tr>
                                             <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
@@ -138,20 +138,20 @@
         // $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
         const typeParam = new URLSearchParams(window.location.search).get('type') || '';
         const columns = [
-            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-8-5" href="/experiments/experiment/${row.id}/">${data}</a>`},
+            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-8-5" href="/projects/project/${row.id}/">${data}</a>`},
             { data: "description", className: "pe-3 fs-8-5" },
             { data: "collaborators", className: "fs-8-5" },
             { data: "created_at", className: "text-end fs-8-5" },
             { data: "updated_at", className: "text-end fs-8-5" },
-            { data: "exp_type", className: "text-end fs-8-5" },
+            { data: "project_type", className: "text-end fs-8-5" },
             { data: "id", visible: false }
         ];
 
-        const myTable = $('#myExperimentsTable').DataTable({
+        const myTable = $('#myProjectsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{% url 'experiments_list_json' %}",
+                url: "{% url 'projects_list_json' %}",
                 data: function (d) {
                     d.type = typeParam;
                     d.scope = "my";
@@ -164,11 +164,11 @@
             createdRow: row => $('td', row).addClass('align-middle py-3'),
         });
 
-        const publicTable = $('#publicExperimentsTable').DataTable({
+        const publicTable = $('#publicProjectsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{% url 'experiments_list_json' %}",
+                url: "{% url 'projects_list_json' %}",
                 data: function (d) {
                     d.type = typeParam;
                     d.scope = "public";
@@ -181,11 +181,11 @@
             createdRow: row => $('td', row).addClass('align-middle py-3'),
         });
 
-        $('#myExperimentSearchInput').on('keyup change', function () {
+        $('#myProjectSearchInput').on('keyup change', function () {
             myTable.search(this.value).draw();
         });
 
-        $('#publicExperimentSearchInput').on('keyup change', function () {
+        $('#publicProjectSearchInput').on('keyup change', function () {
             publicTable.search(this.value).draw();
         });
     });

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from .models import Experiment
+from .models import Project
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -10,15 +10,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from .forms import *
 
-class ExperimentsListJson(BaseDatatableView):
-    model = Experiment
+class ProjectsListJson(BaseDatatableView):
+    model = Project
     columns = [
         "name",
         "description",
         "collaborators",
         "created_at",
         "updated_at",
-        "exp_type",
+        "project_type",
         # "progress",
         # "status",
         "id",
@@ -29,7 +29,7 @@ class ExperimentsListJson(BaseDatatableView):
         "collaborators__first_name",
         "created_at",
         "updated_at",
-        "exp_type",
+        "project_type",
         # "progress",
         # "status",
     ]
@@ -37,7 +37,7 @@ class ExperimentsListJson(BaseDatatableView):
 
     def get_initial_queryset(self):
         # Prefetch related collaborators to optimize DB queries
-        return Experiment.objects.prefetch_related("collaborators").all()
+        return Project.objects.prefetch_related("collaborators").all()
     
     def render_column(self, row, column):
         if column == "created_at":
@@ -46,8 +46,8 @@ class ExperimentsListJson(BaseDatatableView):
             return row.updated_at.strftime("%b %d, %Y")
         elif column == "collaborators":
             return ", ".join(user.first_name for user in row.collaborators.all()) or "No collaborators"
-        elif column == "exp_type":
-            return row.get_exp_type_display()
+        elif column == "project_type":
+            return row.get_project_type_display()
         else:
             return super().render_column(row, column)
         
@@ -72,11 +72,11 @@ class ExperimentsListJson(BaseDatatableView):
         
         type_filter = self.request.GET.get("type")
         if type_filter in ["ai_model", "ai_service", "web_app", "mobile_app", "iot_integration", "data_pipeline"]:
-            qs = qs.filter(exp_type=type_filter)    
+            qs = qs.filter(project_type=type_filter)
         return qs
 
 @login_required
-def experiments_list(request):
+def projects_list(request):
     """mlflow.set_tracking_uri("https://mlflow.toolbox.epu.ntua.gr/")
     
     data = []
@@ -115,26 +115,26 @@ def experiments_list(request):
     page_number = request.GET.get("page")
     filtered_data = p.get_page(page_number)"""
 
-    my_qs = Experiment.objects.filter(creator_id=request.user.id)
-    public_qs = Experiment.objects.filter(visibility=True).exclude(creator_id=request.user.id)
+    my_qs = Project.objects.filter(creator_id=request.user.id)
+    public_qs = Project.objects.filter(visibility=True).exclude(creator_id=request.user.id)
 
     my_counts = {
         "all": my_qs.count(),
-        "ai_model": my_qs.filter(exp_type="ai_model").count(),
-        "ai_service": my_qs.filter(exp_type="ai_service").count(),
-        "web_app": my_qs.filter(exp_type="web_app").count(),
-        "mobile_app": my_qs.filter(exp_type="mobile_app").count(),
-        "iot_integration": my_qs.filter(exp_type="iot_integration").count(),
-        "data_pipeline": my_qs.filter(exp_type="data_pipeline").count(),
+        "ai_model": my_qs.filter(project_type="ai_model").count(),
+        "ai_service": my_qs.filter(project_type="ai_service").count(),
+        "web_app": my_qs.filter(project_type="web_app").count(),
+        "mobile_app": my_qs.filter(project_type="mobile_app").count(),
+        "iot_integration": my_qs.filter(project_type="iot_integration").count(),
+        "data_pipeline": my_qs.filter(project_type="data_pipeline").count(),
     }
     public_counts = {
         "all": public_qs.count(),
-        "ai_model": public_qs.filter(exp_type="ai_model").count(),
-        "ai_service": public_qs.filter(exp_type="ai_service").count(),
-        "web_app": public_qs.filter(exp_type="web_app").count(),
-        "mobile_app": public_qs.filter(exp_type="mobile_app").count(),
-        "iot_integration": public_qs.filter(exp_type="iot_integration").count(),
-        "data_pipeline": public_qs.filter(exp_type="data_pipeline").count(),
+        "ai_model": public_qs.filter(project_type="ai_model").count(),
+        "ai_service": public_qs.filter(project_type="ai_service").count(),
+        "web_app": public_qs.filter(project_type="web_app").count(),
+        "mobile_app": public_qs.filter(project_type="mobile_app").count(),
+        "iot_integration": public_qs.filter(project_type="iot_integration").count(),
+        "data_pipeline": public_qs.filter(project_type="data_pipeline").count(),
     }
 
     type_filter = request.GET.get("type")
@@ -142,17 +142,17 @@ def experiments_list(request):
     if active_tab not in ["my", "public"]:
         active_tab = "my"
 
-    return render(request, 'experiments/experiments-list.html', {
-        "my_experiments_num": my_counts,
-        "public_experiments_num": public_counts,
+    return render(request, 'projects/projects-list.html', {
+        "my_projects_num": my_counts,
+        "public_projects_num": public_counts,
         "type_filter": type_filter, 
         "active_tab": active_tab,
-        "active_navbar_page": "experiments",
+        "active_navbar_page": "projects",
         "show_sidebar": True
     })
 
 @login_required
-def experiments_list_tabs(request):
+def projects_list_tabs(request):
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
         draw = int(request.GET.get("draw", 1))
@@ -178,7 +178,7 @@ def experiments_list_tabs(request):
         if order_dir == "desc":
             ordering = f"-{ordering}"
 
-        qs = Experiment.objects.select_related("creator").prefetch_related("collaborators").filter(visibility = visibility_filter=="true")
+        qs = Project.objects.select_related("creator").prefetch_related("collaborators").filter(visibility = visibility_filter=="true")
         if status_filter in ["completed", "ongoing", "cancelled", "inactive"]:
             qs = qs.filter(status=status_filter)
 
@@ -201,7 +201,7 @@ def experiments_list_tabs(request):
                 "collaborators": ", ".join(exp.collaborators.values_list("first_name", flat=True)),
                 "created_at": exp.created_at.strftime("%b %d, %Y"),
                 "updated_at": exp.updated_at.strftime("%b %d, %Y"),
-                "type": exp.get_exp_type_display(),
+                "type": exp.get_project_type_display(),
                 "progress": exp.progress,
                 "status": exp.status,
             })
@@ -213,7 +213,7 @@ def experiments_list_tabs(request):
             "data": data,
         })
     visibility_filter = request.GET.get("visibility", "false")
-    data = Experiment.objects.filter(visibility=visibility_filter=="true")
+    data = Project.objects.filter(visibility=visibility_filter=="true")
     counts = {
         "all": data.count(),
         "completed": data.filter(status="completed").count(),
@@ -222,91 +222,91 @@ def experiments_list_tabs(request):
         "inactive": data.filter(status="inactive").count(),
     }
     status_filter = request.GET.get("status")
-    return render(request, 'experiments/experiments-list-tabs-test.html', {
-        "experiment" : data, 
-        "experiments_num": counts, 
+    return render(request, 'projects/projects-list-tabs-test.html', {
+        "project" : data, 
+        "projects_num": counts, 
         "status_filter": status_filter, 
-        "active_navbar_page": "experiments", 
+        "active_navbar_page": "projects", 
         "show_sidebar": True,
         "visibility_filter": visibility_filter
     })
 
 @login_required
-def experiment_details(request, experiment_id):
+def project_details(request, project_id):
 
     # Optimize query
     try:
-        experiment = (
-            Experiment.objects
+        project = (
+            Project.objects
             .select_related('creator')
             .prefetch_related('collaborators__profile')
-            .get(pk=experiment_id)
+            .get(pk=project_id)
         )
 
-        experiment_details = {
-            "name": experiment.name,
-            "start_date": experiment.created_at,
-            "last_update": experiment.updated_at,
-            "status": experiment.status,
-            "description": experiment.description,
-            "progress": experiment.progress,
-            "type": experiment.get_exp_type_display(),
-            "id": experiment_id,
-            "collaborators": experiment.collaborators.all(),
-            "visibility": experiment.visibility,
-            "team": experiment.creator.profile.team if hasattr(experiment.creator, 'profile') else None
+        project_details = {
+            "name": project.name,
+            "start_date": project.created_at,
+            "last_update": project.updated_at,
+            "status": project.status,
+            "description": project.description,
+            "progress": project.progress,
+            "type": project.get_project_type_display(),
+            "id": project_id,
+            "collaborators": project.collaborators.all(),
+            "visibility": project.visibility,
+            "team": project.creator.profile.team if hasattr(project.creator, 'profile') else None
         }
-    except Experiment.DoesNotExist:
-        # return redirect('core/error_does_not_exist', error= "Experiment not found")  # or render an error page
-        messages.error(request, "Experiment not found")
+    except Project.DoesNotExist:
+        # return redirect('core/error_does_not_exist', error= "Project not found")  # or render an error page
+        messages.error(request, "Project not found")
         return redirect('home') 
 
-    return render(request, 'experiments/experiment-details.html', {"experiment": experiment, "exp": experiment_details,  "active_navbar_page": "experiments", "show_sidebar": True})
+    return render(request, 'projects/project-details.html', {"project_details": project_details,  "active_navbar_page": "projects", "show_sidebar": True})
 
 @login_required
-def experiment_index(request):
-    return render(request, 'experiments/experiment-index.html', {"active_navbar_page": "experiments", "show_sidebar": True})
+def project_index(request):
+    return render(request, 'projects/project-index.html', {"active_navbar_page": "projects", "show_sidebar": True})
 
-EXPERIMENT_TEMPLATE_NAMES= {
-    "0": "experiments/experiment-creation-step1.html", 
-    "1":"experiments/experiment-creation-step2.html", 
-    "2": "experiments/experiment-creation-step3.html"} 
+PROJECT_TEMPLATE_NAMES= {
+    "0": "projects/project-creation-step1.html", 
+    "1":"projects/project-creation-step2.html", 
+    "2": "projects/project-creation-step3.html"} 
 
-EXPERIMENT_FORMS = [
-    ("0", ExperimentGeneralInfoForm),
-    ("1", ExperimentFacilitiesForm), 
-    ("2", ExperimentSandboxPackagesForm) 
+PROJECT_FORMS = [
+    ("0", ProjectGeneralInfoForm),
+    ("1", ProjectFacilitiesForm), 
+    ("2", ProjectSandboxPackagesForm) 
 ]
 
-EXPERIMENT_STEP_METADATA = { 
+PROJECT_STEP_METADATA = { 
     "0": {"title": "General", 'icon': 'fa-info-circle'}, 
     "1": {"title": "Facilities", "icon": 'fa-building'}, 
     "2": {"title": "Packages", "icon": 'fa-cubes-stacked'} }
 
-class AddExperimentView(LoginRequiredMixin, BaseWizardView):
-    template_names = EXPERIMENT_TEMPLATE_NAMES
-    step_metadata = EXPERIMENT_STEP_METADATA
+class AddProjectView(LoginRequiredMixin, BaseWizardView):
+    template_names = PROJECT_TEMPLATE_NAMES
+    step_metadata = PROJECT_STEP_METADATA
 
     def done(self, form_list, **kwargs):
-        # Process and save experiment after all steps are completed
+        # Process and save project after all steps are completed
 
         general_info = form_list[0].cleaned_data
         facilities = form_list[1].cleaned_data
         sandbox_packages = form_list[2].cleaned_data
 
         with transaction.atomic(): 
-            experiment = Experiment.objects.create( 
+            project = Project.objects.create(
                 name=general_info['name'], 
                 description=general_info['description'], 
-                exp_type=general_info['exp_type'], 
+                project_type=general_info['project_type'],
                 creator=self.request.user, 
                 # visibility=general_info['visibility'] 
             )
         
-        return redirect('experiment_upload_success')
+        return redirect('project_creation_success')
     
 @login_required
-def experiment_creation_success(request): 
+def project_creation_success(request): 
     wizard = {"steps": {"current": "done"}}
-    wizard_steps = EXPERIMENT_STEP_METADATA.values()
-    return render(request, 'experiments/experiment-creation-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
+    wizard_steps = PROJECT_STEP_METADATA.values()
+    return render(request, 'projects/project-creation-success.html', {"wizard": wizard, "wizard_steps": wizard_steps})
