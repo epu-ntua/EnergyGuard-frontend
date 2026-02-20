@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import AddDatasetView, dataset_details, dataset_download, dataset_upload_success, datasets_list, DatasetsListJson, DATASET_FORMS
 
 urlpatterns = [
     path('', datasets_list, name='datasets_list'),

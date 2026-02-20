@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import project_index, projects_list, ProjectsListJson, project_details, AddProjectView, PROJECT_FORMS
 
 urlpatterns = [
     path('', project_index, name='project_index'),
