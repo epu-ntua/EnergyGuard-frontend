@@ -7,19 +7,19 @@
     <div class="mb-9">
 
         <!-- HEADER -->
-        <div class="row g-3 mb-5">
+        <div class="row g-3 mb-6">
             <div class="col-auto me-5">
-                <h1 class="mb-3">Projects</h1>
+                <h2 class="mb-3">Projects</h2>
             </div>
             <div class="col-auto">
-                <a class="btn btn-primary fs-8-5" href="{% url 'project_creation' %}"><span class="fas fa-plus me-2"></span>Add new project</a>
+                <a class="btn btn-primary" href="{% url 'project_creation' %}"><span class="fas fa-plus me-2"></span>Add new project</a>
             </div>
         </div>
 
 
         <ul class="nav nav-underline" id="myTab" role="tablist">
-            <li class="nav-item me-3"><a class="nav-link fs-7 {% if active_tab != 'public' %}active{% endif %}" id="myProjects-tab" data-bs-toggle="tab" href="#tab-myProjects" role="tab" aria-controls="tab-myProjects" aria-selected="{% if active_tab != 'public' %}true{% else %}false{% endif %}">My projects</a></li>
-            <li class="nav-item"><a class="nav-link fs-7 {% if active_tab == 'public' %}active{% endif %}" id="publicProjects-tab" data-bs-toggle="tab" href="#tab-publicProjects" role="tab" aria-controls="tab-publicProjects" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public projects</a></li>
+            <li class="nav-item me-3"><a class="nav-link fs-8 {% if active_tab != 'public' %}active{% endif %}" id="myProjects-tab" data-bs-toggle="tab" href="#tab-myProjects" role="tab" aria-controls="tab-myProjects" aria-selected="{% if active_tab != 'public' %}true{% else %}false{% endif %}">My projects</a></li>
+            <li class="nav-item"><a class="nav-link fs-8 {% if active_tab == 'public' %}active{% endif %}" id="publicProjects-tab" data-bs-toggle="tab" href="#tab-publicProjects" role="tab" aria-controls="tab-publicProjects" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public projects</a></li>
         </ul>
 
         <div class="tab-content mt-5" id="myTabContent">
@@ -28,9 +28,9 @@
                 <!-- SUBHEADER -->
                 <div class="d-flex justify-content-between">
                     <ul class="nav nav-links mb-lg-2 mx-n3">
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_projects_num.all}})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-9 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_projects_num.all}})</span></a></li>
                         {% for tab in type_tabs %}
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == tab.value %}active{% endif %}" href="?tab=my&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.my_count }})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-9 {%if type_filter == tab.value %}active{% endif %}" href="?tab=my&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.my_count }})</span></a></li>
                         {% endfor %}
                     </ul>
                     <!-- SEARCH AND FILTERS -->
@@ -40,8 +40,8 @@
                             <div class="col-auto">
                                 <div class="search-box">
                                     <form class="position-relative" onsubmit="return false">
-                                        <input id="myProjectSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
-                                        <span class="fas fa-search search-box-icon fs-8-5"></span>
+                                        <input id="myProjectSearchInput" class="form-control search-input search fs-9" type="search" placeholder="Search projects" aria-label="Search" />
+                                        <span class="fas fa-search search-box-icon fs-9"></span>
                                     </form>
                                 </div>
                             </div>
@@ -54,12 +54,12 @@
                             <table class="table table-sm fs-9 mb-0" id="myProjectsTable" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
-                                        <th class="sort align-middle text-start fs-8-5" scope="col" style="width:12%;">DESCRIPTION</th>
-                                        <th class="sort align-middle text-start fs-8-5" scope="col" style="width:10%;">COLLABORATORS</th>
-                                        <th class="sort align-middle text-start fs-8-5" scope="col" style="width:7%;">START DATE</th>
-                                        <th class="sort align-middle text-start fs-8-5" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
-                                        <th class="sort align-middle text-end fs-8-5" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                        <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:10%;">PROJECT NAME</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">DESCRIPTION</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">COLLABORATORS</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:7%;">START DATE</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>   
@@ -73,9 +73,9 @@
                 <!-- SUBHEADER -->
                      <div class="d-flex justify-content-between">
                         <ul class="nav nav-links mb-lg-2 mx-n3">
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_projects_num.all}})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-9 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_projects_num.all}})</span></a></li>
                             {% for tab in type_tabs %}
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == tab.value %}active{% endif %}" href="?tab=public&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
+                            <li class="nav-item"><a class="nav-link fs-9 {%if type_filter == tab.value %}active{% endif %}" href="?tab=public&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
                             {% endfor %}
                         </ul>
                         <!-- SEARCH AND FILTERS -->
@@ -85,8 +85,8 @@
                                 <div class="col-auto">
                                     <div class="search-box">
                                         <form class="position-relative" onsubmit="return false">
-                                            <input id="publicProjectSearchInput" class="form-control search-input search fs-8-5" type="search" placeholder="Search projects" aria-label="Search" />
-                                            <span class="fas fa-search search-box-icon fs-8-5"></span>
+                                            <input id="publicProjectSearchInput" class="form-control search-input search fs-9" type="search" placeholder="Search projects" aria-label="Search" />
+                                            <span class="fas fa-search search-box-icon fs-9"></span>
                                         </form>
                                     </div>
                                 </div>
@@ -99,12 +99,12 @@
                                 <table class="table table-sm fs-9 mb-0" id="publicProjectsTable" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th class="sort white-space-nowrap align-middle py-3 fs-8-5" scope="col" style="width:10%;">PROJECT NAME</th>
-                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:12%;">DESCRIPTION</th>
-                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:10%;">COLLABORATORS</th>
-                                            <th class="sort align-middle text-start fs-8-5" scope="col" style="width:7%;">START DATE</th>
-                                            <th class="sort align-middle text-start fs-8-5" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
-                                            <th class="sort align-middle text-end fs-8-5" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                            <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:10%;">PROJECT NAME</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">DESCRIPTION</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">COLLABORATORS</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:7%;">START DATE</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
+                                            <th class="sort align-middle text-end fs-9" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>   
@@ -132,12 +132,12 @@
         // $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
         const typeParam = new URLSearchParams(window.location.search).get('type') || '';
         const columns = [
-            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-8-5" href="/projects/project/${row.id}/">${data}</a>`},
-            { data: "description", className: "pe-3 fs-8-5" },
-            { data: "collaborators", className: "fs-8-5" },
-            { data: "created_at", className: "text-end fs-8-5" },
-            { data: "updated_at", className: "text-end fs-8-5" },
-            { data: "project_type", className: "text-end fs-8-5" },
+            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-9" href="/projects/project/${row.id}/">${data}</a>`},
+            { data: "description", className: "pe-3 fs-9" },
+            { data: "collaborators", className: "fs-9" },
+            { data: "created_at", className: "text-end fs-9" },
+            { data: "updated_at", className: "text-end fs-9" },
+            { data: "project_type", className: "text-end fs-9" },
             { data: "id", visible: false }
         ];
 
