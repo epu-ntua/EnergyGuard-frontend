@@ -8,11 +8,7 @@ from core.models import TimeStampedModel
 # Create your models here.
 class Dataset(TimeStampedModel):
     PLATFORM_PUBLISHER = "EnergyGuard"
-    # class Label(models.TextChoices):
-    #     BUILDINGS = "buildings", "Buildings"
-    #     SMART_GRIDS = "smart_grids", "Smart Grids"
-    #     RENEWABLE_ENERGY = "renewable_energy", "Renewable Energy"
-    
+
     class Label(models.TextChoices):
         BUILDINGS_ENERGY_EFFICIENCY = "buildings_energy_efficiency", "Buildings & Energy Efficiency"
         SMART_GRIDS_MICROGRIDS = "smart_grids_microgrids", "Smart Grids & Microgrids"
@@ -37,20 +33,15 @@ class Dataset(TimeStampedModel):
         PRIVATE = "private", "Private"
         RESTRICTED = "restricted", "Restricted"
         UNDER_REVIEW = "under_review", "Under Review"
+        # APPROVED = "approved", "Approved"
+        # REJECTED = "rejected", "Rejected"
 
     name = models.CharField(max_length=255)
-    # MinIO object key for the primary dataset file.
-    data_file = models.CharField(max_length=1024, blank=True, default='')
-    # MinIO object key for optional metadata file.
-    metadata_file = models.CharField(max_length=1024, blank=True, default='')
-    bucket_name = models.CharField(max_length=63, default='energyguard-datasets')
+    description = models.TextField(blank=True)
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
     status = models.CharField(max_length=20, choices=Status, default=Status.PRIVATE)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list') # Users who have access to this dataset
-    projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
     visibility = models.BooleanField(default=False)
-    downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
     publisher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -59,8 +50,15 @@ class Dataset(TimeStampedModel):
         on_delete=models.SET_NULL,
         related_name='published_datasets',
     )
-    description = models.TextField(blank=True)
+    # MinIO object key for the primary dataset file.
+    data_file = models.CharField(max_length=1024, blank=True, default='')
+    # MinIO object key for optional metadata file.
+    metadata_file = models.CharField(max_length=1024, blank=True, default='')
+    bucket_name = models.CharField(max_length=63, default='energyguard-datasets')
     metadata = models.JSONField(blank=True, null=True)
+    projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
+    downloads = models.PositiveIntegerField(default=0) # Number of times the dataset has been downloaded
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='dataset_list') # Users who have access to this dataset
     users_downloads = models.ManyToManyField(settings.AUTH_USER_MODEL, through='DatasetUserDownload', related_name='downloaded_datasets') # Users who have downloaded this dataset
 
     def __str__(self):

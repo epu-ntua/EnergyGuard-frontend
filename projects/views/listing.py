@@ -120,7 +120,6 @@ def projects_list_tabs(request):
         start = int(request.GET.get("start", 0))
         length = int(request.GET.get("length", 10))
         search_value = request.GET.get("search[value]", "")
-        status_filter = request.GET.get("status")
         visibility_filter = request.GET.get("visibility", "false")
 
         order_col = request.GET.get("order[0][column]", "2")
@@ -130,10 +129,7 @@ def projects_list_tabs(request):
             "2": "collaborators__first_name",
             "3": "created_at",
             "4": "updated_at",
-            "5": "status",
-            "6": "type",
-            "7": "progress",
-            "8": "status",
+            "5": "project_type",
         }
         ordering = column_map.get(order_col, "created_at")
         if order_dir == "desc":
@@ -144,8 +140,6 @@ def projects_list_tabs(request):
             .prefetch_related("collaborators")
             .filter(visibility=visibility_filter == "true")
         )
-        if status_filter in ["completed", "ongoing", "cancelled", "inactive"]:
-            qs = qs.filter(status=status_filter)
 
         records_total = qs.count()
 
@@ -166,8 +160,6 @@ def projects_list_tabs(request):
                     "created_at": exp.created_at.strftime("%b %d, %Y"),
                     "updated_at": exp.updated_at.strftime("%b %d, %Y"),
                     "type": exp.get_project_type_display(),
-                    "progress": exp.progress,
-                    "status": exp.status,
                 }
             )
 
@@ -184,19 +176,13 @@ def projects_list_tabs(request):
     data = Project.objects.filter(visibility=visibility_filter == "true")
     counts = {
         "all": data.count(),
-        "completed": data.filter(status="completed").count(),
-        "ongoing": data.filter(status="ongoing").count(),
-        "cancelled": data.filter(status="cancelled").count(),
-        "inactive": data.filter(status="inactive").count(),
     }
-    status_filter = request.GET.get("status")
     return render(
         request,
         "projects/projects-list-tabs-test.html",
         {
             "project": data,
             "projects_num": counts,
-            "status_filter": status_filter,
             "active_navbar_page": "projects",
             "show_sidebar": True,
             "visibility_filter": visibility_filter,
