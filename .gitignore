@@ -218,8 +218,7 @@ staticfiles/
 *.sqlite3
 
 # Database backup
-energyguard_backup_12_jan_2026.sql
-energyguard_backup_clean.sql
+energyguard_backup_20_02_2026.sql
 
 #ElasticSearch
 /.idea
