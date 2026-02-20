@@ -36,5 +36,6 @@ def dashboard(request):
             "chart_data": datasets_chart_data,
             "projects_count": projects_count,
             "datasets_count": datasets_count,
+            "team": request.user.profile.team,
         },
     )
