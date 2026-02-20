@@ -1,8 +1,12 @@
+import logging
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -62,8 +66,9 @@ def contact_form(request):
             fail_silently=False,
         )
         return JsonResponse({"success": True, "message": "Message sent successfully!"})
-    except Exception as exc:
+    except Exception:
+        logger.exception("Failed to process contact form submission")
         return JsonResponse(
-            {"success": False, "message": f"Error sending message: {str(exc)}"},
+            {"success": False, "message": "Internal error while sending message."},
             status=500,
         )

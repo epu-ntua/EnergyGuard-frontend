@@ -1,4 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
+import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,8 @@ from core.views import BaseWizardView
 from ..forms import FileUploadDatasetForm, GeneralDatasetForm, MetadataDatasetForm
 from ..models import Dataset
 from ..services import MinioUploadError, upload_dataset_objects
+
+logger = logging.getLogger(__name__)
 
 DATASET_TEMPLATE_NAMES = {
     "general_info": "datasets/upload-dataset-step1.html",
@@ -50,6 +53,10 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                 try:
                     self.file_storage.delete(tmp_name)
                 except Exception:
+                    logger.warning(
+                        "Failed to cleanup wizard temp file '%s' in dataset upload flow.",
+                        tmp_name,
+                    )
                     continue
 
     def done(self, form_list, **kwargs):
