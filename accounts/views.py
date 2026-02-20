@@ -1,7 +1,7 @@
 from formtools.wizard.views import SessionWizardView
 from .forms import *
 from .models import User, Profile
-from .utils import get_time_since_joined
+from .utils.dates import get_time_since_joined
 from core.views import BaseWizardView
 from billing.models import PaymentMethod
 from django.core.files.storage import FileSystemStorage
@@ -19,7 +19,7 @@ from django.views.decorators.http import require_POST
 from urllib.parse import urlencode
 import os
 from datetime import date
-from .keycloak_admin import KeycloakAdminClient
+from .services.keycloak_user_sync import KeycloakUserSyncClient
 import logging
 
 # Get an instance of a logger
@@ -170,7 +170,7 @@ def profile(request):
                     request.user.save()
 
                     # Sync with Keycloak
-                    keycloak_client = KeycloakAdminClient()
+                    keycloak_client = KeycloakUserSyncClient()
                     if keycloak_client.token:
                         user_data = {
                             "first_name": request.user.first_name,

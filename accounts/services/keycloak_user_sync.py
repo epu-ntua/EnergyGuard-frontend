@@ -5,21 +5,21 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class KeycloakAdminClient:
+class KeycloakUserSyncClient:
     def __init__(self):
         try:
-            config = settings.KEYCLOAK_ADMIN_CONFIG
+            config = settings.KEYCLOAK_USER_SYNC_CONFIG
             self.base_url = config['SERVER_URL']
             self.realm = config['REALM']
             self.client_id = config['CLIENT_ID']
             self.client_secret = config['CLIENT_SECRET']
-            self.token = self._get_admin_token()
+            self.token = self._get_service_account_token()
         except (AttributeError, KeyError) as e:
-            logger.error(f"Keycloak admin client is not configured properly in settings.py: {e}")
+            logger.error(f"Keycloak user sync client is not configured properly in settings.py: {e}")
             self.token = None
 
 
-    def _get_admin_token(self):
+    def _get_service_account_token(self):
         token_url = f"{self.base_url}/realms/{self.realm}/protocol/openid-connect/token"
         payload = {
             "client_id": self.client_id,
@@ -31,13 +31,13 @@ class KeycloakAdminClient:
             response.raise_for_status()  # Raise an exception for bad status codes
             return response.json().get("access_token")
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting Keycloak admin token: {e}")
+            logger.error(f"Error getting Keycloak service account token: {e}")
             return None
 
     def update_user(self, user, user_data):
         if not self.token:
-            logger.error("Cannot update Keycloak user: Admin client is not authenticated.")
-            return {"error": "Authentication failed. Cannot get admin token."}
+            logger.error("Cannot update Keycloak user: user sync client is not authenticated.")
+            return {"error": "Authentication failed. Cannot get service account token."}
 
         try:
             social_account = SocialAccount.objects.get(user=user, provider='keycloak')
