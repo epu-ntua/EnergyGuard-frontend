@@ -33,6 +33,12 @@ class DatasetsListJson(BaseDatatableView):
         return Dataset.objects.all()
 
     def filter_queryset(self, qs):
+        scope = self.request.GET.get("scope", "public")
+        if scope == "my":
+            qs = qs.filter(publisher=self.request.user)
+        else:
+            qs = qs.filter(visibility=True).exclude(publisher=self.request.user)
+
         search = self.request.GET.get("search[value]")
         if search:
             qs = qs.filter(
@@ -78,7 +84,13 @@ class DatasetsListJson(BaseDatatableView):
 
 @login_required
 def datasets_list(request):
-    qs = Dataset.objects.all()
+    my_qs = Dataset.objects.filter(publisher=request.user)
+    public_qs = Dataset.objects.filter(visibility=True).exclude(publisher=request.user)
+
+    active_tab = request.GET.get("tab", "public")
+    if active_tab not in ["public", "my"]:
+        active_tab = "public"
+
     label_filter = request.GET.get("label")
     allowed_labels = [value for value, _ in Dataset.Label.choices]
     if label_filter not in allowed_labels:
@@ -88,7 +100,8 @@ def datasets_list(request):
         {
             "value": value,
             "display": display,
-            "count": qs.filter(label=value).count(),
+            "public_count": public_qs.filter(label=value).count(),
+            "my_count": my_qs.filter(label=value).count(),
         }
         for value, display in Dataset.Label.choices
     ]
@@ -97,7 +110,9 @@ def datasets_list(request):
         request,
         "datasets/datasets-list.html",
         {
-            "dataset_num": {"all": qs.count()},
+            "public_datasets_num": {"all": public_qs.count()},
+            "my_datasets_num": {"all": my_qs.count()},
+            "active_tab": active_tab,
             "label_filter": label_filter,
             "label_tabs": label_tabs,
             "active_navbar_page": "datasets",

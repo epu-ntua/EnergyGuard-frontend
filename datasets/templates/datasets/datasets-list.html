@@ -7,7 +7,7 @@
     <div class="mb-9">
 
         <!-- HEADER -->
-        <div class="row g-3 mb-4 ">
+        <div class="row g-3 mb-6">
             <div class="col-auto me-4">
                 <h2 class="mb-0">Datasets</h2>
             </div>
@@ -16,82 +16,101 @@
             </div>
         </div>
 
-        <!-- SUBHEADER -->
-        <div class="d-flex justify-content-between">
-            <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if not label_filter %}active{% endif %}" aria-current="page" href="?"><span>All </span><span class="text-body-tertiary fw-semibold">({{dataset_num.all}})</span></a></li>
-                {% for tab in label_tabs %}
-                <li class="nav-item"><a class="nav-link fs-9-5 {%if label_filter == tab.value %}active{% endif %}" href="?label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.count }})</span></a></li>
-                {% endfor %}
-            </ul>
-            <!-- SEARCH BAR -->
-            <div class="mb-4">
-                <div class="row g-3">
-                    <div class="col-auto">
-                        <div class="search-box">
-                            <form class="position-relative" id="datasetSearchForm" onsubmit="return false;">
-                                <input id="datasetSearchInput" class="form-control search-input search fs-9-5" type="search" placeholder="Search datasets" aria-label="Search" />
-                                <span class="fas fa-search search-box-icon fs-9-5"></span>
-                            </form>
+        <ul class="nav nav-underline" id="datasetsTab" role="tablist">
+            <li class="nav-item me-3"><a class="nav-link fs-8 {% if active_tab == 'public' %}active{% endif %}" id="publicDatasets-tab" data-bs-toggle="tab" href="#tab-publicDatasets" role="tab" aria-controls="tab-publicDatasets" aria-selected="{% if active_tab == 'public' %}true{% else %}false{% endif %}">Public datasets</a></li>
+            <li class="nav-item"><a class="nav-link fs-8 {% if active_tab == 'my' %}active{% endif %}" id="myDatasets-tab" data-bs-toggle="tab" href="#tab-myDatasets" role="tab" aria-controls="tab-myDatasets" aria-selected="{% if active_tab == 'my' %}true{% else %}false{% endif %}">My datasets</a></li>
+        </ul>
+
+        <div class="tab-content mt-5" id="datasetsTabContent">
+            <!-- Public datasets tab -->
+            <div class="tab-pane fade {% if active_tab == 'public' %}show active{% endif %}" id="tab-publicDatasets" role="tabpanel" aria-labelledby="publicDatasets-tab">
+                <div class="d-flex justify-content-between">
+                    <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
+                        <li class="nav-item"><a class="nav-link fs-9 {%if not label_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_datasets_num.all}})</span></a></li>
+                        {% for tab in label_tabs %}
+                        <li class="nav-item"><a class="nav-link fs-9{%if label_filter == tab.value %}active{% endif %}" href="?tab=public&label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-auto">
+                                <div class="search-box">
+                                    <form class="position-relative" onsubmit="return false;">
+                                        <input id="publicDatasetSearchInput" class="form-control search-input search fs-9" type="search" placeholder="Search datasets" aria-label="Search" />
+                                        <span class="fas fa-search search-box-icon fs-9"></span>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                        <div class="table-responsive scrollbar mx-n1 px-1">
+                            <table class="table table-sm fs-9 mb-0" id="publicDatasetsList" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:17%;">DATASET NAME</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">CREATED</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:12%;">LABEL</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SOURCE</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:15%;">PUBLISHER</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:5%;">SIZE</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My datasets tab -->
+            <div class="tab-pane fade {% if active_tab == 'my' %}show active{% endif %}" id="tab-myDatasets" role="tabpanel" aria-labelledby="myDatasets-tab">
+                <div class="d-flex justify-content-between">
+                    <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
+                        <li class="nav-item"><a class="nav-link fs-9 {%if not label_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_datasets_num.all}})</span></a></li>
+                        {% for tab in label_tabs %}
+                        <li class="nav-item"><a class="nav-link fs-9 {%if label_filter == tab.value %}active{% endif %}" href="?tab=my&label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.my_count }})</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-auto">
+                                <div class="search-box">
+                                    <form class="position-relative" onsubmit="return false;">
+                                        <input id="myDatasetSearchInput" class="form-control search-input search fs-9" type="search" placeholder="Search datasets" aria-label="Search" />
+                                        <span class="fas fa-search search-box-icon fs-9"></span>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                        <div class="table-responsive scrollbar mx-n1 px-1">
+                            <table class="table table-sm fs-9 mb-0" id="myDatasetsList" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:17%;">DATASET NAME</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">CREATED</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:12%;">LABEL</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SOURCE</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:15%;">PUBLISHER</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:5%;">SIZE</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div>
-            <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
-                <div class="table-responsive scrollbar mx-n1 px-1">
-                    <table class="table table-sm fs-9 mb-0" id="datasetsList" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:17%;">DATASET NAME</th>
-                                <!-- <th class="sort align-middle text-start" scope="col" style="width:10%;">COLLABORATORS</th> -->
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">CREATED</th>
-                                <!-- <th class="sort align-middle text-end" scope="col" style="width:8%;">UPDATED</th> -->
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:12%;">LABEL</a></th>
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SOURCE</th>
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:15%;">PUBLISHER</th>
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:5%;">SIZE</th>
-                                <th class="sort align-middle text-end fs-9" scope="col" style="width:6%;">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- {% for d in dataset %}
-                            <tr class="hover-actions-trigger btn-reveal-trigger position-static">
-                                <td class="fs-9 align-middle px-0 py-3">
-                                    <div class="form-check mb-0 fs-8">
-                                        <input class="form-check-input" type="checkbox"/>
-                                    </div>
-                                </td>
-                                <td class="align-middle white-space-nowrap py-0"><a class="fw-semibold" target="_blank" href="">{{ name }}</a></td>
-                                <td class="align-middle fw-semibold text-body-highlight">
-                                    {% for user in d.users.all %}
-                                        {{ user.username }}{% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                    {% if d.users.count == 0 %}
-                                        No collaborators
-                                    {% endif %}
-                                </td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ created_at|date:"M j, Y" }}</td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ updated_at|date:"M j, Y" }}</td>
-                                <td class="align-middle white-space-nowrap text-body-tertiary fs-9 ps-4 text-end">{{ get_label_display }}</td>
-                                <td class="align-middle white-space-nowrap text-body fs-9 ps-4 text-end">{{ get_source_display }}</td>
-                                <td class="align-middle white-space-nowrap text-end fw-bold text-body-tertiary">
-                                    {% if d.status == 'approved' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">APPROVED</span><span class="ms-1" data-feather="check-circle" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% elif d.status == 'rejected' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">REJECTED</span><span class="ms-1" data-feather="x" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% elif d.status == 'under_review' %}
-                                        <span class="badge badge-phoenix fs-10 badge-phoenix-secondary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="eye" style="height:12.8px;width:12.8px;"></span></span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %} -->
-                        </tbody>   
-                    </table>
-                </div>
-            </div>
-        </div>
+
         {% include "core/footer.html" %}
     </div>
 </div>
@@ -105,44 +124,70 @@
 <script>
     $(document).ready(function () {
         const labelParam = new URLSearchParams(window.location.search).get('label') || '';
+        const columns = [
+            {
+                data: "name",
+                render: function(data, type, row) {
+                    return `<a class="fw-semibold fs-9" href="/datasets/dataset/${row.id}/">${data}</a>`;
+                }
+            },
+            { data: "created_at", className: "text-end fs-9" },
+            { data: "label", className: "text-end fs-9" },
+            { data: "source", className: "text-end fs-9" },
+            { data: "publisher", className: "text-end fs-9" },
+            {
+                data: "size_gb",
+                render: function(data) {
+                    return data + " GB";
+                },
+                className: "text-end fs-9"
+            },
+            { data: "status", className: "text-end", orderable: false },
+            { data: "id", visible: false }
+        ];
 
-        const table = $('#datasetsList').DataTable({
+        const publicTable = $("#publicDatasetsList").DataTable({
             processing: true,
             serverSide: true,
             ajax: {
                 url: "{% url 'datasets_list_json' %}",
-                data: function (d) {
+                data: function(d) {
                     d.label = labelParam;
+                    d.scope = "public";
                 },
                 type: "GET"
             },
-            columns: [
-                { 
-                    data: "name", 
-                    render: function(data, type, row) {
-                        return `<a class="fw-semibold fs-9" href="/datasets/dataset/${row.id}/">${data}</a>`;
-                    }
-                },
-                // { data: "users", "orderable": false },
-                { data: "created_at", className: "text-end fs-9" },
-                { data: "label", className: "text-end fs-9" },
-                { data: "source", className: "text-end fs-9" },
-                { data: "publisher", className: "text-end fs-9" },
-                { data: "size_gb", render: function(data) {
-                        return data + ' GB';
-                    }, className: "text-end fs-9" 
-                },
-                { data: "status", className: "text-end", "orderable": false },
-                { data: "id", visible: false }
-            ],
-            order: [[1, "desc"]], // Default sort by 'name' descending
-            dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9-5 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>', // Custom DOM layout
+            columns: columns,
+            order: [[1, "desc"]],
+            dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
             pageLength: 15,
-            createdRow: row => $('td', row).addClass('align-middle py-3'),
+            createdRow: row => $("td", row).addClass("align-middle py-3"),
         });
 
-        $('#datasetSearchInput').on('keyup change', function () {
-            table.search(this.value).draw();
+        const myTable = $("#myDatasetsList").DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{% url 'datasets_list_json' %}",
+                data: function(d) {
+                    d.label = labelParam;
+                    d.scope = "my";
+                },
+                type: "GET"
+            },
+            columns: columns,
+            order: [[1, "desc"]],
+            dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
+            pageLength: 15,
+            createdRow: row => $("td", row).addClass("align-middle py-3"),
+        });
+
+        $("#publicDatasetSearchInput").on("keyup change", function() {
+            publicTable.search(this.value).draw();
+        });
+
+        $("#myDatasetSearchInput").on("keyup change", function() {
+            myTable.search(this.value).draw();
         });
     });
 </script>
