@@ -57,15 +57,9 @@ class ProjectsListJson(BaseDatatableView):
         if search:
             qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search)).distinct()
 
+        allowed_types = [value for value, _ in Project.ProjectType.choices]
         type_filter = self.request.GET.get("type")
-        if type_filter in [
-            "ai_model",
-            "ai_service",
-            "web_app",
-            "mobile_app",
-            "iot_integration",
-            "data_pipeline",
-        ]:
+        if type_filter in allowed_types:
             qs = qs.filter(project_type=type_filter)
         return qs
 
@@ -77,24 +71,26 @@ def projects_list(request):
 
     my_counts = {
         "all": my_qs.count(),
-        "ai_model": my_qs.filter(project_type="ai_model").count(),
-        "ai_service": my_qs.filter(project_type="ai_service").count(),
-        "web_app": my_qs.filter(project_type="web_app").count(),
-        "mobile_app": my_qs.filter(project_type="mobile_app").count(),
-        "iot_integration": my_qs.filter(project_type="iot_integration").count(),
-        "data_pipeline": my_qs.filter(project_type="data_pipeline").count(),
     }
     public_counts = {
         "all": public_qs.count(),
-        "ai_model": public_qs.filter(project_type="ai_model").count(),
-        "ai_service": public_qs.filter(project_type="ai_service").count(),
-        "web_app": public_qs.filter(project_type="web_app").count(),
-        "mobile_app": public_qs.filter(project_type="mobile_app").count(),
-        "iot_integration": public_qs.filter(project_type="iot_integration").count(),
-        "data_pipeline": public_qs.filter(project_type="data_pipeline").count(),
     }
 
+    type_tabs = [
+        {
+            "value": value,
+            "display": display,
+            "my_count": my_qs.filter(project_type=value).count(),
+            "public_count": public_qs.filter(project_type=value).count(),
+        }
+        for value, display in Project.ProjectType.choices
+    ]
+
     type_filter = request.GET.get("type")
+    allowed_types = [value for value, _ in Project.ProjectType.choices]
+    if type_filter not in allowed_types:
+        type_filter = None
+
     active_tab = request.GET.get("tab", "my")
     if active_tab not in ["my", "public"]:
         active_tab = "my"
@@ -105,6 +101,7 @@ def projects_list(request):
         {
             "my_projects_num": my_counts,
             "public_projects_num": public_counts,
+            "type_tabs": type_tabs,
             "type_filter": type_filter,
             "active_tab": active_tab,
             "active_navbar_page": "projects",

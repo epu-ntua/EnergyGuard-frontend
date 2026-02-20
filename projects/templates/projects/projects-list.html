@@ -29,12 +29,9 @@
                 <div class="d-flex justify-content-between">
                     <ul class="nav nav-links mb-lg-2 mx-n3">
                         <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=my"><span>All </span><span class="text-body-tertiary fw-semibold">({{my_projects_num.all}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=my&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.ai_model}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=my&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.ai_service}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=my&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.web_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=my&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.mobile_app}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=my&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.iot_integration}})</span></a></li>
-                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=my&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{my_projects_num.data_pipeline}})</span></a></li>
+                        {% for tab in type_tabs %}
+                        <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == tab.value %}active{% endif %}" href="?tab=my&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.my_count }})</span></a></li>
+                        {% endfor %}
                     </ul>
                     <!-- SEARCH AND FILTERS -->
                     <div class="mb-3">
@@ -74,15 +71,12 @@
             <!-- Public projects tab -->
             <div class="tab-pane fade {% if active_tab == 'public' %}show active{% endif %}" id="tab-publicProjects" role="tabpanel" aria-labelledby="publicProjects-tab">
                 <!-- SUBHEADER -->
-                    <div class="d-flex justify-content-between">
+                     <div class="d-flex justify-content-between">
                         <ul class="nav nav-links mb-lg-2 mx-n3">
                             <li class="nav-item"><a class="nav-link fs-8-5 {%if not type_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_projects_num.all}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_model' %}active{% endif %}" href="?tab=public&type=ai_model"><span>AI Model</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.ai_model}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'ai_service' %}active{% endif %}" href="?tab=public&type=ai_service"><span>AI Service</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.ai_service}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'web_app' %}active{% endif %}" href="?tab=public&type=web_app"><span>Web App</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.web_app}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'mobile_app' %}active{% endif %}" href="?tab=public&type=mobile_app"><span>Mobile App</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.mobile_app}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'iot_integration' %}active{% endif %}" href="?tab=public&type=iot_integration"><span>IoT Integration</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.iot_integration}})</span></a></li>
-                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == 'data_pipeline' %}active{% endif %}" href="?tab=public&type=data_pipeline"><span>Data Pipeline</span><span class="text-body-tertiary fw-semibold">({{public_projects_num.data_pipeline}})</span></a></li>
+                            {% for tab in type_tabs %}
+                            <li class="nav-item"><a class="nav-link fs-8-5 {%if type_filter == tab.value %}active{% endif %}" href="?tab=public&type={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
+                            {% endfor %}
                         </ul>
                         <!-- SEARCH AND FILTERS -->
                         <div class="mb-3">
