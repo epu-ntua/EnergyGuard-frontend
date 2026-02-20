@@ -170,15 +170,36 @@
       <div class="col-12 col-xl-3 ps-lg-6 mb-3" id="dt_card">
         <div class="border border-tertiary rounded-3 p-4 h-100">
           <h3 class="mb-4">Digital Twins</h3>
-          <p class="text-body-tertiary mb-0 mb-xl-3">Historical usage of compute resources for training, simulation and evaluation workloads</p>
+          <p class="text-body-tertiary mb-3 mb-xl-5">Digital Twins enable simulation, monitoring and AI-driven optimization across energy systems.</p>
+          <ul>
+            <li class="mb-2">24 Configured Twins</li>
+            <li class="mb-2">Model & Dataset Integration</li>
+            <li class="mb-2">Simulation & Scenario Testing</li>
+          </ul>
+          <div class="py-0 z-1 mt-4 mt-xl-9">
+            <!-- TODO: Add functionality to link -->
+            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">Browse Digital Twins<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
+          </div>
         </div>
       </div>
       <!-- HPC -->
-      <div class="col-12 col-xl-4 ps-lg-6 mb-3" id="hpc_card">
+      <div class="col-12 col-xl-4 ps-lg-6 mb-3 position-relative " id="hpc_card">
+        {% static 'assets/img/bg/bg-right-21.png' as bg_right_21 %}
+        <div class="bg-holder d-block bg-card" style="background-image:url('{{ bg_right_21 }}');background-position: top right;">
+        </div>
         <div class="border border-tertiary rounded-3 p-4 h-100">
           <h3 class="mb-4">HPC Availability</h3>
-          <p class="text-body-tertiary mb-0 mb-xl-3">Compute resources available for training, simulation and evaluation workloads</p>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum eius, est soluta facilis doloremque possimus asperiores dolores sapiente necessitatibus in quaerat tempora totam nisi nulla, magni cumque laboriosam harum reiciendis?</p>
+          <p class="text-body-tertiary mb-3 mb-xl-5">Powered by MeluXina, Luxembourg’s EuroHPC supercomputer,
+          enabling large-scale model training, simulation and trust benchmarking.</p>
+          <ul>
+            <li class="mb-2">Access to 3000 A100 GPUs</li>
+            <li class="mb-2">1000+ Nodes Available</li>
+            <li class="mb-2">Large Scale Model Training</li>
+          </ul>
+          <div class="py-0 z-1 mt-4 mt-xl-9">
+            <!-- TODO: Add functionality to link -->
+            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">View HPC details<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
+          </div>
         </div>
       </div>  
     </div>
