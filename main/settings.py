@@ -198,6 +198,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+SOCIALACCOUNT_STORE_TOKENS = True
+
 # Keycloak Admin Client for user synchronization
 KEYCLOAK_ADMIN_CONFIG = {
     'SERVER_URL': 'https://keycloak.toolbox.epu.ntua.gr',
