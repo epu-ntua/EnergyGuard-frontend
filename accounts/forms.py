@@ -1,8 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
-from django.conf import settings
 from django import forms
-from accounts.models import User, Profile
+from accounts.models import User, Profile, Team
 from billing.models import PaymentMethod
 from .validators import strict_email_user_validator
 
@@ -36,16 +35,18 @@ class ProfileWizardForm(forms.ModelForm):
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
-            'team': forms.Select(attrs={'class': 'form-select'}, choices=Profile.TeamChoices.choices),
+            'team': forms.Select(attrs={'class': 'form-select'}),
             'position': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
 
-    """def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['team'].queryset = Team.objects.order_by("name")
+        self.fields['team'].empty_label = 'Select Team'
         if 'profile_picture' in self.fields:
             css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
-            self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()"""
+            self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()
     
 class PaymentWizardForm(forms.ModelForm):
     class Meta:
@@ -82,10 +83,12 @@ class ProfileForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'full_name', 'name': 'full_name'})
     )
-    team = forms.CharField(
-        max_length=100, 
-        required=False, 
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'team', 'name': 'team'}, choices=Profile.TeamChoices.choices))
+    team = forms.ModelChoiceField(
+        queryset=Team.objects.none(),
+        required=False,
+        empty_label="Select Team",
+        widget=forms.Select(attrs={"class": "form-select", "id": "team", "name": "team"}),
+    )
     
     position = forms.CharField(
         max_length=100, 
@@ -115,6 +118,10 @@ class ProfileForm(forms.Form):
     short_bio = forms.CharField(
         required=False, 
         widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'id': 'short_bio', 'name': 'short_bio'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["team"].queryset = Team.objects.order_by("name")
 
 
 class ProfileUpdateForm(forms.ModelForm):

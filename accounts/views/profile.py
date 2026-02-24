@@ -3,6 +3,7 @@ import os
 from datetime import date
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
 from ..forms import ProfileForm, ProfileUpdateForm
@@ -48,25 +49,22 @@ def _update_user_name_from_full_name(user, full_name):
 
 
 def _parse_birth_date(year_of_birth, month_of_birth, day_of_birth):
-    if not (
-        year_of_birth
-        and year_of_birth != ""
-        and month_of_birth
-        and month_of_birth != ""
-        and day_of_birth
-        and day_of_birth != ""
-    ):
-        return None
+    date_parts = [year_of_birth, month_of_birth, day_of_birth]
+    if not any(date_parts):
+        return None, None
+
+    if not all(date_parts):
+        return None, "Please select day, month and year for date of birth."
 
     try:
-        return date(int(year_of_birth), int(month_of_birth), int(day_of_birth))
+        return date(int(year_of_birth), int(month_of_birth), int(day_of_birth)), None
     except (ValueError, TypeError):
-        return None
+        return None, "Please provide a valid date of birth."
 
 
 def _build_profile_initial_data(user, user_profile):
     initial_data = {
-        "team": user_profile.team or "",
+        "team": user_profile.team_id or "",
         "position": user_profile.position or "",
         "short_bio": user_profile.bio or "",
         "full_name": f"{user.first_name} {user.last_name}".strip(),
@@ -93,28 +91,36 @@ def profile(request):
         if form.is_valid():
             _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
 
-            team = form.cleaned_data.get("team")
-            if team:
-                user_profile.team = team
+            user_profile.team = form.cleaned_data.get("team")
+            user_profile.position = form.cleaned_data.get("position") or ""
 
-            position = form.cleaned_data.get("position")
-            if position:
-                user_profile.position = position
-
-            birth_date = _parse_birth_date(
+            birth_date, birth_date_error = _parse_birth_date(
                 form.cleaned_data.get("year_of_birth"),
                 form.cleaned_data.get("month_of_birth"),
                 form.cleaned_data.get("day_of_birth"),
             )
-            if birth_date is not None:
+            if birth_date_error:
+                form.add_error("year_of_birth", birth_date_error)
+            else:
                 user_profile.birth_date = birth_date
 
-            short_bio = form.cleaned_data.get("short_bio")
-            if short_bio:
-                user_profile.bio = short_bio
+            user_profile.bio = form.cleaned_data.get("short_bio") or ""
 
-            user_profile.save()
-            return redirect("profile")
+            if not form.errors:
+                try:
+                    user_profile.full_clean()
+                except ValidationError as exc:
+                    if hasattr(exc, "message_dict"):
+                        for field_name, errors in exc.message_dict.items():
+                            form_field = field_name if field_name in form.fields else None
+                            for error in errors:
+                                form.add_error(form_field, error)
+                    else:
+                        for error in exc.messages:
+                            form.add_error(None, error)
+                else:
+                    user_profile.save()
+                    return redirect("profile")
     else:
         form = ProfileForm(initial=_build_profile_initial_data(request.user, user_profile))
 
@@ -135,7 +141,7 @@ def profile(request):
 @login_required
 def update_profile_picture(request):
     if request.method == "POST":
-        profile_instance = request.user.profile
+        profile_instance, _ = Profile.objects.get_or_create(user=request.user)
         old_picture_path = (
             profile_instance.profile_picture.path if profile_instance.profile_picture else None
         )

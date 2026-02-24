@@ -32,7 +32,7 @@ def header_notifications(request):
             }
         )
 
-    team_missing = profile is None or not profile.team or profile.team == Profile.TeamChoices.OTHER
+    team_missing = profile is None or profile.team_id is None
     if team_missing:
         notifications.append(
             {
