@@ -2,6 +2,10 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from core.models import TimeStampedModel
+from django.core.exceptions import ValidationError
+
+# Create your models here.
 
 class UserManager(BaseUserManager):
     """
@@ -64,20 +68,20 @@ class User(AbstractUser):
         indexes = [models.Index(fields=['email']),] # Index on email for faster lookups
 
 class Profile(models.Model):
-    class TeamChoices(models.TextChoices):
-        AMAZON = 'Amazon', 'Amazon'
-        MICROSOFT = 'Microsoft', 'Microsoft'
-        GOOGLE = 'Google', 'Google'
-        FACEBOOK = 'Facebook', 'Facebook'
-        OTHER = 'Other', 'Other'
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    team = models.CharField(max_length=100, blank=True, choices=TeamChoices.choices, default=TeamChoices.OTHER)
+    team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     position = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
+    # If a user is a creator of a team, they cannot be a member of any team.
+    def clean(self):
+        super().clean()
+        if self.team and hasattr(self.user, 'created_team'):
+            raise ValidationError("This user is a creator of a team and cannot be a member of another team.")
+   
     def __str__(self):
         return f"{self.user.last_name}, {self.user.first_name}'s Profile"
     
@@ -87,3 +91,30 @@ class Profile(models.Model):
         verbose_name_plural = 'Profiles'
         ordering = ['user__last_name', 'user__first_name']
         indexes = [models.Index(fields=['user']),]  # Index on user for faster lookups
+
+class Team(TimeStampedModel):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    
+    # OneToOneField: 1 Team = 1 Creator & 1 User = Creator σε MAX 1 Team
+    creator = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='created_team'
+    )
+
+    # If a user is a member of a team (through their profile), they cannot be a creator of any team.
+    def clean(self):
+        super().clean()
+        if hasattr(self.creator, 'profile') and self.creator.profile.team is not None:
+            raise ValidationError("This user is already a member of a team and cannot be a creator of another team.")
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = 'team'
+        verbose_name = 'Team'
+        verbose_name_plural = 'Teams'
+        ordering = ['name']
+        indexes = [models.Index(fields=['name']),]  # Index on name for faster lookups
