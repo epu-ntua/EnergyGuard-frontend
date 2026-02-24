@@ -1,0 +1,45 @@
+{% extends 'core/authenticated-base.html' %}
+
+{% block title %}Team Management{% endblock %}
+
+{% block content %}
+<div class="content">
+    <section class="pt-5 pb-9">
+        <div class="container-small">
+
+            <h2 class="mb-9">Team Management</h2>
+        
+            {% if request.user.profile.team %}
+               <div>
+                
+               </div>
+            {% endif %}
+            
+            {% if not request.user.profile.team %}
+            <div class="card mb-4 p-4 text-center w-75 mx-auto">
+                <h4 class="mb-4">You are not part of a Team yet</h4>
+                <p class="mb-2">Teams enable collaboration by allowing members to share projects, experiments, and computational resources.</p>
+                <p class="mb-3">To start collaborating, you can either create a new team or join an existing one.</p>
+                <div>
+                    <!-- TODO: Add functionality to links -->
+                    <a class="btn btn-primary me-3" href="#"><span class="fas fa-plus me-2"></span>Create a Team</a>
+                    <a class="btn btn-outline-primary" href="#"><span class="fas fa-plus me-2"></span>Join a Team</a>
+                </div>
+            </div>
+        
+            <div class="card mb-4 p-4 w-75 mx-auto">
+                <h5 class="mb-4"><i class="fa-solid fa-circle-question me-2 text-primary"></i>What is a Team?</h5>
+                <ul>
+                    <li class="mb-1">Share projects and experiments</li>
+                    <li class="mb-1">Collaborate with other members</li>
+                    <li>Access shared HPC resources</li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% include 'core/footer.html' %}
+</div>
+
+
+{% endblock %}
