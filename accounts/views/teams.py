@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import redirect, render
 
 from ..forms import TeamCreateForm
@@ -19,7 +20,10 @@ def team_management(request):
             create_team_form = TeamCreateForm(request.POST)
             create_team_form.instance.creator = request.user
             if create_team_form.is_valid():
-                create_team_form.save()
+                with transaction.atomic():
+                    new_team = create_team_form.save()
+                    profile.team = new_team
+                    profile.save(update_fields=["team"])
                 return redirect("team_management")
         else:
             return redirect("team_management")

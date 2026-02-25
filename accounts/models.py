@@ -79,7 +79,8 @@ class Profile(models.Model):
     # If a user is a creator of a team, they cannot be a member of any team.
     def clean(self):
         super().clean()
-        if self.team and hasattr(self.user, 'created_team'):
+        created_team = getattr(self.user, "created_team", None)
+        if self.team and created_team and created_team.pk != self.team_id:
             raise ValidationError("This user is a creator of a team and cannot be a member of another team.")
    
     def __str__(self):
@@ -108,7 +109,8 @@ class Team(TimeStampedModel):
         super().clean()
         if self.creator_id is None:
             return
-        if hasattr(self.creator, 'profile') and self.creator.profile.team is not None:
+        profile = getattr(self.creator, "profile", None)
+        if profile and profile.team_id is not None and profile.team_id != self.pk:
             raise ValidationError("This user is already a member of a team and cannot be a creator of another team.")
 
     def __str__(self):
