@@ -106,6 +106,8 @@ class Team(TimeStampedModel):
     # If a user is a member of a team (through their profile), they cannot be a creator of any team.
     def clean(self):
         super().clean()
+        if self.creator_id is None:
+            return
         if hasattr(self.creator, 'profile') and self.creator.profile.team is not None:
             raise ValidationError("This user is already a member of a team and cannot be a creator of another team.")
 

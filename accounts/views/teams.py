@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
 from ..forms import TeamCreateForm
@@ -18,22 +17,10 @@ def team_management(request):
         open_create_modal = True
         if team is None:
             create_team_form = TeamCreateForm(request.POST)
+            create_team_form.instance.creator = request.user
             if create_team_form.is_valid():
-                new_team = create_team_form.save(commit=False)
-                new_team.creator = request.user
-                try:
-                    new_team.full_clean()
-                except ValidationError as exc:
-                    if hasattr(exc, "message_dict"):
-                        for errors in exc.message_dict.values():
-                            for error in errors:
-                                create_team_form.add_error(None, error)
-                    else:
-                        for error in exc.messages:
-                            create_team_form.add_error(None, error)
-                else:
-                    new_team.save()
-                    return redirect("team_management")
+                create_team_form.save()
+                return redirect("team_management")
         else:
             return redirect("team_management")
 
