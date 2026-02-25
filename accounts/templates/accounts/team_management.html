@@ -9,20 +9,116 @@
 
             <h2 class="mb-9">Team Management</h2>
         
-            {% if request.user.profile.team %}
-               <div>
+            {% if team %}
+                <div class="card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-start">
+                            <h3 class="me-6">{{ team }}</h3>
+                            <p class="badge bg-primary">
+                                {% if is_team_admin %}
+                                    Admin
+                                {% else %}
+                                    Member
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary"><span class="fas fa-edit me-2"></span>Edit Team</button>
+                        </div>
+                    </div>
+                    <!-- <p class="mb-2">{{ request.user.profile.team.description }}</p> -->
+                     <div>
+                          <p class="mb-2">{{ team.description }}</p>
+                          <p class="mb-0">Created: {{ team.created_at|date:"F j, Y" }}</p>
+                     </div>
+                     <hr>
+                     <div class="d-flex justify-content-start text-body-tertiary fs-8-5">
+                        <p class="me-4"><span class="text-primary fas fa-users me-2"></span>{{ team_members_count }} Members</p>
+                        <p><span class="text-primary fas fa-project-diagram me-2"></span>8 Projects Shared</p>
+                     </div>
+                </div>
                 
-               </div>
+                <!-- TABS -->
+                 <div>
+
+                    <!-- TABS LABELS -->
+                    <div class="scrollbar px-4">
+                        <ul class="nav nav-underline flex-nowrap mb-3 pb-1">
+                            <li class="nav-item me-3"><a class="nav-link text-nowrap fs-8-5 active" href="#tab-members">Members</a></li>
+                            <li class="nav-item"><a class="nav-link text-nowrap fs-8-5" href="#tab-settings">Settings</a></li>
+                        </ul>
+                    </div>
+                    <!-- TABS CONTENT -->
+                     <div class="tab-content">
+
+                        <!-- MEMBERS TAB -->
+                         <div class="tab-pane fade show active p-4" id="tab-members">
+                            <div class="table-responsive">
+                                <table class="table table-sm fs-9 mb-0">
+
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top border-translucent ps-3">Name</th>
+                                            <th class="border-top border-translucent ps-3">Email</th>
+                                            <th class="border-top border-translucent ps-3">Role</th>
+                                            <th class="border-top border-translucent ps-3">Status</th>
+                                            <th class="border-top border-translucent ps-3">Date joined</th>
+                                            {% if is_team_admin %}
+                                                <th class="border-top border-translucent ps-3">Actions</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="align-middle ps-3">
+                                                {{ team.creator.get_full_name|default:team.creator.email }}
+                                            </td>
+                                            <td class="align-middle">{{ team.creator.email }}</td>
+                                            <td class="align-middle">Admin</td>
+                                            <td class="align-middle"><span class="badge bg-success">Active</span></td>
+                                            <td class="align-middle">{{ team.creator.date_joined|date:"F j, Y" }}</td>
+                                            {% if is_team_admin %}
+                                                <td class="align-middle">-</td>
+                                            {% endif %}
+                                        </tr>
+                                        {% for member in team_members %}
+                                            {% if member.user_id != team.creator_id %}
+                                                <tr>
+                                                    <td class="align-middle ps-3">
+                                                        {{ member.user.get_full_name|default:member.user.email }}
+                                                    </td>
+                                                    <td class="align-middle">{{ member.user.email }}</td>
+                                                    <td class="align-middle">Member</td>
+                                                    <td class="align-middle"><span class="badge bg-success">Active</span></td>
+                                                    <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
+                                                    {% if is_team_admin %}
+                                                        <td class="align-middle">
+                                                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                                                <span class="fas fa-trash me-2"></span>Remove
+                                                            </button>
+                                                        </td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                            </div>
+                         </div>
+                     </div>
+                 </div>
+
+
             {% endif %}
             
-            {% if not request.user.profile.team %}
+            {% if not team %}
             <div class="card mb-4 p-4 text-center w-75 mx-auto">
                 <h4 class="mb-4">You are not part of a Team yet</h4>
                 <p class="mb-2">Teams enable collaboration by allowing members to share projects, experiments, and computational resources.</p>
                 <p class="mb-3">To start collaborating, you can either create a new team or join an existing one.</p>
                 <div>
-                    <!-- TODO: Add functionality to links -->
-                    <a class="btn btn-primary me-3" href="#"><span class="fas fa-plus me-2"></span>Create a Team</a>
+                    <a class="btn btn-primary me-3" href="{% url 'team_management' %}?create=1"><span class="fas fa-plus me-2"></span>Create a Team</a>
                     <a class="btn btn-outline-primary" href="#"><span class="fas fa-plus me-2"></span>Join a Team</a>
                 </div>
             </div>
@@ -35,6 +131,46 @@
                     <li>Access shared HPC resources</li>
                 </ul>
             </div>
+
+            <div class="modal fade" id="createTeamModal" tabindex="-1" aria-labelledby="createTeamModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'team_management' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="create_team">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createTeamModalLabel">Create Team</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {% if create_team_form.non_field_errors %}
+                                    <div class="alert alert-danger" role="alert">
+                                        {{ create_team_form.non_field_errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="mb-3">
+                                    <label class="form-label">Team Name</label>
+                                    {{ create_team_form.name }}
+                                    {% if create_team_form.name.errors %}
+                                        <div class="text-danger fs-9 mt-1">{{ create_team_form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label">Description</label>
+                                    {{ create_team_form.description }}
+                                    {% if create_team_form.description.errors %}
+                                        <div class="text-danger fs-9 mt-1">{{ create_team_form.description.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Create Team</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             {% endif %}
         </div>
     </section>
@@ -42,4 +178,19 @@
 </div>
 
 
+{% endblock %}
+
+{% block scripts %}
+{% if not team and open_create_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var createTeamModalElement = document.getElementById("createTeamModal");
+    if (!createTeamModalElement || typeof bootstrap === "undefined") {
+        return;
+    }
+    var createTeamModal = new bootstrap.Modal(createTeamModalElement);
+    createTeamModal.show();
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -122,7 +122,21 @@
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="team">Team</label>
-                                    {{ form.team }}
+                                    <div class="input-group">
+                                        {{ form.team }}
+                                        {% if effective_team %}
+                                            <a class="btn btn-outline-primary" href="{% url 'team_management' %}">
+                                                <span class="fas fa-users me-2"></span>Manage Team
+                                            </a>
+                                        {% else %}
+                                            <a class="btn btn-primary" href="{% url 'team_management' %}?create=1">
+                                                <span class="fas fa-plus me-2"></span>Create Team
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% if not effective_team %}
+                                        <div class="form-text">Create a team to unlock collaboration features.</div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="position">Position</label>
@@ -144,7 +158,7 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="short_bio">Short Bio</label>
-                                     {{ form.short_bio }}
+                                     {{ form.bio }}
                                 </div>
                                 <!-- <div class="col-12 col-lg-4">
                                     <label class="form-label text-body-highlight fw-bold fs-8 ps-0 text-capitalize lh-sm" for="facebook">Facebook</label>
