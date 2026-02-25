@@ -20,6 +20,25 @@ services:
       - db
     restart: always
 
+  questionnaire:
+    build:
+      context: ./questionnaire
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+    volumes:
+      - ./questionnaire:/app
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    restart: always
+
   db:
     image: postgres:16
     volumes:
