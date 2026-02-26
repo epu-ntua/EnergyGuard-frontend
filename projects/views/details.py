@@ -17,6 +17,9 @@ def project_details(request, project_id):
         messages.error(request, "Project not found")
         return redirect("home")
 
+    experiments = project.experiments.select_related("creator").order_by("-updated_at")
+    latest_experiment = experiments.first()
+
     project_details_data = {
         "name": project.name,
         "start_date": project.created_at,
@@ -27,12 +30,16 @@ def project_details(request, project_id):
         "collaborators": project.collaborators.all(),
         "visibility": project.visibility,
         "team": project.creator.profile.team if hasattr(project.creator, "profile") else None,
+        "mlflow_experiment_id": (
+            latest_experiment.mlflow_experiment_id if latest_experiment else ""
+        ),
     }
     return render(
         request,
         "projects/project-details.html",
         {
             "project_details": project_details_data,
+            "experiments": experiments,
             "active_navbar_page": "projects",
             "show_sidebar": True,
         },

@@ -85,6 +85,13 @@
                 </div>
                 <div class="card-body pt-4 pb-0">
                   <div class="tab-content">
+                    {% if messages %}
+                      {% for message in messages %}
+                        <div class="alert {% if 'error' in message.tags %}alert-danger{% elif 'warning' in message.tags %}alert-warning{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %} mb-3" role="alert">
+                          {{ message }}
+                        </div>
+                      {% endfor %}
+                    {% endif %}
                     {% block content %}
                     {% endblock content %}
                   </div>
@@ -134,3 +141,4 @@
 </body>
 
 </html>
+

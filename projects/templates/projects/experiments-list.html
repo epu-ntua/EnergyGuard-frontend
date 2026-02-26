@@ -1,0 +1,52 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}Project Experiments{% endblock %}
+
+{% block content %}
+<div class="content px-0 pt-navbar">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+    <div class="d-flex flex-between-center mb-4">
+      <h2 class="text-body-emphasis fw-bolder mb-0">{{ project.name }} - Experiments</h2>
+      <a href="{% url 'add_experiment' project.id %}" class="btn btn-primary btn-sm">Add Experiment</a>
+    </div>
+
+    <div class="table-responsive border rounded-3">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Owner</th>
+            <th>Updated</th>
+            <th>MLflow ID</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for experiment in experiments %}
+            <tr>
+              <td>{{ experiment.name }}</td>
+              <td>{{ experiment.description|default:"-" }}</td>
+              <td>{{ experiment.creator.get_full_name|default:experiment.creator.email }}</td>
+              <td>{{ experiment.updated_at|date:"M j, Y H:i" }}</td>
+              <td>{{ experiment.mlflow_experiment_id|default:"-" }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-info" href="{% url 'eval_results' project.id experiment.id %}" target="_blank">Eval Results</a>
+                <form action="{% url 'delete_experiment' project.id experiment.id %}" method="post" class="d-inline">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-body-tertiary">No experiments found for this project.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock %}

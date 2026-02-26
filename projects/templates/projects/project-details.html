@@ -18,9 +18,13 @@
               <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
                 data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
                 data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-              <div class="dropdown-menu dropdown-menu-end py-2"><a class="dropdown-item" href="#!">Edit</a><a
-                  class="dropdown-item text-danger" href="#!">Delete</a><a class="dropdown-item"
-                  href="#!">Download</a><a class="dropdown-item" href="#!">Report abuse</a></div>
+              <div class="dropdown-menu dropdown-menu-end py-2">
+                <a class="dropdown-item" href="{% url 'add_experiment' project_details.id %}">Add experiment</a>
+                <form action="{% url 'delete_project' project_details.id %}" method="post" class="m-0 p-0">
+                  {% csrf_token %}
+                  <button class="dropdown-item text-danger" type="submit">Delete project</button>
+                </form>
+              </div>
             </div>
           </div>
 
@@ -87,8 +91,11 @@
                   <a href="#">
                     <button class="btn btn-primary mt-1" style="width:80%;" type="button">Open in Jupyter</button>
                   </a>
+                  <a href="{% url 'add_experiment' project_details.id %}">
+                    <button class="btn btn-success mt-1" style="width:80%;" type="button">Add Experiment</button>
+                  </a>
                   <!-- TODO: Add project's mlflow link -->
-                  <a href="https://mlflow.toolbox.epu.ntua.gr/#/experiments/{{ project_details.id }}" target="_blank">
+                  <a href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
                     <button class="btn btn-purple mt-1" style="width:80%;" type="button">Open in MLFlow</button>
                   </a>
                 </div>
@@ -188,14 +195,52 @@
             </div>
 
             <h4 class="text-body-emphasis mb-4">Tags</h4>
-            <span class="badge badge-tag me-2 mb-1">Forecast</span>
-            <span class="badge badge-tag me-2 mb-1">AI</span>
-            <span class="badge badge-tag me-2 mb-1">Coding</span>
-            <span class="badge badge-tag me-2 mb-1">Coding</span>
-            <span class="badge badge-tag me-2 mb-1">Load</span>
-            <span class="badge badge-tag me-2 mb-1">Prediction</span>
-            <span class="badge badge-tag me-2 mb-1">LLM</span>
+            {% if experiments and experiments.0.tags %}
+              {% for tag_key, tag_value in experiments.0.tags.items %}
+                <span class="badge badge-tag me-2 mb-1">{{ tag_key }}{% if tag_value != "true" %}: {{ tag_value }}{% endif %}</span>
+              {% endfor %}
+            {% else %}
+              <span class="text-body-tertiary">No tags available.</span>
+            {% endif %}
           </div>
+        </div>
+        <div class="d-flex flex-between-center align-items-center mb-3 mt-6">
+          <h3 class="text-body-emphasis mb-0">Experiments</h3>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'experiments_list' project_details.id %}">View All</a>
+        </div>
+        <div class="table-responsive border rounded-3 mb-6">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Updated</th>
+                <th>MLflow ID</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for experiment in experiments|slice:":10" %}
+                <tr>
+                  <td>{{ experiment.name }}</td>
+                  <td>{{ experiment.creator.get_full_name|default:experiment.creator.email }}</td>
+                  <td>{{ experiment.updated_at|date:"M j, Y" }}</td>
+                  <td>{{ experiment.mlflow_experiment_id|default:"-" }}</td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'eval_results' project_details.id experiment.id %}" target="_blank">Eval Results</a>
+                    <form action="{% url 'delete_experiment' project_details.id experiment.id %}" method="post" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-body-tertiary">No experiments yet.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
         <h3 class="text-body-emphasis mb-4">Project overview</h3>
         <p class="text-body-secondary mb-4 text-justify">
