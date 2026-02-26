@@ -21,6 +21,7 @@ from ..services import (
     delete_experiment as mlflow_delete_experiment,
     list_experiment_runs,
     make_deleted_experiment_name as mlflow_make_deleted_experiment_name,
+    set_experiment_tags as mlflow_set_experiment_tags,
     update_experiment_name as mlflow_update_experiment_name,
 )
 from ..services.mlflow_client import list_run_artifacts
@@ -115,6 +116,11 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
             mlflow_experiment_id = mlflow_create_experiment(
                 name=general_info["name"],
                 tags={"project_name": self.project.name},
+                user=self.request.user,
+            )
+            mlflow_set_experiment_tags(
+                mlflow_experiment_id,
+                {"mlflow.note.content": general_info.get("description", "")},
                 user=self.request.user,
             )
         except MlflowClientError as exc:

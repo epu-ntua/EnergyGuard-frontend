@@ -11,6 +11,7 @@ from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
     create_experiment as mlflow_create_experiment,
+    set_experiment_tags as mlflow_set_experiment_tags,
 )
 
 PROJECT_TEMPLATE_NAMES = {
@@ -65,6 +66,11 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                         mlflow_experiment_id = mlflow_create_experiment(
                             name=default_experiment_name,
                             tags={"project_name": project.name},
+                            user=self.request.user,
+                        )
+                        mlflow_set_experiment_tags(
+                            mlflow_experiment_id,
+                            {"mlflow.note.content": "Default experiment created with the project."},
                             user=self.request.user,
                         )
                         break

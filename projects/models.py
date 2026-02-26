@@ -65,7 +65,14 @@ class Experiment(TimeStampedModel):
     @property
     def description(self) -> str:
         experiment = self._get_mlflow_experiment()
-        return str(experiment.get("description") or "")
+        description = experiment.get("description")
+        if description:
+            return str(description)
+
+        for tag in experiment.get("tags", []) or []:
+            if tag.get("key") == "mlflow.note.content":
+                return str(tag.get("value") or "")
+        return ""
 
     def __str__(self):
         return self.name
