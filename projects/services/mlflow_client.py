@@ -98,6 +98,17 @@ def get_experiment_tags(experiment_id: str, user: Any | None = None) -> dict[str
     return tags
 
 
+def get_experiment(experiment_id: str, user: Any | None = None) -> dict[str, Any]:
+    data = _request(
+        "GET",
+        "/api/2.0/mlflow/experiments/get",
+        None,
+        params={"experiment_id": str(experiment_id)},
+        user=user,
+    )
+    return data.get("experiment", {}) or {}
+
+
 def delete_experiment(experiment_id: str, user: Any | None = None) -> None:
     _request("POST", "/api/2.0/mlflow/experiments/delete", {"experiment_id": str(experiment_id)}, user=user)
 

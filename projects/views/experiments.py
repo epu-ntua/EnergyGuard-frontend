@@ -19,10 +19,8 @@ from ..services import (
     create_experiment as mlflow_create_experiment,
     delete_artifacts_from_object_storage as mlflow_delete_artifacts_from_object_storage,
     delete_experiment as mlflow_delete_experiment,
-    get_experiment_tags as mlflow_get_experiment_tags,
     list_experiment_runs,
     make_deleted_experiment_name as mlflow_make_deleted_experiment_name,
-    set_experiment_tags as mlflow_set_experiment_tags,
     update_experiment_name as mlflow_update_experiment_name,
 )
 from ..services.mlflow_client import list_run_artifacts
@@ -116,11 +114,9 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
         try:
             mlflow_experiment_id = mlflow_create_experiment(
                 name=general_info["name"],
-                tags=tags,
+                tags={"project_name": self.project.name},
                 user=self.request.user,
             )
-            mlflow_set_experiment_tags(mlflow_experiment_id, tags, user=self.request.user)
-            tags = mlflow_get_experiment_tags(mlflow_experiment_id, user=self.request.user) or tags
         except MlflowClientError as exc:
             messages.error(
                 self.request,
@@ -132,8 +128,6 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=self.project,
                 creator=self.request.user,
-                name=general_info["name"],
-                description=general_info["description"],
                 tags=tags,
                 mlflow_experiment_id=mlflow_experiment_id,
             )

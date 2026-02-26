@@ -11,8 +11,6 @@ from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
     create_experiment as mlflow_create_experiment,
-    get_experiment_tags as mlflow_get_experiment_tags,
-    set_experiment_tags as mlflow_set_experiment_tags,
 )
 
 PROJECT_TEMPLATE_NAMES = {
@@ -53,7 +51,6 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             default_tags["package"] = packages["package_name"]
 
         mlflow_experiment_id = ""
-        mlflow_tags = default_tags.copy()
         with transaction.atomic():
             project = Project.objects.create(
                 name=general_info["name"],
@@ -62,14 +59,21 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                 creator=self.request.user,
             )
             try:
-                #TODO: Fix failure if experiment already exists
-                mlflow_experiment_id = mlflow_create_experiment(
-                    name=f"{project.name}-default",
-                    tags=default_tags,
-                    user=self.request.user,
-                )
-                mlflow_set_experiment_tags(mlflow_experiment_id, default_tags, user=self.request.user)
-                mlflow_tags = mlflow_get_experiment_tags(mlflow_experiment_id, user=self.request.user) or default_tags
+                default_experiment_name = f"{project.name}-default"
+                while True:
+                    try:
+                        mlflow_experiment_id = mlflow_create_experiment(
+                            name=default_experiment_name,
+                            tags={"project_name": project.name},
+                            user=self.request.user,
+                        )
+                        break
+                    except MlflowClientError as exc:
+                        error_text = str(exc).lower()
+                        if "already exists" in error_text or "resource_already_exists" in error_text:
+                            default_experiment_name += "-"
+                            continue
+                        raise
             except MlflowClientError as exc:
                 messages.warning(
                     self.request,
@@ -79,9 +83,7 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=project,
                 creator=self.request.user,
-                name="default",
-                description="Default experiment created with the project.",
-                tags=mlflow_tags,
+                tags=default_tags,
                 mlflow_experiment_id=mlflow_experiment_id,
             )
 
@@ -98,3 +100,4 @@ def project_creation_success(request):
             "show_sidebar": True,
         },
     )
+

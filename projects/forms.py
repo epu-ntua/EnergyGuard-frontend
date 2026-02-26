@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Experiment, Project
+from .models import Project
 
 class ProjectGeneralInfoForm(forms.ModelForm):
     class Meta:
@@ -27,7 +27,17 @@ class ProjectSandboxPackagesForm(forms.Form):
     )
 
 
-class ExperimentGeneralInfoForm(forms.ModelForm):
+class ExperimentGeneralInfoForm(forms.Form):
+    name = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter experiment name"}),
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={"class": "form-control", "placeholder": "Enter experiment description", "rows": 3}
+        ),
+    )
     tags = forms.CharField(
         required=False,
         widget=forms.TextInput(
@@ -38,22 +48,6 @@ class ExperimentGeneralInfoForm(forms.ModelForm):
         ),
         help_text="Comma-separated tags.",
     )
-
-    class Meta:
-        model = Experiment
-        fields = ("name", "description")
-        widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter experiment name"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "placeholder": "Enter experiment description", "rows": 3}
-            ),
-        }
-
-    def clean_name(self):
-        name = self.cleaned_data["name"]
-        if Experiment.objects.filter(name=name).exists():
-            raise forms.ValidationError(f'Experiment "{name}" already exists.')
-        return name
 
 
 class ExperimentFacilitiesForm(forms.Form):
