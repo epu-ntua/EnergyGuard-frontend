@@ -1,96 +1,46 @@
 # version: "3.9" --> obsolete
 
 services:
+  # Η κύρια εφαρμογή (App)
   web:
-    build: .
-    command: >
-      sh -c "
-      python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      python manage.py runserver 0.0.0.0:8000
-      "
+    build: .  # Χρησιμοποιεί το Dockerfile του root
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-      - static_volume:/app/staticfiles
     ports:
-      - "${PORT:-8000}:8000"
-    env_file:
-      - .env
+      - "8000:8000"
+    env_file: .env
     depends_on:
       - db
     restart: always
 
+  # Το νέο service για το Questionnaire
   questionnaire:
     build:
-      context: ./questionnaire
-      dockerfile: Dockerfile
-    command: >
-      sh -c "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000
-      "
+      context: ./questionnaire  # Χρησιμοποιεί το φάκελο questionnaire
+      dockerfile: Dockerfile    # Χρησιμοποιεί το Dockerfile μέσα στο questionnaire
+    command: python manage.py runserver 0.0.0.0:8001 # Τρέχει σε άλλη πόρτα
     volumes:
       - ./questionnaire:/app
     ports:
-      - "8001:8000"
+      - "8001:8001" # Πρόσβαση από το localhost:8001
     env_file:
-      - .env
+      - .env  # Χρησιμοποιούν τα ίδια διαπιστευτήρια βάσης
     depends_on:
       - db
     restart: always
 
+  # Η κοινή βάση δεδομένων
   db:
     image: postgres:16
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-energyguard}
+      POSTGRES_USER: ${POSTGRES_USER:-energyguard_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-testdatabase}
     restart: always
-
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - db
-    restart: always
-
-  minio:
-    image: minio/minio
-    container_name: minio-test
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
-    restart: always
-
-  # This service initializes MinIO by creating the specified bucket. It waits for MinIO to be ready before executing the commands.
-  minio-init:
-    image: minio/mc
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      sleep 5;
-      mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      mc mb -p local/${OBJECT_STORAGE_BUCKET} || true;
-      exit 0;
-      "
 
 volumes:
   postgres_data:
-  pgadmin_data:
   static_volume:
-  minio_data:

@@ -3,24 +3,30 @@
 .gitignore
 
 # Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Virtual Environments
-venv
-.venv
-env
-.env_venv
-
-# Secrets (docker-compose will read the env variables, not the image)
-.env
-
-# Databases (to avoid random local db files)
-*.sqlite3
-backup.sql
-
-# Static & Media (they will be handled by Docker volumes)
-static/
+# Django
+db.sqlite3
+db.sqlite3-journal
 media/
+static/
+staticfiles/
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Environment & OS
+.env
+.DS_Store
+Thumbs.db

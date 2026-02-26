@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnergyGuard - Ερωτηματολόγιο</title>
+    <style>
+        /* Κάνει το ερωτηματολόγιο να πιάνει όλη την οθόνη */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        #tripetto-1vijndk { height: 100vh; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="tripetto-1vijndk"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tripetto/runner"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tripetto/runner-autoscroll"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tripetto/studio"></script>
+    <script>
+    TripettoStudio.form({
+        runner: TripettoAutoscroll,
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibysxRVBlRklTRmpMVTNVeWRhQU8yVE5rdEh3VlVpV2tLNituWTJCTk9hRT0iLCJkZWZpbml0aW9uIjoiRGZ6VklQMkRJbnVCdFRIZXZsNXAya3VCRnA2b0dhdXVCT2dIaVhBUmJuZz0iLCJ0eXBlIjoiY29sbGVjdCJ9.nSrHWrqehPteXPONrZxV_wvY4sVOmKq1pv_-bh2G588",
+        element: "tripetto-1vijndk"
+    });
+    </script>
+</body>
+</html>
