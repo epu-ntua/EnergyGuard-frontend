@@ -16,9 +16,7 @@
           <tr>
             <th>Name</th>
             <th>Description</th>
-            <th>Owner</th>
-            <th>Updated</th>
-            <th>MLflow ID</th>
+            <th>Open in MLflow</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
@@ -27,20 +25,42 @@
             <tr>
               <td>{{ experiment.name }}</td>
               <td>{{ experiment.description|default:"-" }}</td>
-              <td>{{ experiment.creator.get_full_name|default:experiment.creator.email }}</td>
-              <td>{{ experiment.updated_at|date:"M j, Y H:i" }}</td>
-              <td>{{ experiment.mlflow_experiment_id|default:"-" }}</td>
+              <td>
+                <a
+                  class="btn btn-sm btn-outline-primary"
+                  href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}"
+                  target="_blank"
+                  {% if not experiment.mlflow_experiment_id %}aria-disabled="true"{% endif %}
+                >
+                  Open in MLflow
+                </a>
+              </td>
               <td class="text-end">
-                <a class="btn btn-sm btn-outline-info" href="{% url 'eval_results' project.id experiment.id %}" target="_blank">Eval Results</a>
-                <form action="{% url 'delete_experiment' project.id experiment.id %}" method="post" class="d-inline">
-                  {% csrf_token %}
-                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                </form>
+                <div class="dropdown">
+                  <button
+                    class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-boundary="window"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <span class="fas fa-ellipsis-h fs-10"></span>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end py-2">
+                    <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true">Edit experiment</a>
+                    <a class="dropdown-item" href="{% url 'eval_results' project.id experiment.id %}" target="_blank">Eval results</a>
+                    <form action="{% url 'delete_experiment' project.id experiment.id %}" method="post">
+                      {% csrf_token %}
+                      <button class="dropdown-item text-danger" type="submit">Delete experiment</button>
+                    </form>
+                  </div>
+                </div>
               </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="6" class="text-body-tertiary">No experiments found for this project.</td>
+              <td colspan="4" class="text-body-tertiary">No experiments found for this project.</td>
             </tr>
           {% endfor %}
         </tbody>

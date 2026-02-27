@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from core.views import BaseWizardView
 
-from ..forms import ExperimentFacilitiesForm, ExperimentGeneralInfoForm, ExperimentSandboxPackagesForm
+from ..forms import ExperimentGeneralInfoForm
 from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
@@ -31,18 +31,12 @@ from ..services.mlflow_client import (
 
 EXPERIMENT_TEMPLATE_NAMES = {
     "0": "projects/experiment-creation-step1.html",
-    "1": "projects/experiment-creation-step2.html",
-    "2": "projects/experiment-creation-step3.html",
 }
 EXPERIMENT_FORMS = [
     ("0", ExperimentGeneralInfoForm),
-    ("1", ExperimentFacilitiesForm),
-    ("2", ExperimentSandboxPackagesForm),
 ]
 EXPERIMENT_STEP_METADATA = {
     "0": {"title": "General", "icon": "fa-info-circle"},
-    "1": {"title": "Facilities", "icon": "fa-building"},
-    "2": {"title": "Packages", "icon": "fa-cubes-stacked"},
 }
 
 
@@ -101,15 +95,9 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
 
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
-        facilities = form_list[1].cleaned_data
-        packages = form_list[2].cleaned_data
 
         raw_tags = general_info.get("tags", "")
         tags = {tag.strip(): "true" for tag in raw_tags.split(",") if tag.strip()}
-        if facilities.get("facility_name"):
-            tags["facility"] = facilities["facility_name"]
-        if packages.get("package_name"):
-            tags["package"] = packages["package_name"]
         tags["project_id"] = str(self.project.id)
         tags["project"] = self.project.name
         tags["creator_id"] = str(self.request.user.id)
