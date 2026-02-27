@@ -24,7 +24,10 @@ from ..services import (
     set_experiment_tags as mlflow_set_experiment_tags,
     update_experiment_name as mlflow_update_experiment_name,
 )
-from ..services.mlflow_client import list_run_artifacts
+from ..services.mlflow_client import (
+    list_registered_model_versions_for_run,
+    make_registered_model_links,
+)
 
 EXPERIMENT_TEMPLATE_NAMES = {
     "0": "projects/experiment-creation-step1.html",
@@ -224,19 +227,23 @@ def experiments_list(request, project_id: int):
 
 def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
     if not experiment.mlflow_experiment_id:
-        return {"runs": [], "images": []}
+        return {
+            "latest_run_metrics": {},
+            "best_metrics": {},
+            "all_run_metrics_chronological": [],
+            "registered_models": [],
+        }
 
     runs = list_experiment_runs(experiment.mlflow_experiment_id, max_results=1000, user=user)
     run_rows: list[dict[str, Any]] = []
-    image_rows: list[dict[str, Any]] = []
 
     for run in runs:
         info = run.get("info", {})
         data = run.get("data", {})
         run_id = info.get("run_id")
         metrics = {m.get("key"): m.get("value") for m in data.get("metrics", []) if m.get("key")}
-        params = {p.get("key"): p.get("value") for p in data.get("params", []) if p.get("key")}
-        run_tags = {t.get("key"): t.get("value") for t in data.get("tags", []) if t.get("key")}
+        # params = {p.get("key"): p.get("value") for p in data.get("params", []) if p.get("key")}
+        # run_tags = {t.get("key"): t.get("value") for t in data.get("tags", []) if t.get("key")}
 
         run_rows.append(
             {
@@ -245,22 +252,67 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
                 "start_time": info.get("start_time"),
                 "end_time": info.get("end_time"),
                 "metrics": metrics,
-                "params": params,
-                "tags": run_tags,
+                # "params": params,
+                # "tags": run_tags,
             }
         )
 
+    # MLflow search API returns newest first; normalize to chronological.
+    run_rows.sort(key=lambda row: (row.get("start_time") or 0, row.get("end_time") or 0))
+
+    latest_run_metrics = run_rows[-1] if run_rows else {}
+
+    best_metrics: dict[str, dict[str, Any]] = {}
+    for row in run_rows:
+        for metric_name, metric_value in (row.get("metrics") or {}).items():
+            try:
+                numeric_value = float(metric_value)
+            except (TypeError, ValueError):
+                continue
+            current_best = best_metrics.get(metric_name)
+            # TODO: Change to comply with the metric (for some larger is better)
+            if current_best is None or numeric_value < current_best["value"]:
+                best_metrics[metric_name] = {
+                    "value": numeric_value,
+                    "run_id": row.get("run_id"),
+                }
+
+    registered_models: list[dict[str, Any]] = []
+    seen_models: set[tuple[str, str]] = set()
+    for row in run_rows:
+        run_id = row.get("run_id")
         if not run_id:
             continue
+        for version in list_registered_model_versions_for_run(run_id, user=user):
+            name = str(version.get("name") or "").strip()
+            model_version = str(version.get("version") or "").strip()
+            if not name:
+                continue
+            dedup_key = (name, model_version)
+            if dedup_key in seen_models:
+                continue
+            seen_models.add(dedup_key)
+            links = make_registered_model_links(name, model_version or None)
+            registered_models.append(
+                {
+                    "name": name,
+                    "version": model_version,
+                    "run_id": version.get("run_id") or run_id,
+                    "source": version.get("source", ""),
+                    "model_link": links["model_link"],
+                    "model_version_link": links["model_version_link"],
+                }
+            )
 
-        artifacts = list_run_artifacts(run_id, user=user)
-        for artifact in artifacts:
-            path = artifact.get("path", "")
-            lowered = path.lower()
-            if lowered.endswith((".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp")):
-                image_rows.append({"run_id": run_id, "path": path})
-
-    return {"runs": run_rows, "images": image_rows}
+    return {
+        "latest_run_metrics": latest_run_metrics,
+        "best_metrics": best_metrics,
+        "all_run_metrics_chronological": [
+            {"run_id": row.get("run_id"), "metrics": row.get("metrics") or {}}
+            for row in run_rows
+        ],
+        "registered_models": registered_models,
+    }
 
 
 @login_required
@@ -283,3 +335,74 @@ def eval_results(request, project_id: int, experiment_id: int):
     except MlflowClientError as exc:
         return JsonResponse({"error": str(exc), **payload}, status=502)
     return JsonResponse(payload)
+
+
+@login_required
+@require_GET
+def eval_results_all(request, project_id: int):
+    project = _get_accessible_project_or_404(request.user, project_id)
+    experiments = project.experiments.all().order_by("id")
+
+    latest_run_metrics: dict[str, Any] = {}
+    best_metrics: dict[str, dict[str, Any]] = {}
+    all_run_metrics_chronological: list[dict[str, Any]] = []
+    registered_models: list[dict[str, Any]] = []
+    seen_models: set[tuple[str, str]] = set()
+
+    for experiment in experiments:
+        extracted = _extract_eval_payload(experiment, request.user)
+        experiment_ref = {
+            "experiment_id": experiment.id,
+            "experiment_name": experiment.name,
+        }
+
+        candidate_latest = extracted.get("latest_run_metrics") or {}
+        if candidate_latest:
+            candidate_latest = {**candidate_latest, **experiment_ref}
+            if not latest_run_metrics:
+                latest_run_metrics = candidate_latest
+            else:
+                latest_key = (
+                    latest_run_metrics.get("start_time") or 0,
+                    latest_run_metrics.get("end_time") or 0,
+                )
+                candidate_key = (
+                    candidate_latest.get("start_time") or 0,
+                    candidate_latest.get("end_time") or 0,
+                )
+                if candidate_key > latest_key:
+                    latest_run_metrics = candidate_latest
+
+        for metric_name, metric_data in (extracted.get("best_metrics") or {}).items():
+            current_best = best_metrics.get(metric_name)
+            candidate_value = metric_data.get("value")
+            try:
+                candidate_numeric = float(candidate_value)
+            except (TypeError, ValueError):
+                continue
+            if current_best is None or candidate_numeric < float(current_best["value"]):
+                best_metrics[metric_name] = {
+                    "value": candidate_numeric,
+                    "run_id": metric_data.get("run_id"),
+                    **experiment_ref,
+                }
+
+        all_run_metrics_chronological.extend(
+            [{**row, **experiment_ref} for row in (extracted.get("all_run_metrics_chronological") or [])]
+        )
+
+        for model in extracted.get("registered_models") or []:
+            dedup_key = (str(model.get("name") or ""), str(model.get("version") or ""))
+            if dedup_key in seen_models:
+                continue
+            seen_models.add(dedup_key)
+            registered_models.append({**model, **experiment_ref})
+
+    return JsonResponse(
+        {
+            "latest_run_metrics": latest_run_metrics,
+            "best_metrics": best_metrics,
+            "all_run_metrics_chronological": all_run_metrics_chronological,
+            "registered_models": registered_models,
+        }
+    )

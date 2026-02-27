@@ -1,5 +1,6 @@
 import os
 import secrets
+from urllib.parse import quote
 from typing import Any
 
 import requests
@@ -154,6 +155,29 @@ def get_run(run_id: str, user: Any | None = None) -> dict[str, Any]:
         user=user,
     )
     return data.get("run", {}) or {}
+
+
+def list_registered_model_versions_for_run(run_id: str, user: Any | None = None) -> list[dict[str, Any]]:
+    data = _request(
+        "GET",
+        "/api/2.0/mlflow/model-versions/search",
+        None,
+        params={"filter": f"run_id='{str(run_id)}'"},
+        user=user,
+    )
+    return data.get("model_versions", []) or []
+
+
+def make_registered_model_links(name: str, version: str | int | None = None) -> dict[str, str]:
+    base = _tracking_uri()
+    encoded_name = quote(str(name), safe="")
+    model_link = f"{base}/#/models/{encoded_name}"
+    if version is None:
+        return {"model_link": model_link, "model_version_link": ""}
+    return {
+        "model_link": model_link,
+        "model_version_link": f"{base}/#/models/{encoded_name}/versions/{version}",
+    }
 
 
 def _setting(primary: str, fallback: str = "", default: Any = None) -> Any:
