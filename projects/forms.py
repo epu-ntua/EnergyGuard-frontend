@@ -38,16 +38,6 @@ class ExperimentGeneralInfoForm(forms.Form):
             attrs={"class": "form-control", "placeholder": "Enter experiment description", "rows": 3}
         ),
     )
-    tags = forms.CharField(
-        required=False,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Comma-separated tags (e.g. baseline,forecast,v1)",
-            }
-        ),
-        help_text="Comma-separated tags.",
-    )
 
 
 class ExperimentEditForm(forms.Form):

@@ -46,7 +46,6 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.CharField(max_length=255)),
                 ("description", models.TextField(blank=True)),
-                ("tags", models.JSONField(blank=True, default=dict)),
                 ("mlflow_experiment_id", models.CharField(blank=True, default="", max_length=64)),
                 (
                     "creator",

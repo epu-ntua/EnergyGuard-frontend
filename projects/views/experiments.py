@@ -96,12 +96,6 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
 
-        raw_tags = general_info.get("tags", "")
-        tags = {tag.strip(): "true" for tag in raw_tags.split(",") if tag.strip()}
-        tags["project_id"] = str(self.project.id)
-        tags["project"] = self.project.name
-        tags["creator_id"] = str(self.request.user.id)
-
         mlflow_experiment_id = ""
         try:
             mlflow_experiment_id = mlflow_create_experiment(
@@ -125,7 +119,6 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=self.project,
                 creator=self.request.user,
-                tags=tags,
                 mlflow_experiment_id=mlflow_experiment_id,
             )
 
@@ -368,7 +361,6 @@ def eval_results(request, project_id: int, experiment_id: int):
             "id": experiment.id,
             "name": experiment.name,
             "description": experiment.description,
-            "tags": experiment.tags,
             "mlflow_experiment_id": experiment.mlflow_experiment_id,
         }
     }

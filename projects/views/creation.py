@@ -37,19 +37,8 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
 
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
-        facilities = form_list[1].cleaned_data
-        packages = form_list[2].cleaned_data
 
         project = None
-        default_tags = {
-            "project_type": general_info["project_type"],
-            "project_name": general_info["name"],
-            "creator_id": str(self.request.user.id),
-        }
-        if facilities.get("facility_name"):
-            default_tags["facility"] = facilities["facility_name"]
-        if packages.get("package_name"):
-            default_tags["package"] = packages["package_name"]
 
         mlflow_experiment_id = ""
         with transaction.atomic():
@@ -89,7 +78,6 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=project,
                 creator=self.request.user,
-                tags=default_tags,
                 mlflow_experiment_id=mlflow_experiment_id,
             )
 

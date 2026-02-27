@@ -38,8 +38,6 @@ class Experiment(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="created_experiments",
     )
-    # Tags are stored only in local DB.
-    tags = models.JSONField(blank=True, default=dict)
     mlflow_experiment_id = models.CharField(max_length=64, blank=True, default="")
 
     def _get_mlflow_experiment(self) -> dict:
