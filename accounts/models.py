@@ -79,11 +79,16 @@ class Profile(models.Model):
     # If a user is a creator of a team, they cannot be a member of any team.
     def clean(self):
         super().clean()
+        # Fixed registration flow issue: Profile gets validated before User is saved, so user_id can be None during validation. Skip validation in that case and rely on Team's clean() to catch any issues after User is created.
+        if self.user_id is None:
+            return
         created_team = getattr(self.user, "created_team", None)
         if self.team and created_team and created_team.pk != self.team_id:
             raise ValidationError("This user is a creator of a team and cannot be a member of another team.")
    
     def __str__(self):
+        if self.user_id is None:
+            return "Unassigned Profile"
         return f"{self.user.last_name}, {self.user.first_name}'s Profile"
     
     class Meta:
