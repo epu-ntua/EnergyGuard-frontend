@@ -204,6 +204,10 @@ class TeamCreateForm(forms.ModelForm):
         }
 
 
+class TeamEditForm(TeamCreateForm):
+    pass
+
+
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile

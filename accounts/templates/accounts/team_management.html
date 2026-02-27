@@ -22,9 +22,13 @@
                                 {% endif %}
                             </p>
                         </div>
-                        <div>
-                            <button class="btn btn-outline-primary"><span class="fas fa-edit me-2"></span>Edit Team</button>
-                        </div>
+                        {% if is_team_admin %}
+                            <div>
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#editTeamModal">
+                                    <span class="fas fa-edit me-2"></span>Edit Team
+                                </button>
+                            </div>
+                        {% endif %}
                     </div>
                     <div>
                         <p class="mb-2">{{ team.description }}</p>
@@ -141,6 +145,9 @@
 </div>
 
 {% include 'accounts/partials/create-team-modal.html' %}
+{% if team and is_team_admin %}
+    {% include 'accounts/partials/edit-team-modal.html' %}
+{% endif %}
 
 {% endblock content %}
 
@@ -154,6 +161,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     var createTeamModal = new bootstrap.Modal(createTeamModalElement);
     createTeamModal.show();
+});
+</script>
+{% endif %}
+{% if team and is_team_admin and open_edit_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var editTeamModalElement = document.getElementById("editTeamModal");
+    if (!editTeamModalElement || typeof bootstrap === "undefined") {
+        return;
+    }
+    var editTeamModal = new bootstrap.Modal(editTeamModalElement);
+    editTeamModal.show();
 });
 </script>
 {% endif %}

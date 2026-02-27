@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.shortcuts import redirect, render
 
+from ..forms import TeamEditForm
 from ..models import Profile
 from ..services.team_creation import handle_create_team_post
 
@@ -20,6 +20,18 @@ def team_management(request):
 
     if response:
         return response
+
+    open_edit_modal = request.GET.get("edit") == "1"
+    edit_team_form = TeamEditForm(instance=team) if (team and is_team_admin) else None
+
+    if request.method == "POST" and request.POST.get("action") == "edit_team":
+        open_edit_modal = True
+        if not team or not is_team_admin:
+            return redirect("team_management")
+        edit_team_form = TeamEditForm(request.POST, instance=team)
+        if edit_team_form.is_valid():
+            edit_team_form.save()
+            return redirect("team_management")
 
     team_members = []
     team_members_count = 0
@@ -42,5 +54,7 @@ def team_management(request):
             "team_members_count": team_members_count,
             "create_team_form": create_team_form,
             "open_create_modal": open_create_modal,
+            "edit_team_form": edit_team_form,
+            "open_edit_modal": open_edit_modal,
         },
     )
