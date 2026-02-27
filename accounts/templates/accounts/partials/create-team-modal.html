@@ -1,0 +1,39 @@
+<div class="modal fade" id="createTeamModal" tabindex="-1" aria-labelledby="createTeamModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'team_management' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_team">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTeamModalLabel">Create Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% if create_team_form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ create_team_form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Team Name</label>
+                        {{ create_team_form.name }}
+                        {% if create_team_form.name.errors %}
+                            <div class="text-danger fs-9 mt-1">{{ create_team_form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Description</label>
+                        {{ create_team_form.description }}
+                        {% if create_team_form.description.errors %}
+                            <div class="text-danger fs-9 mt-1">{{ create_team_form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

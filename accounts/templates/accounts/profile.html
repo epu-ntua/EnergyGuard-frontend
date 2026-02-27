@@ -129,9 +129,9 @@
                                                 <span class="fas fa-users me-2"></span>Manage Team
                                             </a>
                                         {% else %}
-                                            <a class="btn btn-primary" href="{% url 'team_management' %}?create=1">
+                                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createTeamModal">
                                                 <span class="fas fa-plus me-2"></span>Create Team
-                                            </a>
+                                            </button>
                                         {% endif %}
                                     </div>
                                     {% if not effective_team %}
@@ -352,10 +352,21 @@
         </div>
     </section>
     {% include "core/footer.html" %}
+    {% if not effective_team %}
+        {% include "accounts/partials/create-team-modal.html" %}
+    {% endif %}
 </div>
 
 {% endblock content %}
 
 {% block scripts %}
-
+{% if not effective_team and open_create_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var el = document.getElementById("createTeamModal");
+  if (!el || typeof bootstrap === "undefined") return;
+  new bootstrap.Modal(el).show();
+});
+</script>
+{% endif %}
 {% endblock scripts %}

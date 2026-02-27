@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from ..forms import ProfileEditForm, ProfileUpdateForm
 from ..models import Profile
 from ..services.keycloak_user_sync import KeycloakUserSyncClient
+from ..services.team_creation import handle_create_team_post
 from ..utils.dates import get_time_since_joined
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,18 @@ def profile(request):
     effective_team = user_profile.team or getattr(request.user, "created_team", None)
     user_projects_count = request.user.creator_projects.count()
 
-    if request.method == "POST":
+    is_create_team_post = request.method == "POST" and request.POST.get("action") == "create_team"
+
+    create_team_form, open_create_modal, effective_team, response = handle_create_team_post(
+        request=request,
+        profile=user_profile,
+        current_team=effective_team,
+        redirect_to="profile",
+    )
+    if response:
+        return response
+
+    if request.method == "POST" and not is_create_team_post:
         form = ProfileEditForm(request.POST, instance=user_profile, user=request.user)
         if form.is_valid():
             _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
@@ -75,6 +87,8 @@ def profile(request):
             "profile": user_profile,
             "effective_team": effective_team,
             "total_projects": user_projects_count,
+            "create_team_form": create_team_form,
+            "open_create_modal": open_create_modal, 
         },
     )
 
