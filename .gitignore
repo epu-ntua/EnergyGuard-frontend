@@ -222,3 +222,6 @@ energyguard_backup_25_02_2026.sql
 
 #ElasticSearch
 /.idea
+
+# Media files
+/media/
