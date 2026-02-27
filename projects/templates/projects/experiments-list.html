@@ -48,7 +48,7 @@
                     <span class="fas fa-ellipsis-h fs-10"></span>
                   </button>
                   <div class="dropdown-menu dropdown-menu-end py-2">
-                    <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true">Edit experiment</a>
+                    <a class="dropdown-item" href="{% url 'edit_experiment' project.id experiment.id %}">Edit experiment</a>
                     <a class="dropdown-item" href="{% url 'eval_results' project.id experiment.id %}" target="_blank">Eval results</a>
                     <form action="{% url 'delete_experiment' project.id experiment.id %}" method="post">
                       {% csrf_token %}

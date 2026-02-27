@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from core.views import BaseWizardView
 
-from ..forms import ExperimentGeneralInfoForm
+from ..forms import ExperimentEditForm, ExperimentGeneralInfoForm
 from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
@@ -195,6 +195,60 @@ def delete_experiment(request, project_id: int, experiment_id: int):
 
     messages.success(request, "Experiment deleted successfully.")
     return redirect("project_details", project_id=project.id)
+
+
+@login_required
+def edit_experiment(request, project_id: int, experiment_id: int):
+    project = _get_accessible_project_or_404(request.user, project_id)
+    experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
+
+    if request.user.id not in {project.creator_id, experiment.creator_id}:
+        messages.error(request, "You do not have permission to edit this experiment.")
+        return redirect("project_details", project_id=project.id)
+
+    if not experiment.mlflow_experiment_id:
+        messages.error(request, "This experiment is not linked to MLflow and cannot be edited.")
+        return redirect("project_details", project_id=project.id)
+
+    if request.method == "POST":
+        form = ExperimentEditForm(request.POST)
+        if form.is_valid():
+            try:
+                mlflow_update_experiment_name(
+                    experiment.mlflow_experiment_id,
+                    form.cleaned_data["name"],
+                    user=request.user,
+                )
+                mlflow_set_experiment_tags(
+                    experiment.mlflow_experiment_id,
+                    {"mlflow.note.content": form.cleaned_data.get("description", "")},
+                    user=request.user,
+                )
+            except MlflowClientError as exc:
+                messages.error(request, f"Experiment update failed because MLflow sync failed: {exc}")
+                return redirect("edit_experiment", project_id=project.id, experiment_id=experiment.id)
+
+            messages.success(request, "Experiment updated successfully.")
+            return redirect("project_details", project_id=project.id)
+    else:
+        form = ExperimentEditForm(
+            initial={
+                "name": experiment.name,
+                "description": experiment.description,
+            }
+        )
+
+    return render(
+        request,
+        "projects/experiment-edit.html",
+        {
+            "project": project,
+            "experiment": experiment,
+            "form": form,
+            "active_navbar_page": "projects",
+            "show_sidebar": True,
+        },
+    )
 
 
 @login_required

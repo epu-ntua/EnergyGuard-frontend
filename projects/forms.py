@@ -50,6 +50,19 @@ class ExperimentGeneralInfoForm(forms.Form):
     )
 
 
+class ExperimentEditForm(forms.Form):
+    name = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter experiment name"}),
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={"class": "form-control", "placeholder": "Enter experiment description", "rows": 3}
+        ),
+    )
+
+
 class ExperimentFacilitiesForm(forms.Form):
     facility_name = forms.CharField(
         max_length=255,

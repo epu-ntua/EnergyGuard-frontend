@@ -7,6 +7,7 @@ from .views import (
     ProjectsListJson,
     delete_experiment,
     delete_project,
+    edit_experiment,
     eval_results,
     eval_results_all,
     experiments_list,
@@ -27,6 +28,11 @@ urlpatterns = [
         'project/<int:project_id>/experiments/add/',
         AddExperimentView.as_view(EXPERIMENT_FORMS),
         name='add_experiment',
+    ),
+    path(
+        'project/<int:project_id>/experiments/<int:experiment_id>/edit/',
+        edit_experiment,
+        name='edit_experiment',
     ),
     path(
         'project/<int:project_id>/experiments/<int:experiment_id>/delete/',

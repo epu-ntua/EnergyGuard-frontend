@@ -1,0 +1,46 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}Edit Experiment{% endblock %}
+
+{% block content %}
+<div class="content px-0 pt-navbar">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+    <div class="d-flex flex-between-center mb-4">
+      <h2 class="text-body-emphasis fw-bolder mb-0">Edit Experiment</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <form action="" method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label text-body" for="{{ form.name.id_for_label }}">Experiment Name*</label>
+            {{ form.name }}
+            {% if form.errors.name %}
+              <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ form.errors.name }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-body" for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            {% if form.errors.description %}
+              <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ form.errors.description }}</div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% url 'project_details' project.id %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock %}

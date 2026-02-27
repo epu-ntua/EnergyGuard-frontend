@@ -75,8 +75,8 @@
                         <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ project_details.start_date|date:"M j, Y" }}</td>
                       </tr>
                       <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Update :</td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ project_details.last_update|date:"M j, Y" }}</td>
+                        <td class="align-top py-1 text-body text-nowrap fw-bold">Last run :</td>
+                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ project_details.last_update|date:"M j, Y"|default:"-" }}</td>
                       </tr>
                       <tr>
                         <td class="align-top py-1 text-body text-nowrap fw-bold">Type :</td>
@@ -87,8 +87,7 @@
                 </div>
 
                 <div class="col-12 col-sm-auto">
-                  <!-- TODO: Add functionality to link -->
-                  <a href="#">
+                  <a href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
                     <button class="btn btn-primary mt-1" style="width:80%;" type="button">Open in Jupyter</button>
                   </a>
                   <a href="{% url 'add_experiment' project_details.id %}">
@@ -246,7 +245,7 @@
                         <span class="fas fa-ellipsis-h fs-10"></span>
                       </button>
                       <div class="dropdown-menu dropdown-menu-end py-2">
-                        <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true">Edit experiment</a>
+                        <a class="dropdown-item" href="{% url 'edit_experiment' project_details.id experiment.id %}">Edit experiment</a>
                         <a class="dropdown-item" href="{% url 'eval_results' project_details.id experiment.id %}" target="_blank">Eval results</a>
                         <form action="{% url 'delete_experiment' project_details.id experiment.id %}" method="post">
                           {% csrf_token %}
