@@ -1,0 +1,13 @@
+{% load static %}
+<nav class="navbar navbar-top fixed-top navbar-expand" id="navbarDefault">
+  <div class="collapse navbar-collapse justify-content-between">
+    <div class="navbar-logo">
+      <a class="navbar-brand me-1 me-sm-3" href="{% url 'home' %}">
+        <div class="d-flex align-items-center">
+          <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="179" class="d-none d-sm-block"/>
+          <img src="{% static 'assets/img/logo/EnergyGuard_logo-192x174.png' %}" alt="energyguard-mobile" width="49" class="d-block d-sm-none">
+        </div>
+      </a>
+    </div>
+  </div>
+</nav>

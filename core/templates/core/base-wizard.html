@@ -33,7 +33,11 @@
 
   <main class="main" id="top">
 
-    {% include "core/header.html" %}
+    {% if request.user.is_authenticated %}
+      {% include "core/header.html" %}
+    {% else %}
+      {% include "core/header-login.html" %}
+    {% endif %}
 
     <!----------------->
     <!-- Page Content-->
