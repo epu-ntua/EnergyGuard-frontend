@@ -101,7 +101,28 @@ class FileUploadDatasetForm(forms.Form):
         uploaded = self.cleaned_data.get('data_file')
         if not uploaded:
             return uploaded
-        allowed_types = {'application/zip', 'application/x-zip-compressed', 'text/csv', 'application/csv'}
-        if uploaded.content_type not in allowed_types:
+        filename = (uploaded.name or "").lower()
+        extension = filename.rsplit(".", 1)[-1] if "." in filename else ""
+        content_type = (uploaded.content_type or "").lower()
+
+        # Browsers/OSes often report CSV as application/vnd.ms-excel or text/plain.
+        allowed_types_by_extension = {
+            "zip": {
+                "application/zip",
+                "application/x-zip-compressed",
+                "multipart/x-zip",
+                "application/octet-stream",
+            },
+            "csv": {
+                "text/csv",
+                "application/csv",
+                "application/vnd.ms-excel",
+                "text/plain",
+                "application/octet-stream",
+            },
+        }
+
+        allowed_types = allowed_types_by_extension.get(extension, set())
+        if content_type and content_type not in allowed_types:
             raise ValidationError("Only .zip or .csv files are allowed.")
         return uploaded
