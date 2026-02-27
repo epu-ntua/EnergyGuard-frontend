@@ -47,7 +47,7 @@
 
                     <!-- TABS LABELS -->
                     <div class="scrollbar px-4">
-                        <ul class="nav nav-underline flex-nowrap mb-3 pb-1">
+                        <ul class="nav nav-underline flex-nowrap mb-0 ">
                             <li class="nav-item me-3"><a class="nav-link text-nowrap fs-8-5 active" href="#tab-members">Members</a></li>
                             <li class="nav-item"><a class="nav-link text-nowrap fs-8-5" href="#tab-settings">Settings</a></li>
                         </ul>
@@ -57,24 +57,29 @@
 
                         <!-- MEMBERS TAB -->
                          <div class="tab-pane fade show active p-4" id="tab-members">
-                            <div class="table-responsive">
-                                <table class="table table-sm fs-9 mb-0">
+                             <div class="table-responsive">
+                                {% if is_team_admin %}
+                                    <button class="btn btn-primary btn-sm mb-4">
+                                        <i class="fa-regular fa-envelope me-2"></i>Invite Member
+                                    </button>
+                                {% endif %}
+                                <table class="table table-sm fs-9 mb-0 text-start">
 
                                     <thead>
                                         <tr>
-                                            <th class="border-top border-translucent ps-3">Name</th>
-                                            <th class="border-top border-translucent ps-3">Email</th>
-                                            <th class="border-top border-translucent ps-3">Role</th>
-                                            <th class="border-top border-translucent ps-3">Status</th>
-                                            <th class="border-top border-translucent ps-3">Date joined</th>
+                                            <th class="border-top border-translucent">Name</th>
+                                            <th class="border-top border-translucent">Email</th>
+                                            <th class="border-top border-translucent">Role</th>
+                                            <th class="border-top border-translucent">Status</th>
+                                            <th class="border-top border-translucent">Date joined</th>
                                             {% if is_team_admin %}
-                                                <th class="border-top border-translucent ps-3">Actions</th>
+                                                <th class="border-top border-translucent">Actions</th>
                                             {% endif %}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="align-middle ps-3">
+                                            <td class="align-middle">
                                                 {{ team.creator.get_full_name|default:team.creator.email }}
                                             </td>
                                             <td class="align-middle">{{ team.creator.email }}</td>
@@ -88,11 +93,12 @@
                                         {% for member in team_members %}
                                             {% if member.user_id != team.creator_id %}
                                                 <tr>
-                                                    <td class="align-middle ps-3">
+                                                    <td class="align-middle">
                                                         {{ member.user.get_full_name|default:member.user.email }}
                                                     </td>
                                                     <td class="align-middle">{{ member.user.email }}</td>
                                                     <td class="align-middle">Member</td>
+                                                    <!-- TODO: Change this when invitations are implemented -->
                                                     <td class="align-middle"><span class="badge bg-success">Active</span></td>
                                                     <!-- TODO: Replace with date joined the team not the platform -->
                                                     <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
