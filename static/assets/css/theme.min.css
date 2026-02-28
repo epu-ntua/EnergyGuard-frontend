@@ -417,7 +417,7 @@
   --phoenix-info: #60c6ff;
   --phoenix-warning: #ffcc85;
   --phoenix-danger: #f48270;
-  --phoenix-primary-rgb: 133, 169, 255;
+  --phoenix-primary-rgb: 79, 212, 241;                   /* Changed from 133, 169, 255 to 79, 212, 241 */
   --phoenix-secondary-rgb: 49, 55, 74;
   --phoenix-success-rgb: 144, 214, 127;
   --phoenix-info-rgb: 96, 198, 255;
