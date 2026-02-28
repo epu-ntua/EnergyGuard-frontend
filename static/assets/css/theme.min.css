@@ -411,7 +411,7 @@
   --phoenix-gray-900-rgb: 159, 166, 188;
   --phoenix-gray-1000-rgb: 203, 208, 221;
   --phoenix-gray-1100-rgb: 239, 241, 245;
-  --phoenix-primary: #85a9ff;
+  --phoenix-primary: #4fd4f1;                   /* Changed from #85a9ff to #4fd4f1 */
   --phoenix-secondary: #31374a;
   --phoenix-success: #90d67f;
   --phoenix-info: #60c6ff;
@@ -23221,7 +23221,7 @@ fieldset:disabled .table-list .page,
   --phoenix-btn-hover-bg: transparent                     /* Changed from #3ac0e8 to transparent */;
   --phoenix-btn-focus-shadow-rgb: 255, 255, 255;
   --phoenix-btn-active-color: #fff;
-  --phoenix-btn-active-bg: #2d5dcc;
+  --phoenix-btn-active-bg: #4fd4f1;                        /* Changed from #2d5dcc to #4fd4f1 */
   --phoenix-btn-active-border-color: rgba(0, 0, 0, 0.25);
   --phoenix-btn-active-shadow: initial;
   --phoenix-btn-disabled-color: #fff;
