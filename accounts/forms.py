@@ -138,7 +138,7 @@ class ProfileEditForm(forms.ModelForm):
         self.fields["team"].initial = effective_team.name if effective_team else ""
 
         if not self.fields["team"].initial:
-            self.fields["team"].widget.attrs["placeholder"] = "No team yet - create one from Team Management"
+            self.fields["team"].widget.attrs["placeholder"] = "No team yet - create one to unlock collaboration features"
 
         if self.instance.birth_date:
             self.fields["year_of_birth"].initial = str(self.instance.birth_date.year)
