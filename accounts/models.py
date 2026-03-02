@@ -85,16 +85,15 @@ class Profile(models.Model):
     team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(max_length=10, choices=Team_Role.choices, default=None, null=True, blank=True)
    
+    # Display user-friendly validation messages
     def clean(self):
         super().clean()
 
-        # Validation to ensure user won't be assigned a team role if they are not part of a team
         if not self.team:
             if self.team_role in [self.Team_Role.ADMIN, self.Team_Role.MEMBER]:
                 raise ValidationError({"team_role": "A user cannot be an admin or member if they are not part of a team."})
             return
         
-        # Prevent changing team if user is already part of a team
         if self.pk:
             old_profile = Profile.objects.get(pk=self.pk)
             if old_profile.team and old_profile.team != self.team:
@@ -110,14 +109,20 @@ class Profile(models.Model):
         ordering = ['user__last_name', 'user__first_name']
         indexes = [models.Index(fields=['user']),]  # Index on user for faster lookups
         constraints = [
-            models.UniqueConstraint(fields=['team'], condition=Q(team_role='admin'), name='unique_team_admin')
+            models.UniqueConstraint(fields=['team'], condition=Q(team_role='admin'), name='unique_team_admin'),
+            models.CheckConstraint(
+                condition=
+                    Q(team__isnull=True, team_role__isnull=True) |
+                    Q(team__isnull=False, team_role__isnull=False),
+                name='team_and_role_together_or_both_null'
+            ),  
         ]
 
 # Custom manager for Team to handle team creation and assign admin role to creator
 class TeamManager(models.Manager):
     @transaction.atomic
     def create_team_assign_admin(self, creator, name, description=""):
-        profile = creator.profile
+        profile, _ = Profile.objects.get_or_create(user=creator)
 
         if profile.team is not None:
             raise ValidationError("User is already part of a team.")
