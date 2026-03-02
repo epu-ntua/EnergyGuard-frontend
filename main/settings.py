@@ -204,10 +204,9 @@ SOCIALACCOUNT_STORE_TOKENS = True
 KEYCLOAK_USER_SYNC_CONFIG = {
     'SERVER_URL': 'https://keycloak.toolbox.epu.ntua.gr',
     'REALM': 'EnergyGuard',
-    # IMPORTANT: Create a dedicated client in Keycloak for this application
+    # Created a dedicated client in Keycloak for this application
     # with "Service Accounts" enabled and assign it the 'manage-users' role
     # from the 'realm-management' client.
-    # Then, add the client ID and secret to your .env file.
     'CLIENT_ID': env('KEYCLOAK_USER_SYNC_ID', default=''),
     'CLIENT_SECRET': env('KEYCLOAK_USER_SYNC_CLIENT_SECRET', default=''),
 }
