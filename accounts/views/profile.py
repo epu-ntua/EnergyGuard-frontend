@@ -53,7 +53,7 @@ def profile(request):
     last_login = get_time_since_joined(request.user.last_login)
 
     user_profile, _ = Profile.objects.get_or_create(user=request.user)
-    effective_team = user_profile.team or getattr(request.user, "created_team", None)
+    effective_team = user_profile.team
     user_projects_count = request.user.creator_projects.count()
 
     is_create_team_post = request.method == "POST" and request.POST.get("action") == "create_team"

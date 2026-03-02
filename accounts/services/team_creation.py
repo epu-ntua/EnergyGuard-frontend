@@ -1,7 +1,8 @@
-from django.db import transaction
 from django.shortcuts import redirect
+from django.core.exceptions import ValidationError
 
 from ..forms import TeamCreateForm
+from ..models import Team
 
 
 def handle_create_team_post(request, profile, current_team, redirect_to):
@@ -13,13 +14,22 @@ def handle_create_team_post(request, profile, current_team, redirect_to):
 
         if current_team is None:
             create_team_form = TeamCreateForm(request.POST)
-            create_team_form.instance.creator = request.user
+
             if create_team_form.is_valid():
-                with transaction.atomic():
-                    new_team = create_team_form.save()
-                    profile.team = new_team
-                    profile.save(update_fields=["team"])
-                return create_team_form, False, new_team, redirect(redirect_to)
+
+                team_name = create_team_form.cleaned_data["name"]
+                team_description = create_team_form.cleaned_data["description"]
+                
+                try:
+                    new_team = Team.objects.create_team_assign_admin(
+                        creator=request.user,
+                        name=team_name,
+                        description=team_description,
+                    )
+                    return create_team_form, False, new_team, redirect(redirect_to)
+                
+                except ValidationError as e:
+                    create_team_form.add_error(None, str(e))
         else:
             return create_team_form, False, current_team, redirect(redirect_to)
 

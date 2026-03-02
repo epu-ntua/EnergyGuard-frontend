@@ -107,7 +107,7 @@ class RegistrationWizard(SessionWizardView):
                 membership=membership_selected,
                 credits=credits_amount,
             )
-            Profile.objects.create(user=user, **profile_data)
+            Profile.objects.update_or_create(user=user, defaults=profile_data)
             if version == "paid":
                 PaymentMethod.objects.create(user=user, **payment_data)
 

@@ -8,8 +8,8 @@ from ..services.team_creation import handle_create_team_post
 @login_required
 def team_management(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    team = profile.team or getattr(request.user, "created_team", None)
-    is_team_admin = bool(team and team.creator_id == request.user.id)
+    team = profile.team
+    is_team_admin = bool(profile.team_role == Profile.Team_Role.ADMIN and team)
 
     create_team_form, open_create_modal, team, response = handle_create_team_post(
         request=request,
@@ -33,16 +33,12 @@ def team_management(request):
             edit_team_form.save()
             return redirect("team_management")
 
-    team_members = []
-    team_members_count = 0
     if team:
-        team_members = list(
-            team.members.select_related("user")
-            .order_by("user__last_name", "user__first_name")
-        )
-        team_members_count = len(team_members)
-        if all(member.user_id != team.creator_id for member in team_members):
-            team_members_count += 1
+        team_members = team.members.select_related("user__profile").order_by("user__last_name", "user__first_name")
+        team_members_count = team.members.count()
+    else:
+        team_members = []
+        team_members_count = 0
 
     return render(
         request,

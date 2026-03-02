@@ -129,9 +129,7 @@ class ProfileEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        effective_team = self.instance.team
-        if not effective_team and self.user:
-            effective_team = getattr(self.user, "created_team", None)
+        effective_team = self.instance.team if self.instance else None
 
         if self.user:
             self.fields["full_name"].initial = f"{self.user.first_name} {self.user.last_name}".strip()

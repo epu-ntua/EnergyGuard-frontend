@@ -78,39 +78,25 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="align-middle">
-                                                {{ team.creator.get_full_name|default:team.creator.email }}
-                                            </td>
-                                            <td class="align-middle">{{ team.creator.email }}</td>
-                                            <td class="align-middle">Admin</td>
-                                            <td class="align-middle"><span class="badge bg-success">Active</span></td>
-                                            <td class="align-middle">{{ team.creator.date_joined|date:"F j, Y" }}</td>
-                                            {% if is_team_admin %}
-                                                <td class="align-middle">-</td>
-                                            {% endif %}
-                                        </tr>
                                         {% for member in team_members %}
-                                            {% if member.user_id != team.creator_id %}
-                                                <tr>
+                                            <tr>
+                                                <td class="align-middle">
+                                                    {{ member.user.get_full_name|default:member.user.email }}
+                                                </td>
+                                                <td class="align-middle">{{ member.user.email }}</td>
+                                                <td class="align-middle">{{ member.user.profile.get_team_role_display }}</td>
+                                                <!-- TODO: Change this when invitations are implemented -->
+                                                <td class="align-middle"><span class="badge bg-success">Active</span></td>
+                                                <!-- TODO: Replace with date joined the team not the platform -->
+                                                <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
+                                                {% if is_team_admin %}
                                                     <td class="align-middle">
-                                                        {{ member.user.get_full_name|default:member.user.email }}
+                                                        <button class="btn btn-sm btn-outline-danger" disabled>
+                                                            <span class="fas fa-trash me-2"></span>Remove
+                                                        </button>
                                                     </td>
-                                                    <td class="align-middle">{{ member.user.email }}</td>
-                                                    <td class="align-middle">Member</td>
-                                                    <!-- TODO: Change this when invitations are implemented -->
-                                                    <td class="align-middle"><span class="badge bg-success">Active</span></td>
-                                                    <!-- TODO: Replace with date joined the team not the platform -->
-                                                    <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
-                                                    {% if is_team_admin %}
-                                                        <td class="align-middle">
-                                                            <button class="btn btn-sm btn-outline-danger" disabled>
-                                                                <span class="fas fa-trash me-2"></span>Remove
-                                                            </button>
-                                                        </td>
-                                                    {% endif %}
-                                                </tr>
-                                            {% endif %}
+                                                {% endif %}
+                                            </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
