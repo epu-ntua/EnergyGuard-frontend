@@ -4,6 +4,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from core.models import TimeStampedModel
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.db import transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -69,26 +73,34 @@ class User(AbstractUser):
 
 class Profile(models.Model):
 
+    class Team_Role(models.TextChoices):
+        ADMIN = 'admin', 'Admin'
+        MEMBER = 'member', 'Member'
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     position = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-
-    # If a user is a creator of a team, they cannot be a member of any team.
+    team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
+    team_role = models.CharField(max_length=10, choices=Team_Role.choices, default=None, null=True, blank=True)
+   
     def clean(self):
         super().clean()
-        # Fixed registration flow issue: Profile gets validated before User is saved, so user_id can be None during validation. Skip validation in that case and rely on Team's clean() to catch any issues after User is created.
-        if self.user_id is None:
+
+        # Validation to ensure user won't be assigned a team role if they are not part of a team
+        if not self.team:
+            if self.team_role in [self.Team_Role.ADMIN, self.Team_Role.MEMBER]:
+                raise ValidationError({"team_role": "A user cannot be an admin or member if they are not part of a team."})
             return
-        created_team = getattr(self.user, "created_team", None)
-        if self.team and created_team and created_team.pk != self.team_id:
-            raise ValidationError("This user is a creator of a team and cannot be a member of another team.")
-   
+        
+        # Prevent changing team if user is already part of a team
+        if self.pk:
+            old_profile = Profile.objects.get(pk=self.pk)
+            if old_profile.team and old_profile.team != self.team:
+                raise ValidationError({"team": "Cannot change team for a user of another team. Remove them from the current team before assigning them to a new team."})
+
     def __str__(self):
-        if self.user_id is None:
-            return "Unassigned Profile"
         return f"{self.user.last_name}, {self.user.first_name}'s Profile"
     
     class Meta:
@@ -97,26 +109,31 @@ class Profile(models.Model):
         verbose_name_plural = 'Profiles'
         ordering = ['user__last_name', 'user__first_name']
         indexes = [models.Index(fields=['user']),]  # Index on user for faster lookups
+        constraints = [
+            models.UniqueConstraint(fields=['team'], condition=Q(team_role='admin'), name='unique_team_admin')
+        ]
 
+# Custom manager for Team to handle team creation and assign admin role to creator
+class TeamManager(models.Manager):
+    @transaction.atomic
+    def create_team_assign_admin(self, creator, name, description=""):
+        profile = creator.profile
+
+        if profile.team is not None:
+            raise ValidationError("User is already part of a team.")
+
+        # Create team and update creator's profile to assign them to the new team and set role to admin
+        team = self.create(name=name, description=description)
+        profile.team = team
+        profile.team_role = Profile.Team_Role.ADMIN
+        profile.save()
+        return team
+    
 class Team(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     
-    # OneToOneField: 1 Team = 1 Creator & 1 User = Creator σε MAX 1 Team
-    creator = models.OneToOneField(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='created_team'
-    )
-
-    # If a user is a member of a team (through their profile), they cannot be a creator of any team.
-    def clean(self):
-        super().clean()
-        if self.creator_id is None:
-            return
-        profile = getattr(self.creator, "profile", None)
-        if profile and profile.team_id is not None and profile.team_id != self.pk:
-            raise ValidationError("This user is already a member of a team and cannot be a creator of another team.")
+    objects = TeamManager()
 
     def __str__(self):
         return self.name
@@ -127,3 +144,16 @@ class Team(TimeStampedModel):
         verbose_name_plural = 'Teams'
         ordering = ['name']
         indexes = [models.Index(fields=['name']),]  # Index on name for faster lookups
+
+# ------------------- SIGNALS ------------------- #
+
+# Automatically create a Profile for each new User and save the Profile when the User is saved
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
