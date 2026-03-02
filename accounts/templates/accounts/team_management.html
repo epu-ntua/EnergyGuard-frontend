@@ -14,13 +14,7 @@
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="d-flex align-items-start">
                             <h3 class="me-6">{{ team }}</h3>
-                            <p class="badge bg-primary">
-                                {% if is_team_admin %}
-                                    Admin
-                                {% else %}
-                                    Member
-                                {% endif %}
-                            </p>
+                            <p class="badge bg-primary">{{ request.user.profile.get_team_role_display }}</p>
                         </div>
                         {% if is_team_admin %}
                             <div>
