@@ -50,7 +50,7 @@
   --phoenix-danger-rgb: 250, 59, 29;
   --phoenix-light-rgb: 239, 242, 246;
   --phoenix-dark-rgb: 20, 24, 36;
-  --phoenix-primary-text-emphasis: #003cc7;
+  --phoenix-primary-text-emphasis: #17afd1;        /* Changed from #85a9ff to #17afd1 */
   --phoenix-secondary-text-emphasis: #525b75;
   --phoenix-success-text-emphasis: #1c6c09;
   --phoenix-info-text-emphasis: #005585;
@@ -147,7 +147,7 @@
   --phoenix-tertiary-color-rgb: 138, 148, 173;
   --phoenix-tertiary-bg: #373e53;
   --phoenix-tertiary-bg-rgb: 55, 62, 83;
-  --phoenix-primary-text-emphasis: #85a9ff;
+  --phoenix-primary-text-emphasis: #17afd1;
   --phoenix-secondary-text-emphasis: #cbd0dd;
   --phoenix-success-text-emphasis: #90d67f;
   --phoenix-info-text-emphasis: #60c6ff;
@@ -221,8 +221,8 @@
   --phoenix-gray-1100-rgb: 20, 24, 36;
   --phoenix-primary-lighter: #adc5ff;
   --phoenix-primary-light: #85a9ff;
-  --phoenix-primary-dark: #004dff;
-  --phoenix-primary-darker: #003cc7;
+  --phoenix-primary-dark: #4fd4f1;
+  --phoenix-primary-darker: #21aece;
   --phoenix-secondary-lighter: #e3e6ed;
   --phoenix-secondary-light: #cbd0dd;
   --phoenix-secondary-dark: #222834;
@@ -566,7 +566,7 @@
   --phoenix-btn-active-bg: var(--phoenix-secondary-bg);
 }
 [data-bs-theme=dark] .btn-phoenix-primary {
-  --phoenix-btn-color: #85a9ff;
+  --phoenix-btn-color: #21aece;               /* Changed from #85a9ff to #21aece */
   --phoenix-btn-bg: #0f111a;
   --phoenix-btn-border-color: #31374a;
   --phoenix-btn-hover-bg: var(--phoenix-body-highlight-bg);
