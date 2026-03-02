@@ -425,8 +425,8 @@
   --phoenix-danger-rgb: 244, 130, 112;
   --phoenix-primary-lighter: #003cc7;
   --phoenix-primary-light: #4fd4f1;
-  --phoenix-primary-dark: #85a9ff;
-  --phoenix-primary-darker: #85a9ff;
+  --phoenix-primary-dark: #7fdaee;              /* Changed from #85a9ff to #7fdaee */
+  --phoenix-primary-darker: #7fdaee;            /* Changed from #85a9ff to #7fdaee */
   --phoenix-warning-lighter: #bc3803;
   --phoenix-warning-light: #e5780b;
   --phoenix-warning-dark: #ffcc85;
