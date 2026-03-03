@@ -1,12 +1,12 @@
-from datetime import date
-
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.files.uploadedfile import UploadedFile
 from django import forms
-from accounts.models import User, Profile, Team
+
 from billing.models import PaymentMethod
+from accounts.models import User, Profile, Team
 from .validators import strict_email_user_validator
 
+from datetime import date
 
 class UserWizardForm(UserCreationForm):
     class Meta(UserCreationForm.Meta): # Inherit from UserCreationForm's Meta, which says not to use default forms.CharField for username. Use UsernameField instead.
@@ -99,7 +99,7 @@ class ProfileEditForm(forms.ModelForm):
 
     year_of_birth = forms.ChoiceField(
         required=False,
-        choices=[('', 'Select Year')] + [(str(year), str(year)) for year in range(date.today().year, 1959, -1)],
+        choices=[('', 'Select Year')] + [(str(year), str(year)) for year in range(date.today().year, 1940, -1)],
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'year', 'name': 'year_of_birth'})
     )
 
@@ -213,3 +213,29 @@ class ProfileUpdateForm(forms.ModelForm):
         widgets = {
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
+ 
+    def clean_profile_picture(self):
+        file = self.cleaned_data.get("profile_picture")
+
+        # Validate only if a NEW file is uploaded (not when clearing the existing one)
+        if isinstance(file, UploadedFile):
+            
+            max_size = 3 * 1024 * 1024      # 3MB limit
+            if file.size > max_size:
+                raise forms.ValidationError("Profile picture must be smaller than 3MB.")
+            
+            allowed_types = [
+                "image/jpeg",
+                "image/jpg",
+                "image/pjpeg",
+                "image/png",
+                "image/x-png",
+                "image/webp",
+                "image/avif"
+            ]
+            content_type = getattr(file, "content_type", None)
+            
+            if content_type not in allowed_types:
+                raise forms.ValidationError("Unsupported file type. Allowed types: JPEG, PNG, WEBP, AVIF.")  
+                
+        return file
