@@ -2,8 +2,10 @@ import logging
 import os
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.db import transaction
+from django.views.decorators.http import require_POST
 
 from ..forms import ProfileEditForm, ProfileUpdateForm
 from ..models import Profile
@@ -94,17 +96,14 @@ def profile(request):
 
 
 @login_required
+@require_POST
 def update_profile_picture(request):
-    if request.method == "POST":
-        profile_instance, _ = Profile.objects.get_or_create(user=request.user)
-        old_picture_path = (
-            profile_instance.profile_picture.path if profile_instance.profile_picture else None
-        )
+    profile_instance, _ = Profile.objects.get_or_create(user=request.user)
 
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=profile_instance)
-        if form.is_valid():
-            if old_picture_path and os.path.exists(old_picture_path):
-                os.remove(old_picture_path)
-            form.save()
+    form = ProfileUpdateForm(request.POST, request.FILES, instance=profile_instance)
+    if form.is_valid():
+        form.save()         # django-cleanup automatically deletes old file when new one is saved
+    else:
+        messages.error(request, "Failed to update profile picture. Please ensure the uploaded file is a valid image and try again.")
 
     return redirect("profile")
