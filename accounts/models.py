@@ -1,13 +1,15 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
-from django.db import models
 from django.utils.translation import gettext_lazy as _
-from core.models import TimeStampedModel
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-from django.db import transaction
-from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
+import os, uuid
+
+from django.db import models, transaction
+from django.db.models import Q
+from django.db.models.signals import post_save
+
+from core.models import TimeStampedModel
 
 # Create your models here.
 
@@ -77,11 +79,17 @@ class Profile(models.Model):
         ADMIN = 'admin', 'Admin'
         MEMBER = 'member', 'Member'
 
+    # Solves hashing issues. Unique filename generator for profile pictures to avoid conflicts and ensure privacy. Format: profile_pics/{user_id}_{uuid4}.{ext}
+    def profile_pic_upload_to(instance, filename):
+            ext = os.path.splitext(filename)[1].lower()     # Get file extension   
+            return f"profile_pics/{instance.user.id}_{uuid.uuid4().hex}{ext}"
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     position = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    # Using ImageField for profile pictures. Requires Pillow library. Stored in MEDIA_ROOT/profile_pics/ with unique filenames to prevent conflicts.
+    profile_picture = models.ImageField(upload_to=profile_pic_upload_to, null=True, blank=True)
     team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(max_length=10, choices=Team_Role.choices, default=None, null=True, blank=True)
    
