@@ -3,6 +3,7 @@ import os
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.db import transaction
 
 from ..forms import ProfileEditForm, ProfileUpdateForm
 from ..models import Profile
@@ -34,17 +35,16 @@ def _sync_name_to_keycloak(user):
 
 
 def _update_user_name_from_full_name(user, full_name):
-    if not full_name:
+    if not full_name or not full_name.strip():
         return
 
-    name_parts = full_name.split()
-    if len(name_parts) < 2:
-        return
-
+    name_parts = full_name.strip().split(maxsplit=1)    # Split by first space
     user.first_name = name_parts[0]
-    user.last_name = " ".join(name_parts[1:])
-    user.save(update_fields=["first_name", "last_name"])
-    _sync_name_to_keycloak(user)
+    user.last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+    with transaction.atomic():
+        user.save(update_fields=["first_name", "last_name"])
+        _sync_name_to_keycloak(user)
 
 
 @login_required
