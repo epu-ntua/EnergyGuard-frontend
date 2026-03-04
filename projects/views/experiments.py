@@ -119,6 +119,7 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=self.project,
                 creator=self.request.user,
+                name=general_info["name"],
                 mlflow_experiment_id=mlflow_experiment_id,
             )
 
@@ -221,6 +222,8 @@ def edit_experiment(request, project_id: int, experiment_id: int):
                 messages.error(request, f"Experiment update failed because MLflow sync failed: {exc}")
                 return redirect("edit_experiment", project_id=project.id, experiment_id=experiment.id)
 
+            experiment.name = form.cleaned_data["name"]
+            experiment.save(update_fields=["name", "updated_at"])
             messages.success(request, "Experiment updated successfully.")
             return redirect("project_details", project_id=project.id)
     else:
@@ -311,6 +314,11 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
                     "value": numeric_value,
                     "run_id": row.get("run_id"),
                 }
+    run_metrics_by_id = {
+        str(row.get("run_id")): row.get("metrics") or {}
+        for row in run_rows
+        if row.get("run_id")
+    }
 
     registered_models: list[dict[str, Any]] = []
     seen_models: set[tuple[str, str]] = set()
@@ -327,12 +335,14 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
             if dedup_key in seen_models:
                 continue
             seen_models.add(dedup_key)
+            version_run_id = str(version.get("run_id") or run_id)
             links = make_registered_model_links(name, model_version or None)
             registered_models.append(
                 {
                     "name": name,
                     "version": model_version,
-                    "run_id": version.get("run_id") or run_id,
+                    "run_id": version_run_id,
+                    "metrics": run_metrics_by_id.get(version_run_id, row.get("metrics") or {}),
                     "source": version.get("source", ""),
                     "model_link": links["model_link"],
                     "model_version_link": links["model_version_link"],

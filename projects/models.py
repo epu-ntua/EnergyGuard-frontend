@@ -38,6 +38,7 @@ class Experiment(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="created_experiments",
     )
+    name = models.CharField(max_length=255, blank=True, default="")
     mlflow_experiment_id = models.CharField(max_length=64, blank=True, default="")
 
     def _get_mlflow_experiment(self) -> dict:
@@ -56,11 +57,6 @@ class Experiment(TimeStampedModel):
         return cached
 
     @property
-    def name(self) -> str:
-        experiment = self._get_mlflow_experiment()
-        return str(experiment.get("name") or f"Experiment {self.pk}")
-
-    @property
     def description(self) -> str:
         experiment = self._get_mlflow_experiment()
         description = experiment.get("description")
@@ -73,7 +69,7 @@ class Experiment(TimeStampedModel):
         return ""
 
     def __str__(self):
-        return self.name
+        return self.name or f"Experiment {self.pk}"
 
     class Meta:
         db_table = "experiment"
