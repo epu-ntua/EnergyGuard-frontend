@@ -17,7 +17,7 @@ def _tracking_uri() -> str:
     return os.getenv("MLFLOW_TRACKING_URI", "https://mlflow.energy-guard.eu").rstrip("/")
 
 
-def _auth_headers(user: Any | None = None) -> tuple[tuple[str, str] | None, dict[str, str]]:
+def _auth_headers(user: Any | None = None) -> dict[str, str]:
     token = (get_user_access_token(user) or "").strip()
 
     headers: dict[str, str] = {}
@@ -28,26 +28,36 @@ def _auth_headers(user: Any | None = None) -> tuple[tuple[str, str] | None, dict
     return headers
 
 
+def _service_credentials() -> tuple[str, str]:
+    username = str(os.getenv("MLFLOW_TRACKING_USERNAME", "")).strip()
+    password = str(os.getenv("MLFLOW_TRACKING_PASSWORD", "")).strip()
+    if not username or not password:
+        raise MlflowClientError("MLflow service credentials are missing.")
+    return username, password
+
+
 def _request(
     method: str,
     path: str,
     payload: dict[str, Any] | None = None,
     params: dict[str, Any] | None = None,
     user: Any | None = None,
+    use_service_credentials: bool = False,
 ) -> dict[str, Any]:
     url = f"{_tracking_uri()}{path}"
-    headers = _auth_headers(user=user)
     request_kwargs: dict[str, Any] = {
-        "headers": headers,
         "timeout": 15,
     }
+    if use_service_credentials:
+        request_kwargs["auth"] = _service_credentials()
+    else:
+        request_kwargs["headers"] = _auth_headers(user=user)
     if method.upper() == "GET":
         request_kwargs["params"] = params or {}
     else:
         request_kwargs["json"] = payload or {}
 
     try:
-        print(request_kwargs)
         response = requests.request(method, url, **request_kwargs)
     except requests.RequestException as exc:
         raise MlflowClientError(f"MLflow {method} {path} request failed: {exc}") from exc
@@ -64,20 +74,32 @@ def create_experiment(name: str, tags: dict[str, str] | None = None, user: Any |
     payload: dict[str, Any] = {"name": name}
     if tags:
         payload["tags"] = [{"key": str(k), "value": str(v)} for k, v in tags.items()]
-    data = _request("POST", "/api/2.0/mlflow/experiments/create", payload, user=user)
+    data = _request(
+        "POST",
+        "/api/2.0/mlflow/experiments/create",
+        payload,
+        user=user,
+        use_service_credentials=True,
+    )
     exp_id = data.get("experiment_id")
     if not exp_id:
         raise MlflowClientError("MLflow did not return experiment_id")
     return str(exp_id)
 
 
-def set_experiment_tags(experiment_id: str, tags: dict[str, Any], user: Any | None = None) -> None:
+def set_experiment_tags(
+    experiment_id: str,
+    tags: dict[str, Any],
+    user: Any | None = None,
+    use_service_credentials: bool = False,
+) -> None:
     for key, value in tags.items():
         _request(
             "POST",
             "/api/2.0/mlflow/experiments/set-experiment-tag",
             {"experiment_id": str(experiment_id), "key": str(key), "value": str(value)},
             user=user,
+            use_service_credentials=use_service_credentials,
         )
 
 
@@ -111,7 +133,13 @@ def get_experiment(experiment_id: str, user: Any | None = None) -> dict[str, Any
 
 
 def delete_experiment(experiment_id: str, user: Any | None = None) -> None:
-    _request("POST", "/api/2.0/mlflow/experiments/delete", {"experiment_id": str(experiment_id)}, user=user)
+    _request(
+        "POST",
+        "/api/2.0/mlflow/experiments/delete",
+        {"experiment_id": str(experiment_id)},
+        user=user,
+        use_service_credentials=True,
+    )
 
 
 def update_experiment_name(experiment_id: str, new_name: str, user: Any | None = None) -> None:
@@ -120,6 +148,22 @@ def update_experiment_name(experiment_id: str, new_name: str, user: Any | None =
         "/api/2.0/mlflow/experiments/update",
         {"experiment_id": str(experiment_id), "new_name": str(new_name)},
         user=user,
+        use_service_credentials=True,
+    )
+
+
+def create_experiment_permission(
+    experiment_id: str,
+    username: str,
+    permission: str = "MANAGE",
+) -> None:
+    encoded_username = quote(str(username), safe="")
+    encoded_experiment_id = quote(str(experiment_id), safe="")
+    _request(
+        "POST",
+        f"/api/2.0/mlflow/permissions/users/{encoded_username}/experiments/{encoded_experiment_id}",
+        {"permission": str(permission)},
+        use_service_credentials=True,
     )
 
 

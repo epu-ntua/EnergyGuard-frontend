@@ -16,6 +16,7 @@ from ..forms import ExperimentEditForm, ExperimentGeneralInfoForm
 from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
+    create_experiment_permission as mlflow_create_experiment_permission,
     create_experiment as mlflow_create_experiment,
     delete_artifacts_from_object_storage as mlflow_delete_artifacts_from_object_storage,
     delete_experiment as mlflow_delete_experiment,
@@ -107,7 +108,18 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
                 mlflow_experiment_id,
                 {"mlflow.note.content": general_info.get("description", "")},
                 user=self.request.user,
+                use_service_credentials=True,
             )
+            try:
+                mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
+            except MlflowClientError:
+                mlflow_update_experiment_name(
+                    mlflow_experiment_id,
+                    mlflow_make_deleted_experiment_name(),
+                    user=self.request.user,
+                )
+                mlflow_delete_experiment(mlflow_experiment_id, user=self.request.user)
+                raise
         except MlflowClientError as exc:
             messages.error(
                 self.request,
@@ -195,6 +207,7 @@ def delete_experiment(request, project_id: int, experiment_id: int):
 def edit_experiment(request, project_id: int, experiment_id: int):
     project = _get_accessible_project_or_404(request.user, project_id)
     experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
+    current_description = experiment.description
 
     if request.user.id not in {project.creator_id, experiment.creator_id}:
         messages.error(request, "You do not have permission to edit this experiment.")
@@ -207,22 +220,38 @@ def edit_experiment(request, project_id: int, experiment_id: int):
     if request.method == "POST":
         form = ExperimentEditForm(request.POST)
         if form.is_valid():
+            new_name = form.cleaned_data["name"].strip()
+            new_description = form.cleaned_data.get("description", "")
+            if not new_description:
+                new_description = current_description
             try:
-                mlflow_update_experiment_name(
-                    experiment.mlflow_experiment_id,
-                    form.cleaned_data["name"],
-                    user=request.user,
-                )
+                if new_name != experiment.name:
+                    mlflow_update_experiment_name(
+                        experiment.mlflow_experiment_id,
+                        new_name,
+                        user=request.user,
+                    )
                 mlflow_set_experiment_tags(
                     experiment.mlflow_experiment_id,
-                    {"mlflow.note.content": form.cleaned_data.get("description", "")},
+                    {"mlflow.note.content": new_description},
                     user=request.user,
+                    use_service_credentials=True,
                 )
             except MlflowClientError as exc:
-                messages.error(request, f"Experiment update failed because MLflow sync failed: {exc}")
-                return redirect("edit_experiment", project_id=project.id, experiment_id=experiment.id)
+                form.add_error(None, f"Experiment update failed because MLflow sync failed: {exc}")
+                return render(
+                    request,
+                    "projects/experiment-edit.html",
+                    {
+                        "project": project,
+                        "experiment": experiment,
+                        "form": form,
+                        "active_navbar_page": "projects",
+                        "show_sidebar": True,
+                    },
+                )
 
-            experiment.name = form.cleaned_data["name"]
+            experiment.name = new_name
             experiment.save(update_fields=["name", "updated_at"])
             messages.success(request, "Experiment updated successfully.")
             return redirect("project_details", project_id=project.id)
@@ -230,7 +259,7 @@ def edit_experiment(request, project_id: int, experiment_id: int):
         form = ExperimentEditForm(
             initial={
                 "name": experiment.name,
-                "description": experiment.description,
+                "description": current_description,
             }
         )
 

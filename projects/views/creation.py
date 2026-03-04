@@ -10,8 +10,12 @@ from ..forms import ProjectFacilitiesForm, ProjectGeneralInfoForm, ProjectSandbo
 from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
+    create_experiment_permission as mlflow_create_experiment_permission,
     create_experiment as mlflow_create_experiment,
+    delete_experiment as mlflow_delete_experiment,
+    make_deleted_experiment_name as mlflow_make_deleted_experiment_name,
     set_experiment_tags as mlflow_set_experiment_tags,
+    update_experiment_name as mlflow_update_experiment_name,
 )
 
 PROJECT_TEMPLATE_NAMES = {
@@ -61,7 +65,18 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                             mlflow_experiment_id,
                             {"mlflow.note.content": "Default experiment created with the project."},
                             user=self.request.user,
+                            use_service_credentials=True,
                         )
+                        try:
+                            mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
+                        except MlflowClientError:
+                            mlflow_update_experiment_name(
+                                mlflow_experiment_id,
+                                mlflow_make_deleted_experiment_name(),
+                                user=self.request.user,
+                            )
+                            mlflow_delete_experiment(mlflow_experiment_id, user=self.request.user)
+                            raise
                         break
                     except MlflowClientError as exc:
                         error_text = str(exc).lower()
@@ -78,6 +93,7 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             Experiment.objects.create(
                 project=project,
                 creator=self.request.user,
+                name=default_experiment_name,
                 mlflow_experiment_id=mlflow_experiment_id,
             )
 

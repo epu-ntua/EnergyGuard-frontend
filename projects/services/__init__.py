@@ -1,5 +1,6 @@
 from .mlflow_client import (
     MlflowClientError,
+    create_experiment_permission,
     create_experiment,
     delete_artifacts_from_object_storage,
     delete_experiment,
@@ -12,6 +13,7 @@ from .mlflow_client import (
 
 __all__ = [
     "MlflowClientError",
+    "create_experiment_permission",
     "create_experiment",
     "delete_artifacts_from_object_storage",
     "delete_experiment",

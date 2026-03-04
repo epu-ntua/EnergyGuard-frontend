@@ -44,9 +44,9 @@ class Experiment(TimeStampedModel):
     def _get_mlflow_experiment(self) -> dict:
         if not self.mlflow_experiment_id:
             return {}
-        cached = getattr(self, "_mlflow_experiment_cache", None)
-        if cached is not None:
-            return cached
+        # cached = getattr(self, "_mlflow_experiment_cache", None)
+        # if cached is not None:
+        #     return cached
         try:
             from .services.mlflow_client import MlflowClientError, get_experiment
 
