@@ -37,7 +37,7 @@ def header_notifications(request):
         notifications.append(
             {
                 "message": "Add Team to collaborate with people",
-                "url": reverse("profile"),
+                "url": reverse("team_management"),
                 "icon": "users",
             }
         )
