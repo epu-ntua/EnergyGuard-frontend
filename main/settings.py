@@ -148,33 +148,35 @@ STATIC_ROOT = BASE_DIR / 'staticfiles' # Directory where static files will be co
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+STATICFILES_BACKEND = (
+    "django.contrib.staticfiles.storage.StaticFilesStorage"
+    if DEBUG
+    else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
+
+STORAGES = {
+    "staticfiles": {"BACKEND": STATICFILES_BACKEND},
+}
+
 if env.bool("USE_S3_FOR_MEDIA", default=False):
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3.S3Storage", # Using S3-compatible storage for media files (MinIO)
-            "OPTIONS": {
-                "access_key": env("OBJECT_STORAGE_ACCESS_KEY"),
-                "secret_key": env("OBJECT_STORAGE_SECRET_KEY"),
-                "bucket_name": env("OBJECT_STORAGE_MEDIA_BUCKET"),
-                "endpoint_url": env("OBJECT_STORAGE_ENDPOINT"),
-                "region_name": "us-east-1",
-                "addressing_style": "path",     # Use path-style addressing for MinIO (e.g., http://endpoint/bucket/key) instead of virtual-hosted style (e.g., http://bucket.endpoint/key). More compatible with non-AWS S3 services.
-                "signature_version": "s3v4",    # Requests signature version 4, which is supported by MinIO and required for some operations
-                "file_overwrite": False,  # Prevent overwriting files with the same name
-                "default_acl": "public-read", 
-                "querystring_auth": False,      # Disable query string authentication to avoid issues with MinIO when public-read ACL is used. Defaults to False when default_acl is public-read, but set explicitly for clarity.
-            },
-        },
-        "staticfiles": {
-            # Using ManifestStaticFilesStorage to enable long-term caching with hashed filenames
-            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",  # Using S3-compatible storage for media files (MinIO)
+        "OPTIONS": {
+            "access_key": env("OBJECT_STORAGE_ACCESS_KEY"),
+            "secret_key": env("OBJECT_STORAGE_SECRET_KEY"),
+            "bucket_name": env("OBJECT_STORAGE_MEDIA_BUCKET"),
+            "endpoint_url": env("OBJECT_STORAGE_ENDPOINT"),
+            "region_name": "us-east-1",
+            "addressing_style": "path",     # Use path-style addressing for MinIO (e.g., http://endpoint/bucket/key) instead of virtual-hosted style (e.g., http://bucket.endpoint/key). More compatible with non-AWS S3 services.
+            "signature_version": "s3v4",    # Requests signature version 4, which is supported by MinIO and required for some operations
+            "file_overwrite": False,  # Prevent overwriting files with the same name
+            "default_acl": None, 
+            "querystring_auth": True,      # Query string authentication for secure access to media files, especially if the bucket is private. Generates presigned URLs with temporary access tokens.
+            "querystring_expire": 3600,    # Presigned URL expiration time in seconds (1 hour)
         },
     }
 else:
-    STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
-    }
+    STORAGES["default"] = {"BACKEND": "django.core.files.storage.FileSystemStorage"}
 
 
 # Default primary key field type
