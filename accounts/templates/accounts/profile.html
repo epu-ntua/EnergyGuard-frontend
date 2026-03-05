@@ -124,7 +124,7 @@
                                     <label class="form-label text-body-highlight fs-8 ps-0 text-capitalize lh-sm" for="team">Team</label>
                                     <div class="input-group">
                                         {{ form.team }}
-                                        {% if effective_team %}
+                                        {% if existing_team %}
                                             <a class="btn btn-outline-primary" href="{% url 'team_management' %}">
                                                 <span class="fas fa-users me-2"></span>Manage Team
                                             </a>
@@ -349,7 +349,7 @@
         </div>
     </section>
     {% include "core/footer.html" %}
-    {% if not effective_team %}
+    {% if not existing_team %}
         {% include "accounts/partials/create-team-modal.html" %}
     {% endif %}
 </div>
@@ -357,7 +357,7 @@
 {% endblock content %}
 
 {% block scripts %}
-{% if not effective_team and open_create_modal %}
+{% if not existing_team and open_create_modal %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var el = document.getElementById("createTeamModal");

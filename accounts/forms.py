@@ -129,11 +129,11 @@ class ProfileEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        effective_team = self.instance.team if self.instance else None
+        existing_team = self.instance.team if self.instance else None
 
         if self.user:
             self.fields["full_name"].initial = f"{self.user.first_name} {self.user.last_name}".strip()
-        self.fields["team"].initial = effective_team.name if effective_team else ""
+        self.fields["team"].initial = existing_team.name if existing_team else ""
 
         if not self.fields["team"].initial:
             self.fields["team"].widget.attrs["placeholder"] = "No team yet - create one to unlock collaboration features"

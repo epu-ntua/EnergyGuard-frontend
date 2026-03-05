@@ -55,15 +55,15 @@ def profile(request):
     last_login = get_time_since_joined(request.user.last_login)
 
     user_profile, _ = Profile.objects.get_or_create(user=request.user)
-    effective_team = user_profile.team
+    existing_team = user_profile.team
     user_projects_count = request.user.creator_projects.count()
 
     is_create_team_post = request.method == "POST" and request.POST.get("action") == "create_team"
 
-    create_team_form, open_create_modal, effective_team, response = handle_create_team_post(
+    create_team_form, open_create_modal, existing_team, response = handle_create_team_post(
         request=request,
         profile=user_profile,
-        current_team=effective_team,
+        current_team=existing_team,
         redirect_to="profile",
     )
     if response:
@@ -87,7 +87,7 @@ def profile(request):
             "last_login": last_login,
             "form": form,
             "profile": user_profile,
-            "effective_team": effective_team,
+            "existing_team": existing_team,
             "total_projects": user_projects_count,
             "create_team_form": create_team_form,
             "open_create_modal": open_create_modal, 
