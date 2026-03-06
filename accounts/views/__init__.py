@@ -1,6 +1,6 @@
 from .auth import keycloak_logout, login_view
 from .profile import profile, update_profile_picture
-from .teams import team_management
+from .teams import team_management, accept_invite, decline_invite
 from .registration import (
     REGISTRATION_FORMS,
     RegistrationWizard,

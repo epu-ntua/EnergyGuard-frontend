@@ -20,16 +20,17 @@ def send_team_invite(request, team, email, invited_by):
     if Profile.objects.filter(user__email=email, team=team).exists():
         return None, "This user is already a member of your team."
 
-    # Pending non-expired invite already exists?
+    # Pending non-expired invite already exists (not declined)?
     existing = TeamInvite.objects.filter(team=team, email=email, accepted_at__isnull=True).first()
-    if existing and not existing.is_expired:
+    if existing and not existing.is_expired and not existing.is_declined:
         return None, "An invitation has already been sent to this email."
 
-    # Refresh expired invite or create new one
+    # Refresh expired/declined invite or create new one
     if existing:
         existing.token = uuid.uuid4()
         existing.expires_at = timezone.now() + timedelta(days=INVITE_EXPIRY_DAYS)
         existing.invited_by = invited_by
+        existing.declined_at = None
         existing.save()
         invite = existing
     else:
@@ -58,6 +59,27 @@ def send_team_invite(request, team, email, invited_by):
     )
 
     return invite, None
+
+
+def decline_team_invite(token, user):
+    """
+    Declines a team invitation for the given user.
+    Returns error_message or None on success.
+    """
+    try:
+        invite = TeamInvite.objects.get(token=token)
+    except TeamInvite.DoesNotExist:
+        return "Invalid invitation link."
+
+    if invite.is_accepted:
+        return "This invitation has already been accepted."
+
+    if user.email != invite.email:
+        return "This invitation was sent to a different email address."
+
+    invite.declined_at = timezone.now()
+    invite.save()
+    return None
 
 
 def accept_team_invite(token, user):

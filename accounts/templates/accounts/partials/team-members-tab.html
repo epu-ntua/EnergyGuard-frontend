@@ -37,11 +37,19 @@
             {% if is_team_admin %}
                 {% for invite in pending_invites %}
                 <tr>
-                    <td class="align-middle text-body-tertiary">—</td>
+                    <td class="align-middle">
+                        {% if invite.platform_user %}
+                            {{ invite.platform_user.get_full_name|default:invite.platform_user.email }}
+                        {% else %}
+                            <span class="text-body-tertiary">—</span>
+                        {% endif %}
+                    </td>
                     <td class="align-middle">{{ invite.email }}</td>
                     <td class="align-middle text-body-tertiary">Member</td>
                     <td class="align-middle">
-                        {% if invite.is_expired %}
+                        {% if invite.is_declined %}
+                            <span class="badge text-bg-secondary">Declined</span>
+                        {% elif invite.is_expired %}
                             <span class="badge text-bg-danger">Expired</span>
                         {% else %}
                             <span class="badge text-bg-warning">Pending</span>

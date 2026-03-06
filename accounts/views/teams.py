@@ -3,9 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import TeamEditForm, TeamInviteForm
-from ..models import Profile, TeamInvite
+from ..models import Profile, TeamInvite, User
 from ..services.team_creation import handle_create_team_post
-from ..services.team_invite import accept_team_invite, send_team_invite
+from ..services.team_invite import accept_team_invite, decline_team_invite, send_team_invite
 
 @login_required
 def team_management(request):
@@ -60,11 +60,19 @@ def team_management(request):
     if team:
         team_members = team.members.select_related("user__profile").order_by("user__last_name", "user__first_name")
         team_members_count = team.members.count()
-        pending_invites = (
-            TeamInvite.objects.filter(team=team, accepted_at__isnull=True)
-            .order_by("-created_at")
-            if is_team_admin else []
-        )
+        if is_team_admin:
+            pending_invites = list(
+                TeamInvite.objects.filter(team=team, accepted_at__isnull=True)
+                .order_by("-created_at")
+            )
+            user_map = {
+                u.email: u
+                for u in User.objects.filter(email__in=[i.email for i in pending_invites])
+            }
+            for invite in pending_invites:
+                invite.platform_user = user_map.get(invite.email)
+        else:
+            pending_invites = []
     else:
         team_members = []
         team_members_count = 0
@@ -72,7 +80,8 @@ def team_management(request):
 
     received_invites = TeamInvite.objects.filter(
         email=request.user.email,
-        accepted_at__isnull=True
+        accepted_at__isnull=True,
+        declined_at__isnull=True,
     ).select_related('team', 'invited_by').prefetch_related('team__members__user')
 
     return render(
@@ -102,4 +111,16 @@ def accept_invite(request, token):
     if error:
         return render(request, "accounts/accept_invite_error.html", {"error": error})
     messages.success(request, f"You have successfully joined {team.name}!")
+    return redirect("team_management")
+
+
+@login_required
+def decline_invite(request, token):
+    if request.method != "POST":
+        return redirect("team_management")
+    error = decline_team_invite(token=token, user=request.user)
+    if error:
+        messages.error(request, error)
+    else:
+        messages.info(request, "Invitation declined.")
     return redirect("team_management")
