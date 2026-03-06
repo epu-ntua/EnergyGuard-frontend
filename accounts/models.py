@@ -8,6 +8,7 @@ import os, uuid
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 
@@ -157,6 +158,32 @@ class Team(TimeStampedModel):
         verbose_name_plural = 'Teams'
         ordering = ['name']
         indexes = [models.Index(fields=['name']),]  # Index on name for faster lookups
+
+class TeamInvite(models.Model):
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='invites')
+    email = models.EmailField()
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_invites')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    @property
+    def is_accepted(self):
+        return self.accepted_at is not None
+
+    def __str__(self):
+        return f"Invite to {self.email} for {self.team}"
+
+    class Meta:
+        db_table = 'team_invite'
+        verbose_name = 'Team Invite'
+        verbose_name_plural = 'Team Invites'
+
 
 # ------------------- SIGNALS ------------------- #
 
