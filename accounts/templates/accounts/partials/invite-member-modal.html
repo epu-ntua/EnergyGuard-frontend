@@ -1,0 +1,32 @@
+<div class="modal fade" id="inviteMemberModal" tabindex="-1" aria-labelledby="inviteMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'team_management' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_invite">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteMemberModalLabel">Invite Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% if invite_error %}
+                        <div class="alert alert-danger fs-9 py-2" role="alert">{{ invite_error }}</div>
+                    {% endif %}
+                    <div class="mb-0">
+                        <label class="form-label">Email address</label>
+                        {{ invite_form.email }}
+                        {% if invite_form.email.errors %}
+                            <div class="text-danger fs-9 mt-1">{{ invite_form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-regular fa-envelope me-2"></i>Send Invite
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
