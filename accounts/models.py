@@ -167,6 +167,7 @@ class TeamInvite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     accepted_at = models.DateTimeField(null=True, blank=True)
+    declined_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def is_expired(self):
@@ -175,6 +176,10 @@ class TeamInvite(models.Model):
     @property
     def is_accepted(self):
         return self.accepted_at is not None
+
+    @property
+    def is_declined(self):
+        return self.declined_at is not None
 
     def __str__(self):
         return f"Invite to {self.email} for {self.team}"
