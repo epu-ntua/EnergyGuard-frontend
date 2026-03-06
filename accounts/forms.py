@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django import forms
 
 from billing.models import PaymentMethod
-from accounts.models import User, Profile, Team
+from accounts.models import User, Profile, Team, TeamInvite
 from .validators import strict_email_user_validator
 
 from datetime import date
@@ -204,6 +204,15 @@ class TeamCreateForm(forms.ModelForm):
 
 class TeamEditForm(TeamCreateForm):
     pass
+
+
+class TeamInviteForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'colleague@example.com',
+        })
+    )
 
 
 class ProfileUpdateForm(forms.ModelForm):
