@@ -10,4 +10,5 @@ urlpatterns = [
     # path('keycloak-redirect/', views.keycloak_redirect, name='account_keycloak_redirect'),
     path('profile/update-picture/', views.update_profile_picture, name='update_profile_picture'),
     path('team-management/', views.team_management, name='team_management'),
+    path('invite/accept/<uuid:token>/', views.accept_invite, name='accept_invite'),
 ]
