@@ -1,0 +1,63 @@
+<div class="table-responsive">
+    {% if is_team_admin %}
+        <button class="btn btn-primary btn-sm mb-4" data-bs-toggle="modal" data-bs-target="#inviteMemberModal">
+            <i class="fa-regular fa-envelope me-2"></i>Invite Member
+        </button>
+    {% endif %}
+    <table class="table table-sm fs-9 mb-0 text-start">
+        <thead>
+            <tr>
+                <th class="border-top border-translucent">Name</th>
+                <th class="border-top border-translucent">Email</th>
+                <th class="border-top border-translucent">Role</th>
+                <th class="border-top border-translucent">Status</th>
+                <th class="border-top border-translucent">Date Joined / Invited</th>
+                {% if is_team_admin %}
+                    <th class="border-top border-translucent">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in team_members %}
+                <tr>
+                    <td class="align-middle">{{ member.user.get_full_name|default:member.user.email }}</td>
+                    <td class="align-middle">{{ member.user.email }}</td>
+                    <td class="align-middle">{{ member.user.profile.get_team_role_display }}</td>
+                    <td class="align-middle"><span class="badge bg-success">Active</span></td>
+                    <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
+                    {% if is_team_admin %}
+                        <td class="align-middle">
+                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                <span class="fas fa-trash me-2"></span>Remove
+                            </button>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% if is_team_admin %}
+                {% for invite in pending_invites %}
+                <tr>
+                    <td class="align-middle text-body-tertiary">—</td>
+                    <td class="align-middle">{{ invite.email }}</td>
+                    <td class="align-middle text-body-tertiary">Member</td>
+                    <td class="align-middle">
+                        {% if invite.is_expired %}
+                            <span class="badge text-bg-danger">Expired</span>
+                        {% else %}
+                            <span class="badge text-bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">{{ invite.created_at|date:"F j, Y" }}</td>
+                    <td class="align-middle">
+                        {% if invite.is_expired %}
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <span class="fas fa-redo me-2"></span>Resend
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>

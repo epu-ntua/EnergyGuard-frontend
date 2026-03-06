@@ -8,128 +8,13 @@
         <div class="container-small">
 
             <h2 class="mb-9">Team Management</h2>
-        
+
             {% if team %}
-                <div class="card p-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-start">
-                            <h3 class="me-6">{{ team }}</h3>
-                            <p class="badge bg-primary">{{ request.user.profile.get_team_role_display }}</p>
-                        </div>
-                        {% if is_team_admin %}
-                            <div>
-                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#editTeamModal">
-                                    <span class="fas fa-edit me-2"></span>Edit Team
-                                </button>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <p class="mb-2">{{ team.description }}</p>
-                        <p class="mb-0">Created: {{ team.created_at|date:"F j, Y" }}</p>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-start text-body-tertiary fs-8-5">
-                        <p class="me-4"><span class="text-primary fas fa-users me-2"></span>{{ team_members_count }} Member{% if team_members_count > 1 %}s{% endif %}</p>
-                        <!-- TODO: Dynamically display projects -->
-                        <p><span class="text-primary fas fa-project-diagram me-2"></span>8 Projects Shared</p>
-                    </div>
-                </div>
-                
-                <!-- TABS -->
-                 <div>
-
-                    <!-- TABS LABELS -->
-                    <div class="scrollbar px-4">
-                        <ul class="nav nav-underline flex-nowrap mb-0 ">
-                            <li class="nav-item me-3"><a class="nav-link text-nowrap fs-8-5 active" href="#tab-members" role="tab" aria-selected="true" id="members-tab" data-bs-toggle="tab" aria-controls="tab-members">Members</a></li>
-                            <li class="nav-item"><a class="nav-link text-nowrap fs-8-5" href="#tab-settings" role="tab" aria-selected="false" id="settings-tab" data-bs-toggle="tab" aria-controls="tab-settings">Settings</a></li>
-                        </ul>
-                    </div>
-                    <!-- TABS CONTENT -->
-                     <div class="tab-content mb-2">
-
-                        <!-- MEMBERS TAB -->
-                         <div class="tab-pane fade show active p-4" id="tab-members" role="tabpanel" aria-labelledby="members-tab">
-                             <div class="table-responsive">
-                                {% if is_team_admin %}
-                                    <button class="btn btn-primary btn-sm mb-4">
-                                        <i class="fa-regular fa-envelope me-2"></i>Invite Member
-                                    </button>
-                                {% endif %}
-                                <table class="table table-sm fs-9 mb-0 text-start">
-
-                                    <thead>
-                                        <tr>
-                                            <th class="border-top border-translucent">Name</th>
-                                            <th class="border-top border-translucent">Email</th>
-                                            <th class="border-top border-translucent">Role</th>
-                                            <th class="border-top border-translucent">Status</th>
-                                            <th class="border-top border-translucent">Date joined</th>
-                                            {% if is_team_admin %}
-                                                <th class="border-top border-translucent">Actions</th>
-                                            {% endif %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for member in team_members %}
-                                            <tr>
-                                                <td class="align-middle">
-                                                    {{ member.user.get_full_name|default:member.user.email }}
-                                                </td>
-                                                <td class="align-middle">{{ member.user.email }}</td>
-                                                <td class="align-middle">{{ member.user.profile.get_team_role_display }}</td>
-                                                <!-- TODO: Change this when invitations are implemented -->
-                                                <td class="align-middle"><span class="badge bg-success">Active</span></td>
-                                                <!-- TODO: Replace with date joined the team not the platform -->
-                                                <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
-                                                {% if is_team_admin %}
-                                                    <td class="align-middle">
-                                                        <button class="btn btn-sm btn-outline-danger" disabled>
-                                                            <span class="fas fa-trash me-2"></span>Remove
-                                                        </button>
-                                                    </td>
-                                                {% endif %}
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-
-                            </div>
-                         </div>
-
-                        <!-- SETTINGS TAB -->
-                         <div class="tab-pane fade p-4" id="tab-settings" role="tabpanel" aria-labelledby="settings-tab">
-                            <h4>Settings</h4>
-                         </div>
-                     </div>
-                 </div>
-
-
+                {% include 'accounts/partials/team-overview.html' %}
+            {% else %}
+                {% include 'accounts/partials/no-team.html' %}
             {% endif %}
-            
-            {% if not team %}
-            <div class="card mb-4 p-4 text-center w-75 mx-auto">
-                <h4 class="mb-4">You are not part of a Team yet</h4>
-                <p class="mb-2">Teams enable collaboration by allowing members to share projects, experiments, and computational resources.</p>
-                <p class="mb-3">To start collaborating, you can either create a new team or join an existing one.</p>
-                <div>
-                    <a class="btn btn-primary me-3" href="{% url 'team_management' %}?create=1"><span class="fas fa-plus me-2"></span>Create a Team</a>
-                    <a class="btn btn-outline-primary" href="#"><span class="fas fa-plus me-2"></span>Join a Team</a>
-                </div>
-            </div>
-        
-            <div class="card mb-4 p-4 w-75 mx-auto">
-                <h5 class="mb-4"><i class="fa-solid fa-circle-question me-2 text-primary"></i>What is a Team?</h5>
-                <ul>
-                    <li class="mb-1">Share projects and experiments</li>
-                    <li class="mb-1">Collaborate with other members</li>
-                    <li>Access shared HPC resources</li>
-                </ul>
-            </div>
 
-            
-            {% endif %}
         </div>
     </section>
     {% include 'core/footer.html' %}
@@ -138,6 +23,7 @@
 {% include 'accounts/partials/create-team-modal.html' %}
 {% if team and is_team_admin %}
     {% include 'accounts/partials/edit-team-modal.html' %}
+    {% include 'accounts/partials/invite-member-modal.html' %}
 {% endif %}
 
 {% endblock content %}
@@ -164,6 +50,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     var editTeamModal = new bootstrap.Modal(editTeamModalElement);
     editTeamModal.show();
+});
+</script>
+{% endif %}
+{% if team and is_team_admin and open_invite_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var inviteMemberModalElement = document.getElementById("inviteMemberModal");
+    if (!inviteMemberModalElement || typeof bootstrap === "undefined") {
+        return;
+    }
+    var inviteMemberModal = new bootstrap.Modal(inviteMemberModalElement);
+    inviteMemberModal.show();
 });
 </script>
 {% endif %}
