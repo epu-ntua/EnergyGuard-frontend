@@ -124,3 +124,68 @@ def decline_invite(request, token):
     else:
         messages.info(request, "Invitation declined.")
     return redirect("team_management")
+
+
+@login_required
+def resend_invite(request, invite_id):
+    if request.method != "POST":
+        return redirect("team_management")
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
+        return redirect("team_management")
+    invite = get_object_or_404(TeamInvite, id=invite_id, team=profile.team)
+    _, error = send_team_invite(
+        request=request,
+        team=profile.team,
+        email=invite.email,
+        invited_by=request.user,
+    )
+    if error:
+        messages.error(request, error)
+    else:
+        messages.success(request, f"Invitation resent to {invite.email}.")
+    return redirect("team_management")
+
+
+@login_required
+def cancel_invite(request, invite_id):
+    if request.method != "POST":
+        return redirect("team_management")
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
+        return redirect("team_management")
+    invite = get_object_or_404(TeamInvite, id=invite_id, team=profile.team)
+    invite.delete()
+    messages.success(request, f"Invitation to {invite.email} cancelled.")
+    return redirect("team_management")
+
+
+@login_required
+def delete_invite(request, invite_id):
+    if request.method != "POST":
+        return redirect("team_management")
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
+        return redirect("team_management")
+    invite = get_object_or_404(TeamInvite, id=invite_id, team=profile.team)
+    invite.delete()
+    messages.success(request, f"Invite record for {invite.email} deleted.")
+    return redirect("team_management")
+
+
+@login_required
+def remove_member(request, user_id):
+    if request.method != "POST":
+        return redirect("team_management")
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
+        return redirect("team_management")
+    member_profile = get_object_or_404(Profile, user__id=user_id, team=profile.team)
+    if member_profile.user == request.user:
+        messages.error(request, "You cannot remove yourself from the team.")
+        return redirect("team_management")
+    member_profile.team = None
+    member_profile.team_role = None
+    member_profile.save()
+    messages.success(request, f"{member_profile.user.get_full_name() or member_profile.user.email} has been removed from the team.")
+    return redirect("team_management")

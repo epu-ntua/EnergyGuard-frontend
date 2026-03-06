@@ -27,9 +27,25 @@
                     <td class="align-middle">{{ member.user.date_joined|date:"F j, Y" }}</td>
                     {% if is_team_admin %}
                         <td class="align-middle">
-                            <button class="btn btn-sm btn-outline-danger" disabled>
-                                <span class="fas fa-trash me-2"></span>Remove
-                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-ghost-secondary px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if member.user != request.user %}
+                                    <li>
+                                        <form method="post" action="{% url 'remove_member' member.user.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-user-minus me-2"></i>Remove Member
+                                            </button>
+                                        </form>
+                                    </li>
+                                    {% else %}
+                                    <li><span class="dropdown-item text-body-tertiary">No actions</span></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
                         </td>
                     {% endif %}
                 </tr>
@@ -57,11 +73,49 @@
                     </td>
                     <td class="align-middle">{{ invite.created_at|date:"F j, Y" }}</td>
                     <td class="align-middle">
-                        {% if invite.is_expired %}
-                            <button class="btn btn-sm btn-outline-secondary" disabled>
-                                <span class="fas fa-redo me-2"></span>Resend
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-ghost-secondary px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis"></i>
                             </button>
-                        {% endif %}
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if invite.is_declined %}
+                                    <li>
+                                        <form method="post" action="{% url 'resend_invite' invite.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form method="post" action="{% url 'delete_invite' invite.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% elif invite.is_expired %}
+                                    <li>
+                                        <form method="post" action="{% url 'resend_invite' invite.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <form method="post" action="{% url 'cancel_invite' invite.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-times me-2"></i>Cancel Invite
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

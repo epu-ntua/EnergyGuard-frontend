@@ -12,4 +12,8 @@ urlpatterns = [
     path('team-management/', views.team_management, name='team_management'),
     path('invite/accept/<uuid:token>/', views.accept_invite, name='accept_invite'),
     path('invite/decline/<uuid:token>/', views.decline_invite, name='decline_invite'),
+    path('invite/<int:invite_id>/resend/', views.resend_invite, name='resend_invite'),
+    path('invite/<int:invite_id>/cancel/', views.cancel_invite, name='cancel_invite'),
+    path('invite/<int:invite_id>/delete/', views.delete_invite, name='delete_invite'),
+    path('team/remove-member/<int:user_id>/', views.remove_member, name='remove_member'),
 ]
