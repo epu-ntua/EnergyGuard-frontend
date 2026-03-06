@@ -1,4 +1,4 @@
-<div class="card mb-4 overflow-hidden border border-translucent shadow-sm rounded-3 {% if not team %}w-75 mx-auto{% endif %}">
+<div class="card mb-4 overflow-hidden border border-translucent shadow-sm rounded-3 {% if not team %}w-100 w-md-75 mx-auto{% endif %}">
     <!-- Header -->
     <div class="bg-warning-subtle d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-translucent">
         <div class="badge-phoenix badge-phoenix-warning rounded-pill">
@@ -8,17 +8,18 @@
 
     <!-- Body -->
     {% for invite in received_invites %}
-    <div class="d-flex align-items-center gap-3 p-3">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3 p-3">
         <!-- Info -->
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
             <h6 class="fw-bold mb-1 fs-8">{{ invite.team.name }}</h6>
             <div class="fs-9 mb-1">
-                Invited by <strong>{{ invite.invited_by.first_name }} {{ invite.invited_by.last_name }}</strong><span class="fs-10 text-body-tertiary">&middot; {{ invite.created_at|timesince }} ago</span>
+                Invited by <strong>{{ invite.invited_by.first_name }} {{ invite.invited_by.last_name }}</strong>
+                <span class="fs-10 text-body-tertiary">&middot; {{ invite.created_at|timesince }} ago</span>
             </div>
-            <div class="d-flex align-items-center fs-10 text-body-tertiary gap-1">
+            <div class="d-flex flex-wrap align-items-center fs-10 text-body-tertiary gap-1">
                 {% for member in invite.team.members.all|slice:":4" %}
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle {% cycle 'bg-danger' 'bg-warning' 'bg-success' 'bg-primary' %} text-white fw-bold border border-2 border-white {% if forloop.first %}ms-0{% endif %}"
-                        style="width:24px;height:24px;font-size:.55rem;margin-left:-8px;"
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle {% cycle 'bg-danger' 'bg-warning' 'bg-success' 'bg-primary' %} text-white fw-bold border border-2 border-white"
+                        style="width:24px;height:24px;font-size:.55rem;"
                         data-bs-toggle="tooltip"
                         title="{% if member.user.first_name or member.user.last_name %}{{ member.user.first_name }} {{ member.user.last_name }}{% else %}{{ member.user.email }}{% endif %}">
                         {% if member.user.first_name or member.user.last_name %}
@@ -28,27 +29,27 @@
                         {% endif %}
                     </span>
                 {% endfor %}
-                <span class="ms-2">
-                    <i class="fas fa-users me-1"></i>{{ invite.team.members.count }} &middot;
-                    <i class="fas fa-project-diagram ms-1 me-1"></i>12 projects &middot;
-                    <i class="fas fa-server ms-1 me-1"></i>HPC access
+                <span class="d-flex flex-wrap gap-2 ms-1">
+                    <span><i class="fas fa-users me-1"></i>{{ invite.team.members.count }}</span>
+                    <span><i class="fas fa-project-diagram me-1"></i>12 projects</span>
+                    <span><i class="fas fa-server me-1"></i>HPC access</span>
                 </span>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="d-flex gap-2 flex-shrink-0">
+        <div class="d-flex gap-2 flex-shrink-0 w-100 w-sm-auto">
             <form id="decline-form-{{ invite.token }}" method="post" action="{% url 'decline_invite' invite.token %}">
                 {% csrf_token %}
             </form>
-            <button type="button" class="btn btn-outline-danger btn-sm"
+            <button type="button" class="btn btn-outline-danger btn-sm flex-fill flex-sm-grow-0"
                 data-bs-toggle="modal"
                 data-bs-target="#declineInviteModal"
                 data-form-id="decline-form-{{ invite.token }}"
                 data-team-name="{{ invite.team.name }}">
                 <i class="fas fa-times me-1"></i>Decline
             </button>
-            <a href="{% url 'accept_invite' invite.token %}" class="btn btn-primary btn-sm">
+            <a href="{% url 'accept_invite' invite.token %}" class="btn btn-primary btn-sm flex-fill flex-sm-grow-0">
                 <i class="fas fa-check me-1"></i>Accept
             </a>
         </div>
@@ -57,7 +58,8 @@
     <!-- Footer -->
     <div class="bg-body-secondary border-top border-translucent px-3 py-2 fs-10 text-body-tertiary">
         <i class="fas fa-hourglass-half text-warning me-1"></i>
-        The invitation expires in <span class="fw-bold text-warning-darker ms-1 me-1">{{ invite.expires_at|timeuntil }}</span> &middot; &nbsp;{{ invite.expires_at|date:"F j, Y" }}
+        The invitation expires in <span class="fw-bold text-warning-darker ms-1 me-1">{{ invite.expires_at|timeuntil }}</span>
+        <span class="d-none d-sm-inline">&middot; &nbsp;{{ invite.expires_at|date:"F j, Y" }}</span>
     </div>
     {% endfor %}
 </div>
