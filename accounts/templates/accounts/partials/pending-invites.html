@@ -23,7 +23,7 @@
                         data-bs-toggle="tooltip"
                         title="{% if member.user.first_name or member.user.last_name %}{{ member.user.first_name }} {{ member.user.last_name }}{% else %}{{ member.user.email }}{% endif %}">
                         {% if member.user.first_name or member.user.last_name %}
-                            {{ member.user.first_name|slice:":1"|upper }}{{ member.user.last_name|slice:":1"|upper }}
+                            {{ member.user.first_name|slice:":1" }}{{ member.user.last_name|slice:":1" }}
                         {% else %}
                             {{ member.user.email|slice:":1"|upper }}
                         {% endif %}

@@ -64,9 +64,16 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  
 
+    def save(self, *args, **kwargs):
+        if self.first_name:
+            self.first_name = self.first_name.strip().capitalize()
+        if self.last_name:
+            self.last_name = self.last_name.strip().capitalize()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.email
-    
+
     class Meta:
         db_table = 'core_user'
         verbose_name = 'User'
