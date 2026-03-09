@@ -38,12 +38,16 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     {% if member.user != request.user %}
                                     <li>
-                                        <form method="post" action="{% url 'remove_member' member.user.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-user-minus me-2"></i>Remove Member
-                                            </button>
-                                        </form>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'remove_member' member.user.id %}"
+                                            data-action-title="Remove Member"
+                                            data-action-message="Are you sure you want to remove {{ member.user.get_full_name|default:member.user.email }} from the team?"
+                                            data-confirm-text="Yes, Remove"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-user-minus me-2"></i>Remove Member
+                                        </button>
                                     </li>
                                     {% else %}
                                     <li><span class="dropdown-item text-body-tertiary">No actions</span></li>
@@ -84,38 +88,54 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if invite.is_declined %}
                                     <li>
-                                        <form method="post" action="{% url 'resend_invite' invite.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item">
-                                                <i class="fas fa-paper-plane me-2"></i>Resend Invite
-                                            </button>
-                                        </form>
+                                        <button type="button" class="dropdown-item"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'resend_invite' invite.id %}"
+                                            data-action-title="Resend Invite"
+                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-confirm-text="Yes, Resend"
+                                            data-confirm-class="btn-primary">
+                                            <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                        </button>
                                     </li>
                                     <li>
-                                        <form method="post" action="{% url 'delete_invite' invite.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-trash me-2"></i>Delete
-                                            </button>
-                                        </form>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'delete_invite' invite.id %}"
+                                            data-action-title="Delete Invite"
+                                            data-action-message="Permanently delete the invite record for {{ invite.email }}?"
+                                            data-confirm-text="Yes, Delete"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-trash me-2"></i>Delete
+                                        </button>
                                     </li>
                                 {% elif invite.is_expired %}
                                     <li>
-                                        <form method="post" action="{% url 'resend_invite' invite.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item">
-                                                <i class="fas fa-paper-plane me-2"></i>Resend Invite
-                                            </button>
-                                        </form>
+                                        <button type="button" class="dropdown-item"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'resend_invite' invite.id %}"
+                                            data-action-title="Resend Invite"
+                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-confirm-text="Yes, Resend"
+                                            data-confirm-class="btn-primary">
+                                            <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                        </button>
                                     </li>
                                 {% else %}
                                     <li>
-                                        <form method="post" action="{% url 'cancel_invite' invite.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-times me-2"></i>Cancel Invite
-                                            </button>
-                                        </form>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'cancel_invite' invite.id %}"
+                                            data-action-title="Cancel Invite"
+                                            data-action-message="Are you sure you want to cancel the invite for {{ invite.email }}?"
+                                            data-confirm-text="Yes, Cancel"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-times me-2"></i>Cancel Invite
+                                        </button>
                                     </li>
                                 {% endif %}
                             </ul>
@@ -127,3 +147,5 @@
         </tbody>
     </table>
 </div>
+
+{% include 'accounts/partials/confirm-action-modal.html' %}
