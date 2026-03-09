@@ -83,6 +83,56 @@
     <script src="{% static 'assets/js/phoenix.js' %}"></script>
 
 
+    {% if request.user.is_authenticated %}
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100; margin-top:70px;"></div>
+    <script>
+    (function () {
+      var POLL_URL = "{% url 'poll_notifications' %}";
+      var READ_URL_BASE = "{% url 'read_notification' 0 %}";
+      var shown = new Set();
+
+      function showToast(n) {
+        var container = document.getElementById("toast-container");
+        var el = document.createElement("div");
+        el.className = "toast align-items-center border-0 mb-2";
+        el.setAttribute("role", "alert");
+        el.innerHTML =
+          '<div class="d-flex">' +
+            '<div class="toast-body d-flex align-items-center gap-2">' +
+              '<span class="fas fa-' + n.icon + '"></span>' +
+              '<span>' + n.message + '</span>' +
+            '</div>' +
+            '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
+          '</div>';
+        container.appendChild(el);
+        new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+        fetch(READ_URL_BASE.replace("/0/", "/" + n.id + "/"), {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+        });
+      }
+
+      function poll() {
+        fetch(POLL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            data.notifications.forEach(function (n) {
+              if (!shown.has(n.id)) {
+                shown.add(n.id);
+                showToast(n);
+              }
+            });
+          });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        poll();
+        setInterval(poll, 10000);
+      });
+    })();
+    </script>
+    {% endif %}
+
     {% block scripts %}
     {% endblock scripts %}
 

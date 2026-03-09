@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from .models import Profile
+from .models import Notification, Profile
 
 
 def header_notifications(request):
@@ -17,6 +17,26 @@ def header_notifications(request):
     except Profile.DoesNotExist:
         profile = None
 
+    unread = Notification.objects.filter(recipient=request.user, is_read=False)
+    for n in unread:
+        notifications.append(
+            {
+                "message": n.message,
+                "url": reverse("read_notification", args=[n.id]),
+                "icon": n.icon,
+            }
+        )
+
+    team_missing = profile is None or profile.team_id is None
+    if team_missing:
+        notifications.append(
+            {
+                "message": "Add Team to collaborate with people",
+                "url": reverse("team_management"),
+                "icon": "users",
+            }
+        )
+
     profile_details_missing = (
         profile is None
         or not profile.position
@@ -29,16 +49,6 @@ def header_notifications(request):
                 "message": "Complete your profile for better experience",
                 "url": reverse("profile"),
                 "icon": "user",
-            }
-        )
-
-    team_missing = profile is None or profile.team_id is None
-    if team_missing:
-        notifications.append(
-            {
-                "message": "Add Team to collaborate with people",
-                "url": reverse("team_management"),
-                "icon": "users",
             }
         )
 

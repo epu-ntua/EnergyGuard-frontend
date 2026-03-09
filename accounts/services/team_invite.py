@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.models import Profile, TeamInvite
+from accounts.models import Notification, Profile, TeamInvite, User
 
 INVITE_EXPIRY_DAYS = 14
 
@@ -58,6 +58,15 @@ def send_team_invite(request, team, email, invited_by):
         recipient_list=[email],
     )
 
+    invited_user = User.objects.filter(email=email).first()
+    if invited_user:
+        Notification.objects.create(
+            recipient=invited_user,
+            message=f"{inviter_name} invited you to join {team.name}",
+            url=reverse('team_management'),
+            icon='envelope',
+        )
+
     return invite, None
 
 
@@ -79,6 +88,15 @@ def decline_team_invite(token, user):
 
     invite.declined_at = timezone.now()
     invite.save()
+
+    decliner_name = user.get_full_name() or user.email
+    Notification.objects.create(
+        recipient=invite.invited_by,
+        message=f"{decliner_name} declined your invite to {invite.team.name}",
+        url=reverse('team_management'),
+        icon='user-times',
+    )
+
     return None
 
 
@@ -111,5 +129,13 @@ def accept_team_invite(token, user):
 
     invite.accepted_at = timezone.now()
     invite.save()
+
+    accepter_name = user.get_full_name() or user.email
+    Notification.objects.create(
+        recipient=invite.invited_by,
+        message=f"{accepter_name} accepted your invite to {invite.team.name}",
+        url=reverse('team_management'),
+        icon='user-check',
+    )
 
     return invite.team, None

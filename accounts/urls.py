@@ -16,4 +16,6 @@ urlpatterns = [
     path('invite/<int:invite_id>/cancel/', views.cancel_invite, name='cancel_invite'),
     path('invite/<int:invite_id>/delete/', views.delete_invite, name='delete_invite'),
     path('team/remove-member/<int:user_id>/', views.remove_member, name='remove_member'),
+    path('notifications/<int:notification_id>/read/', views.read_notification, name='read_notification'),
+    path('notifications/poll/', views.poll_notifications, name='poll_notifications'),
 ]

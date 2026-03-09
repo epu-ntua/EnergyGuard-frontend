@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import TeamEditForm, TeamInviteForm
-from ..models import Profile, TeamInvite, User
+from ..models import Notification, Profile, TeamInvite, User
 from ..services.team_creation import handle_create_team_post
 from ..services.team_invite import accept_team_invite, decline_team_invite, send_team_invite
 
@@ -171,6 +172,24 @@ def delete_invite(request, invite_id):
     invite.delete()
     messages.success(request, f"Invite record for {invite.email} deleted.")
     return redirect("team_management")
+
+
+@login_required
+def poll_notifications(request):
+    unread = Notification.objects.filter(recipient=request.user, is_read=False).values(
+        "id", "message", "icon", "created_at"
+    )
+    return JsonResponse({"notifications": list(unread)})
+
+
+@login_required
+def read_notification(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"ok": True})
+    return redirect(notification.url or "team_management")
 
 
 @login_required
