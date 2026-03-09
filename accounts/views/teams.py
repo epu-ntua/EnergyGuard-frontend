@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 
 from ..forms import TeamEditForm, TeamInviteForm
 from ..models import Notification, Profile, TeamInvite, User
@@ -190,6 +191,44 @@ def read_notification(request, notification_id):
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"ok": True})
     return redirect(notification.url or "team_management")
+
+
+@login_required
+def team_members_partial(request):
+    profile = get_object_or_404(Profile, user=request.user)
+    team = profile.team
+    is_team_admin = bool(profile.team_role == Profile.Team_Role.ADMIN and team)
+
+    if not team:
+        return JsonResponse({'html': '', 'count': 0})
+
+    team_members = team.members.select_related("user__profile").order_by("user__last_name", "user__first_name")
+    team_members_count = team.members.count()
+
+    if is_team_admin:
+        pending_invites = list(
+            TeamInvite.objects.filter(team=team, accepted_at__isnull=True)
+            .order_by("-created_at")
+        )
+        user_map = {
+            u.email: u
+            for u in User.objects.filter(email__in=[i.email for i in pending_invites])
+        }
+        for invite in pending_invites:
+            invite.platform_user = user_map.get(invite.email)
+    else:
+        pending_invites = []
+
+    html = render_to_string(
+        'accounts/partials/team-members-tab.html',
+        {
+            'team_members': team_members,
+            'pending_invites': pending_invites,
+            'is_team_admin': is_team_admin,
+        },
+        request=request,
+    )
+    return JsonResponse({'html': html, 'count': team_members_count})
 
 
 @login_required

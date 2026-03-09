@@ -18,4 +18,5 @@ urlpatterns = [
     path('team/remove-member/<int:user_id>/', views.remove_member, name='remove_member'),
     path('notifications/<int:notification_id>/read/', views.read_notification, name='read_notification'),
     path('notifications/poll/', views.poll_notifications, name='poll_notifications'),
+    path('team/members-partial/', views.team_members_partial, name='team_members_partial'),
 ]

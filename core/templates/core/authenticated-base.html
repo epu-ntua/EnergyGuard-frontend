@@ -89,7 +89,39 @@
     (function () {
       var POLL_URL = "{% url 'poll_notifications' %}";
       var READ_URL_BASE = "{% url 'read_notification' 0 %}";
+      var MEMBERS_PARTIAL_URL = "{% url 'team_members_partial' %}";
       var shown = new Set();
+
+      function incrementBellBadge() {
+        var badge = document.getElementById("notif-badge");
+        if (!badge) return;
+        if (badge.classList.contains("d-none")) {
+          badge.classList.remove("d-none");
+          badge.childNodes[0].textContent = "1";
+        } else {
+          var current = parseInt(badge.childNodes[0].textContent.trim(), 10) || 0;
+          badge.childNodes[0].textContent = current + 1;
+        }
+      }
+
+      function refreshTeamMembers() {
+        fetch(MEMBERS_PARTIAL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var container = document.getElementById("team-members-tab-content");
+            if (container) {
+              container.innerHTML = data.html;
+            }
+            var countEl = document.getElementById("team-members-count");
+            if (countEl) {
+              countEl.textContent = data.count;
+            }
+            var pluralEl = document.getElementById("team-members-plural");
+            if (pluralEl) {
+              pluralEl.textContent = data.count !== 1 ? "s" : "";
+            }
+          });
+      }
 
       function showToast(n) {
         var container = document.getElementById("toast-container");
@@ -106,6 +138,16 @@
           '</div>';
         container.appendChild(el);
         new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+
+        incrementBellBadge();
+
+        if (n.icon === "user-check" || n.icon === "user-times") {
+          var path = window.location.pathname;
+          if (path.indexOf("team-management") !== -1) {
+            refreshTeamMembers();
+          }
+        }
+
         fetch(READ_URL_BASE.replace("/0/", "/" + n.id + "/"), {
           headers: { "X-Requested-With": "XMLHttpRequest" },
           credentials: "same-origin",
