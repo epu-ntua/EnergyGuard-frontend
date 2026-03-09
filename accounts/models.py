@@ -190,6 +190,21 @@ class TeamInvite(models.Model):
         verbose_name_plural = 'Team Invites'
 
 
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    url = models.CharField(max_length=500, blank=True)
+    icon = models.CharField(max_length=50, default='bell')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.recipient}: {self.message}"
+
+
 # ------------------- SIGNALS ------------------- #
 
 # Automatically create a Profile for each new User and save the Profile when the User is saved
