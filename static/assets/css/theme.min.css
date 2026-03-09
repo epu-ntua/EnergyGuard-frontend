@@ -10,7 +10,7 @@
 [data-bs-theme=light] {
   --phoenix-blue: #4fd4f1;
   --phoenix-indigo: #6610f2;
-  --phoenix-purple: #6f42c1;
+  --phoenix-purple: #9483e8;
   --phoenix-pink: #d63384;
   --phoenix-red: #fa3b1d;
   --phoenix-orange: #e5780b;
@@ -43,6 +43,7 @@
   --phoenix-light: #eff2f6;
   --phoenix-dark: #141824;
   --phoenix-primary-rgb: 79, 212, 241;
+  --phoenix-purple-rgb: 148, 131, 232;
   --phoenix-secondary-rgb: 49, 55, 74;
   --phoenix-success-rgb: 37, 176, 3;
   --phoenix-info-rgb: 0, 151, 235;
@@ -12418,6 +12419,11 @@ textarea.form-control-lg {
 .bg-primary {
   --phoenix-bg-opacity: 1;
   background-color: rgba(var(--phoenix-primary-rgb), var(--phoenix-bg-opacity)) !important;
+}
+
+.bg-purple {
+  --phoenix-bg-opacity: 1;
+  background-color: rgba(var(--phoenix-purple-rgb), var(--phoenix-bg-opacity)) !important;
 }
 
 .bg-secondary {
