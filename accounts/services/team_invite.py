@@ -125,6 +125,7 @@ def accept_team_invite(token, user):
 
     profile.team = invite.team
     profile.team_role = Profile.Team_Role.MEMBER
+    profile.team_joined_at = timezone.now()
     profile.save()
 
     invite.accepted_at = timezone.now()

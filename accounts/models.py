@@ -100,6 +100,7 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to=profile_pic_upload_to, null=True, blank=True)
     team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(max_length=10, choices=Team_Role.choices, default=None, null=True, blank=True)
+    team_joined_at = models.DateTimeField(null=True, blank=True)
    
     # Display user-friendly validation messages
     def clean(self):
@@ -144,9 +145,11 @@ class TeamManager(models.Manager):
             raise ValidationError("User is already part of a team.")
 
         # Create team and update creator's profile to assign them to the new team and set role to admin
+        from django.utils import timezone
         team = self.create(name=name, description=description)
         profile.team = team
         profile.team_role = Profile.Team_Role.ADMIN
+        profile.team_joined_at = timezone.now()
         profile.save()
         return team
     

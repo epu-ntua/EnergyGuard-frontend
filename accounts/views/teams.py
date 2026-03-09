@@ -60,7 +60,7 @@ def team_management(request):
                 return redirect("team_management")
 
     if team:
-        team_members = team.members.select_related("user__profile").order_by("user__last_name", "user__first_name")
+        team_members = team.members.select_related("user__profile").order_by("team_role", "team_joined_at", "user__last_name")
         team_members_count = team.members.count()
         if is_team_admin:
             pending_invites = list(
@@ -202,7 +202,7 @@ def team_members_partial(request):
     if not team:
         return JsonResponse({'html': '', 'count': 0})
 
-    team_members = team.members.select_related("user__profile").order_by("user__last_name", "user__first_name")
+    team_members = team.members.select_related("user__profile").order_by("team_role", "team_joined_at", "user__last_name")
     team_members_count = team.members.count()
 
     if is_team_admin:
