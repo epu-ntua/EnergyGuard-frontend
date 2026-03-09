@@ -45,9 +45,9 @@
             <div class="card-header p-2">
               <h5 class="text-body-emphasis mb-0">Notifications</h5>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body p-0" id="notif-dropdown-body">
               {% if header_notifications %}
-              <div class="scrollbar-overlay" style="max-height: 18rem;">
+              <div class="scrollbar-overlay" id="notif-dropdown-list" style="max-height: 18rem;">
                 {% for notification in header_notifications %}
                 <div class="px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom">
                   <div class="d-flex align-items-center justify-content-between position-relative">
@@ -66,7 +66,8 @@
                 {% endfor %}
               </div>
               {% else %}
-              <div class="px-2 px-sm-3 py-3 text-center text-body-secondary fs-9">No new notifications</div>
+              <div class="px-2 px-sm-3 py-3 text-center text-body-secondary fs-9" id="notif-empty-state">No new notifications</div>
+              <div class="scrollbar-overlay d-none" id="notif-dropdown-list" style="max-height: 18rem;"></div>
               {% endif %}
             </div>
           </div>
