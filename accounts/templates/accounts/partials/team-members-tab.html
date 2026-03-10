@@ -24,11 +24,7 @@
                     <td class="align-middle">{{ member.user.email }}</td>
                     <td class="align-middle"><span class="badge {% if member.user.profile.get_team_role_display == 'Admin' %}bg-purple{% else %}bg-primary{% endif %}">{{ member.user.profile.get_team_role_display }}</span></td>
                     <td class="align-middle"><span class="badge bg-success">Active</span></td>
-                    {% if member.user.profile.get_team_role_display == 'Admin' %}
-                        <td class="align-middle">{{ team.created_at|date:"F j, Y" }}</td>
-                    {% else %}
-                        <td class="align-middle">{{ member.team_joined_at|date:"F j, Y" }}</td>
-                    {% endif %}
+                    <td class="align-middle">{{ member.team_joined_at|date:"F j, Y"|default:"—" }}</td>
                     {% if is_team_admin %}
                         <td class="align-middle">
                             <div class="dropdown">
@@ -148,4 +144,3 @@
     </table>
 </div>
 
-{% include 'accounts/partials/confirm-action-modal.html' %}
