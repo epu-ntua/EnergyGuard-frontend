@@ -41,7 +41,7 @@ def send_team_invite(request, team, email, invited_by):
             expires_at=timezone.now() + timedelta(days=INVITE_EXPIRY_DAYS),
         )
 
-    accept_url = request.build_absolute_uri(reverse('accept_invite', args=[str(invite.token)]))
+    platform_url = request.build_absolute_uri(reverse('team_management'))
     inviter_name = invited_by.get_full_name() or invited_by.email
 
     send_mail(
@@ -49,9 +49,9 @@ def send_team_invite(request, team, email, invited_by):
         message=(
             f"Hi,\n\n"
             f"{inviter_name} has invited you to join the team '{team.name}' on EnergyGuard.\n\n"
-            f"Click the link below to accept the invitation:\n{accept_url}\n\n"
+            f"To accept or decline the invitation, sign in to EnergyGuard and go to Team Management:\n{platform_url}\n\n"
+            f"If you don't have an account yet, sign in with Keycloak at the link above to get started.\n\n"
             f"This invitation expires in {INVITE_EXPIRY_DAYS} days.\n\n"
-            f"If you don't have an account yet, please register first via the EnergyGuard platform.\n\n"
             f"Best regards,\nThe EnergyGuard Team"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
