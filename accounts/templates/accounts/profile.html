@@ -42,8 +42,27 @@
                     
                         </div>
                         <div class="col-auto">
-                            <!-- TODO: Add reset password functionality -->
-                            <button class="btn btn-phoenix-secondary"><span class="fas fa-key me-2"></span>Reset password</button>
+                            <button class="btn btn-phoenix-secondary" type="button" data-bs-toggle="modal" data-bs-target="#resetPasswordModal"><span class="fas fa-key me-2"></span>Reset password</button>
+                            <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true" style="display: none;">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                                            <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-body-tertiary lh-lg mb-0">A password reset email will be sent to <strong>{{ request.user.email }}</strong>. Follow the instructions in the email to set a new password.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <form method="post" action="{% url 'reset_password' %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-phoenix-secondary" type="submit"><span class="fas fa-key me-2"></span>Send reset email</button>
+                                            </form>
+                                            <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -97,6 +97,18 @@ def profile(request):
 
 @login_required
 @require_POST
+def reset_password(request):
+    keycloak_client = KeycloakUserSyncClient()
+    result = keycloak_client.send_reset_password_email(request.user)
+    if result.get("error"):
+        messages.error(request, "Failed to send password reset email. Please try again later.")
+    else:
+        messages.success(request, "A password reset email has been sent to your email address.")
+    return redirect("profile")
+
+
+@login_required
+@require_POST
 def update_profile_picture(request):
     profile_instance, _ = Profile.objects.get_or_create(user=request.user)
 
