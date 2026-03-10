@@ -90,6 +90,7 @@
       var POLL_URL = "{% url 'poll_notifications' %}";
       var READ_URL_BASE = "{% url 'read_notification' 0 %}";
       var MEMBERS_PARTIAL_URL = "{% url 'team_members_partial' %}";
+      var PENDING_INVITES_PARTIAL_URL = "{% url 'pending_invites_partial' %}";
       var shown = new Set();
 
       function incrementBellBadge() {
@@ -119,6 +120,17 @@
             var pluralEl = document.getElementById("team-members-plural");
             if (pluralEl) {
               pluralEl.textContent = data.count !== 1 ? "s" : "";
+            }
+          });
+      }
+
+      function refreshPendingInvites() {
+        fetch(PENDING_INVITES_PARTIAL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var container = document.getElementById("pending-invites-container");
+            if (container) {
+              container.innerHTML = data.html;
             }
           });
       }
@@ -171,10 +183,13 @@
         incrementBellBadge();
         addToDropdown(n);
 
-        if (n.icon === "user-check" || n.icon === "user-times") {
-          var path = window.location.pathname;
-          if (path.indexOf("team-management") !== -1) {
+        var path = window.location.pathname;
+        if (path.indexOf("team-management") !== -1) {
+          if (n.icon === "user-check" || n.icon === "user-times") {
             refreshTeamMembers();
+          }
+          if (n.icon === "envelope") {
+            refreshPendingInvites();
           }
         }
 

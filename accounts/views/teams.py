@@ -232,6 +232,22 @@ def team_members_partial(request):
 
 
 @login_required
+def pending_invites_partial(request):
+    received_invites = TeamInvite.objects.filter(
+        email=request.user.email,
+        accepted_at__isnull=True,
+        declined_at__isnull=True,
+    ).select_related('team', 'invited_by').prefetch_related('team__members__user')
+
+    html = render_to_string(
+        'accounts/partials/pending-invites.html',
+        {'received_invites': received_invites},
+        request=request,
+    )
+    return JsonResponse({'html': html, 'count': received_invites.count()})
+
+
+@login_required
 def remove_member(request, user_id):
     if request.method != "POST":
         return redirect("team_management")

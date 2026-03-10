@@ -19,4 +19,5 @@ urlpatterns = [
     path('notifications/<int:notification_id>/read/', views.read_notification, name='read_notification'),
     path('notifications/poll/', views.poll_notifications, name='poll_notifications'),
     path('team/members-partial/', views.team_members_partial, name='team_members_partial'),
+    path('team/pending-invites-partial/', views.pending_invites_partial, name='pending_invites_partial'),
 ]

@@ -11,9 +11,11 @@
 
             <div id="django-alerts-container" class="mb-4"></div>
 
-            {% if received_invites %}
-                {% include 'accounts/partials/pending-invites.html' %}
-            {% endif %}
+            <div id="pending-invites-container">
+                {% if received_invites %}
+                    {% include 'accounts/partials/pending-invites.html' %}
+                {% endif %}
+            </div>
 
             {% if team %}
                 {% include 'accounts/partials/team-overview.html' %}
