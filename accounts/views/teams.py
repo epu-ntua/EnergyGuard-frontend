@@ -9,6 +9,8 @@ from ..models import Notification, Profile, TeamInvite, User
 from ..services.team_creation import handle_create_team_post
 from ..services.team_invite import accept_team_invite, decline_team_invite, send_team_invite
 
+# --------------------------------- TEAM MANAGEMENT / CRUD --------------------------------- #
+
 @login_required
 def team_management(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -106,6 +108,24 @@ def team_management(request):
         },
     )
 
+@login_required
+def remove_member(request, user_id):
+    if request.method != "POST":
+        return redirect("team_management")
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
+        return redirect("team_management")
+    member_profile = get_object_or_404(Profile, user__id=user_id, team=profile.team)
+    if member_profile.user == request.user:
+        messages.error(request, "You cannot remove yourself from the team.")
+        return redirect("team_management")
+    member_profile.team = None
+    member_profile.team_role = None
+    member_profile.save()
+    messages.success(request, f"{member_profile.user.get_full_name() or member_profile.user.email} has been removed from the team.")
+    return redirect("team_management")
+
+# --------------------------------- INVITES --------------------------------- #
 
 @login_required
 def accept_invite(request, token):
@@ -174,6 +194,22 @@ def delete_invite(request, invite_id):
     messages.success(request, f"Invite record for {invite.email} deleted.")
     return redirect("team_management")
 
+@login_required
+def pending_invites_partial(request):
+    received_invites = TeamInvite.objects.filter(
+        email=request.user.email,
+        accepted_at__isnull=True,
+        declined_at__isnull=True,
+    ).select_related('team', 'invited_by').prefetch_related('team__members__user')
+
+    html = render_to_string(
+        'accounts/partials/pending-invites.html',
+        {'received_invites': received_invites},
+        request=request,
+    )
+    return JsonResponse({'html': html, 'count': received_invites.count()})
+
+# --------------------------------- NOTIFICATIONS --------------------------------- #
 
 @login_required
 def poll_notifications(request):
@@ -229,37 +265,3 @@ def team_members_partial(request):
         request=request,
     )
     return JsonResponse({'html': html, 'count': team_members_count})
-
-
-@login_required
-def pending_invites_partial(request):
-    received_invites = TeamInvite.objects.filter(
-        email=request.user.email,
-        accepted_at__isnull=True,
-        declined_at__isnull=True,
-    ).select_related('team', 'invited_by').prefetch_related('team__members__user')
-
-    html = render_to_string(
-        'accounts/partials/pending-invites.html',
-        {'received_invites': received_invites},
-        request=request,
-    )
-    return JsonResponse({'html': html, 'count': received_invites.count()})
-
-
-@login_required
-def remove_member(request, user_id):
-    if request.method != "POST":
-        return redirect("team_management")
-    profile = get_object_or_404(Profile, user=request.user)
-    if profile.team_role != Profile.Team_Role.ADMIN or not profile.team:
-        return redirect("team_management")
-    member_profile = get_object_or_404(Profile, user__id=user_id, team=profile.team)
-    if member_profile.user == request.user:
-        messages.error(request, "You cannot remove yourself from the team.")
-        return redirect("team_management")
-    member_profile.team = None
-    member_profile.team_role = None
-    member_profile.save()
-    messages.success(request, f"{member_profile.user.get_full_name() or member_profile.user.email} has been removed from the team.")
-    return redirect("team_management")
