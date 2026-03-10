@@ -203,6 +203,56 @@
       });
     })();
     </script>
+
+    <!-- Django messages being displayed as inline Bootstrap alerts if this: <div id="django-alerts-container"></div> is added to the desired page OR toasts if not -->
+    {% if messages %}
+    <script type="application/json" id="django-messages-data">[{% for message in messages %}{"text": "{{ message|escapejs }}", "level": "{{ message.tags|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]</script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var alertsContainer = document.getElementById("django-alerts-container");
+      var toastContainer = document.getElementById("toast-container");
+      var alertClassMap = { success: "alert-outline-success", error: "alert-outline-danger", warning: "alert-outline-warning", info: "alert-outline-info" };
+      var iconMap = { success: "check-circle", error: "exclamation-circle", warning: "exclamation-triangle", info: "info-circle" };
+      var colorMap = { success: "text-success", error: "text-danger", warning: "text-warning", info: "text-info" };
+      var msgs = JSON.parse(document.getElementById("django-messages-data").textContent);
+      msgs.forEach(function (m) {
+        var level = m.level.replace("messages.", "").trim();
+        if (alertsContainer) {
+          var alertClass = alertClassMap[level] || "alert-info";
+          var el = document.createElement("div");
+          el.className = "alert " + alertClass + " alert-dismissible fade show";
+          el.setAttribute("role", "alert");
+          el.innerHTML =
+            '<span class="fas fa-' + (iconMap[level] || "info-circle") + ' me-2"></span>' +
+            m.text +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+          alertsContainer.appendChild(el);
+          setTimeout(function (elem) {
+            var bsAlert = bootstrap.Alert.getOrCreateInstance(elem);
+            bsAlert.close();
+          }, 5000, el);
+        } else if (toastContainer) {
+          var icon = iconMap[level] || "info-circle";
+          var color = colorMap[level] || "";
+          var el = document.createElement("div");
+          el.className = "toast align-items-center border-0 mb-2";
+          el.setAttribute("role", "alert");
+          el.innerHTML =
+            '<div class="d-flex">' +
+              '<div class="toast-body d-flex align-items-center gap-2">' +
+                '<span class="fas fa-' + icon + ' ' + color + '"></span>' +
+                '<span>' + m.text + '</span>' +
+              '</div>' +
+              '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
+            '</div>';
+          toastContainer.appendChild(el);
+          new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+        }
+      });
+    });
+    </script>
+    {% endif %}
+    
     {% endif %}
 
     {% block scripts %}
