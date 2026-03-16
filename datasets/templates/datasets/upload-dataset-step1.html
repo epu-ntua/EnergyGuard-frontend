@@ -35,9 +35,12 @@
                 {% endif %}
             </div>
 
-            <div class="mb-3">
-                {{ form.visibility }}
-                <label for="id_remember_me" class="form-check-label ms-1 fs-9-5 fw-bold">DO YOU WANT THIS DATASET TO PUBLICLY AVAILABLE?</label>
+            <div class="mb-3 form-check">
+                {{ wizard.form.visibility }}
+                <label for="{{ wizard.form.visibility.id_for_label }}" class="form-check-label ms-1 fs-9-5 fw-bold">DO YOU WANT THIS DATASET TO BE PUBLICLY AVAILABLE?</label>
+                {% if wizard.form.errors.visibility %}
+                <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.visibility }}</div>
+                {% endif %}
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
