@@ -65,7 +65,7 @@
 
             <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
                 <button type="button" class="btn btn-link" onclick="document.getElementById('wizard_goto_step').value='{{ wizard.steps.prev }}'; this.form.submit();"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
-                <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
+                <button type="submit" class="btn btn-primary px-6 px-sm-6">Submit</button>
             </div>
         </form>
     </div>
@@ -74,7 +74,7 @@
 
 {% block scripts %}
 <script>
-  function addRow() {
+  function addRow(featureName, featureUnit, featureDescription) {
     var container = document.getElementById('boxes');
     var row = document.createElement('div');
     row.setAttribute('data-row-wrapper', 'true');
@@ -101,6 +101,11 @@
     </div>
     `;
     container.appendChild(row);
+    if (featureName !== undefined) {
+      row.querySelector('[data-field="feature_name"]').value = featureName || '';
+      row.querySelector('[data-field="feature_unit"]').value = featureUnit || '';
+      row.querySelector('[data-field="feature_description"]').value = featureDescription || '';
+    }
   }
 
   function removeRow(button) {
@@ -110,7 +115,7 @@
     }
   }
 
-  (function bindMetadataRowsSerializer() {
+  (function initMetadataRows() {
     var metadataRowsInput = document.querySelector('input[name$="metadata_rows"]');
     if (!metadataRowsInput) {
       return;
@@ -118,6 +123,21 @@
     var form = metadataRowsInput.closest('form');
     if (!form) {
       return;
+    }
+
+    // Restore rows from hidden input on page load (e.g. after a validation error).
+    var savedValue = metadataRowsInput.value;
+    if (savedValue) {
+      try {
+        var savedRows = JSON.parse(savedValue);
+        if (Array.isArray(savedRows)) {
+          savedRows.forEach(function (row) {
+            addRow(row.feature_name, row.feature_unit, row.feature_description);
+          });
+        }
+      } catch (e) {
+        // Malformed JSON – ignore and let user re-enter.
+      }
     }
 
     form.addEventListener('submit', function () {
