@@ -11,7 +11,7 @@ from core.views import BaseWizardView
 
 from ..forms import FileUploadDatasetForm, GeneralDatasetForm, MetadataDatasetForm
 from ..models import Dataset
-from ..services import MinioUploadError, upload_dataset_objects
+from ..services import MinioUploadError, delete_dataset_objects, upload_dataset_objects
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,23 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                     )
                     continue
 
+    def _rollback_uploaded_objects(self, upload_result: dict[str, str]) -> None:
+        try:
+            delete_dataset_objects(
+                bucket_name=upload_result["bucket_name"],
+                data_file_key=upload_result["data_file_key"],
+                metadata_file_key=upload_result["metadata_file_key"],
+            )
+        except MinioUploadError as exc:
+            logger.exception(
+                "Failed to rollback MinIO objects after DB save failure. "
+                "bucket='%s', data_key='%s', metadata_key='%s', error='%s'",
+                upload_result.get("bucket_name", ""),
+                upload_result.get("data_file_key", ""),
+                upload_result.get("metadata_file_key", ""),
+                exc,
+            )
+
     def done(self, form_list, **kwargs):
         try:
             general_data = self.get_cleaned_data_for_step("general_info")
@@ -77,7 +94,10 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                     metadata_json=metadata_json,
                 )
             except MinioUploadError as exc:
-                messages.error(self.request, f"Failed to upload dataset to MinIO: {exc}")
+                messages.error(
+                    self.request,
+                    f"Failed to upload dataset to storage: {exc} — please try again.",
+                )
                 return redirect("dataset_upload")
 
             size_gb = (Decimal(data_uploaded_file.size) / Decimal(1024 ** 3)).quantize(
@@ -86,21 +106,34 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
             if size_gb < Decimal("0.01"):
                 size_gb = Decimal("0.01")
 
-            with transaction.atomic():
-                Dataset.objects.create(
-                    name=general_data["name"],
-                    data_file=upload_result["data_file_key"],
-                    metadata_file=upload_result["metadata_file_key"],
-                    bucket_name=upload_result["bucket_name"],
-                    label=general_data["label"],
-                    source="your_own_DS",
-                    status=Dataset.Status.UNDER_REVIEW,
-                    visibility=general_data["visibility"],
-                    size_gb=size_gb,
-                    publisher=self.request.user,
-                    description=general_data["description"],
-                    metadata=metadata_json,
+            try:
+                with transaction.atomic():
+                    Dataset.objects.create(
+                        name=general_data["name"],
+                        data_file=upload_result["data_file_key"],
+                        metadata_file=upload_result["metadata_file_key"],
+                        bucket_name=upload_result["bucket_name"],
+                        label=general_data["label"],
+                        source=Dataset.Source.OWN_DS,
+                        status=Dataset.Status.UNDER_REVIEW,
+                        visibility=general_data["visibility"],
+                        size_gb=size_gb,
+                        publisher=self.request.user,
+                        description=general_data["description"],
+                        metadata=metadata_json,
+                    )
+            except Exception:
+                logger.exception(
+                    "Failed to save dataset record in database for user '%s', dataset '%s'.",
+                    self.request.user.username,
+                    general_data.get("name", ""),
                 )
+                self._rollback_uploaded_objects(upload_result)
+                messages.error(
+                    self.request,
+                    "Failed to save dataset in database. Uploaded files were removed — please try again.",
+                )
+                return redirect("dataset_upload")
 
             return redirect("dataset-upload-success")
         finally:
