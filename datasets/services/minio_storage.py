@@ -41,6 +41,7 @@ def _build_minio_client():
 
     try:
         import boto3
+        from botocore.config import Config
     except ImportError as exc:
         raise MinioUploadError("boto3 is not installed.") from exc
 
@@ -50,6 +51,7 @@ def _build_minio_client():
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
         verify=verify_ssl,
+        config=Config(connect_timeout=10, read_timeout=60),
     )
 
 
@@ -121,7 +123,14 @@ def upload_dataset_objects(
                 Body=metadata_body,
                 ContentType="application/json",
             )
-    except (ClientError, BotoCoreError) as exc:
+    except ClientError as exc:
+        error_code = exc.response.get("Error", {}).get("Code", "")
+        if error_code == "NoSuchBucket":
+            raise MinioUploadError(
+                f"Storage bucket '{bucket_name}' does not exist. Contact the administrator."
+            ) from exc
+        raise MinioUploadError(str(exc)) from exc
+    except BotoCoreError as exc:
         raise MinioUploadError(str(exc)) from exc
 
     return {
@@ -129,3 +138,40 @@ def upload_dataset_objects(
         "data_file_key": data_key,
         "metadata_file_key": metadata_key,
     }
+
+
+def delete_dataset_objects(
+    *,
+    bucket_name: str,
+    data_file_key: str,
+    metadata_file_key: str = "",
+) -> None:
+    # Local development mode: no object storage cleanup needed.
+    if _is_fake_upload_enabled():
+        return
+
+    object_keys = [key for key in {data_file_key, metadata_file_key} if key]
+    if not object_keys:
+        return
+
+    client = _build_minio_client()
+
+    try:
+        from botocore.exceptions import BotoCoreError, ClientError
+
+        response = client.delete_objects(
+            Bucket=bucket_name,
+            Delete={
+                "Objects": [{"Key": key} for key in object_keys],
+                "Quiet": True,
+            },
+        )
+
+        failed = response.get("Errors", [])
+        if failed:
+            failed_keys = ", ".join(e.get("Key", "") for e in failed)
+            raise MinioUploadError(
+                f"Failed to delete the following objects from bucket '{bucket_name}': {failed_keys}"
+            )
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc
