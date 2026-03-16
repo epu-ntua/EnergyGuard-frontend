@@ -5,6 +5,9 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from datasets.models import Dataset
 
+_MAX_DATA_FILE_SIZE_MB = 500
+_MAX_METADATA_FILE_SIZE_MB = 10
+
 class GeneralDatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
@@ -22,6 +25,49 @@ class GeneralDatasetForm(forms.ModelForm):
         self.fields['label'].choices = choices
         self.fields['label'].initial = ''
 
+
+class FileUploadDatasetForm(forms.Form):
+    data_file = forms.FileField(
+        validators=[FileExtensionValidator(allowed_extensions=['zip', 'csv'])],
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+    )
+
+    def clean_data_file(self):
+        uploaded = self.cleaned_data.get('data_file')
+        if not uploaded:
+            return uploaded
+
+        max_bytes = _MAX_DATA_FILE_SIZE_MB * 1024 * 1024
+        if uploaded.size > max_bytes:
+            raise ValidationError(f"File size must not exceed {_MAX_DATA_FILE_SIZE_MB} MB.")
+
+        filename = (uploaded.name or "").lower()
+        extension = filename.rsplit(".", 1)[-1] if "." in filename else ""
+        content_type = (uploaded.content_type or "").lower()
+
+        # Browsers/OSes often report CSV as application/vnd.ms-excel or text/plain.
+        allowed_types_by_extension = {
+            "zip": {
+                "application/zip",
+                "application/x-zip-compressed",
+                "multipart/x-zip",
+                "application/octet-stream",
+            },
+            "csv": {
+                "text/csv",
+                "application/csv",
+                "application/vnd.ms-excel",
+                "text/plain",
+                "application/octet-stream",
+            },
+        }
+
+        allowed_types = allowed_types_by_extension.get(extension, set())
+        if content_type and content_type not in allowed_types:
+            raise ValidationError("Only .zip or .csv files are allowed.")
+        return uploaded
+
+
 class MetadataDatasetForm(forms.ModelForm):
     metadata_rows = forms.CharField(required=False, widget=forms.HiddenInput())
 
@@ -37,6 +83,27 @@ class MetadataDatasetForm(forms.ModelForm):
         widgets = {
             'metadata': forms.HiddenInput(),
         }
+
+    def clean_metadata_file(self):
+        metadata_file = self.cleaned_data.get('metadata_file')
+        if not metadata_file:
+            return metadata_file
+
+        max_bytes = _MAX_METADATA_FILE_SIZE_MB * 1024 * 1024
+        if metadata_file.size > max_bytes:
+            raise ValidationError(f"Metadata file size must not exceed {_MAX_METADATA_FILE_SIZE_MB} MB.")
+
+        try:
+            metadata_file.seek(0)
+            content = metadata_file.read()
+            json.loads(content)
+            metadata_file.seek(0)
+        except json.JSONDecodeError:
+            raise ValidationError("Metadata file must contain valid JSON.")
+        except Exception:
+            raise ValidationError("Could not read the metadata file.")
+
+        return metadata_file
 
     def clean(self):
         cleaned_data = super().clean()
@@ -90,39 +157,3 @@ class MetadataDatasetForm(forms.ModelForm):
             cleaned_data['metadata'] = None
 
         return cleaned_data
-
-class FileUploadDatasetForm(forms.Form):
-    data_file = forms.FileField(
-        validators=[FileExtensionValidator(allowed_extensions=['zip', 'csv'])],
-        widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
-    )
-
-    def clean_data_file(self):
-        uploaded = self.cleaned_data.get('data_file')
-        if not uploaded:
-            return uploaded
-        filename = (uploaded.name or "").lower()
-        extension = filename.rsplit(".", 1)[-1] if "." in filename else ""
-        content_type = (uploaded.content_type or "").lower()
-
-        # Browsers/OSes often report CSV as application/vnd.ms-excel or text/plain.
-        allowed_types_by_extension = {
-            "zip": {
-                "application/zip",
-                "application/x-zip-compressed",
-                "multipart/x-zip",
-                "application/octet-stream",
-            },
-            "csv": {
-                "text/csv",
-                "application/csv",
-                "application/vnd.ms-excel",
-                "text/plain",
-                "application/octet-stream",
-            },
-        }
-
-        allowed_types = allowed_types_by_extension.get(extension, set())
-        if content_type and content_type not in allowed_types:
-            raise ValidationError("Only .zip or .csv files are allowed.")
-        return uploaded
