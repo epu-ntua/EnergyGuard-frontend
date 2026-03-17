@@ -7,12 +7,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    # replaces = [
-    #     ("experiments", "0005_experiment_model"),
-    #     ("experiments", "0006_fix_project_experiment_sequences"),
-    #     ("experiments", "0007_remove_experiment_name_description"),
-    # ]
-
     dependencies = [
         ("experiments", "0004_remove_project_status_and_progress"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -45,7 +39,6 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.CharField(max_length=255)),
-                ("description", models.TextField(blank=True)),
                 ("mlflow_experiment_id", models.CharField(blank=True, default="", max_length=64)),
                 (
                     "creator",
@@ -101,12 +94,14 @@ class Migration(migrations.Migration):
             model_name="experiment",
             name="experiment_name_4f66f9_idx",
         ),
-        migrations.RemoveField(
-            model_name="experiment",
-            name="description",
-        ),
-        migrations.RemoveField(
-            model_name="experiment",
-            name="name",
+        migrations.RunSQL(
+            sql="""
+                ALTER TABLE "experiment"
+                DROP COLUMN IF EXISTS "tags";
+            """,
+            reverse_sql="""
+                ALTER TABLE "experiment"
+                ADD COLUMN IF NOT EXISTS "tags" jsonb DEFAULT '{}'::jsonb;
+            """,
         ),
     ]
