@@ -1,4 +1,4 @@
-from .auth import keycloak_logout, login_view
+from .auth import keycloak_front_channel_logout, keycloak_logout, login_view
 from .profile import profile, update_profile_picture
 from .teams import team_management
 from .registration import (
@@ -15,6 +15,7 @@ __all__ = [
     "PlatformEntryView",
     "REGISTRATION_FORMS",
     "RegistrationWizard",
+    "keycloak_front_channel_logout",
     "keycloak_logout",
     "keycloak_registration_success",
     "login_view",
