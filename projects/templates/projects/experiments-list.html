@@ -1,0 +1,72 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}Project Experiments{% endblock %}
+
+{% block content %}
+<div class="content px-0 pt-navbar">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+    <div class="d-flex flex-between-center mb-4">
+      <h2 class="text-body-emphasis fw-bolder mb-0">{{ project.name }} - Experiments</h2>
+      <a href="{% url 'add_experiment' project.id %}" class="btn btn-primary btn-sm">Add Experiment</a>
+    </div>
+
+    <div class="table-responsive border rounded-3">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Open in MLflow</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for experiment in experiments %}
+            <tr>
+              <td>{{ experiment.name }}</td>
+              <td>{{ experiment.description|default:"-" }}</td>
+              <td>
+                <a
+                  class="btn btn-sm btn-outline-primary"
+                  href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}"
+                  target="_blank"
+                  {% if not experiment.mlflow_experiment_id %}aria-disabled="true"{% endif %}
+                >
+                  Open in MLflow
+                </a>
+              </td>
+              <td class="text-end">
+                <div class="dropdown">
+                  <button
+                    class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-boundary="window"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <span class="fas fa-ellipsis-h fs-10"></span>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end py-2">
+                    <a class="dropdown-item" href="{% url 'edit_experiment' project.id experiment.id %}">Edit experiment</a>
+                    <a class="dropdown-item" href="{% url 'eval_results' project.id experiment.id %}" target="_blank">Eval results</a>
+                    <form action="{% url 'delete_experiment' project.id experiment.id %}" method="post">
+                      {% csrf_token %}
+                      <button class="dropdown-item text-danger" type="submit">Delete experiment</button>
+                    </form>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="text-body-tertiary">No experiments found for this project.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock %}

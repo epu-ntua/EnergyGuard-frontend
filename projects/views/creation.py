@@ -1,12 +1,22 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
+from django.contrib import messages
 from django.shortcuts import redirect, render
 
 from core.views import BaseWizardView
 
 from ..forms import ProjectFacilitiesForm, ProjectGeneralInfoForm, ProjectSandboxPackagesForm
-from ..models import Project
+from ..models import Experiment, Project
+from ..services import (
+    MlflowClientError,
+    create_experiment_permission as mlflow_create_experiment_permission,
+    create_experiment as mlflow_create_experiment,
+    delete_experiment as mlflow_delete_experiment,
+    make_deleted_experiment_name as mlflow_make_deleted_experiment_name,
+    set_experiment_tags as mlflow_set_experiment_tags,
+    update_experiment_name as mlflow_update_experiment_name,
+)
 
 PROJECT_TEMPLATE_NAMES = {
     "0": "projects/project-creation-step1.html",
@@ -32,12 +42,59 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
 
+        project = None
+
+        mlflow_experiment_id = ""
         with transaction.atomic():
-            Project.objects.create(
+            project = Project.objects.create(
                 name=general_info["name"],
                 description=general_info["description"],
                 project_type=general_info["project_type"],
                 creator=self.request.user,
+            )
+            try:
+                default_experiment_name = f"{project.name}-default"
+                while True:
+                    try:
+                        mlflow_experiment_id = mlflow_create_experiment(
+                            name=default_experiment_name,
+                            tags={"project_name": project.name},
+                            user=self.request.user,
+                        )
+                        mlflow_set_experiment_tags(
+                            mlflow_experiment_id,
+                            {"mlflow.note.content": "Default experiment created with the project."},
+                            user=self.request.user,
+                            use_service_credentials=True,
+                        )
+                        try:
+                            mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
+                        except MlflowClientError:
+                            mlflow_update_experiment_name(
+                                mlflow_experiment_id,
+                                mlflow_make_deleted_experiment_name(),
+                                user=self.request.user,
+                            )
+                            mlflow_delete_experiment(mlflow_experiment_id, user=self.request.user)
+                            raise
+                        break
+                    except MlflowClientError as exc:
+                        error_text = str(exc).lower()
+                        if "already exists" in error_text or "resource_already_exists" in error_text:
+                            default_experiment_name += "-"
+                            continue
+                        raise
+            except MlflowClientError as exc:
+                messages.warning(
+                    self.request,
+                    f"Project created, but initial MLflow experiment sync failed: {exc}",
+                )
+
+            Experiment.objects.create(
+                project=project,
+                creator=self.request.user,
+                name=default_experiment_name,
+                mlflow_experiment_id=mlflow_experiment_id,
             )
 
         return redirect("project_creation_success")
@@ -45,10 +102,12 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
 
 @login_required
 def project_creation_success(request):
-    wizard = {"steps": {"current": "done"}}
-    wizard_steps = PROJECT_STEP_METADATA.values()
     return render(
         request,
         "projects/project-creation-success.html",
-        {"wizard": wizard, "wizard_steps": wizard_steps},
+        {
+            "active_navbar_page": "projects",
+            "show_sidebar": True,
+        },
     )
+

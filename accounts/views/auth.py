@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib.auth import login, logout as django_logout
 from django.shortcuts import redirect, render
+from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
 from ..forms import CustomAuthenticationForm
@@ -51,6 +52,17 @@ def keycloak_logout(request):
         params["client_id"] = client_id
 
     return redirect(f"{end_session_url}?{urlencode(params)}")
+
+def keycloak_front_channel_logout(request):
+    """
+    Front-channel logout endpoint for Keycloak.
+    Keycloak loads this URL in the user's browser (iframe) when any client
+    triggers a logout, so the session cookie is present and we can clear it.
+    Always returns 200 so Keycloak considers the logout successful.
+    """
+    django_logout(request)
+    return HttpResponse(status=200)
+
 
 # Signal handler to track new Keycloak signups
 # @receiver(pre_social_login)

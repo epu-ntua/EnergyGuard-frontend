@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+
 from core.models import TimeStampedModel
 
 
@@ -28,6 +29,53 @@ class Project(TimeStampedModel):
         verbose_name_plural = 'Projects'
         ordering = ["-created_at"]
         indexes = [models.Index(fields=['name']),]
+
+
+class Experiment(TimeStampedModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="experiments")
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_experiments",
+    )
+    name = models.CharField(max_length=255, blank=True, default="")
+    mlflow_experiment_id = models.CharField(max_length=64, blank=True, default="")
+
+    def _get_mlflow_experiment(self) -> dict:
+        if not self.mlflow_experiment_id:
+            return {}
+        # cached = getattr(self, "_mlflow_experiment_cache", None)
+        # if cached is not None:
+        #     return cached
+        try:
+            from .services.mlflow_client import MlflowClientError, get_experiment
+
+            cached = get_experiment(self.mlflow_experiment_id, user=self.creator)
+        except (MlflowClientError, Exception):
+            cached = {}
+        self._mlflow_experiment_cache = cached
+        return cached
+
+    @property
+    def description(self) -> str:
+        experiment = self._get_mlflow_experiment()
+        description = experiment.get("description")
+        if description:
+            return str(description)
+
+        for tag in experiment.get("tags", []) or []:
+            if tag.get("key") == "mlflow.note.content":
+                return str(tag.get("value") or "")
+        return ""
+
+    def __str__(self):
+        return self.name or f"Experiment {self.pk}"
+
+    class Meta:
+        db_table = "experiment"
+        verbose_name = "Experiment"
+        verbose_name_plural = "Experiments"
+        ordering = ["-created_at"]
 
 
 # Intermediate model for collaborators - projects with extra fields
