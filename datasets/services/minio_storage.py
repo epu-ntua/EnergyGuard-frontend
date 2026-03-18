@@ -2,6 +2,17 @@
 from typing import Any
 from uuid import uuid4
 
+try:
+    from boto3.s3.transfer import TransferConfig as S3TransferConfig
+
+    _TRANSFER_CONFIG = S3TransferConfig(
+        multipart_threshold=16 * 1024 * 1024,
+        multipart_chunksize=16 * 1024 * 1024,
+        max_concurrency=8,
+    )
+except ImportError:
+    _TRANSFER_CONFIG = None
+
 from django.conf import settings
 from django.utils.text import slugify
 
@@ -105,6 +116,7 @@ def upload_dataset_objects(
             Bucket=bucket_name,
             Key=data_key,
             ExtraArgs={"ContentType": data_file.content_type or "application/octet-stream"},
+            Config=_TRANSFER_CONFIG,
         )
 
         if metadata_file:
@@ -114,6 +126,7 @@ def upload_dataset_objects(
                 Bucket=bucket_name,
                 Key=metadata_key,
                 ExtraArgs={"ContentType": metadata_file.content_type or "application/json"},
+                Config=_TRANSFER_CONFIG,
             )
         elif metadata_json:
             metadata_body = json.dumps(metadata_json, ensure_ascii=False, indent=2).encode("utf-8")
