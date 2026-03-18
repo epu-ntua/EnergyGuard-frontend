@@ -1,11 +1,12 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.forms import AuthenticationForm
-from django.conf import settings
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.files.uploadedfile import UploadedFile
 from django import forms
-from accounts.models import User, Profile
+
 from billing.models import PaymentMethod
+from accounts.models import User, Profile, Team, TeamInvite
 from .validators import strict_email_user_validator
 
+from datetime import date
 
 class UserWizardForm(UserCreationForm):
     class Meta(UserCreationForm.Meta): # Inherit from UserCreationForm's Meta, which says not to use default forms.CharField for username. Use UsernameField instead.
@@ -36,16 +37,18 @@ class ProfileWizardForm(forms.ModelForm):
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
-            'team': forms.Select(attrs={'class': 'form-select'}, choices=Profile.TeamChoices.choices),
+            'team': forms.Select(attrs={'class': 'form-control'}),
             'position': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
 
-    """def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'profile_picture' in self.fields:
-            css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
-            self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()"""
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.fields['team'].queryset = Team.objects.order_by("name")
+    #     self.fields['team'].empty_label = 'Select Team'
+    #     if 'profile_picture' in self.fields:
+    #         css_classes = self.fields['profile_picture'].widget.attrs.get('class', '')
+    #         self.fields['profile_picture'].widget.attrs['class'] = (css_classes + ' form-control').strip()
     
 class PaymentWizardForm(forms.ModelForm):
     class Meta:
@@ -76,25 +79,27 @@ class CustomAuthenticationForm(AuthenticationForm):
         )
 
 
-class ProfileForm(forms.Form):
+class ProfileEditForm(forms.ModelForm):
     full_name = forms.CharField(
         max_length=150, 
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'full_name', 'name': 'full_name'})
     )
     team = forms.CharField(
-        max_length=100, 
-        required=False, 
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'team', 'name': 'team'}, choices=Profile.TeamChoices.choices))
-    
-    position = forms.CharField(
-        max_length=100, 
-        required=False, 
-        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'position', 'name': 'position'}))
-    
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "id": "team",
+                "name": "team",
+                "readonly": "readonly",
+            }
+        ),
+    )
+
     year_of_birth = forms.ChoiceField(
         required=False,
-        choices=[('', 'Select Year')] + [(year, year) for year in range(2020, 1959, -1)], 
+        choices=[('', 'Select Year')] + [(str(year), str(year)) for year in range(date.today().year, 1940, -1)],
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'year', 'name': 'year_of_birth'})
     )
 
@@ -109,12 +114,105 @@ class ProfileForm(forms.Form):
     
     day_of_birth = forms.ChoiceField(
         required=False,
-        choices=[('', 'Select Day')] + [(i, i) for i in range(1, 32)],
+        choices=[('', 'Select Day')] + [(str(i), str(i)) for i in range(1, 32)],
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'day', 'name': 'day_of_birth'})
     )
-    short_bio = forms.CharField(
-        required=False, 
-        widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'id': 'short_bio', 'name': 'short_bio'}))
+
+    class Meta:
+        model = Profile
+        fields = ("position", "bio")
+        widgets = {
+            "position": forms.TextInput(attrs={"class": "form-control", "id": "position", "name": "position"}),
+            "bio": forms.Textarea(attrs={"rows": 2, "class": "form-control", "id": "short_bio", "name": "short_bio"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        existing_team = self.instance.team if self.instance else None
+
+        if self.user:
+            self.fields["full_name"].initial = f"{self.user.first_name} {self.user.last_name}".strip()
+        self.fields["team"].initial = existing_team.name if existing_team else ""
+
+        if not self.fields["team"].initial:
+            self.fields["team"].widget.attrs["placeholder"] = "No team yet - create one to unlock collaboration features"
+
+        if self.instance.birth_date:
+            self.fields["year_of_birth"].initial = str(self.instance.birth_date.year)
+            self.fields["month_of_birth"].initial = str(self.instance.birth_date.month)
+            self.fields["day_of_birth"].initial = str(self.instance.birth_date.day)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        year_of_birth = cleaned_data.get("year_of_birth")
+        month_of_birth = cleaned_data.get("month_of_birth")
+        day_of_birth = cleaned_data.get("day_of_birth")
+
+        date_parts = [year_of_birth, month_of_birth, day_of_birth]
+        if not any(date_parts):
+            cleaned_data["resolved_birth_date"] = None
+            return cleaned_data
+
+        if not all(date_parts):
+            self.add_error("year_of_birth", "Please select day, month and year for date of birth.")
+            return cleaned_data
+
+        try:
+            cleaned_data["resolved_birth_date"] = date(
+                int(year_of_birth),
+                int(month_of_birth),
+                int(day_of_birth),
+            )
+        except (ValueError, TypeError):
+            self.add_error("year_of_birth", "Please provide a valid date of birth.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        profile.birth_date = self.cleaned_data.get("resolved_birth_date")
+        if commit:
+            if profile.pk:
+                profile.save(update_fields=["position", "bio", "birth_date"])
+            else:
+                profile.save()
+        return profile
+
+
+class TeamCreateForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ("name", "description")
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. ICCS-NTUA",
+                    "maxlength": 100,
+                }
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Describe your team",
+                }
+            ),
+        }
+
+
+class TeamEditForm(TeamCreateForm):
+    pass
+
+
+class TeamInviteForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'colleague@example.com',
+        })
+    )
 
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -124,3 +222,29 @@ class ProfileUpdateForm(forms.ModelForm):
         widgets = {
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
+ 
+    def clean_profile_picture(self):
+        file = self.cleaned_data.get("profile_picture")
+
+        # Validate only if a NEW file is uploaded (not when clearing the existing one)
+        if isinstance(file, UploadedFile):
+            
+            max_size = 3 * 1024 * 1024      # 3MB limit
+            if file.size > max_size:
+                raise forms.ValidationError("Profile picture must be smaller than 3MB.")
+            
+            allowed_types = [
+                "image/jpeg",
+                "image/jpg",
+                "image/pjpeg",
+                "image/png",
+                "image/x-png",
+                "image/webp",
+                "image/avif"
+            ]
+            content_type = getattr(file, "content_type", None)
+            
+            if content_type not in allowed_types:
+                raise forms.ValidationError("Unsupported file type. Allowed types: JPEG, PNG, WEBP, AVIF.")  
+                
+        return file

@@ -1,0 +1,52 @@
+<div class="card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <div class="d-flex align-items-start">
+            <h3 class="me-6">{{ team }}</h3>
+            <p class="badge {% if request.user.profile.get_team_role_display == 'Admin' %}bg-purple{% else %}bg-primary{% endif %}">{{ request.user.profile.get_team_role_display }}</p>
+        </div>
+        {% if is_team_admin %}
+            <div>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#editTeamModal">
+                    <span class="fas fa-edit me-2"></span>Edit Team
+                </button>
+            </div>
+        {% endif %}
+    </div>
+    <div>
+        <p class="mb-2">{{ team.description }}</p>
+        <p class="mb-0">Created: {{ team.created_at|date:"F j, Y" }}</p>
+    </div>
+    <hr>
+    <div class="d-flex justify-content-start text-body-tertiary fs-8-5">
+        <p class="me-4"><span class="text-primary fas fa-users me-2"></span><span id="team-members-count">{{ team_members_count }}</span> Member<span id="team-members-plural">{% if team_members_count > 1 %}s{% endif %}</span></p>
+        <!-- TODO: Dynamically display projects -->
+        <p><span class="text-primary fas fa-project-diagram me-2"></span>8 Projects Shared</p>
+    </div>
+</div>
+
+<!-- TABS -->
+<div>
+    <!-- TABS LABELS -->
+    <div class="scrollbar px-4">
+        <ul class="nav nav-underline flex-nowrap mb-0">
+            <li class="nav-item me-3"><a class="nav-link text-nowrap fs-8-5 active" href="#tab-members" role="tab" aria-selected="true" id="members-tab" data-bs-toggle="tab" aria-controls="tab-members">Members</a></li>
+            <li class="nav-item"><a class="nav-link text-nowrap fs-8-5" href="#tab-settings" role="tab" aria-selected="false" id="settings-tab" data-bs-toggle="tab" aria-controls="tab-settings">Settings</a></li>
+        </ul>
+    </div>
+    <!-- TABS CONTENT -->
+    <div class="tab-content mb-2">
+
+        <!-- MEMBERS TAB -->
+        <div class="tab-pane fade show active p-4" id="tab-members" role="tabpanel" aria-labelledby="members-tab">
+            <div id="team-members-tab-content">
+                {% include 'accounts/partials/team-members-tab.html' %}
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div class="tab-pane fade p-4" id="tab-settings" role="tabpanel" aria-labelledby="settings-tab">
+            {% include 'accounts/partials/team-settings-tab.html' %}
+        </div>
+
+    </div>
+</div>

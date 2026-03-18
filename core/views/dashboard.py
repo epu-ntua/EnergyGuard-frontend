@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.shortcuts import render
 
+from accounts.models import Profile
 from datasets.models import Dataset
 from projects.models import Project
 
@@ -27,6 +28,8 @@ def dashboard(request):
     ]
     datasets_chart_data.sort(key=lambda item: item["value"], reverse=True)
 
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
     return render(
         request,
         "core/dashboard.html",
@@ -36,6 +39,6 @@ def dashboard(request):
             "chart_data": datasets_chart_data,
             "projects_count": projects_count,
             "datasets_count": datasets_count,
-            "team": request.user.profile.team,
+            "team": profile.team,
         },
     )

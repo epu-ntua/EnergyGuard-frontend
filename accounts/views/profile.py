@@ -1,13 +1,16 @@
 import logging
 import os
-from datetime import date
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.db import transaction
+from django.views.decorators.http import require_POST
 
-from ..forms import ProfileForm, ProfileUpdateForm
+from ..forms import ProfileEditForm, ProfileUpdateForm
 from ..models import Profile
 from ..services.keycloak_user_sync import KeycloakUserSyncClient
+from ..services.team_creation import handle_create_team_post
 from ..utils.dates import get_time_since_joined
 
 logger = logging.getLogger(__name__)
@@ -34,50 +37,16 @@ def _sync_name_to_keycloak(user):
 
 
 def _update_user_name_from_full_name(user, full_name):
-    if not full_name:
+    if not full_name or not full_name.strip():
         return
 
-    name_parts = full_name.split()
-    if len(name_parts) < 2:
-        return
-
+    name_parts = full_name.strip().split(maxsplit=1)    # Split by first space
     user.first_name = name_parts[0]
-    user.last_name = " ".join(name_parts[1:])
-    user.save(update_fields=["first_name", "last_name"])
-    _sync_name_to_keycloak(user)
+    user.last_name = name_parts[1] if len(name_parts) > 1 else ""
 
-
-def _parse_birth_date(year_of_birth, month_of_birth, day_of_birth):
-    if not (
-        year_of_birth
-        and year_of_birth != ""
-        and month_of_birth
-        and month_of_birth != ""
-        and day_of_birth
-        and day_of_birth != ""
-    ):
-        return None
-
-    try:
-        return date(int(year_of_birth), int(month_of_birth), int(day_of_birth))
-    except (ValueError, TypeError):
-        return None
-
-
-def _build_profile_initial_data(user, user_profile):
-    initial_data = {
-        "team": user_profile.team or "",
-        "position": user_profile.position or "",
-        "short_bio": user_profile.bio or "",
-        "full_name": f"{user.first_name} {user.last_name}".strip(),
-    }
-
-    if user_profile.birth_date:
-        initial_data["year_of_birth"] = str(user_profile.birth_date.year)
-        initial_data["month_of_birth"] = str(user_profile.birth_date.month)
-        initial_data["day_of_birth"] = str(user_profile.birth_date.day)
-
-    return initial_data
+    with transaction.atomic():
+        user.save(update_fields=["first_name", "last_name"])
+        _sync_name_to_keycloak(user)
 
 
 @login_required
@@ -86,37 +55,28 @@ def profile(request):
     last_login = get_time_since_joined(request.user.last_login)
 
     user_profile, _ = Profile.objects.get_or_create(user=request.user)
+    existing_team = user_profile.team
     user_projects_count = request.user.creator_projects.count()
 
-    if request.method == "POST":
-        form = ProfileForm(request.POST)
+    is_create_team_post = request.method == "POST" and request.POST.get("action") == "create_team"
+
+    create_team_form, open_create_modal, existing_team, response = handle_create_team_post(
+        request=request,
+        profile=user_profile,
+        current_team=existing_team,
+        redirect_to="profile",
+    )
+    if response:
+        return response
+
+    if request.method == "POST" and not is_create_team_post:
+        form = ProfileEditForm(request.POST, instance=user_profile, user=request.user)
         if form.is_valid():
             _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
-
-            team = form.cleaned_data.get("team")
-            if team:
-                user_profile.team = team
-
-            position = form.cleaned_data.get("position")
-            if position:
-                user_profile.position = position
-
-            birth_date = _parse_birth_date(
-                form.cleaned_data.get("year_of_birth"),
-                form.cleaned_data.get("month_of_birth"),
-                form.cleaned_data.get("day_of_birth"),
-            )
-            if birth_date is not None:
-                user_profile.birth_date = birth_date
-
-            short_bio = form.cleaned_data.get("short_bio")
-            if short_bio:
-                user_profile.bio = short_bio
-
-            user_profile.save()
+            form.save()
             return redirect("profile")
     else:
-        form = ProfileForm(initial=_build_profile_initial_data(request.user, user_profile))
+        form = ProfileEditForm(instance=user_profile, user=request.user)
 
     return render(
         request,
@@ -127,23 +87,35 @@ def profile(request):
             "last_login": last_login,
             "form": form,
             "profile": user_profile,
+            "existing_team": existing_team,
             "total_projects": user_projects_count,
+            "create_team_form": create_team_form,
+            "open_create_modal": open_create_modal, 
         },
     )
 
 
 @login_required
-def update_profile_picture(request):
-    if request.method == "POST":
-        profile_instance = request.user.profile
-        old_picture_path = (
-            profile_instance.profile_picture.path if profile_instance.profile_picture else None
-        )
+@require_POST
+def reset_password(request):
+    keycloak_client = KeycloakUserSyncClient()
+    result = keycloak_client.send_reset_password_email(request.user)
+    if result.get("error"):
+        messages.error(request, "Failed to send password reset email. Please try again later.")
+    else:
+        messages.success(request, "A password reset email has been sent to your email address.")
+    return redirect("profile")
 
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=profile_instance)
-        if form.is_valid():
-            if old_picture_path and os.path.exists(old_picture_path):
-                os.remove(old_picture_path)
-            form.save()
+
+@login_required
+@require_POST
+def update_profile_picture(request):
+    profile_instance, _ = Profile.objects.get_or_create(user=request.user)
+
+    form = ProfileUpdateForm(request.POST, request.FILES, instance=profile_instance)
+    if form.is_valid():
+        form.save()         # django-cleanup automatically deletes old file when new one is saved
+    else:
+        messages.error(request, "Failed to update profile picture. Please ensure the uploaded file is a valid image and try again.")
 
     return redirect("profile")

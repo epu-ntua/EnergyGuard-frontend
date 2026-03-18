@@ -1,0 +1,22 @@
+{% extends 'core/authenticated-base.html' %}
+
+{% block title %}Accept Invitation | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+    <section class="pt-5 pb-9">
+        <div class="container-small">
+            <div class="card p-5 text-center w-75 mx-auto">
+                <div class="mb-3">
+                    <span class="fas fa-exclamation-circle text-danger fa-3x"></span>
+                </div>
+                <h4 class="mb-3">Unable to Accept Invitation</h4>
+                <p class="text-body-secondary mb-4">{{ error }}</p>
+                <a href="{% url 'team_management' %}" class="btn btn-primary mx-auto" style="width: fit-content;">
+                    Go to Team Management
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

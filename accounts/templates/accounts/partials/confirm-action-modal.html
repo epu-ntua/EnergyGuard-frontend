@@ -1,0 +1,39 @@
+<div class="modal fade" id="confirmActionModal" tabindex="-1" aria-labelledby="confirmActionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmActionModalLabel"></h5>
+                <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-body-tertiary lh-lg mb-0" id="confirmActionModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmActionForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" id="confirmActionBtn"></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const confirmModal = document.getElementById('confirmActionModal');
+    if (!confirmModal) return;
+
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        document.getElementById('confirmActionModalLabel').textContent = trigger.dataset.actionTitle || 'Confirm';
+        document.getElementById('confirmActionModalMessage').textContent = trigger.dataset.actionMessage || 'Are you sure?';
+
+        const btn = document.getElementById('confirmActionBtn');
+        btn.textContent = trigger.dataset.confirmText || 'Yes';
+        btn.className = 'btn ' + (trigger.dataset.confirmClass || 'btn-primary');
+
+        document.getElementById('confirmActionForm').action = trigger.dataset.actionUrl;
+    });
+}());
+</script>

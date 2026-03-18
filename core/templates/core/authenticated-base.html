@@ -83,16 +83,195 @@
     <script src="{% static 'assets/js/phoenix.js' %}"></script>
 
 
+    {% if request.user.is_authenticated %}
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100; margin-top:70px;"></div>
+    <script>
+    (function () {
+      var POLL_URL = "{% url 'poll_notifications' %}";
+      var READ_URL_BASE = "{% url 'read_notification' 0 %}";
+      var MEMBERS_PARTIAL_URL = "{% url 'team_members_partial' %}";
+      var PENDING_INVITES_PARTIAL_URL = "{% url 'pending_invites_partial' %}";
+      var shown = new Set();
+
+      function incrementBellBadge() {
+        var badge = document.getElementById("notif-badge");
+        if (!badge) return;
+        if (badge.classList.contains("d-none")) {
+          badge.classList.remove("d-none");
+          badge.childNodes[0].textContent = "1";
+        } else {
+          var current = parseInt(badge.childNodes[0].textContent.trim(), 10) || 0;
+          badge.childNodes[0].textContent = current + 1;
+        }
+      }
+
+      function refreshTeamMembers() {
+        fetch(MEMBERS_PARTIAL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var container = document.getElementById("team-members-tab-content");
+            if (container) {
+              container.innerHTML = data.html;
+            }
+            var countEl = document.getElementById("team-members-count");
+            if (countEl) {
+              countEl.textContent = data.count;
+            }
+            var pluralEl = document.getElementById("team-members-plural");
+            if (pluralEl) {
+              pluralEl.textContent = data.count !== 1 ? "s" : "";
+            }
+          });
+      }
+
+      function refreshPendingInvites() {
+        fetch(PENDING_INVITES_PARTIAL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var container = document.getElementById("pending-invites-container");
+            if (container) {
+              container.innerHTML = data.html;
+            }
+          });
+      }
+
+      function addToDropdown(n) {
+        var list = document.getElementById("notif-dropdown-list");
+        var empty = document.getElementById("notif-empty-state");
+        if (!list) return;
+        if (list.classList.contains("d-none")) {
+          list.classList.remove("d-none");
+        }
+        if (empty) {
+          empty.classList.add("d-none");
+        }
+        var readUrl = READ_URL_BASE.replace("/0/", "/" + n.id + "/");
+        var item = document.createElement("div");
+        item.className = "px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom";
+        item.innerHTML =
+          '<div class="d-flex align-items-center justify-content-between position-relative">' +
+            '<div class="d-flex">' +
+              '<div class="avatar avatar-m me-3">' +
+                '<div class="avatar-name rounded-circle"><span><span class="fas fa-' + n.icon + '"></span></span></div>' +
+              '</div>' +
+              '<div class="flex-1 me-sm-3">' +
+                '<a class="stretched-link text-decoration-none" href="' + readUrl + '">' +
+                  '<p class="fs-8-5 text-body-highlight mb-2 fw-normal">' + n.message + '</p>' +
+                '</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        list.insertBefore(item, list.firstChild);
+      }
+
+      function showToast(n) {
+        var container = document.getElementById("toast-container");
+        var el = document.createElement("div");
+        el.className = "toast align-items-center border-0 mb-2";
+        el.setAttribute("role", "alert");
+        el.innerHTML =
+          '<div class="d-flex">' +
+            '<div class="toast-body d-flex align-items-center gap-2">' +
+              '<span class="fas fa-' + n.icon + '"></span>' +
+              '<span>' + n.message + '</span>' +
+            '</div>' +
+            '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
+          '</div>';
+        container.appendChild(el);
+        new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+
+        incrementBellBadge();
+        addToDropdown(n);
+
+        var path = window.location.pathname;
+        if (path.indexOf("team-management") !== -1) {
+          if (n.icon === "user-check" || n.icon === "user-times") {
+            refreshTeamMembers();
+          }
+          if (n.icon === "envelope") {
+            refreshPendingInvites();
+          }
+        }
+
+        fetch(READ_URL_BASE.replace("/0/", "/" + n.id + "/"), {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+        });
+      }
+
+      function poll() {
+        fetch(POLL_URL, { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            data.notifications.forEach(function (n) {
+              if (!shown.has(n.id)) {
+                shown.add(n.id);
+                showToast(n);
+              }
+            });
+          });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        poll();
+        setInterval(poll, 10000);
+      });
+    })();
+    </script>
+
+    <!-- Django messages being displayed as inline Bootstrap alerts if this: <div id="django-alerts-container"></div> is added to the desired page OR toasts if not -->
+    {% if messages %}
+    <script type="application/json" id="django-messages-data">[{% for message in messages %}{"text": "{{ message|escapejs }}", "level": "{{ message.tags|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]</script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var alertsContainer = document.getElementById("django-alerts-container");
+      var toastContainer = document.getElementById("toast-container");
+      var alertClassMap = { success: "alert-outline-success", error: "alert-outline-danger", warning: "alert-outline-warning", info: "alert-outline-info" };
+      var iconMap = { success: "check-circle", error: "exclamation-circle", warning: "exclamation-triangle", info: "info-circle" };
+      var colorMap = { success: "text-success", error: "text-danger", warning: "text-warning", info: "text-info" };
+      var msgs = JSON.parse(document.getElementById("django-messages-data").textContent);
+      msgs.forEach(function (m) {
+        var level = m.level.replace("messages.", "").trim();
+        if (alertsContainer) {
+          var alertClass = alertClassMap[level] || "alert-info";
+          var el = document.createElement("div");
+          el.className = "alert " + alertClass + " alert-dismissible fade show";
+          el.setAttribute("role", "alert");
+          el.innerHTML =
+            '<span class="fas fa-' + (iconMap[level] || "info-circle") + ' me-2"></span>' +
+            m.text +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+          alertsContainer.appendChild(el);
+          setTimeout(function (elem) {
+            var bsAlert = bootstrap.Alert.getOrCreateInstance(elem);
+            bsAlert.close();
+          }, 5000, el);
+        } else if (toastContainer) {
+          var icon = iconMap[level] || "info-circle";
+          var color = colorMap[level] || "";
+          var el = document.createElement("div");
+          el.className = "toast align-items-center border-0 mb-2";
+          el.setAttribute("role", "alert");
+          el.innerHTML =
+            '<div class="d-flex">' +
+              '<div class="toast-body d-flex align-items-center gap-2">' +
+                '<span class="fas fa-' + icon + ' ' + color + '"></span>' +
+                '<span>' + m.text + '</span>' +
+              '</div>' +
+              '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
+            '</div>';
+          toastContainer.appendChild(el);
+          new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+        }
+      });
+    });
+    </script>
+    {% endif %}
+    
+    {% endif %}
+
     {% block scripts %}
     {% endblock scripts %}
-    <!-- <script src="{% static 'vendors/leaflet/leaflet.js' %}"></script> -->
-    <!-- <script src="{% static 'vendors/leaflet.markercluster/leaflet.markercluster.js' %}"></script> -->
-    <!-- <script src="{% static 'vendors/leaflet.tilelayer.colorfilter/leaflet-tilelayer-colorfilter.min.js' %}"></script> -->
-    <!-- <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script> -->
-    <!-- <script src="{% static 'assets/js/dashboards/ecommerce-dashboard.js' %}"></script> -->
-    <!-- <script src="{% static 'vendors/flatpickr/flatpickr.min.js' %}"></script>  -->
-    <!-- <script src="{% static 'assets/js/pages/project-details.js' %}"></script> -->
 
   </body>
-
 </html>

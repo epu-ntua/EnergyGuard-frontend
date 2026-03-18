@@ -1,0 +1,146 @@
+<div class="table-responsive">
+    {% if is_team_admin %}
+        <button class="btn btn-primary btn-sm mb-4" data-bs-toggle="modal" data-bs-target="#inviteMemberModal">
+            <i class="fa-regular fa-envelope me-2"></i>Invite Member
+        </button>
+    {% endif %}
+    <table class="table table-sm fs-9 mb-0 text-start">
+        <thead>
+            <tr>
+                <th class="border-top border-translucent">Name</th>
+                <th class="border-top border-translucent">Email</th>
+                <th class="border-top border-translucent">Role</th>
+                <th class="border-top border-translucent">Status</th>
+                <th class="border-top border-translucent">Date Joined / Invited</th>
+                {% if is_team_admin %}
+                    <th class="border-top border-translucent">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in team_members %}
+                <tr>
+                    <td class="align-middle">{{ member.user.get_full_name|default:member.user.email }}</td>
+                    <td class="align-middle">{{ member.user.email }}</td>
+                    <td class="align-middle"><span class="badge {% if member.user.profile.get_team_role_display == 'Admin' %}bg-purple{% else %}bg-primary{% endif %}">{{ member.user.profile.get_team_role_display }}</span></td>
+                    <td class="align-middle"><span class="badge bg-success">Active</span></td>
+                    <td class="align-middle">{{ member.team_joined_at|date:"F j, Y"|default:"—" }}</td>
+                    {% if is_team_admin %}
+                        <td class="align-middle">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-ghost-secondary px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if member.user != request.user %}
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'remove_member' member.user.id %}"
+                                            data-action-title="Remove Member"
+                                            data-action-message="Are you sure you want to remove {{ member.user.get_full_name|default:member.user.email }} from the team?"
+                                            data-confirm-text="Yes, Remove"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-user-minus me-2"></i>Remove Member
+                                        </button>
+                                    </li>
+                                    {% else %}
+                                    <li><span class="dropdown-item text-body-tertiary">No actions</span></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% if is_team_admin %}
+                {% for invite in pending_invites %}
+                <tr>
+                    <td class="align-middle">
+                        {% if invite.platform_user %}
+                            {{ invite.platform_user.get_full_name|default:invite.platform_user.email }}
+                        {% else %}
+                            <span class="text-body-tertiary">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">{{ invite.email }}</td>
+                    <td class="align-middle text-body-tertiary">Member</td>
+                    <td class="align-middle">
+                        {% if invite.is_declined %}
+                            <span class="badge text-bg-secondary">Declined</span>
+                        {% elif invite.is_expired %}
+                            <span class="badge text-bg-danger">Expired</span>
+                        {% else %}
+                            <span class="badge text-bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">{{ invite.created_at|date:"F j, Y" }}</td>
+                    <td class="align-middle">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-ghost-secondary px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if invite.is_declined %}
+                                    <li>
+                                        <button type="button" class="dropdown-item"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'resend_invite' invite.id %}"
+                                            data-action-title="Resend Invite"
+                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-confirm-text="Yes, Resend"
+                                            data-confirm-class="btn-primary">
+                                            <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'delete_invite' invite.id %}"
+                                            data-action-title="Delete Invite"
+                                            data-action-message="Permanently delete the invite record for {{ invite.email }}?"
+                                            data-confirm-text="Yes, Delete"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-trash me-2"></i>Delete
+                                        </button>
+                                    </li>
+                                {% elif invite.is_expired %}
+                                    <li>
+                                        <button type="button" class="dropdown-item"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'resend_invite' invite.id %}"
+                                            data-action-title="Resend Invite"
+                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-confirm-text="Yes, Resend"
+                                            data-confirm-class="btn-primary">
+                                            <i class="fas fa-paper-plane me-2"></i>Resend Invite
+                                        </button>
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActionModal"
+                                            data-action-url="{% url 'cancel_invite' invite.id %}"
+                                            data-action-title="Cancel Invite"
+                                            data-action-message="Are you sure you want to cancel the invite for {{ invite.email }}?"
+                                            data-confirm-text="Yes, Cancel"
+                                            data-confirm-class="btn-danger">
+                                            <i class="fas fa-times me-2"></i>Cancel Invite
+                                        </button>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+

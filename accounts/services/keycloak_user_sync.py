@@ -72,3 +72,32 @@ class KeycloakUserSyncClient:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error updating user {user.id} in Keycloak: {e}. Response: {e.response.text if e.response else 'No response'}")
             return {"error": f"Failed to update user in Keycloak: {e}"}
+
+    def send_reset_password_email(self, user):
+        """Send a password reset email to the user via Keycloak's execute-actions-email endpoint."""
+        if not self.token:
+            logger.error("Cannot send reset password email: user sync client is not authenticated.")
+            return {"error": "Authentication failed. Cannot get service account token."}
+
+        try:
+            social_account = SocialAccount.objects.get(user=user, provider='keycloak')
+            keycloak_user_id = social_account.uid
+        except SocialAccount.DoesNotExist:
+            logger.warning(f"Cannot send reset password email for user {user.id}: SocialAccount for Keycloak not found.")
+            return {"error": "User's SocialAccount for Keycloak not found."}
+
+        url = f"{self.base_url}/admin/realms/{self.realm}/users/{keycloak_user_id}/execute-actions-email"
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            # HTTP PUT request at Keycloak Admin API  
+            response = requests.put(url, headers=headers, json=["UPDATE_PASSWORD"])  # UPDATE_PASSWORD = Keycloak alias
+            response.raise_for_status()
+            logger.info(f"Successfully sent reset password email to user {user.id}.")
+            return {"success": True}
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error sending reset password email for user {user.id}: {e}. Response: {e.response.text if e.response else 'No response'}")
+            return {"error": f"Failed to send reset password email: {e}"}
