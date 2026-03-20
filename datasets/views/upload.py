@@ -135,6 +135,7 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                 )
                 return redirect("dataset_upload")
 
+            self.request.session["dataset_upload_success"] = True
             return redirect("dataset-upload-success")
         finally:
             self._cleanup_wizard_step_files()
@@ -142,6 +143,8 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
 
 @login_required
 def dataset_upload_success(request):
+    if not request.session.pop("dataset_upload_success", False):
+        return redirect("dataset_upload")
     wizard = {"steps": {"current": "done"}}
     wizard_steps = DATASET_STEP_METADATA.values()
     return render(
