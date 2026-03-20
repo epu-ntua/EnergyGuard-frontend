@@ -3,6 +3,10 @@
 
 {% block title %}EnergyGuard | Project Details{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block content %}
 
 <div class="content px-0 pt-navbar">
@@ -128,25 +132,27 @@
 
         <!-- Table -->
         <div class="d-flex flex-between-center align-items-center mb-3 mt-6">
-          <h3 class="text-body-emphasis mb-0">Experiments</h3>
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'experiments_list' project_details.id %}">View All</a>
+          <h3 class="text-body-emphasis mb-2">Experiments</h3>
+          <input id="experimentsSearch" type="search" class="form-control form-control-sm w-auto fs-9" placeholder="Search...">
         </div>
-        <div class="table-responsive border rounded-3 mb-6">
-          <table class="table table-sm mb-0">
+        <div class="table-responsive">
+          <table id="experimentsTable" class="table table-sm mb-0">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Open in MLflow</th>
-                <th class="text-end">Actions</th>
+                <th class="border-top border-translucent">Name</th>
+                <th class="border-top border-translucent">Description</th>
+                <th class="border-top border-translucent">Created at</th>
+                <!-- <th class="border-top border-translucent">Open in MLflow</th> -->
+                <th class="border-top border-translucent">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {% for experiment in experiments|slice:":10" %}
+              {% for experiment in experiments %}
                 <tr>
-                  <td>{{ experiment.name }}</td>
+                  <td><a href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}">{{ experiment.name }}</a></td>
                   <td>{{ experiment.description|default:"-" }}</td>
-                  <td>
+                  <td>{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
+                  <!-- <td>
                     <a
                       class="btn btn-sm btn-outline-primary"
                       href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}"
@@ -154,9 +160,9 @@
                       {% if not experiment.mlflow_experiment_id %}aria-disabled="true"{% endif %}
                     >
                       Open in MLflow
-                    </a>
+                    </a> -->
                   </td>
-                  <td class="text-end">
+                  <td>
                     <div class="dropdown">
                       <button
                         class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal"
@@ -178,10 +184,6 @@
                       </div>
                     </div>
                   </td>
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="4" class="text-body-tertiary">No experiments yet.</td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -349,6 +351,28 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'jquery-3.7.1.min.js' %}"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var table = $('#experimentsTable').DataTable({
+      pageLength: 10,
+      dom: 'rt<"row mt-2"<"col-sm-12 col-md-6 fs-9 text-body-tertiary"i><"col-sm-12 col-md-6 d-flex justify-content-end"p>>',
+      language: {
+        info: "Showing _START_–_END_ of _TOTAL_",
+        emptyTable: "No experiments yet."
+      },
+      columnDefs: [
+        { orderable: false, targets: [2, 3] }
+      ]
+    });
+
+    $('#experimentsSearch').on('input', function () {
+      table.search(this.value).draw();
+    });
+  });
+</script>
 <!-- TODO: Remove when real data graphs are added -->
 <script src="{% static 'assets/js/pages/project-details.js' %}"></script>
 <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script>
