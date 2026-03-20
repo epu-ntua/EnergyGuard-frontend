@@ -154,6 +154,11 @@
             },
             columns: columns,
             dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
+            language: {
+                info: "Showing _START_–_END_ of _TOTAL_",
+                infoFiltered: "",
+                emptyTable: "No projects yet."
+            },
             pageLength: 15,
             createdRow: row => $('td', row).addClass('align-middle py-3'),
         });
@@ -171,6 +176,11 @@
             },
             columns: columns,
             dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>', // Custom DOM layout
+            language: {
+                info: "Showing _START_–_END_ of _TOTAL_",
+                infoFiltered: "",
+                emptyTable: "No projects available."
+            },
             pageLength: 15,
             createdRow: row => $('td', row).addClass('align-middle py-3'),
         });
