@@ -9,11 +9,11 @@
   <div class="row g-0">
     <div class="col-12 col-xxl-8 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
-        <div class="mb-5">
-          <div class="d-flex justify-content-between">
-            <h2 class="text-body-emphasis fw-bolder mb-2">{{ project_details.name }}</h2>
 
-            <!-- TODO: Replace 3 Dots above graph -->
+        <!-- Header: Title + Evaluate Project -->
+        <div class="d-flex justify-content-between align-items-start mb-8">
+          <div class="d-flex align-items-center gap-2">
+            <h2 class="text-body-emphasis fw-bolder mb-0">{{ project_details.name }}</h2>
             <div class="btn-reveal-trigger">
               <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
                 data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
@@ -27,10 +27,12 @@
               </div>
             </div>
           </div>
-
+          <button class="btn btn-warning text-white fw-semibold" type="button">Evaluate Project</button>
         </div>
+        
+        <!-- Details -->
         <div class="row gx-0 gx-sm-5 gy-3 mb-8">
-          <!-- Details -->
+          <!-- Info + Description -->
           <div class="col-12 col-xl-3 col-xxl-4 pe-xl-0">
             <div class="mb-4 mb-xl-7">
               <div class="row gx-0 gx-sm-7">
@@ -53,17 +55,6 @@
                         <!-- <td class="ps-1 py-1"><a class="fw-semibold d-block lh-sm" href="#!">{{ project_details.company|default:"-"}} </a></td> -->
                         <td class="ps-1 py-1 text-start fw-semibold lh-sm d-block">{{ project_details.team|default:"-"}}</td>
                       </tr>
-
-                      <!-- TODO: Replace with real data -->
-                      <!-- <tr>
-                        <td class="align-top py-1">
-                          <div class="d-flex"><span
-                              class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Budget : </h5>
-                          </div>
-                        </td>
-                        <td class="fw-bold ps-1 py-1 text-body-highlight">$8,742</td>
-                      </tr> -->
                     </tbody>
                   </table>
                 </div>
@@ -86,17 +77,27 @@
                   </table>
                 </div>
 
-                <div class="col-12 col-sm-auto">
+                <div class="col-12 col-sm-auto mt-4">
                   <a href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
                     <button class="btn btn-primary mt-1" style="width:80%;" type="button">Open in Jupyter</button>
-                  </a>
-                  <a href="{% url 'add_experiment' project_details.id %}">
-                    <button class="btn btn-success mt-1" style="width:80%;" type="button">Add Experiment</button>
                   </a>
                   <!-- TODO: Add project's mlflow link -->
                   <a href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
                     <button class="btn btn-purple mt-1" style="width:80%;" type="button">Open in MLFlow</button>
                   </a>
+                  <a href="{% url 'add_experiment' project_details.id %}">
+                    <button class="btn btn-info mt-1" style="width:80%;" type="button">Add Experiment</button>
+                  </a>
+                </div>
+                
+                <div class="col-12 col-sm-auto mt-6">
+                  <div class="mb-4">
+                    <h4 class="text-body-emphasis">Project Description</h4>
+                    <!-- TODO: Update text with db data -->
+                  </div>
+                  <div>
+                    {% if project_details.description %}{{ project_details.description }}{% else %}No description available{% endif %}
+                  </div>
                 </div>
 
               </div>
@@ -123,78 +124,9 @@
               <a href="#"><button type="button" class="btn btn-purple p-1">View usage statistics</button></a>
             </div>
           </div>
-          <!-- Trustworthy graph -->
-          <div class="col-12 col-sm-5 col-lg-4 col-xl-3 col-xxl-4">
-            <div class="mb-5">
-              <h4 class="text-body-emphasis">Trustworthy Assessment</h4>
-              <!-- TODO: Update text with db data -->
-              <h6 class="text-body-tertiary">Last review in 12 September 2025</h6>
-            </div>
-            <div class="echart-top-coupons mb-5" style="height:115px;width:100%;"></div>
-            <div class="row justify-content-center">
-              <div class="col-auto col-sm-12">
-                <div class="row justify-content-center justify-content-sm-between g-5 g-sm-0 mb-2">
-                  <div class="col">
-                    <div class="d-flex align-items-center">
-                      <div class="bullet-item me-2 bg-primary"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Cybersecurity</h6>
-                    </div>
-                  </div>
-                  <div class="col-auto">
-                    <h6 class="text-body fw-semibold mb-0">72%</h6>
-                  </div>
-                </div>
-                <div class="row justify-content-center justify-content-sm-between g-5 g-sm-0 mb-2">
-                  <div class="col">
-                    <div class="d-flex align-items-center">
-                      <div class="bullet-item me-2 bg-primary-lighter"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Explainability</h6>
-                    </div>
-                  </div>
-                  <div class="col-auto">
-                    <h6 class="text-body fw-semibold mb-0">18%</h6>
-                  </div>
-                </div>
-                <div class="row justify-content-center justify-content-sm-between g-5 g-sm-0 mb-2">
-                  <div class="col">
-                    <div class="d-flex align-items-center">
-                      <div class="bullet-item me-2 bg-info"></div>
-                      <h6 class="text-body fw-semibold flex-1 mb-0">Bias</h6>
-                    </div>
-                  </div>
-                  <div class="col-auto">
-                    <h6 class="text-body fw-semibold mb-0">10%</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Collaborators -->
-          <div class="col-12 col-sm-7 col-lg-8 col-xl-5">
-            <h4 class="text-body-emphasis mb-4">Collaborators</h4>
-            <div class="d-flex mb-8">
-
-              <!-- Collaborators' icons -->
-
-              {% for collaborator in project_details.collaborators %}
-              <div class="dropdown"><a class="dropdown-toggle dropdown-caret-none d-inline-block outline-none" href="#"
-                  role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                  <div class="avatar avatar-xl  me-1">
-                    {% with pic=collaborator.profile.profile_picture %}
-                      {% if pic %}
-                        <img class="rounded-circle" src="{{ pic }}" alt="{{ collaborator.get_full_name|default:collaborator.email }}">
-                      {% else %}
-                        <img class="rounded-circle" src="{% static 'assets/img/team/33.webp' %}" alt="Default avatar">
-                      {% endif %}
-                    {% endwith %}
-                  </div>
-                </a>
-              </div>
-              {% endfor %}
-            </div>
-
-          </div>
         </div>
+
+        <!-- Table -->
         <div class="d-flex flex-between-center align-items-center mb-3 mt-6">
           <h3 class="text-body-emphasis mb-0">Experiments</h3>
           <a class="btn btn-sm btn-outline-primary" href="{% url 'experiments_list' project_details.id %}">View All</a>
@@ -255,11 +187,7 @@
             </tbody>
           </table>
         </div>
-        <h3 class="text-body-emphasis mb-4">Project overview</h3>
-        <p class="text-body-secondary mb-4 text-justify">
-          {{ project_details.description }}
-          <!-- <a class="fw-semibold" href="#!">read more</a> -->
-        </p>
+
       </div>
     </div>
 
