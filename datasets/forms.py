@@ -1,4 +1,5 @@
 import json
+import zipfile
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -65,6 +66,21 @@ class FileUploadDatasetForm(forms.Form):
         allowed_types = allowed_types_by_extension.get(extension, set())
         if content_type and content_type not in allowed_types:
             raise ValidationError("Only .zip or .csv files are allowed.")
+
+        if extension == "zip":
+            try:
+                uploaded.seek(0)
+                with zipfile.ZipFile(uploaded) as zf:
+                    non_csv = [
+                        name for name in zf.namelist()
+                        if not name.lower().endswith(".csv") and not name.endswith("/")
+                    ]
+                    if non_csv:
+                        raise ValidationError("ZIP file must contain only CSV files.")
+                uploaded.seek(0)
+            except zipfile.BadZipFile:
+                raise ValidationError("The uploaded ZIP file is invalid or corrupted.")
+
         return uploaded
 
 
