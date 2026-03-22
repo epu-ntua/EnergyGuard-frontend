@@ -226,7 +226,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         # Register the user in MLflow-OIDC so they can receive experiment permissions
         try:
             from projects.services.mlflow_client import create_mlflow_user
-            display_name = instance.email
+            display_name = f"{instance.first_name} {instance.last_name}".strip() or instance.email
             create_mlflow_user(instance.email, display_name=display_name)
         except Exception:
             import logging
