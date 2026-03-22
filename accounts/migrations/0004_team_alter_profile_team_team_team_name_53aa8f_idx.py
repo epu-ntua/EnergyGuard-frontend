@@ -29,6 +29,14 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
             },
         ),
+        migrations.RunSQL(
+            # team column is varchar NOT NULL with stale company-name strings.
+            # Drop the NOT NULL constraint first, then cast to bigint via USING NULL
+            # so the column is ready for AlterField to add the FK constraint.
+            "ALTER TABLE profile ALTER COLUMN team DROP NOT NULL; "
+            "ALTER TABLE profile ALTER COLUMN team TYPE bigint USING NULL;",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.AlterField(
             model_name='profile',
             name='team',

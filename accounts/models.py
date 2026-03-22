@@ -223,6 +223,17 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
+        # Register the user in MLflow-OIDC so they can receive experiment permissions
+        try:
+            from projects.services.mlflow_client import create_mlflow_user
+            display_name = instance.email
+            create_mlflow_user(instance.email, display_name=display_name)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Failed to create MLflow user for %s", instance.email, exc_info=True
+            )
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):

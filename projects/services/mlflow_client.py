@@ -283,3 +283,30 @@ def delete_artifacts_from_object_storage(experiment_id: str) -> None:
 
 def make_deleted_experiment_name() -> str:
     return f"deleted-{secrets.token_hex(8)}"
+
+
+def create_mlflow_user(username: str, display_name: str = "") -> dict[str, Any]:
+    """Create a user in MLflow-OIDC so they can receive experiment permissions.
+
+    Uses the service account credentials.  If the user already exists
+    MLflow returns RESOURCE_ALREADY_EXISTS – we silently ignore that.
+    """
+    payload: dict[str, Any] = {"username": str(username)}
+    if display_name:
+        payload["display_name"] = str(display_name)
+    else:
+        payload["display_name"] = str(username)
+
+    try:
+        data = _request(
+            "POST",
+            "/api/2.0/mlflow/users",
+            payload,
+            use_service_credentials=True,
+        )
+        return data
+    except MlflowClientError as exc:
+        # RESOURCE_ALREADY_EXISTS – user was already provisioned (e.g. via OIDC login)
+        if "RESOURCE_ALREADY_EXISTS" in str(exc):
+            return {"already_exists": True}
+        raise
