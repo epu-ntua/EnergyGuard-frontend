@@ -40,33 +40,7 @@ class Experiment(TimeStampedModel):
     )
     name = models.CharField(max_length=255, blank=True, default="")
     mlflow_experiment_id = models.CharField(max_length=64, blank=True, default="")
-
-    def _get_mlflow_experiment(self) -> dict:
-        if not self.mlflow_experiment_id:
-            return {}
-        # cached = getattr(self, "_mlflow_experiment_cache", None)
-        # if cached is not None:
-        #     return cached
-        try:
-            from .services.mlflow_client import MlflowClientError, get_experiment
-
-            cached = get_experiment(self.mlflow_experiment_id, user=self.creator)
-        except (MlflowClientError, Exception):
-            cached = {}
-        self._mlflow_experiment_cache = cached
-        return cached
-
-    @property
-    def description(self) -> str:
-        experiment = self._get_mlflow_experiment()
-        description = experiment.get("description")
-        if description:
-            return str(description)
-
-        for tag in experiment.get("tags", []) or []:
-            if tag.get("key") == "mlflow.note.content":
-                return str(tag.get("value") or "")
-        return ""
+    description = models.TextField(blank=True, default="")
 
     def __str__(self):
         return self.name or f"Experiment {self.pk}"

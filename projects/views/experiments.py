@@ -133,6 +133,7 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
                 creator=self.request.user,
                 name=general_info["name"],
                 mlflow_experiment_id=mlflow_experiment_id,
+                description=general_info.get("description", ""),
             )
 
         messages.success(self.request, "Experiment created successfully.")
@@ -252,7 +253,8 @@ def edit_experiment(request, project_id: int, experiment_id: int):
                 )
 
             experiment.name = new_name
-            experiment.save(update_fields=["name", "updated_at"])
+            experiment.description = new_description
+            experiment.save(update_fields=["name", "description", "updated_at"])
             messages.success(request, "Experiment updated successfully.")
             return redirect("project_details", project_id=project.id)
     else:
