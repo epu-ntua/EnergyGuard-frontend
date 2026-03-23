@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'datasets',
     'projects.apps.ProjectsConfig',
     'billing',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -273,3 +274,13 @@ OBJECT_STORAGE_ACCESS_KEY = env("OBJECT_STORAGE_ACCESS_KEY")
 OBJECT_STORAGE_SECRET_KEY = env("OBJECT_STORAGE_SECRET_KEY")
 OBJECT_STORAGE_VERIFY_SSL = env.bool("OBJECT_STORAGE_VERIFY_SSL")
 OBJECT_STORAGE_BUCKET = env("OBJECT_STORAGE_BUCKET")
+
+# Django-Q2 (async task queue)
+Q_CLUSTER = {
+    'name': 'energyguard',
+    'workers': 2,
+    'timeout': 1800,  # 30 minutes max per task
+    'retry': 3600,    # retry after 60 minutes if task is stuck
+    'max_attempts': 1,
+    'orm': 'default',  # use the default PostgreSQL database as broker
+}
