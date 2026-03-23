@@ -1,17 +1,20 @@
-from decimal import Decimal, ROUND_HALF_UP
 import logging
+import os
+import shutil
+import uuid
+from decimal import Decimal, ROUND_HALF_UP
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
 from django.shortcuts import redirect, render
+from django_q.tasks import async_task
 
 from core.views import BaseWizardView
 
 from ..forms import FileUploadDatasetForm, GeneralDatasetForm, MetadataDatasetForm
-from ..models import Dataset
-from ..services import MinioUploadError, delete_dataset_objects, upload_dataset_objects
+from ..tasks import process_dataset_upload
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,8 @@ DATASET_STEP_METADATA = {
     "upload_files": {"title": "Upload", "icon": "fa-upload"},
     "metadata": {"title": "Metadata", "icon": "fa-sheet-plastic"},
 }
+
+_TMP_UPLOAD_DIR = os.path.join(settings.BASE_DIR, "dataset_upload_tmp")
 
 
 class AddDatasetView(LoginRequiredMixin, BaseWizardView):
@@ -59,22 +64,23 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                     )
                     continue
 
-    def _rollback_uploaded_objects(self, upload_result: dict[str, str]) -> None:
-        try:
-            delete_dataset_objects(
-                bucket_name=upload_result["bucket_name"],
-                data_file_key=upload_result["data_file_key"],
-                metadata_file_key=upload_result["metadata_file_key"],
-            )
-        except MinioUploadError as exc:
-            logger.exception(
-                "Failed to rollback MinIO objects after DB save failure. "
-                "bucket='%s', data_key='%s', metadata_key='%s', error='%s'",
-                upload_result.get("bucket_name", ""),
-                upload_result.get("data_file_key", ""),
-                upload_result.get("metadata_file_key", ""),
-                exc,
-            )
+    def _save_to_tmp_dir(self, data_file, metadata_file) -> str:
+        """Copies uploaded files to a persistent temp directory and returns its path."""
+        tmp_dir = os.path.join(_TMP_UPLOAD_DIR, uuid.uuid4().hex)
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        data_filename = data_file.name.split("/")[-1].split("\\")[-1]
+        data_file.seek(0)
+        with open(os.path.join(tmp_dir, data_filename), "wb") as f:
+            shutil.copyfileobj(data_file, f)
+
+        if metadata_file:
+            metadata_filename = metadata_file.name.split("/")[-1].split("\\")[-1]
+            metadata_file.seek(0)
+            with open(os.path.join(tmp_dir, metadata_filename), "wb") as f:
+                shutil.copyfileobj(metadata_file, f)
+
+        return tmp_dir
 
     def done(self, form_list, **kwargs):
         try:
@@ -85,21 +91,6 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
             metadata_uploaded_file = metadata_data.get("metadata_file")
             metadata_json = metadata_data.get("metadata")
 
-            try:
-                upload_result = upload_dataset_objects(
-                    user_name=self.request.user.username or str(self.request.user.pk),
-                    dataset_name=general_data["name"],
-                    data_file=data_uploaded_file,
-                    metadata_file=metadata_uploaded_file,
-                    metadata_json=metadata_json,
-                )
-            except MinioUploadError as exc:
-                messages.error(
-                    self.request,
-                    f"Failed to upload dataset to storage: {exc} — please try again.",
-                )
-                return redirect("dataset_upload")
-
             size_gb = (Decimal(data_uploaded_file.size) / Decimal(1024 ** 3)).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
@@ -107,33 +98,48 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
                 size_gb = Decimal("0.01")
 
             try:
-                with transaction.atomic():
-                    Dataset.objects.create(
-                        name=general_data["name"],
-                        data_file=upload_result["data_file_key"],
-                        metadata_file=upload_result["metadata_file_key"],
-                        bucket_name=upload_result["bucket_name"],
-                        label=general_data["label"],
-                        source=Dataset.Source.OWN_DS,
-                        status=Dataset.Status.UNDER_REVIEW,
-                        visibility=general_data["visibility"],
-                        size_gb=size_gb,
-                        publisher=self.request.user,
-                        description=general_data["description"],
-                        metadata=metadata_json,
-                    )
+                tmp_dir = self._save_to_tmp_dir(data_uploaded_file, metadata_uploaded_file)
             except Exception:
                 logger.exception(
-                    "Failed to save dataset record in database for user '%s', dataset '%s'.",
+                    "Failed to save uploaded files to temp dir for user '%s', dataset '%s'.",
                     self.request.user.username,
                     general_data.get("name", ""),
                 )
-                self._rollback_uploaded_objects(upload_result)
                 messages.error(
                     self.request,
-                    "Failed to save dataset in database. Uploaded files were removed — please try again.",
+                    "Failed to process uploaded files — please try again.",
                 )
                 return redirect("dataset_upload")
+
+            data_filename = data_uploaded_file.name.split("/")[-1].split("\\")[-1]
+            metadata_filename = (
+                metadata_uploaded_file.name.split("/")[-1].split("\\")[-1]
+                if metadata_uploaded_file
+                else None
+            )
+            user = self.request.user
+
+            async_task(
+                process_dataset_upload,
+                tmp_dir=tmp_dir,
+                data_file_name=data_filename,
+                data_file_content_type=data_uploaded_file.content_type or "application/octet-stream",
+                metadata_file_name=metadata_filename,
+                metadata_file_content_type=(
+                    metadata_uploaded_file.content_type if metadata_uploaded_file else None
+                ),
+                metadata_json=metadata_json,
+                dataset_name=general_data["name"],
+                dataset_label=general_data["label"],
+                dataset_visibility=general_data["visibility"],
+                dataset_description=general_data["description"],
+                size_gb=str(size_gb),
+                user_id=user.pk,
+                user_username=user.username or str(user.pk),
+                user_email=user.email or "",
+                user_display_name=user.get_full_name() or user.username,
+                site_url=self.request.build_absolute_uri("/"),
+            )
 
             self.request.session["dataset_upload_success"] = True
             return redirect("dataset-upload-success")
