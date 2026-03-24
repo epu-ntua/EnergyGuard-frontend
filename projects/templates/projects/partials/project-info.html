@@ -1,0 +1,62 @@
+<!-- Info + Description -->
+<div class="row gx-5 gx-xl-9 gy-4 mb-8">
+  <!-- Left: meta info + buttons -->
+  <div class="col-12 col-xl-5">
+    <div class="row gx-0 gx-md-4 gy-3 mb-4">
+      <div class="col-12 col-sm-6">
+        <table class="lh-sm mb-4 mb-md-0" id="table1">
+          <tbody>
+            <tr>
+              <td class="py-1" colspan="2">
+                <div class="d-flex align-items-center">
+                  <span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
+                  <h5 class="text-body mb-0">{% if project_details.visibility %}Public{% else %}Private{% endif %} Project</h5>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="align-top py-1">
+                <div class="d-flex">
+                  <span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
+                  <h5 class="text-body mb-0 text-nowrap">Team :</h5>
+                </div>
+              </td>
+              <td class="ps-1 py-1 fw-semibold lh-sm text-primary">{{ project_details.team|default:"-" }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-12 col-sm-6">
+        <table class="lh-sm" id="table2">
+          <tbody>
+            <tr>
+              <td class="align-top py-1 text-body text-nowrap fw-bold">First Run :</td>
+              <td class="text-body-tertiary fw-semibold ps-3">{{ project_details.start_date|date:"jS M, Y" }}</td>
+            </tr>
+            <tr>
+              <td class="align-top py-1 text-body text-nowrap fw-bold">Type :</td>
+              <td class="text-warning fw-semibold ps-3">{{ project_details.type }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mb-2">
+      <a class="flex-grow-1" href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
+        <button class="btn btn-primary w-100" type="button">Open in Jupyter</button>
+      </a>
+      <a class="flex-grow-1" href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
+        <button class="btn btn-purple w-100" type="button">Open in MLFlow</button>
+      </a>
+      <a class="flex-grow-1" href="{% url 'add_experiment' project_details.id %}">
+        <button class="btn btn-info w-100" type="button">Add Experiment</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Right: description -->
+  <div class="col-12 col-xl-5">
+    <h4 class="text-body-emphasis fw-bold mb-3">Project description</h4>
+    <p class="text-body-secondary text-justify mb-0">{% if project_details.description %}{{ project_details.description }}{% else %}No description available{% endif %}</p>
+  </div>
+</div>
