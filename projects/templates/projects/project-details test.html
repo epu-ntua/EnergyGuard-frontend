@@ -14,7 +14,7 @@
 
 <div class="content px-0 pt-navbar">
   <div class="row g-0">
-    <div class="col-12 col-xxl-10 px-0 bg-body mx-auto">
+    <div class="col-12 col-xxl-11 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
 
         <!-- Header: Title + Evaluate Project -->
@@ -114,7 +114,7 @@
           <div class="row g-3 mb-8">
           
             <div class="col-12 col-xl-6 shadow-none">
-              <div class="card">
+              <div class="card h-100">
 
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-start mb-3">
@@ -124,18 +124,18 @@
                     </div>
                     <div id="lineLegend" class="d-flex flex-wrap gap-1 justify-content-end" style="max-width:58%"></div>
                   </div>
-                  <div id="lineChart" style="height:500px;width:100%"></div>
+                  <div id="lineChart" style="height:420px;width:100%"></div>
                 </div>
               </div>
             </div>
             <!-- Bar chart card -->
             <div class="col-12 col-xl-6 shadow-none">
-              <div class="card">
+              <div class="card h-100">
 
                 <div class="card-body">
                   <h6 class="fs-8 fw-bold text-body-emphasis mb-0">Best Run Metrics</h6>
                   <p class="fs-9 text-body-tertiary mb-0">Optimal value per metric — ↑ higher is better, ↓ lower is better</p>
-                  <div id="barChart" style="height:350px;width:100%"></div>
+                  <div id="barChart" style="height:360px;width:100%"></div>
                   <div id="metricCards" class="row row-cols-3 row-cols-sm-6 g-2 mt-1"></div>
                 </div>
               </div>
@@ -481,6 +481,9 @@
         layout: lineRoot.verticalLayout
       }));
       lc.zoomOutButton.set("forceHidden", true);
+      lc.get("colors").set("colors", barColorHex.map(function(h) {
+        return am5.color(parseInt(h.replace("#", ""), 16));
+      }));
 
       // x axis
       var xRen = am5xy.AxisRendererX.new(lineRoot, { minGridDistance: 60, strokeOpacity: 0 });
@@ -512,7 +515,7 @@
         centerX: am5.percent(50),
         x: am5.percent(55),
         // y: 0,
-        marginTop: 12,
+        marginTop: 30,
         useDefaultMarker: true
       }));
       legend.labels.template.setAll({ fill: textColor, fontSize: 12 });
@@ -580,6 +583,27 @@
     // ── Bar chart (rounded, colored, labeled) ─────────────────────────────
     if (!bestRun) return;
 
+    // render summary cards
+    var metrics = Object.keys(bestRun.metrics);
+    var barColorHex = ["#818cf8","#34d399","#fbbf24","#22d3ee","#f87171","#a78bfa"];
+    var container = document.getElementById("metricCards");
+    container.innerHTML = "";
+    metrics.forEach(function(m, i) {
+      var color = barColorHex[i % barColorHex.length];
+      var label = formatMetricLabel(m);
+      var val   = bestRun.metrics[m].toFixed(2);
+      var runId = bestRun.run_id || "—";
+      var col = document.createElement("div");
+      col.className = "col";
+      col.innerHTML =
+        '<div class="rounded-3 p-2 text-center" style="border:1px solid ' + color + '33;background:' + color + '11;">' +
+          '<div class="text-uppercase mb-1" style="font-size:9px;letter-spacing:.08em;color:' + color + 'bb;font-weight:600;">' + label + '</div>' +
+          '<div class="fw-bold" style="font-size:1.25rem;line-height:1.2;color:' + color + ';">' + val + '</div>' +
+          '<div style="font-size:9px;color:#6c757d;">' + runId + '</div>' +
+        '</div>';
+      container.appendChild(col);
+    });
+
     am5.ready(function() {
       barRoot = am5.Root.new("barChart");
       barRoot.setThemes([am5themes_Animated.new(barRoot)]);
@@ -591,6 +615,9 @@
       }));
       bc.zoomOutButton.set("forceHidden", true);
       bc.set("cursor", am5xy.XYCursor.new(barRoot, { behavior: "none" }));
+      bc.get("colors").set("colors", barColorHex.map(function(h) {
+        return am5.color(parseInt(h.replace("#", ""), 16));
+      }));
 
       var bxRen = am5xy.AxisRendererX.new(barRoot, { minGridDistance: 40, strokeOpacity: 0 });
       bxRen.labels.template.setAll({ fill: textColor, fontSize: 12, paddingTop: 6 });
