@@ -82,7 +82,7 @@ def project_details(request, project_id):
     }
     return render(
         request,
-        "projects/project-details test.html",
+        "projects/project-details.html",
         {
             "project_details": project_details_data,
             "experiments": experiments,
