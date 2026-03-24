@@ -124,7 +124,7 @@
                     </div>
                     <div id="lineLegend" class="d-flex flex-wrap gap-1 justify-content-end" style="max-width:58%"></div>
                   </div>
-                  <div id="lineChart" style="height:350px;width:100%"></div>
+                  <div id="lineChart" style="height:500px;width:100%"></div>
                 </div>
               </div>
             </div>
@@ -388,7 +388,7 @@
   });
 </script>
 <script>
-  // ── Dark mode helpers (same pattern as dashboard) ─────────────────────────
+  // ── Helpers ─────────────────────────
   function cssColorToAmColor(cssColor) {
     if (!cssColor) return am5.color(0x31374a);
     var c = cssColor.trim();
@@ -404,6 +404,9 @@
   }
   function getThemeBgColor() {
     return getComputedStyle(document.documentElement).getPropertyValue("--phoenix-body-bg").trim();
+  }
+  function formatMetricLabel(m) {
+    return m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
   }
 
   // ── Mock data ─────────────────────────────────────────────────────────────
@@ -506,9 +509,9 @@
 
       // legend (clickable)
       var legend = lc.children.push(am5.Legend.new(lineRoot, {
-        centerX: am5.percent(100),
-        x: am5.percent(100),
-        y: 0,
+        centerX: am5.percent(50),
+        x: am5.percent(55),
+        // y: 0,
         marginTop: 12,
         useDefaultMarker: true
       }));
@@ -524,12 +527,12 @@
       // one series per metric
       metrics.forEach(function(metric) {
         var series = lc.series.push(am5xy.LineSeries.new(lineRoot, {
-          name: metric,
+          name: formatMetricLabel(metric),
           xAxis: xAxis, yAxis: yAxis,
           valueYField: "value", categoryXField: "category",
-          // tooltip: am5.Tooltip.new(lineRoot, {
-          //   labelText: "[bold]{name}[/]\n{valueY}"
-          // })
+          tooltip: am5.Tooltip.new(lineRoot, {
+            labelText: "[fontWeight: 500 fontSize: 0.8rem]{name}\n[fontWeight: 350 fontSize: 0.8rem]{valueY}"
+          })
         }));
         var cursor = lc.set("cursor", am5xy.XYCursor.new(lineRoot, {
           behavior: "none",
@@ -587,6 +590,7 @@
         paddingLeft: 0, paddingRight: 0
       }));
       bc.zoomOutButton.set("forceHidden", true);
+      bc.set("cursor", am5xy.XYCursor.new(barRoot, { behavior: "none" }));
 
       var bxRen = am5xy.AxisRendererX.new(barRoot, { minGridDistance: 40, strokeOpacity: 0 });
       bxRen.labels.template.setAll({ fill: textColor, fontSize: 12, paddingTop: 6 });
@@ -606,7 +610,7 @@
       var bSeries = bc.series.push(am5xy.ColumnSeries.new(barRoot, {
         xAxis: bxAxis, yAxis: byAxis,
         valueYField: "value", categoryXField: "metric",
-        tooltip: am5.Tooltip.new(barRoot, { labelText: "[bold]{categoryX}[/]\n{valueY}" })
+        tooltip: am5.Tooltip.new(barRoot, { labelText: "[fontWeight: 500 fontSize: 0.8rem]{categoryX}: {valueY}[/]\n[fontWeight: 200 fontSize: 0.8rem]Run: {runId}" })
       }));
       bSeries.columns.template.setAll({
         cornerRadiusTL: 8, cornerRadiusTR: 8,
@@ -623,23 +627,13 @@
       // hover opacity
       bSeries.columns.template.states.create("hover", { fillOpacity: 0.75 });
 
-      // value label on top
-      bSeries.bullets.push(function() {
-        return am5.Bullet.new(barRoot, {
-          locationY: 1,
-          sprite: am5.Label.new(barRoot, {
-            text: "{valueY}",
-            fill: textColor,
-            centerX: am5.percent(50),
-            centerY: am5.percent(100),
-            fontSize: 11, fontWeight: "600",
-            dy: -5, populateText: true
-          })
-        });
-      });
 
       var barData = Object.keys(bestRun.metrics).map(function(m) {
-        return { metric: m, value: parseFloat(bestRun.metrics[m].toFixed(2)) };
+        return { 
+          metric: formatMetricLabel(m), 
+          value: parseFloat(bestRun.metrics[m].toFixed(2)),
+          runId: bestRun.run_id || "-"
+         };
       });
       bxAxis.data.setAll(barData);
       bSeries.data.setAll(barData);
