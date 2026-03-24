@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from ..forms import EditProjectForm
 from ..models import Project
 from ..services import MlflowClientError, list_experiment_runs
 
@@ -54,14 +55,21 @@ def project_details(request, project_id):
         messages.error(request, "Project not found")
         return redirect("home")
 
+    edit_project_form = EditProjectForm(instance=project)
+
+    if request.method == "POST" and request.POST.get("action") == "edit_project":
+        edit_project_form = EditProjectForm(request.POST, instance=project)
+        if edit_project_form.is_valid():
+            edit_project_form.save()
+            messages.success(request, "Project updated successfully.")
+            return redirect("project_details", project_id=project_id)
+
     experiments = project.experiments.select_related("creator").order_by("-updated_at")
     latest_experiment = experiments.first()
-    latest_run_datetime = _latest_project_run_datetime(project, request.user)
 
     project_details_data = {
         "name": project.name,
         "start_date": project.created_at,
-        "last_update": latest_run_datetime,
         "description": project.description,
         "type": project.get_project_type_display(),
         "id": project_id,
@@ -74,10 +82,11 @@ def project_details(request, project_id):
     }
     return render(
         request,
-        "projects/project-details.html",
+        "projects/project-details test.html",
         {
             "project_details": project_details_data,
             "experiments": experiments,
+            "edit_project_form": edit_project_form,
             "active_navbar_page": "projects",
             "show_sidebar": True,
         },

@@ -26,6 +26,16 @@ class ProjectSandboxPackagesForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter sandbox package name'}),
     )
 
+class EditProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ('name', 'description', 'project_type', 'visibility')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter project name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter project description', 'rows': 3}),
+            'project_type': forms.Select(attrs={'class': 'form-select'}),
+            'visibility': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
 class ExperimentGeneralInfoForm(forms.Form):
     name = forms.CharField(
