@@ -38,10 +38,10 @@
         </div>
         
         <!-- Info + Description -->
-        <div class="row gx-0 gx-sm-5 gy-4 mb-8">
+        <div class="row gx-5 gx-xl-9 gy-4 mb-8">
           <!-- Left: meta info + buttons -->
-          <div class="col-12 col-xl-6">
-            <div class="row gx-0 gx-md-5 gy-3 mb-4">
+          <div class="col-12 col-xl-4">
+            <div class="row gx-0 gx-md-4 gy-3 mb-4">
               <div class="col-12 col-sm-6">
                 <table class="lh-sm mb-4 mb-md-0" id="table1">
                   <tbody>
@@ -98,7 +98,7 @@
           </div>
 
           <!-- Right: description -->
-          <div class="col-12 col-xl-6">
+          <div class="col-12 col-xl-5">
             <h4 class="text-body-emphasis fw-bold mb-3">Project description</h4>
             <p class="text-body-secondary text-justify mb-0">{% if project_details.description %}{{ project_details.description }}{% else %}No description available{% endif %}</p>
           </div>
@@ -163,7 +163,7 @@
             <tbody>
               {% for experiment in experiments %}
                 <tr>
-                  <td><a href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">{{ experiment.name }}</a></td>
+                  <td class="ps-1"><a href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">{{ experiment.name }}</a></td>
                   <td>{{ experiment.description|default:"-" }}</td>
                   <td>{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
                   <!-- <td>
@@ -405,8 +405,12 @@
   function getThemeBgColor() {
     return getComputedStyle(document.documentElement).getPropertyValue("--phoenix-body-bg").trim();
   }
+  // metrics where lower value = better (all others assumed higher is better)
+  var lowerIsBetter = ["mae", "mse", "rmse", "loss", "error", "false_positive_rate"];
   function formatMetricLabel(m) {
-    return m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    var label = m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    var arrow = lowerIsBetter.indexOf(m.toLowerCase()) !== -1 ? " ↓" : " ↑";
+    return label + arrow;
   }
 
   // ── Mock data ─────────────────────────────────────────────────────────────
@@ -470,6 +474,7 @@
     var gridOpacity = 0.06;
 
     // ── Line chart (smooth area lines + bullets) ──────────────────────────
+    var seriesColors = [];
     am5.ready(function() {
       lineRoot = am5.Root.new("lineChart");
       lineRoot.setThemes([am5themes_Animated.new(lineRoot)]);
@@ -481,9 +486,6 @@
         layout: lineRoot.verticalLayout
       }));
       lc.zoomOutButton.set("forceHidden", true);
-      lc.get("colors").set("colors", barColorHex.map(function(h) {
-        return am5.color(parseInt(h.replace("#", ""), 16));
-      }));
 
       // x axis
       var xRen = am5xy.AxisRendererX.new(lineRoot, { minGridDistance: 60, strokeOpacity: 0 });
@@ -567,6 +569,32 @@
 
       lc.appear(1000, 100);
 
+      // extract amcharts-native colors after series are created
+      seriesColors = [];
+      lc.series.each(function(s) { seriesColors.push(s.get("fill")); });
+
+      // render summary cards using the same colors as the line series
+      if (bestRun) {
+        var cardMetrics = Object.keys(bestRun.metrics);
+        var cardContainer = document.getElementById("metricCards");
+        cardContainer.innerHTML = "";
+        cardMetrics.forEach(function(m, i) {
+          var color = seriesColors[i % seriesColors.length].toCSSHex();
+          var label = formatMetricLabel(m);
+          var val   = bestRun.metrics[m].toFixed(2);
+          var runId = bestRun.run_id || "—";
+          var col = document.createElement("div");
+          col.className = "col";
+          col.innerHTML =
+            '<div class="rounded-3 p-2 text-center" style="border:1px solid ' + color + '33;background:' + color + '11;">' +
+              '<div class="text-uppercase mb-1" style="font-size:9px;letter-spacing:.08em;color:' + color + 'bb;font-weight:600;">' + label + '</div>' +
+              '<div class="fw-bold" style="font-size:1.25rem;line-height:1.2;color:' + color + ';">' + val + '</div>' +
+              '<div style="font-size:9px;color:#6c757d;">' + runId + '</div>' +
+            '</div>';
+          cardContainer.appendChild(col);
+        });
+      }
+
       // dark mode
       var obs = new MutationObserver(function() {
         var tc = cssColorToAmColor(getThemeTextColor());
@@ -583,27 +611,6 @@
     // ── Bar chart (rounded, colored, labeled) ─────────────────────────────
     if (!bestRun) return;
 
-    // render summary cards
-    var metrics = Object.keys(bestRun.metrics);
-    var barColorHex = ["#818cf8","#34d399","#fbbf24","#22d3ee","#f87171","#a78bfa"];
-    var container = document.getElementById("metricCards");
-    container.innerHTML = "";
-    metrics.forEach(function(m, i) {
-      var color = barColorHex[i % barColorHex.length];
-      var label = formatMetricLabel(m);
-      var val   = bestRun.metrics[m].toFixed(2);
-      var runId = bestRun.run_id || "—";
-      var col = document.createElement("div");
-      col.className = "col";
-      col.innerHTML =
-        '<div class="rounded-3 p-2 text-center" style="border:1px solid ' + color + '33;background:' + color + '11;">' +
-          '<div class="text-uppercase mb-1" style="font-size:9px;letter-spacing:.08em;color:' + color + 'bb;font-weight:600;">' + label + '</div>' +
-          '<div class="fw-bold" style="font-size:1.25rem;line-height:1.2;color:' + color + ';">' + val + '</div>' +
-          '<div style="font-size:9px;color:#6c757d;">' + runId + '</div>' +
-        '</div>';
-      container.appendChild(col);
-    });
-
     am5.ready(function() {
       barRoot = am5.Root.new("barChart");
       barRoot.setThemes([am5themes_Animated.new(barRoot)]);
@@ -615,9 +622,7 @@
       }));
       bc.zoomOutButton.set("forceHidden", true);
       bc.set("cursor", am5xy.XYCursor.new(barRoot, { behavior: "none" }));
-      bc.get("colors").set("colors", barColorHex.map(function(h) {
-        return am5.color(parseInt(h.replace("#", ""), 16));
-      }));
+      bc.get("colors").set("colors", seriesColors);
 
       var bxRen = am5xy.AxisRendererX.new(barRoot, { minGridDistance: 40, strokeOpacity: 0 });
       bxRen.labels.template.setAll({ fill: textColor, fontSize: 12, paddingTop: 6 });
@@ -657,7 +662,7 @@
 
       var barData = Object.keys(bestRun.metrics).map(function(m) {
         return { 
-          metric: formatMetricLabel(m), 
+          metric: formatMetricLabel(m),
           value: parseFloat(bestRun.metrics[m].toFixed(2)),
           runId: bestRun.run_id || "-"
          };
