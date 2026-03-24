@@ -239,18 +239,8 @@ def edit_experiment(request, project_id: int, experiment_id: int):
                     use_service_credentials=True,
                 )
             except MlflowClientError as exc:
-                form.add_error(None, f"Experiment update failed because MLflow sync failed: {exc}")
-                return render(
-                    request,
-                    "projects/experiment-edit.html",
-                    {
-                        "project": project,
-                        "experiment": experiment,
-                        "form": form,
-                        "active_navbar_page": "projects",
-                        "show_sidebar": True,
-                    },
-                )
+                messages.error(request, f"Experiment update failed because MLflow sync failed: {exc}")
+                return redirect("project_details", project_id=project.id)
 
             experiment.name = new_name
             experiment.description = new_description
