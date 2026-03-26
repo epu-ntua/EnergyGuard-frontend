@@ -4,13 +4,13 @@
   <input id="experimentsSearch" type="search" class="form-control form-control-sm w-auto fs-9" placeholder="Search...">
 </div>
 <div class="table-responsive">
-  <table id="experimentsTable" class="table table-sm mb-0">
+  <table id="experimentsTable" class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
     <thead>
       <tr>
-        <th class="border-top border-translucent">Name</th>
-        <th class="border-top border-translucent">Description</th>
-        <th class="border-top border-translucent">Created at</th>
-        <th class="border-top border-translucent">Actions</th>
+        <th class="border-top border-translucent" style="width: 20%;">Name</th>
+        <th class="border-top border-translucent pe-5" style="width: 40%;">Description</th>
+        <th class="border-top border-translucent" style="width: 12%;">Created at</th>
+        <th class="border-top border-translucent" style="width: 7%;">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -21,7 +21,7 @@
               {{ experiment.name }}
             </a>
           </td>
-          <td>{{ experiment.description|default:"-" }}</td>
+          <td class="pe-5" style="white-space: normal; word-wrap: break-word;">{{ experiment.description|default:"-" }}</td>
           <td>{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
           <td>
             <div class="dropdown">
