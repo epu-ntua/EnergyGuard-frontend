@@ -7,23 +7,23 @@
   <table id="experimentsTable" class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
     <thead>
       <tr>
-        <th class="border-top border-translucent" style="width: 20%;">Name</th>
-        <th class="border-top border-translucent pe-5" style="width: 40%;">Description</th>
-        <th class="border-top border-translucent" style="width: 12%;">Created at</th>
-        <th class="border-top border-translucent" style="width: 7%;">Actions</th>
+        <th class="border-top border-translucent align-middle" style="width: 20%;">Name</th>
+        <th class="border-top border-translucent align-middle pe-5" style="width: 40%;">Description</th>
+        <th class="border-top border-translucent align-middle" style="width: 12%;">Created at</th>
+        <th class="border-top border-translucent align-middle" style="width: 7%;">Actions</th>
       </tr>
     </thead>
     <tbody>
       {% for experiment in experiments %}
         <tr>
-          <td class="ps-1">
+          <td class="ps-1 align-middle">
             <a href="{% if experiment.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ experiment.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
               {{ experiment.name }}
             </a>
           </td>
-          <td class="pe-5" style="white-space: normal; word-wrap: break-word;">{{ experiment.description|default:"-" }}</td>
-          <td>{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
-          <td>
+          <td class="pe-5 align-middle" style="white-space: normal; word-wrap: break-word;">{{ experiment.description|default:"-" }}</td>
+          <td class="align-middle">{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
+          <td class="align-middle">
             <div class="dropdown">
               <button
                 class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal"
