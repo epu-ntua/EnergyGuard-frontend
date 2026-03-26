@@ -30,6 +30,7 @@ from ..services.mlflow_client import (
     make_registered_model_links,
 )
 
+'''
 EXPERIMENT_TEMPLATE_NAMES = {
     "0": "projects/experiment-creation-step1.html",
 }
@@ -39,7 +40,7 @@ EXPERIMENT_FORMS = [
 EXPERIMENT_STEP_METADATA = {
     "0": {"title": "General", "icon": "fa-info-circle"},
 }
-
+'''
 
 def _user_can_access_project(user, project: Project) -> bool:
     if project.creator_id == user.id:
@@ -81,7 +82,7 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
         raise ExperimentDeletionError(f"failed to delete local database record: {exc}") from exc
 
 
-class AddExperimentView(LoginRequiredMixin, BaseWizardView):
+"""class AddExperimentView(LoginRequiredMixin, BaseWizardView):
     template_names = EXPERIMENT_TEMPLATE_NAMES
     step_metadata = EXPERIMENT_STEP_METADATA
 
@@ -137,7 +138,59 @@ class AddExperimentView(LoginRequiredMixin, BaseWizardView):
             )
 
         messages.success(self.request, "Experiment created successfully.")
-        return redirect("project_details", project_id=self.project.id)
+        return redirect("project_details", project_id=self.project.id)"""
+
+
+@login_required
+@require_POST
+def create_experiment_modal(request, project_id: int):
+    project = _get_accessible_project_or_404(request.user, project_id)
+    form = ExperimentGeneralInfoForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Invalid experiment data. Please try again.")
+        return redirect("project_details", project_id=project.id)
+
+    name = form.cleaned_data["name"].strip()
+    description = form.cleaned_data.get("description", "")
+
+    mlflow_experiment_id = ""
+    try:
+        mlflow_experiment_id = mlflow_create_experiment(
+            name=name,
+            tags={"project_name": project.name},
+            user=request.user,
+        )
+        mlflow_set_experiment_tags(
+            mlflow_experiment_id,
+            {"mlflow.note.content": description},
+            user=request.user,
+            use_service_credentials=True,
+        )
+        try:
+            mlflow_create_experiment_permission(mlflow_experiment_id, request.user.email)
+        except MlflowClientError:
+            mlflow_update_experiment_name(
+                mlflow_experiment_id,
+                mlflow_make_deleted_experiment_name(),
+                user=request.user,
+            )
+            mlflow_delete_experiment(mlflow_experiment_id, user=request.user)
+            raise
+    except MlflowClientError as exc:
+        messages.error(request, f"Experiment creation failed because MLflow sync failed: {exc}")
+        return redirect("project_details", project_id=project.id)
+
+    with transaction.atomic():
+        Experiment.objects.create(
+            project=project,
+            creator=request.user,
+            name=name,
+            mlflow_experiment_id=mlflow_experiment_id,
+            description=description,
+        )
+
+    messages.success(request, "Experiment created successfully.")
+    return redirect("project_details", project_id=project.id)
 
 
 @login_required

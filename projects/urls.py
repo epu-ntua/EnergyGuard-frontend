@@ -5,6 +5,7 @@ from .views import (
     EXPERIMENT_FORMS,
     PROJECT_FORMS,
     ProjectsListJson,
+    create_experiment_modal,
     delete_experiment,
     delete_project,
     edit_experiment,
@@ -24,10 +25,15 @@ urlpatterns = [
     path('project/<int:project_id>/', project_details, name='project_details'),
     path('project/<int:project_id>/delete/', delete_project, name='delete_project'),
     path('project/<int:project_id>/experiments/', experiments_list, name='experiments_list'),
+    # path(
+    #     'project/<int:project_id>/experiments/add/',
+    #     AddExperimentView.as_view(EXPERIMENT_FORMS),
+    #     name='add_experiment',
+    # ),
     path(
-        'project/<int:project_id>/experiments/add/',
-        AddExperimentView.as_view(EXPERIMENT_FORMS),
-        name='add_experiment',
+        'project/<int:project_id>/experiments/add-modal/',
+        create_experiment_modal,
+        name='create_experiment_modal',
     ),
     path(
         'project/<int:project_id>/experiments/<int:experiment_id>/edit/',

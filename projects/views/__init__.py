@@ -9,6 +9,7 @@ from .details import project_details, project_index
 from .experiments import (
     AddExperimentView,
     EXPERIMENT_FORMS,
+    create_experiment_modal,
     delete_experiment,
     delete_project,
     edit_experiment,
@@ -22,6 +23,7 @@ __all__ = [
     "AddProjectView",
     "AddExperimentView",
     "EXPERIMENT_FORMS",
+    "create_experiment_modal",
     "PROJECT_FORMS",
     "PROJECT_STEP_METADATA",
     "PROJECT_TEMPLATE_NAMES",
