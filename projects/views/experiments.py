@@ -261,7 +261,6 @@ def delete_experiment(request, project_id: int, experiment_id: int):
 def edit_experiment(request, project_id: int, experiment_id: int):
     project = _get_accessible_project_or_404(request.user, project_id)
     experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
-    current_description = experiment.description
 
     if request.user.id not in {project.creator_id, experiment.creator_id}:
         messages.error(request, "You do not have permission to edit this experiment.")
@@ -275,9 +274,7 @@ def edit_experiment(request, project_id: int, experiment_id: int):
         form = ExperimentEditForm(request.POST)
         if form.is_valid():
             new_name = form.cleaned_data["name"].strip()
-            new_description = form.cleaned_data.get("description", "")
-            if not new_description:
-                new_description = current_description
+            new_description = form.cleaned_data.get("description", "") or ""
             try:
                 if new_name != experiment.name:
                     mlflow_update_experiment_name(
@@ -304,7 +301,7 @@ def edit_experiment(request, project_id: int, experiment_id: int):
         form = ExperimentEditForm(
             initial={
                 "name": experiment.name,
-                "description": current_description,
+                "description": experiment.description,
             }
         )
 
