@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (
-    AddExperimentView,
+    # AddExperimentView,
     AddProjectView,
-    EXPERIMENT_FORMS,
+    # EXPERIMENT_FORMS,
     PROJECT_FORMS,
     ProjectsListJson,
     create_experiment_modal,

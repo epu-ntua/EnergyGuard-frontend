@@ -7,7 +7,6 @@
         data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
         data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
       <div class="dropdown-menu dropdown-menu-end py-2">
-        <!-- <a class="dropdown-item" href="{% url 'add_experiment' project_details.id %}">Add experiment</a> -->
         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProjectModal">Edit project</a>
         <form action="{% url 'delete_project' project_details.id %}" method="post" class="m-0 p-0">
           {% csrf_token %}
