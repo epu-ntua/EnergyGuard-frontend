@@ -50,15 +50,15 @@
                 </div>
                 <div>
                     <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
-                        <div class="table-responsive scrollbar mx-n1 px-1">
+                        <div class="table-responsive mx-n1 px-1" style="overflow: visible;">
                             <table class="table table-sm fs-9 mb-0" id="myProjectsTable" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:10%;">PROJECT NAME</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">DESCRIPTION</th>
+                                        <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:42%;">DESCRIPTION</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">COLLABORATORS</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:7%;">START DATE</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" data-sort="updated" style="width:7%;">UPDATED</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">START DATE</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">UPDATED</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
                                     </tr>
                                 </thead>
@@ -133,7 +133,7 @@
         const typeParam = new URLSearchParams(window.location.search).get('type') || '';
         const columns = [
             { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-9" href="/projects/project/${row.id}/">${data}</a>`},
-            { data: "description", className: "pe-3 fs-9" },
+            { data: "description", className: "pe-3 fs-9 pe-4" },
             { data: "collaborators", className: "fs-9" },
             { data: "created_at", className: "text-end fs-9" },
             { data: "updated_at", className: "text-end fs-9" },
