@@ -1,8 +1,32 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from ..models import Dataset
+from ..services.minio_storage import _build_minio_client, _is_fake_upload_enabled
+
+
+def _fetch_metadata_from_minio(dataset) -> dict | None:
+    """
+    Download and parse the metadata JSON file from MinIO.
+    Returns the parsed dict, or None if unavailable or not parseable.
+    """
+    if not dataset.metadata_file:
+        return None
+    if _is_fake_upload_enabled():
+        return None
+    try:
+        client = _build_minio_client()
+        response = client.get_object(
+            Bucket=dataset.bucket_name,
+            Key=dataset.metadata_file,
+        )
+        raw = response["Body"].read()
+        return json.loads(raw)
+    except Exception:
+        return None
 
 
 @login_required
@@ -12,6 +36,8 @@ def dataset_details(request, dataset_id):
     except Dataset.DoesNotExist:
         messages.error(request, "Dataset not found")
         return redirect("home")
+
+    minio_metadata = _fetch_metadata_from_minio(dataset)
 
     dataset_details_data = {
         "id": dataset.id,
@@ -25,7 +51,7 @@ def dataset_details(request, dataset_id):
         "size": dataset.size_gb,
         "publisher": dataset.publisher_display,
         "description": dataset.description,
-        "metadata": dataset.metadata,
+        "metadata": minio_metadata if minio_metadata is not None else dataset.metadata,
     }
 
     return render(
