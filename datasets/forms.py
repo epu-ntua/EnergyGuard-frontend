@@ -112,12 +112,25 @@ class MetadataDatasetForm(forms.ModelForm):
         try:
             metadata_file.seek(0)
             content = metadata_file.read()
-            json.loads(content)
+            parsed = json.loads(content)
             metadata_file.seek(0)
         except json.JSONDecodeError:
             raise ValidationError("Metadata file must contain valid JSON.")
         except Exception:
             raise ValidationError("Could not read the metadata file.")
+
+        if not isinstance(parsed, dict):
+            raise ValidationError(
+                "Metadata file must be a JSON object (e.g. {\"feature\": [\"unit\", \"description\"]})."
+            )
+        for feature_name, value in parsed.items():
+            if not isinstance(feature_name, str) or not feature_name.strip():
+                raise ValidationError("Each key in the metadata file must be a non-empty string (feature name).")
+            if not isinstance(value, list) or len(value) != 2:
+                raise ValidationError(
+                    'Invalid metadata file. Each feature must follow this format: '
+                    '{"feature_name": ["unit", "description"]}'
+                )
 
         return metadata_file
 
@@ -162,7 +175,7 @@ class MetadataDatasetForm(forms.ModelForm):
                 "Choose one metadata input method: upload a metadata file or add rows manually."
             )
 
-        if not metadata_file and not metadata_map:
+        if not metadata_file and not metadata_map and 'metadata_file' not in self.errors:
             raise ValidationError(
                 "Provide metadata either by uploading a metadata file or by adding rows manually."
             )
