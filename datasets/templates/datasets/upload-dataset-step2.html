@@ -13,7 +13,7 @@
             <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
 
             <div class="mb-5">
-                <label class="form-label text-body">
+                <label class="form-label text-body mb-3">
                     Upload Data Files
                     <span
                         class="ms-1 text-body-tertiary"
@@ -27,7 +27,15 @@
                         data-bs-content='Accepted formats:<br><br><strong>.csv</strong> — a single CSV file<br><strong>.zip</strong> — a ZIP archive containing only CSV files'
                     ><span data-feather="info" style="height:14px;width:14px;"></span></span>
                 </label>
-                {{ wizard.form.data_file }}
+                <div style="display:none;">{{ wizard.form.data_file }}</div>
+                <div id="drop-zone-data"
+                     class="border rounded-3 p-5 text-center"
+                     style="border-style:dashed !important; cursor:pointer;">
+                    <span data-feather="upload-cloud" style="height:32px;width:32px;" class="text-body-tertiary mb-2"></span>
+                    <p class="mb-1 text-body fs-9">Drag &amp; drop your file here, or <span class="text-primary fw-semibold">browse</span></p>
+                    <p class="mb-0 text-body-tertiary fs-10">Accepted: .csv, .zip</p>
+                    <p id="drop-zone-data-filename" class="mb-0 mt-2 fw-semibold text-success fs-9" style="display:none;"></p>
+                </div>
                 {% if wizard.form.errors.data_file %}
                 <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.data_file }}</div>
                 {% endif %}
@@ -47,5 +55,44 @@
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
     new bootstrap.Popover(el);
   });
+
+  (function () {
+    var zone = document.getElementById('drop-zone-data');
+    var filenameEl = document.getElementById('drop-zone-data-filename');
+    var input = zone.closest('form').querySelector('input[type="file"]');
+
+    function setFile(file) {
+      var dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      filenameEl.textContent = file.name;
+      filenameEl.style.display = '';
+    }
+
+    zone.addEventListener('click', function () { input.click(); });
+
+    input.addEventListener('change', function () {
+      if (input.files.length) {
+        filenameEl.textContent = input.files[0].name;
+        filenameEl.style.display = '';
+      }
+    });
+
+    zone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      zone.classList.add('border-primary');
+    });
+
+    zone.addEventListener('dragleave', function () {
+      zone.classList.remove('border-primary');
+    });
+
+    zone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      zone.classList.remove('border-primary');
+      var file = e.dataTransfer.files[0];
+      if (file) setFile(file);
+    });
+  })();
 </script>
 {% endblock scripts %}
