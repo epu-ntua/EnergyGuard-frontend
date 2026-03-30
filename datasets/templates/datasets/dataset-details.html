@@ -10,11 +10,12 @@
     <div class="col-12 col-xxl-8 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-6">
+          <!-- Header -->
           <div class="d-flex justify-content-between">
             <div>
               <div class="d-flex justify-content-start mb-2">
                 <h2 class="text-body-emphasis fw-bolder me-5">{{ dt.name }}</h2>
-                <!-- TODO: Replace 3 Dots above graph -->
+                <!-- TODO: Add functionality to 3 dots -->
                 <div class="btn-reveal-trigger">
                   <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
                     data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
@@ -65,23 +66,21 @@
                       <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Published<br> by :</h5>
+                            <h5 class="text-body mb-0 text-nowrap">Publisher :</h5>
                           </div>
                         </td>
-                        <!-- TODO: Replaced with real data -->
-                        <td class="ps-2 py-1" ><a class="fw-semibold d-block lh-sm" style="width:70%" href="#!">{{ dt.publisher }}</a></td>
+                        <td class="ps-2 py-1 fw-semibold" >{{ dt.publisher }}</td>
                       </tr>
 
-                      <tr>
+                      <!-- <tr>
                         <td class="align-top py-1">
                           <div class="d-flex"><span
                               class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
                             <h5 class="text-body mb-0 text-nowrap">Cost : </h5>
                           </div>
                         </td>
-                        <!-- TODO: Replace with real data -->
                         <td class="fw-bold ps-2 py-1 text-body-highlight"> 100 credits </td>
-                      </tr>
+                      </tr> -->
                     </tbody>
                   </table>
                 </div>
@@ -111,65 +110,33 @@
                         <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.created_at|date:"M j, Y" }}</td>
                       </tr>
                       <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Update :</td>
+                        <td class="align-top py-1 text-body text-nowrap fw-bold">Updated :</td>
                         <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.updated_at|date:"M j, Y" }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <!-- Preview Button -->
+                <!-- Buttons -->
                 <div class="col-12 col-sm-auto mt-4">
+                  <!-- Preview -->
                   <div style="width:70%;">
                     <button class="btn btn-warning py-1 px-4 container" type="button"
                       data-bs-toggle="modal" data-bs-target="#datasetPreviewModal">
                       <i class="fa-solid fa-eye me-2"></i>Preview
                     </button>
                   </div>
-                  
+                  <!-- Download -->
                   <div class="mt-2" style="width:70%;">
                     <button class="btn btn-danger py-1 px-4 container" type="button" disabled><i class="fa-solid fa-download me-2"></i>Download</button>
                   </div>
                   
-                  <div class="mt-2" style="width:70%;">
-                    <!-- TODO: Add functionality to link -->
-                    <!-- <a href=""><button class="btn btn-subtle-info py-1 px-4 container"><img src="{% static 'assets/img/general/data-space.png' %}" class="me-2" width="5%"></img>Get access through Data Space</button></a> -->
+                  <!-- <div class="mt-2" style="width:70%;">
+                    <a href=""><button class="btn btn-subtle-info py-1 px-4 container"><img src="{% static 'assets/img/general/data-space.png' %}" class="me-2" width="5%"></img>Get access through Data Space</button></a>
                     <a href="">
                       <button class="btn btn-primary py-1 px-2"><i class="fa-solid fa-database me-2"></i>Get access through Data Space</button></a>
-
-                  </div>
-                </div>
-                <!-- Collaborators -->
-                <!-- <div class="col-12 col-sm-auto mt-4">
-                  <h4 class="text-body-emphasis mb-4">Collaborators</h4>
-                  <div class="d-flex mb-8">
-                    
-                    {% for collaborator in dt.collaborators %}
-                    <div class="dropdown"><a class="dropdown-toggle dropdown-caret-none d-inline-block outline-none" href="#"
-                        role="button" data-bs-toggle="dropdown" aria-dtanded="false" data-bs-auto-close="outside">
-                        <div class="avatar avatar-xl  me-1">
-                          {% with pic=collaborator.profile.profile_picture %}
-                            {% if pic %}
-                              <img class="rounded-circle" src="{{ pic }}" alt="{{ collaborator.get_full_name|default:collaborator.email }}">
-                            {% else %}
-                              <img class="rounded-circle" src="{% static 'assets/img/team/33.webp' %}" alt="Default avatar">
-                            {% endif %}
-                          {% endwith %}
-                        </div>
-                      </a>
-                    </div>
-                    {% endfor %}
                   </div> -->
-                  <!-- Tags -->
-                  <!-- <h4 class="text-body-emphasis mb-4">Tags</h4>
-                  <span class="badge badge-tag me-2 mb-1">Forecast</span>
-                  <span class="badge badge-tag me-2 mb-1">AI</span>
-                  <span class="badge badge-tag me-2 mb-1">Coding</span>
-                  <span class="badge badge-tag me-2 mb-1">Coding</span>
-                  <span class="badge badge-tag me-2 mb-1">Load</span>
-                  <span class="badge badge-tag me-2 mb-1">Prediction</span>
-                  <span class="badge badge-tag me-2 mb-1">LLM</span>
-                </div> -->
+                </div>
 
               </div>
             </div>
@@ -180,9 +147,9 @@
             <div class="row flex-between-center mb-3 g-3">
               <h4 class="text-body-emphasis col-auto">Metadata Table</h4>
             </div>
-            <div>
+            <div style="max-height: calc(10 * 2.4rem); overflow-y: auto;">
               <table>
-                <thead>
+                <thead style="position: sticky; top: 0; background-color: var(--phoenix-body-bg, #fff); z-index: 1;">
                   <tr class="fs-9">
                     <th class="pe-6">FEATURE NAME</th>
                     <th class="pe-6">UNIT</th>
@@ -192,8 +159,8 @@
                 <tbody>
                 {% for key, value in dt.metadata.items %}
                   <tr class="fs-9">
-                    <td class="fw-bold">{{ key }}</td>
-                    <td>{{ value.0 }}</td>
+                    <td class="fw-bold pe-3">{{ key }}</td>
+                    <td class="pe-3">{{ value.0 }}</td>
                     <td>{{ value.1 }}</td>
                   </tr>
                 {% endfor %}
