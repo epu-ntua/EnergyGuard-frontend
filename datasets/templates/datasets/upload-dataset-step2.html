@@ -13,7 +13,20 @@
             <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
 
             <div class="mb-5">
-                <label class="form-label text-body">Upload Data Files</label>
+                <label class="form-label text-body">
+                    Upload Data Files
+                    <span
+                        class="ms-1 text-body-tertiary"
+                        style="cursor:pointer;"
+                        data-bs-toggle="popover"
+                        data-bs-trigger="hover focus"
+                        data-bs-placement="right"
+                        data-bs-html="true"
+                        data-bs-sanitize="false"
+                        data-bs-custom-class="fs-9"
+                        data-bs-content='Accepted formats:<br><br><strong>.csv</strong> — a single CSV file<br><strong>.zip</strong> — a ZIP archive containing only CSV files'
+                    ><span data-feather="info" style="height:14px;width:14px;"></span></span>
+                </label>
                 {{ wizard.form.data_file }}
                 {% if wizard.form.errors.data_file %}
                 <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.data_file }}</div>
@@ -28,3 +41,11 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+    new bootstrap.Popover(el);
+  });
+</script>
+{% endblock scripts %}

@@ -20,7 +20,19 @@
             {% endif %}
 
             <div class="mb-5">
-                <label class="form-label text-body">Upload Metadata File</label>
+                <label class="form-label text-body">
+                    Upload Metadata File
+                    <span
+                        class="ms-1 text-body-tertiary"
+                        style="cursor:pointer;"
+                        data-bs-toggle="popover"
+                        data-bs-trigger="hover focus"
+                        data-bs-placement="right"
+                        data-bs-html="true"
+                        data-bs-custom-class="fs-9"
+                        data-bs-content='Upload a <strong>.json</strong> file with the following structure:<br><br><span style="font-family:monospace;">&#123;<br>&nbsp;&nbsp;&quot;feature_name&quot;: [&quot;unit&quot;, &quot;description&quot;],<br>&nbsp;&nbsp;&quot;temperature&quot;: [&quot;&deg;C&quot;, &quot;Ambient temperature&quot;],<br>&nbsp;&nbsp;&quot;humidity&quot;: [&quot;%&quot;, &quot;Relative humidity&quot;]<br>&#125;</span>'
+                    ><span data-feather="info" style="height:14px;width:14px;"></span></span>
+                </label>
                 {{ wizard.form.metadata_file }}
                 {% if wizard.form.errors.metadata_file %}
                 <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.metadata_file }}</div>
@@ -34,7 +46,6 @@
             {{ wizard.form.metadata }}
 
             <div class="mb-3">
-                <p class="col-12 fs-9">Dataset Type</p>
                 <div id="boxes" class="mb-3">
                     <div class="row gx-2 mb-2">
                         <div class="col-4">
@@ -74,6 +85,10 @@
 
 {% block scripts %}
 <script>
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+    new bootstrap.Popover(el);
+  });
+
   function addRow(featureName, featureUnit, featureDescription) {
     var container = document.getElementById('boxes');
     var row = document.createElement('div');
