@@ -11,8 +11,8 @@
       <div class="px-4 px-lg-6 pt-6 pb-9">
         <div class="mb-6">
           <!-- Header -->
-          <div class="d-flex justify-content-between">
-            <div>
+          <div class="row">
+            <div class="col-12 col-md-9 mb-3 mb-xl-0">
               <div class="d-flex justify-content-start mb-2">
                 <h2 class="text-body-emphasis fw-bolder me-5">{{ dt.name }}</h2>
                 <!-- TODO: Add functionality to 3 dots -->
@@ -37,17 +37,18 @@
               </div>
             </div>
             
-            <div class="text-end">
+            <div class="col-8 col-md-3">
                <a href=""><button class="btn btn-subtle-info px-2" style="width:80%;"><i class="fa-solid fa-gears me-2"></i>Run project with this dataset</button></a>
             </div>
           </div>
         </div>
+        <!-- Details -->
         <div class="row gx-0 gx-sm-5 gy-3 mb-4">
-          <!-- Details -->
           <div class="col-12 col-xl-3 col-xxl-4 pe-xl-0">
             <div class="mb-4 mb-xl-7">
               <div class="row gx-0 gx-sm-7">
-                <div class="col-12 col-sm-auto">
+                <!-- First table -->
+                <div class="col-12 col-sm-auto mb-3 mb-lg-0">
                   <table class="lh-sm mb-4 mb-sm-0 mb-xl-4">
                     <tbody>
                       <tr>
@@ -84,6 +85,7 @@
                     </tbody>
                   </table>
                 </div>
+                <!-- Second Table -->
                 <div class="col-12 col-sm-auto">
                   <table class="lh-sm">
                     <tbody>
@@ -120,15 +122,15 @@
                 <!-- Buttons -->
                 <div class="col-12 col-sm-auto mt-4">
                   <!-- Preview -->
-                  <div style="width:70%;">
-                    <button class="btn btn-warning py-1 px-4 container" type="button"
+                  <div>
+                    <button class="btn btn-warning py-2 px-9 container" type="button"
                       data-bs-toggle="modal" data-bs-target="#datasetPreviewModal">
                       <i class="fa-solid fa-eye me-2"></i>Preview
                     </button>
                   </div>
                   <!-- Download -->
-                  <div class="mt-2" style="width:70%;">
-                    <button class="btn btn-danger py-1 px-4 container" type="button" disabled><i class="fa-solid fa-download me-2"></i>Download</button>
+                  <div class="mt-2" >
+                    <button class="btn btn-danger py-2 px-9 container" type="button" disabled><i class="fa-solid fa-download me-2"></i>Download</button>
                   </div>
                   
                   <!-- <div class="mt-2" style="width:70%;">
@@ -147,7 +149,7 @@
             <div class="row flex-between-center mb-3 g-3">
               <h4 class="text-body-emphasis col-auto">Metadata Table</h4>
             </div>
-            <div style="max-height: calc(10 * 2.4rem); overflow-y: auto;">
+            <div style="max-height: calc(9 * 2.4rem); overflow-y: auto;">
               <table>
                 <thead style="position: sticky; top: 0; background-color: var(--phoenix-body-bg, #fff); z-index: 1;">
                   <tr class="fs-9">
