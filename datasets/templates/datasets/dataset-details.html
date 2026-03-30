@@ -121,8 +121,10 @@
                 <!-- Preview Button -->
                 <div class="col-12 col-sm-auto mt-4">
                   <div style="width:70%;">
-                     <!-- TODO: Add functionality to link -->
-                    <a href="#"><button class="btn btn-warning py-1 px-4 container" type="button"><i class="fa-solid fa-eye me-2"></i>Preview</button></a>
+                    <button class="btn btn-warning py-1 px-4 container" type="button"
+                      data-bs-toggle="modal" data-bs-target="#datasetPreviewModal">
+                      <i class="fa-solid fa-eye me-2"></i>Preview
+                    </button>
                   </div>
                   
                   <div class="mt-2" style="width:70%;">
@@ -210,10 +212,123 @@
   </div>
   {% include "core/footer.html" %}
 </div>
+
+<!-- Dataset Preview Modal -->
+<div class="modal fade" id="datasetPreviewModal" tabindex="-1" aria-labelledby="datasetPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="datasetPreviewModalLabel">
+          <i class="fa-solid fa-eye me-2 text-warning"></i>Preview — {{ dt.name }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="preview-loading" class="text-center py-5">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-body-secondary">Loading preview...</p>
+        </div>
+        <div id="preview-error" class="alert alert-danger d-none" role="alert">
+          <i class="fa-solid fa-triangle-exclamation me-2"></i>
+          <span id="preview-error-msg"></span>
+        </div>
+        <div id="preview-table-wrapper" class="d-none">
+          <p class="text-body-secondary fs-9 mb-2" id="preview-row-count"></p>
+          <div class="table-responsive" style="max-height: 60vh;">
+            <table class="table table-sm table-striped table-hover fs-9">
+              <thead class="table-dark sticky-top">
+                <tr id="preview-thead-row"></tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-body-tertiary me-auto">Showing first 50 rows</small>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <!-- TODO: Remove when real data graphs are added -->
 <script src="{% static 'assets/js/pages/project-details.js' %}"></script>
 <script src="{% static 'vendors/echarts/echarts.min.js' %}"></script>
+<script>
+(function () {
+  var modal = document.getElementById('datasetPreviewModal');
+  if (!modal) return;
+
+  var PREVIEW_URL = "{% url 'dataset_preview' dataset_id=dataset.id %}";
+  var loaded = false;
+
+  modal.addEventListener('show.bs.modal', function () {
+    if (loaded) return;  // only fetch once per page load
+
+    var loading = document.getElementById('preview-loading');
+    var errorDiv = document.getElementById('preview-error');
+    var tableWrapper = document.getElementById('preview-table-wrapper');
+    var theadRow = document.getElementById('preview-thead-row');
+    var tbody = document.getElementById('preview-tbody');
+    var rowCount = document.getElementById('preview-row-count');
+    var errorMsg = document.getElementById('preview-error-msg');
+
+    fetch(PREVIEW_URL)
+      .then(function (r) {
+        return r.text().then(function (text) { return { status: r.status, text: text }; });
+      })
+      .then(function (res) {
+        var data;
+        try {
+          data = JSON.parse(res.text);
+        } catch (e) {
+          loading.classList.add('d-none');
+          errorMsg.textContent = 'Server error (HTTP ' + res.status + '). Check server logs.';
+          errorDiv.classList.remove('d-none');
+          return;
+        }
+
+        loading.classList.add('d-none');
+
+        if (data.error) {
+          errorMsg.textContent = data.error;
+          errorDiv.classList.remove('d-none');
+          return;
+        }
+
+        (data.headers || []).forEach(function (h) {
+          var th = document.createElement('th');
+          th.textContent = h;
+          theadRow.appendChild(th);
+        });
+
+        (data.rows || []).forEach(function (row) {
+          var tr = document.createElement('tr');
+          (row || []).forEach(function (cell) {
+            var td = document.createElement('td');
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        var info = data.rows.length + ' rows \u00D7 ' + data.headers.length + ' columns';
+        if (data.source_file) info += ' \u2014 ' + data.source_file;
+        rowCount.textContent = info;
+        tableWrapper.classList.remove('d-none');
+        loaded = true;
+      })
+      .catch(function (err) {
+        loading.classList.add('d-none');
+        errorMsg.textContent = 'Network error: ' + err.message;
+        errorDiv.classList.remove('d-none');
+      });
+  });
+})();
+</script>
 {% endblock %}
