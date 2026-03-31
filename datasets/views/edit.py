@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
@@ -42,4 +43,4 @@ def dataset_delete(request, dataset_id):
 
     dataset.delete()
     messages.success(request, f'Dataset "{dataset.name}" has been deleted.')
-    return redirect("datasets_list")
+    return redirect(reverse("datasets_list") + "?tab=my")
