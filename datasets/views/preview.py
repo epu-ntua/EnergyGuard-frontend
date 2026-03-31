@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
 from ..models import Dataset
-from ..services.minio_storage import MinioUploadError, _build_minio_client, _is_fake_upload_enabled
+from ..services.minio_storage import MinioUploadError, _build_minio_client
 
 PREVIEW_MAX_ROWS = 50
 PREVIEW_CHUNK_BYTES = 256 * 1024  # 256 KB
@@ -111,14 +111,6 @@ def dataset_preview(request, dataset_id):
 
     if not dataset.data_file:
         return JsonResponse({"error": "No data file available for this dataset."}, status=404)
-
-    if _is_fake_upload_enabled():
-        headers = ["timestamp", "energy_kwh", "voltage_v", "current_a", "source"]
-        rows = [
-            [f"2024-01-{i:02d} 08:00:00", str(round(i * 12.4, 2)), "230", str(round(i * 0.54, 2)), "sensor_A"]
-            for i in range(1, 11)
-        ]
-        return JsonResponse({"headers": headers, "rows": rows})
 
     try:
         client = _build_minio_client()

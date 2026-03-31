@@ -3,11 +3,10 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, SimpleTestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase
 from django.urls import reverse
 
 from datasets.forms import FileUploadDatasetForm, MetadataDatasetForm
-from datasets.services.minio_storage import _is_fake_upload_enabled
 from datasets.views import AddDatasetView
 
 
@@ -210,11 +209,3 @@ class AddDatasetViewDoneTests(SimpleTestCase):
         mock_messages_error.assert_called_once()
 
 
-class MinioSettingsTests(SimpleTestCase):
-    @override_settings(OBJECT_STORAGE_FAKE_UPLOAD="False")
-    def test_fake_upload_flag_false_string_is_false(self):
-        self.assertFalse(_is_fake_upload_enabled())
-
-    @override_settings(OBJECT_STORAGE_FAKE_UPLOAD="true")
-    def test_fake_upload_flag_true_string_is_true(self):
-        self.assertTrue(_is_fake_upload_enabled())

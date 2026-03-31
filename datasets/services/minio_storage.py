@@ -29,18 +29,6 @@ def _setting(primary: str, fallback: str = "", default: Any = None):
     return default
 
 
-def _to_bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "yes", "on"}
-    return bool(value)
-
-
-def _is_fake_upload_enabled() -> bool:
-    return _to_bool(_setting("OBJECT_STORAGE_FAKE_UPLOAD", "MINIO_FAKE_UPLOAD", default=False))
-
-
 def _build_minio_client():
     access_key = _setting("OBJECT_STORAGE_ACCESS_KEY", "MINIO_ACCESS_KEY", default="")
     secret_key = _setting("OBJECT_STORAGE_SECRET_KEY", "MINIO_SECRET_KEY", default="")
@@ -97,14 +85,6 @@ def upload_dataset_objects(
     elif metadata_json:
         metadata_key = f"{root_prefix}/metadata.json"
 
-    # Local development mode: skip actual object storage upload.
-    if _is_fake_upload_enabled():
-        return {
-            "bucket_name": bucket_name,
-            "data_file_key": data_key,
-            "metadata_file_key": metadata_key,
-        }
-
     client = _build_minio_client()
 
     try:
@@ -159,10 +139,6 @@ def delete_dataset_objects(
     data_file_key: str,
     metadata_file_key: str = "",
 ) -> None:
-    # Local development mode: no object storage cleanup needed.
-    if _is_fake_upload_enabled():
-        return
-
     object_keys = [key for key in {data_file_key, metadata_file_key} if key]
     if not object_keys:
         return

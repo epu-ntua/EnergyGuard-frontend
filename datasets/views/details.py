@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from ..models import Dataset
-from ..services.minio_storage import _build_minio_client, _is_fake_upload_enabled
+from ..services.minio_storage import _build_minio_client
 
 
 def _fetch_metadata_from_minio(dataset) -> dict | None:
@@ -14,8 +14,6 @@ def _fetch_metadata_from_minio(dataset) -> dict | None:
     Returns the parsed dict, or None if unavailable or not parseable.
     """
     if not dataset.metadata_file:
-        return None
-    if _is_fake_upload_enabled():
         return None
     try:
         client = _build_minio_client()
