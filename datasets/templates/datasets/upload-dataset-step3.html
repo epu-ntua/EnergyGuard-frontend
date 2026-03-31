@@ -19,6 +19,9 @@
                 {% if wizard.form.non_field_errors %}{{ wizard.form.non_field_errors }}{% endif %}
             </div>
             {% endif %}
+            <div id="manual-error" class="px-2 py-1 alert alert-danger fs-9 mt-2" style="display:none;">
+                Please fill all fields to proceed.
+            </div>
 
             <div id="section-upload" class="mb-5">
                 <label class="form-label text-body mb-3">
@@ -76,6 +79,7 @@
 {% block scripts %}
 <style>
   .alert .errorlist { list-style: none; margin: 0; }
+  [data-field] { background-image: none !important; }
 </style>
 <script>
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
@@ -239,18 +243,41 @@
       }
     }
 
-    form.addEventListener('submit', function () {
-      var rows = [];
-      form.querySelectorAll('[data-metadata-row="true"]').forEach(function (rowElement) {
-        var featureName = (rowElement.querySelector('[data-field="feature_name"]') || {}).value || '';
-        var featureUnit = (rowElement.querySelector('[data-field="feature_unit"]') || {}).value || '';
-        var featureDesc = (rowElement.querySelector('[data-field="feature_description"]') || {}).value || '';
-        featureName = featureName.trim();
-        featureUnit = featureUnit.trim();
-        featureDesc = featureDesc.trim();
-        if (featureName || featureUnit || featureDesc) {
-          rows.push({ feature_name: featureName, feature_unit: featureUnit, feature_description: featureDesc });
+    form.addEventListener('submit', function (e) {
+      var manualError = document.getElementById('manual-error');
+      var rowElements = form.querySelectorAll('[data-metadata-row="true"]');
+      var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+      if (!hasFile && rowElements.length > 0) {
+        var hasIncomplete = false;
+        rowElements.forEach(function (rowElement) {
+          ['feature_name', 'feature_unit', 'feature_description'].forEach(function (field) {
+            var input = rowElement.querySelector('[data-field="' + field + '"]');
+            if (!input) return;
+            var wrapper = input.parentElement;
+            if (!input.value.trim()) {
+              wrapper.classList.add('border-danger');
+              hasIncomplete = true;
+            } else {
+              wrapper.classList.remove('border-danger');
+            }
+          });
+        });
+        if (hasIncomplete) {
+          e.preventDefault();
+          manualError.style.display = '';
+          return;
         }
+      }
+
+      manualError.style.display = 'none';
+
+      var rows = [];
+      rowElements.forEach(function (rowElement) {
+        var featureName = ((rowElement.querySelector('[data-field="feature_name"]') || {}).value || '').trim();
+        var featureUnit = ((rowElement.querySelector('[data-field="feature_unit"]') || {}).value || '').trim();
+        var featureDesc = ((rowElement.querySelector('[data-field="feature_description"]') || {}).value || '').trim();
+        rows.push({ feature_name: featureName, feature_unit: featureUnit, feature_description: featureDesc });
       });
       metadataRowsInput.value = JSON.stringify(rows);
     });
