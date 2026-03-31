@@ -40,6 +40,7 @@ _TMP_UPLOAD_DIR = os.path.join(settings.BASE_DIR, "dataset_upload_tmp")
 class AddDatasetView(LoginRequiredMixin, BaseWizardView):
     template_names = DATASET_TEMPLATE_NAMES
     step_metadata = DATASET_STEP_METADATA
+    cancel_url = "/datasets/"
 
     def _cleanup_wizard_step_files(self) -> None:
         storage = getattr(self, "storage", None)

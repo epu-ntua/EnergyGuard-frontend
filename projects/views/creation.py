@@ -38,6 +38,7 @@ PROJECT_STEP_METADATA = {
 class AddProjectView(LoginRequiredMixin, BaseWizardView):
     template_names = PROJECT_TEMPLATE_NAMES
     step_metadata = PROJECT_STEP_METADATA
+    cancel_url = "/projects/list/"
 
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data

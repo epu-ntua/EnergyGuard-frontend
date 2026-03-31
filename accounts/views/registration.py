@@ -72,6 +72,7 @@ class RegistrationWizard(SessionWizardView):
                 }
             )
         context["wizard_steps"] = steps
+        context["cancel_url"] = "/accounts/login/"
         return context
 
     def done(self, form_list, **kwargs):

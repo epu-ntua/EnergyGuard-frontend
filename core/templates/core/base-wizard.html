@@ -138,6 +138,42 @@
   <script src="{% static 'assets/js/phoenix.js' %}"></script>
 
 
+  <!-- Browser Back Navigation Modal -->
+  <div class="modal fade" id="wizardCancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center p-4">
+          <p class="mb-4">Are you sure you want to cancel? Any data you have entered will be lost.</p>
+          <button type="button" class="btn btn-danger me-2" id="wizardCancelConfirm">Cancel Wizard</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var cancelUrl = "{{ cancel_url }}";
+      var isFirstStep = {{ wizard.steps.index }} === 0;
+
+      history.pushState(null, null, location.href);
+
+      window.addEventListener('popstate', function () {
+        history.pushState(null, null, location.href);
+        if (isFirstStep) {
+          window.location.href = cancelUrl;
+        } else {
+          var modal = new bootstrap.Modal(document.getElementById('wizardCancelModal'));
+          modal.show();
+        }
+      });
+
+      document.getElementById('wizardCancelConfirm').addEventListener('click', function () {
+        window.location.href = cancelUrl;
+      });
+    })();
+  </script>
+
   {% block scripts %}
   {% endblock scripts %}
 </body>

@@ -12,6 +12,7 @@ class BaseWizardView(SessionWizardView):
     )
     template_names = {}
     step_metadata = {}
+    cancel_url = "/"
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -34,4 +35,5 @@ class BaseWizardView(SessionWizardView):
                 }
             )
         context["wizard_steps"] = steps
+        context["cancel_url"] = self.cancel_url
         return context
