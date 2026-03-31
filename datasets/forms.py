@@ -36,7 +36,7 @@ class FileUploadDatasetForm(forms.Form):
     def clean_data_file(self):
         uploaded = self.cleaned_data.get('data_file')
         if not uploaded:
-            return uploaded
+            raise ValidationError("Please upload a data file.")
 
         max_bytes = _MAX_DATA_FILE_SIZE_MB * 1024 * 1024
         if uploaded.size > max_bytes:
