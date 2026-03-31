@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
+from ..forms import GeneralDatasetForm
 from ..models import Dataset
 from ..services.minio_storage import _build_minio_client
 
@@ -58,6 +59,7 @@ def dataset_details(request, dataset_id):
         {
             "dataset": dataset,
             "dt": dataset_details_data,
+            "edit_form": GeneralDatasetForm(instance=dataset),
             "active_navbar_page": "datasets",
             "show_sidebar": True,
         },
