@@ -48,37 +48,22 @@
                 {% endif %}
             </div>
 
-            <div class="mb-3">
-                <p class="text-center fs-9 text-body-quaternary">or insert metadata information manually</p>
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 m-0">
+                <span class="mx-3 fs-9 text-body-tertiary">or insert metadata manually</span>
+                <hr class="flex-grow-1 m-0">
             </div>
 
             <div id="section-manual" class="mb-3">
                 {{ wizard.form.metadata }}
-                <div id="boxes" class="mb-3">
-                    <div class="row gx-2 mb-2">
-                        <div class="col-4">
-                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                                <p class="mb-0 fw-bold">FEATURE NAME</p>
-                                <p class="mb-0">Name of column</p>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                                <p class="mb-0 fw-bold">UNIT</p>
-                                <p class="mb-0">Measurement unit</p>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fs-9 text-body-quaternary border rounded-2 py-2 ps-2">
-                                <p class="mb-0 fw-bold">DESCRIPTION</p>
-                                <p class="mb-0">Description of column</p>
-                            </div>
-                        </div>
+                <div id="boxes">
+                    <div class="row gx-2 mb-1 px-1">
+                        <div class="col-3"><span class="fs-10 fw-semibold text-body-quaternary">FEATURE NAME</span></div>
+                        <div class="col-2"><span class="fs-10 fw-semibold text-body-quaternary">UNIT</span></div>
+                        <div class="col-6"><span class="fs-10 fw-semibold text-body-quaternary">DESCRIPTION</span></div>
                     </div>
                 </div>
-                <div class="text-center">
-                    <button type="button" id="btn-add-row" class="btn btn-primary py-1 px-4" onclick="addRow()"><span class="fw-bolder fs-8">+ </span>Add row</button>
-                </div>
+                <button type="button" id="btn-add-row" class="btn btn-outline-primary py-1 px-3 mt-2" onclick="addRow()">+ Add row</button>
             </div>
 
             <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
@@ -187,24 +172,26 @@
     var row = document.createElement('div');
     row.setAttribute('data-row-wrapper', 'true');
     row.innerHTML = `
-    <div class="text-end mb-0">
-        <button type="button" class="btn btn-danger px-2 py-0" onclick="removeRow(this)"><span class="fw-bolder fs-8">-</span></button>
-    </div>
-    <div class="row gx-2 mb-1" data-metadata-row="true">
-        <div class="col-4">
-            <div class="fs-9 text-body-quaternary">
-                <input type="text" data-field="feature_name" class="form-control form-control-sm">
+    <div class="row gx-2 mb-2 align-items-center" data-metadata-row="true">
+        <div class="col-3">
+            <div class="border rounded-2 px-2 py-1">
+                <input type="text" data-field="feature_name" placeholder="temperature" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">
             </div>
         </div>
-        <div class="col-4">
-            <div class="fs-9 text-body-quaternary">
-                <input type="text" data-field="feature_unit" class="form-control form-control-sm">
+        <div class="col-2">
+            <div class="border rounded-2 px-2 py-1">
+                <input type="text" data-field="feature_unit" placeholder="°C" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">
             </div>
         </div>
-        <div class="col-4">
-            <div class="fs-9 text-body-quaternary">
-                <input type="text" data-field="feature_description" class="form-control form-control-sm">
+        <div class="col-6">
+            <div class="border rounded-2 px-2 py-1">
+                <input type="text" data-field="feature_description" placeholder="Ambient temperature in Celsius" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">
             </div>
+        </div>
+        <div class="col-1 text-end">
+            <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">
+                <span data-feather="x" style="height:16px;width:16px;"></span>
+            </button>
         </div>
     </div>
     `;
@@ -214,11 +201,12 @@
       row.querySelector('[data-field="feature_unit"]').value = featureUnit || '';
       row.querySelector('[data-field="feature_description"]').value = featureDescription || '';
     }
+    if (typeof feather !== 'undefined') feather.replace();
     disableUpload();
   }
 
   function removeRow(button) {
-    var rowWrapper = button.closest('[data-row-wrapper="true"]');
+    var rowWrapper = button.closest('[data-metadata-row="true"]');
     if (rowWrapper) {
       rowWrapper.remove();
       if (document.querySelectorAll('[data-metadata-row="true"]').length === 0) {
