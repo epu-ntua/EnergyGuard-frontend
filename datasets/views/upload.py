@@ -152,10 +152,10 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
 def dataset_upload_success(request):
     if not request.session.pop("dataset_upload_success", False):
         return redirect("dataset_upload")
-    wizard = {"steps": {"current": "done"}}
+    wizard = {"steps": {"current": "done", "index": 0}}
     wizard_steps = DATASET_STEP_METADATA.values()
     return render(
         request,
         "datasets/upload-dataset-success.html",
-        {"wizard": wizard, "wizard_steps": wizard_steps},
+        {"wizard": wizard, "wizard_steps": wizard_steps, "cancel_url": "/datasets/"},
     )
