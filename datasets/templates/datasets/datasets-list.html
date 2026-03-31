@@ -28,7 +28,7 @@
                     <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
                         <li class="nav-item"><a class="nav-link fs-9 {%if not label_filter %}active{% endif %}" aria-current="page" href="?tab=public"><span>All </span><span class="text-body-tertiary fw-semibold">({{public_datasets_num.all}})</span></a></li>
                         {% for tab in label_tabs %}
-                        <li class="nav-item"><a class="nav-link fs-9{%if label_filter == tab.value %}active{% endif %}" href="?tab=public&label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
+                        <li class="nav-item"><a class="nav-link fs-9 {%if label_filter == tab.value %}active{% endif %}" href="?tab=public&label={{ tab.value }}"><span>{{ tab.display }}</span><span class="text-body-tertiary fw-semibold">({{ tab.public_count }})</span></a></li>
                         {% endfor %}
                     </ul>
                     <div class="mb-4">
