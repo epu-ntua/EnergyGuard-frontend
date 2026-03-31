@@ -19,7 +19,7 @@
             </div>
             {% endif %}
 
-            <div class="mb-5">
+            <div id="section-upload" class="mb-5">
                 <label class="form-label text-body mb-3">
                     Upload Metadata File
                     <span
@@ -41,6 +41,7 @@
                     <p class="mb-1 text-body fs-9">Drag &amp; drop your file here, or <span class="text-primary fw-semibold">browse</span></p>
                     <p class="mb-0 text-body-tertiary fs-10">Accepted: .json</p>
                     <p id="drop-zone-metadata-filename" class="mb-0 mt-2 fw-semibold text-success fs-9" style="display:none;"></p>
+                    <button type="button" id="btn-clear-file" class="btn btn-link text-danger fs-10 p-0 mt-1" style="display:none;" onclick="clearFile(event)">Remove file</button>
                 </div>
                 {% if wizard.form.errors.metadata_file %}
                 <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.metadata_file }}</div>
@@ -48,12 +49,11 @@
             </div>
 
             <div class="mb-3">
-                <p class="text-center fs-9 text-body-quaternary">or Insert metadata information manually</p>
+                <p class="text-center fs-9 text-body-quaternary">or insert metadata information manually</p>
             </div>
 
-            {{ wizard.form.metadata }}
-
-            <div class="mb-3">
+            <div id="section-manual" class="mb-3">
+                {{ wizard.form.metadata }}
                 <div id="boxes" class="mb-3">
                     <div class="row gx-2 mb-2">
                         <div class="col-4">
@@ -77,9 +77,8 @@
                     </div>
                 </div>
                 <div class="text-center">
-                    <button type="button" class="btn btn-primary py-1 px-4" onclick="addRow()"><span class="fw-bolder fs-8">+ </span>Add row</button>
+                    <button type="button" id="btn-add-row" class="btn btn-primary py-1 px-4" onclick="addRow()"><span class="fw-bolder fs-8">+ </span>Add row</button>
                 </div>
-
             </div>
 
             <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
@@ -97,45 +96,92 @@
     new bootstrap.Popover(el);
   });
 
-  (function () {
-    var zone = document.getElementById('drop-zone-metadata');
-    var filenameEl = document.getElementById('drop-zone-metadata-filename');
-    var input = zone.closest('form').querySelector('input[type="file"]');
+  var fileInput      = document.querySelector('input[type="file"]');
+  var dropZone       = document.getElementById('drop-zone-metadata');
+  var filenameEl     = document.getElementById('drop-zone-metadata-filename');
+  var btnClearFile   = document.getElementById('btn-clear-file');
+  var sectionUpload  = document.getElementById('section-upload');
+  var sectionManual  = document.getElementById('section-manual');
+  var btnAddRow      = document.getElementById('btn-add-row');
 
-    function setFile(file) {
+  // ── Mutual exclusion helpers ─────────────────────────────────────────────────
+  function disableUpload() {
+    dropZone.style.cursor  = 'not-allowed';
+    dropZone.style.opacity = '0.45';
+    dropZone.style.pointerEvents = 'none';
+    fileInput.disabled = true;
+  }
+
+  function enableUpload() {
+    dropZone.style.cursor  = 'pointer';
+    dropZone.style.opacity = '';
+    dropZone.style.pointerEvents = '';
+    fileInput.disabled = false;
+  }
+
+  function disableManual() {
+    sectionManual.style.opacity = '0.45';
+    sectionManual.style.pointerEvents = 'none';
+    btnAddRow.disabled = true;
+    sectionManual.querySelectorAll('input[type="text"]').forEach(function (i) { i.disabled = true; });
+    sectionManual.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+  }
+
+  function enableManual() {
+    sectionManual.style.opacity = '';
+    sectionManual.style.pointerEvents = '';
+    btnAddRow.disabled = false;
+    sectionManual.querySelectorAll('input[type="text"]').forEach(function (i) { i.disabled = false; });
+    sectionManual.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+  }
+
+  // ── Drop zone ────────────────────────────────────────────────────────────────
+  function showFile(name) {
+    filenameEl.textContent = name;
+    filenameEl.style.display = '';
+    btnClearFile.style.display = '';
+    disableManual();
+  }
+
+  function clearFile(e) {
+    e.stopPropagation();
+    fileInput.value = '';
+    filenameEl.style.display = 'none';
+    btnClearFile.style.display = 'none';
+    enableManual();
+  }
+
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files.length) {
+      showFile(fileInput.files[0].name);
+    }
+  });
+
+  dropZone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    if (!fileInput.disabled) dropZone.classList.add('border-primary');
+  });
+
+  dropZone.addEventListener('dragleave', function () {
+    dropZone.classList.remove('border-primary');
+  });
+
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('border-primary');
+    if (fileInput.disabled) return;
+    var file = e.dataTransfer.files[0];
+    if (file) {
       var dt = new DataTransfer();
       dt.items.add(file);
-      input.files = dt.files;
-      filenameEl.textContent = file.name;
-      filenameEl.style.display = '';
+      fileInput.files = dt.files;
+      showFile(file.name);
     }
+  });
 
-    zone.addEventListener('click', function () { input.click(); });
-
-    input.addEventListener('change', function () {
-      if (input.files.length) {
-        filenameEl.textContent = input.files[0].name;
-        filenameEl.style.display = '';
-      }
-    });
-
-    zone.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      zone.classList.add('border-primary');
-    });
-
-    zone.addEventListener('dragleave', function () {
-      zone.classList.remove('border-primary');
-    });
-
-    zone.addEventListener('drop', function (e) {
-      e.preventDefault();
-      zone.classList.remove('border-primary');
-      var file = e.dataTransfer.files[0];
-      if (file) setFile(file);
-    });
-  })();
-
+  // ── Rows ─────────────────────────────────────────────────────────────────────
   function addRow(featureName, featureUnit, featureDescription) {
     var container = document.getElementById('boxes');
     var row = document.createElement('div');
@@ -168,62 +214,55 @@
       row.querySelector('[data-field="feature_unit"]').value = featureUnit || '';
       row.querySelector('[data-field="feature_description"]').value = featureDescription || '';
     }
+    disableUpload();
   }
 
   function removeRow(button) {
     var rowWrapper = button.closest('[data-row-wrapper="true"]');
     if (rowWrapper) {
       rowWrapper.remove();
+      if (document.querySelectorAll('[data-metadata-row="true"]').length === 0) {
+        enableUpload();
+      }
     }
   }
 
+  // ── Init & form submit ────────────────────────────────────────────────────────
   (function initMetadataRows() {
     var metadataRowsInput = document.querySelector('input[name$="metadata_rows"]');
-    if (!metadataRowsInput) {
-      return;
-    }
+    if (!metadataRowsInput) return;
     var form = metadataRowsInput.closest('form');
-    if (!form) {
-      return;
-    }
+    if (!form) return;
 
     // Restore rows from hidden input on page load (e.g. after a validation error).
     var savedValue = metadataRowsInput.value;
     if (savedValue) {
       try {
         var savedRows = JSON.parse(savedValue);
-        if (Array.isArray(savedRows)) {
+        if (Array.isArray(savedRows) && savedRows.length > 0) {
           savedRows.forEach(function (row) {
             addRow(row.feature_name, row.feature_unit, row.feature_description);
           });
+          // addRow already calls disableUpload()
         }
       } catch (e) {
-        // Malformed JSON – ignore and let user re-enter.
+        // Malformed JSON – ignore.
       }
     }
 
     form.addEventListener('submit', function () {
       var rows = [];
-      var rowElements = form.querySelectorAll('[data-metadata-row="true"]');
-
-      rowElements.forEach(function (rowElement) {
-        var featureNameInput = rowElement.querySelector('[data-field="feature_name"]');
-        var featureUnitInput = rowElement.querySelector('[data-field="feature_unit"]');
-        var featureDescriptionInput = rowElement.querySelector('[data-field="feature_description"]');
-
-        var featureName = featureNameInput ? featureNameInput.value.trim() : '';
-        var featureUnit = featureUnitInput ? featureUnitInput.value.trim() : '';
-        var featureDescription = featureDescriptionInput ? featureDescriptionInput.value.trim() : '';
-
-        if (featureName || featureUnit || featureDescription) {
-          rows.push({
-            feature_name: featureName,
-            feature_unit: featureUnit,
-            feature_description: featureDescription
-          });
+      form.querySelectorAll('[data-metadata-row="true"]').forEach(function (rowElement) {
+        var featureName = (rowElement.querySelector('[data-field="feature_name"]') || {}).value || '';
+        var featureUnit = (rowElement.querySelector('[data-field="feature_unit"]') || {}).value || '';
+        var featureDesc = (rowElement.querySelector('[data-field="feature_description"]') || {}).value || '';
+        featureName = featureName.trim();
+        featureUnit = featureUnit.trim();
+        featureDesc = featureDesc.trim();
+        if (featureName || featureUnit || featureDesc) {
+          rows.push({ feature_name: featureName, feature_unit: featureUnit, feature_description: featureDesc });
         }
       });
-
       metadataRowsInput.value = JSON.stringify(rows);
     });
   })();
