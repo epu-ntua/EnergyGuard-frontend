@@ -196,8 +196,15 @@
         <div class="modal-body">
           {% for field in edit_form %}
             <div class="mb-3">
-              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
+              {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-check">
+                  {{ field }}
+                  <label class="form-check-label fw-semibold text-uppercase fs-9-5" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                </div>
+              {% else %}
+                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+              {% endif %}
               {% if field.errors %}
                 <div class="text-danger fs-9 mt-1">{{ field.errors.0 }}</div>
               {% endif %}
