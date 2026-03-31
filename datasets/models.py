@@ -33,7 +33,7 @@ class Dataset(TimeStampedModel):
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
@@ -70,7 +70,7 @@ class Dataset(TimeStampedModel):
         verbose_name = 'Dataset'
         verbose_name_plural = 'Datasets'
         ordering = ['-created_at']
-        indexes = [models.Index(fields=['name']),]
+        indexes = []
 
 class DatasetUserDownload(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
