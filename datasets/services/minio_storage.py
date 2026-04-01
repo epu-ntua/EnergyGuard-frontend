@@ -70,7 +70,7 @@ def upload_dataset_objects(
 ) -> dict[str, str]:
     bucket_name = _setting("OBJECT_STORAGE_BUCKET", "MINIO_BUCKET_DATASETS", default="datasets")
 
-    user_part = _safe_name(user_name, "user")
+    user_part = user_name or "user"
     dataset_part = _safe_name(dataset_name, "dataset")
     dataset_uid = uuid4().hex[:8]
     root_prefix = f"user_{user_part}/dataset_{dataset_part}_{dataset_uid}"
