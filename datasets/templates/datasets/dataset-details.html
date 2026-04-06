@@ -20,14 +20,14 @@
                     data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
                     data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
                   <div class="dropdown-menu dropdown-menu-end py-2">{% if request.user == dataset.publisher %}<a class="dropdown-item" href="#!" data-bs-toggle="modal" data-bs-target="#datasetEditModal">Edit</a><a class="dropdown-item text-danger" href="#!"
-   data-bs-toggle="modal"
-   data-bs-target="#confirmActionModal"
-   data-action-title="Delete Dataset"
-   data-action-message="Are you sure you want to delete &lt;strong&gt;{{ dataset.name }}&lt;/strong&gt;? This action cannot be undone."
-   data-confirm-text="Delete"
-   data-confirm-class="btn-danger"
-   data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>{% endif %}<a class="dropdown-item"
-                      href="#!">Download</a><a class="dropdown-item" href="#!">Report</a></div>
+                  data-bs-toggle="modal"
+                  data-bs-target="#confirmActionModal"
+                  data-action-title="Delete Dataset"
+                  data-action-message="Are you sure you want to delete &lt;strong&gt;{{ dataset.name }}&lt;/strong&gt;? This action cannot be undone."
+                  data-confirm-text="Delete"
+                  data-confirm-class="btn-danger"
+                  data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>{% endif %}<a class="dropdown-item"
+                      href="{% url 'dataset_download' dataset_id=dataset.id %}">Download</a><a class="dropdown-item" href="#!">Report</a></div>
                 </div>
               </div>
               
@@ -135,7 +135,7 @@
                   </div>
                   <!-- Download -->
                   <div class="mt-2" >
-                    <button class="btn btn-danger py-2 px-9 container" type="button"><i class="fa-solid fa-download me-2"></i>Download</button>
+                    <a href="{% url 'dataset_download' dataset_id=dataset.id %}"><button class="btn btn-danger py-2 px-9 container" type="button"><i class="fa-solid fa-download me-2"></i>Download</button></a>
                   </div>
                   
                   <!-- <div class="mt-2" style="width:70%;">

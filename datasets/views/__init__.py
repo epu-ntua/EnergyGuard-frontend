@@ -1,4 +1,5 @@
 from .details import dataset_details
+from .download import dataset_download
 from .edit import dataset_delete, dataset_edit
 from .preview import dataset_preview
 from .listing import DatasetsListJson, datasets_list
@@ -18,6 +19,7 @@ __all__ = [
     "DatasetsListJson",
     "dataset_delete",
     "dataset_details",
+    "dataset_download",
     "dataset_edit",
     "dataset_preview",
     "dataset_upload_success",
