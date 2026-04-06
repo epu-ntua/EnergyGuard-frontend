@@ -27,7 +27,7 @@
     confirmModal.addEventListener('show.bs.modal', function (event) {
         const trigger = event.relatedTarget;
         document.getElementById('confirmActionModalLabel').textContent = trigger.dataset.actionTitle || 'Confirm';
-        document.getElementById('confirmActionModalMessage').textContent = trigger.dataset.actionMessage || 'Are you sure?';
+        document.getElementById('confirmActionModalMessage').innerHTML = trigger.dataset.actionMessage || 'Are you sure?';
 
         const btn = document.getElementById('confirmActionBtn');
         btn.textContent = trigger.dataset.confirmText || 'Yes';
