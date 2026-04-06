@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -76,13 +77,23 @@ def process_dataset_upload(
                 metadata_file_path, metadata_file_name, metadata_file_content_type or "application/json"
             )
 
+        if metadata_file:
+            try:
+                metadata_file.seek(0)
+                metadata_json = json.loads(metadata_file.read())
+            except Exception:
+                logger.warning(
+                    "Could not parse metadata file for user '%s', dataset '%s'. Metadata will be empty.",
+                    user_username,
+                    dataset_name,
+                )
+                metadata_json = None
+
         try:
             upload_result = upload_dataset_objects(
                 user_name=user_username,
                 dataset_name=dataset_name,
                 data_file=data_file,
-                metadata_file=metadata_file,
-                metadata_json=metadata_json,
             )
         except MinioUploadError:
             logger.exception(
@@ -104,7 +115,6 @@ def process_dataset_upload(
                 Dataset.objects.create(
                     name=dataset_name,
                     data_file=upload_result["data_file_key"],
-                    metadata_file=upload_result["metadata_file_key"],
                     bucket_name=upload_result["bucket_name"],
                     label=dataset_label,
                     source=Dataset.Source.OWN_DS,
@@ -125,7 +135,6 @@ def process_dataset_upload(
                 delete_dataset_objects(
                     bucket_name=upload_result["bucket_name"],
                     data_file_key=upload_result["data_file_key"],
-                    metadata_file_key=upload_result["metadata_file_key"],
                 )
             except MinioUploadError:
                 logger.exception(

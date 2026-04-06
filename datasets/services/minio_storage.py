@@ -1,5 +1,4 @@
-﻿import json
-from typing import Any
+﻿from typing import Any
 from uuid import uuid4
 
 try:
@@ -65,8 +64,6 @@ def upload_dataset_objects(
     user_name: str,
     dataset_name: str,
     data_file,
-    metadata_file=None,
-    metadata_json: Any = None,
 ) -> dict[str, str]:
     bucket_name = _setting("OBJECT_STORAGE_BUCKET", "MINIO_BUCKET_DATASETS", default="datasets")
 
@@ -77,13 +74,6 @@ def upload_dataset_objects(
 
     data_filename = data_file.name.split("/")[-1].split("\\")[-1]
     data_key = f"{root_prefix}/{data_filename}"
-    metadata_key = ""
-
-    if metadata_file:
-        metadata_filename = metadata_file.name.split("/")[-1].split("\\")[-1]
-        metadata_key = f"{root_prefix}/{metadata_filename}"
-    elif metadata_json:
-        metadata_key = f"{root_prefix}/metadata.json"
 
     client = _build_minio_client()
 
@@ -98,24 +88,6 @@ def upload_dataset_objects(
             ExtraArgs={"ContentType": data_file.content_type or "application/octet-stream"},
             Config=_TRANSFER_CONFIG,
         )
-
-        if metadata_file:
-            metadata_file.seek(0)
-            client.upload_fileobj(
-                Fileobj=metadata_file,
-                Bucket=bucket_name,
-                Key=metadata_key,
-                ExtraArgs={"ContentType": metadata_file.content_type or "application/json"},
-                Config=_TRANSFER_CONFIG,
-            )
-        elif metadata_json:
-            metadata_body = json.dumps(metadata_json, ensure_ascii=False, indent=2).encode("utf-8")
-            client.put_object(
-                Bucket=bucket_name,
-                Key=metadata_key,
-                Body=metadata_body,
-                ContentType="application/json",
-            )
     except ClientError as exc:
         error_code = exc.response.get("Error", {}).get("Code", "")
         if error_code == "NoSuchBucket":
@@ -129,7 +101,6 @@ def upload_dataset_objects(
     return {
         "bucket_name": bucket_name,
         "data_file_key": data_key,
-        "metadata_file_key": metadata_key,
     }
 
 
