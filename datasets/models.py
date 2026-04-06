@@ -49,8 +49,6 @@ class Dataset(TimeStampedModel):
     )
     # MinIO object key for the primary dataset file.
     data_file = models.CharField(max_length=1024, blank=True, default='')
-    # MinIO object key for optional metadata file.
-    metadata_file = models.CharField(max_length=1024, blank=True, default='')
     bucket_name = models.CharField(max_length=63, default='energyguard-datasets')
     metadata = models.JSONField(blank=True, null=True)
     projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
