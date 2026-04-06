@@ -284,3 +284,6 @@ Q_CLUSTER = {
     'max_attempts': 1,
     'orm': 'default',  # use the default PostgreSQL database as broker
 }
+
+DATA_MANAGEMENT_SERVER_URL = env('DATA_MANAGEMENT_SERVER_URL')
+DATA_MANAGEMENT_SERVER_API_KEY = env('DATA_MANAGEMENT_SERVER_API_KEY')
