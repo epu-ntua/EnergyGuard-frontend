@@ -19,7 +19,14 @@
                   <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
                     data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
                     data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-                  <div class="dropdown-menu dropdown-menu-end py-2">{% if request.user == dataset.publisher %}<a class="dropdown-item" href="#!" data-bs-toggle="modal" data-bs-target="#datasetEditModal">Edit</a><a class="dropdown-item text-danger" href="#!" data-bs-toggle="modal" data-bs-target="#datasetDeleteModal">Delete</a>{% endif %}<a class="dropdown-item"
+                  <div class="dropdown-menu dropdown-menu-end py-2">{% if request.user == dataset.publisher %}<a class="dropdown-item" href="#!" data-bs-toggle="modal" data-bs-target="#datasetEditModal">Edit</a><a class="dropdown-item text-danger" href="#!"
+   data-bs-toggle="modal"
+   data-bs-target="#confirmActionModal"
+   data-action-title="Delete Dataset"
+   data-action-message="Are you sure you want to delete &lt;strong&gt;{{ dataset.name }}&lt;/strong&gt;? This action cannot be undone."
+   data-confirm-text="Delete"
+   data-confirm-class="btn-danger"
+   data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>{% endif %}<a class="dropdown-item"
                       href="#!">Download</a><a class="dropdown-item" href="#!">Report</a></div>
                 </div>
               </div>
@@ -220,27 +227,7 @@
   </div>
 </div>
 
-<!-- Dataset Delete Modal -->
-<div class="modal fade" id="datasetDeleteModal" tabindex="-1" aria-labelledby="datasetDeleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="datasetDeleteModalLabel"><i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Delete Dataset</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to delete <strong>{{ dataset.name }}</strong>? This action cannot be undone.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <form method="post" action="{% url 'dataset_delete' dataset_id=dataset.id %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+{% include 'core/partials/confirm-action-modal.html' %}
 
 <!-- Dataset Preview Modal -->
 <div class="modal fade" id="datasetPreviewModal" tabindex="-1" aria-labelledby="datasetPreviewModalLabel" aria-hidden="true">

@@ -39,7 +39,7 @@
                                             data-bs-target="#confirmActionModal"
                                             data-action-url="{% url 'remove_member' member.user.id %}"
                                             data-action-title="Remove Member"
-                                            data-action-message="Are you sure you want to remove {{ member.user.get_full_name|default:member.user.email }} from the team?"
+                                            data-action-message="Are you sure you want to remove &lt;strong&gt;{{ member.user.get_full_name|default:member.user.email }}&lt;/strong&gt; from the team?"
                                             data-confirm-text="Yes, Remove"
                                             data-confirm-class="btn-danger">
                                             <i class="fas fa-user-minus me-2"></i>Remove Member
@@ -89,7 +89,7 @@
                                             data-bs-target="#confirmActionModal"
                                             data-action-url="{% url 'resend_invite' invite.id %}"
                                             data-action-title="Resend Invite"
-                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-action-message="Resend the invitation to &lt;strong&gt;{{ invite.email }}&lt;/strong&gt;?"
                                             data-confirm-text="Yes, Resend"
                                             data-confirm-class="btn-primary">
                                             <i class="fas fa-paper-plane me-2"></i>Resend Invite
@@ -101,7 +101,7 @@
                                             data-bs-target="#confirmActionModal"
                                             data-action-url="{% url 'delete_invite' invite.id %}"
                                             data-action-title="Delete Invite"
-                                            data-action-message="Permanently delete the invite record for {{ invite.email }}?"
+                                            data-action-message="Permanently delete the invite record for &lt;strong&gt;{{ invite.email }}&lt;/strong&gt;?"
                                             data-confirm-text="Yes, Delete"
                                             data-confirm-class="btn-danger">
                                             <i class="fas fa-trash me-2"></i>Delete
@@ -114,7 +114,7 @@
                                             data-bs-target="#confirmActionModal"
                                             data-action-url="{% url 'resend_invite' invite.id %}"
                                             data-action-title="Resend Invite"
-                                            data-action-message="Resend the invitation to {{ invite.email }}?"
+                                            data-action-message="Resend the invitation to &lt;strong&gt;{{ invite.email }}&lt;/strong&gt;?"
                                             data-confirm-text="Yes, Resend"
                                             data-confirm-class="btn-primary">
                                             <i class="fas fa-paper-plane me-2"></i>Resend Invite
@@ -127,7 +127,7 @@
                                             data-bs-target="#confirmActionModal"
                                             data-action-url="{% url 'cancel_invite' invite.id %}"
                                             data-action-title="Cancel Invite"
-                                            data-action-message="Are you sure you want to cancel the invite for {{ invite.email }}?"
+                                            data-action-message="Are you sure you want to cancel the invite for &lt;strong&gt;{{ invite.email }}&lt;/strong&gt;?"
                                             data-confirm-text="Yes, Cancel"
                                             data-confirm-class="btn-danger">
                                             <i class="fas fa-times me-2"></i>Cancel Invite

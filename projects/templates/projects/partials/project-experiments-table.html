@@ -38,7 +38,14 @@
               <div class="dropdown-menu dropdown-menu-end py-2">
                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editExperimentModal-{{ experiment.id }}">Edit experiment</a>
                 <a class="dropdown-item" href="{% url 'eval_results' project_details.id experiment.id %}" target="_blank">Eval results</a>
-                <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteExperimentModal-{{ experiment.id }}">Delete experiment</button>
+                <button type="button" class="dropdown-item text-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#confirmActionModal"
+                  data-action-title="Delete Experiment"
+                  data-action-message="Are you sure you want to delete the experiment &lt;strong&gt;{{ experiment.name }}&lt;/strong&gt;? This action cannot be undone."
+                  data-confirm-text="Delete"
+                  data-confirm-class="btn-danger"
+                  data-action-url="{% url 'delete_experiment' project_details.id experiment.id %}">Delete experiment</button>
               </div>
             </div>
           </td>
@@ -50,5 +57,4 @@
 
 {% for experiment in experiments %}
   {% include "projects/partials/edit-experiment-modal.html" %}
-  {% include "projects/partials/delete-experiment-modal.html" %}
 {% endfor %}

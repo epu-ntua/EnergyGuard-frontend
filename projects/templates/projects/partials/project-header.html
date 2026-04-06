@@ -1,5 +1,3 @@
-{% include "projects/partials/delete-project-modal.html" %}
-
 <!-- Header: Title + Actions dropdown + Evaluate button -->
 <div class="d-flex justify-content-between align-items-start mb-8">
   <div class="d-flex align-items-center gap-2">
@@ -10,7 +8,14 @@
         data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
       <div class="dropdown-menu dropdown-menu-end py-2">
         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProjectModal">Edit project</a>
-        <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">Delete project</button>
+        <button class="dropdown-item text-danger" type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#confirmActionModal"
+          data-action-title="Delete Project"
+          data-action-message="Are you sure you want to delete the project &lt;strong&gt;{{ project_details.name }}&lt;/strong&gt;? This action cannot be undone."
+          data-confirm-text="Delete"
+          data-confirm-class="btn-danger"
+          data-action-url="{% url 'delete_project' project_details.id %}">Delete project</button>
       </div>
     </div>
   </div>
