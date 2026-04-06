@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import redirect, render
 
+from projects.models import Project
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
 
@@ -29,6 +31,10 @@ def dataset_details(request, dataset_id):
         "metadata": dataset.metadata,
     }
 
+    user_projects = Project.objects.filter(
+        Q(creator=request.user) | Q(collaborators=request.user)
+    ).distinct().order_by("-created_at")
+
     return render(
         request,
         "datasets/dataset-details.html",
@@ -36,6 +42,7 @@ def dataset_details(request, dataset_id):
             "dataset": dataset,
             "dt": dataset_details_data,
             "edit_form": GeneralDatasetForm(instance=dataset),
+            "user_projects": user_projects,
             "active_navbar_page": "datasets",
             "show_sidebar": True,
         },
