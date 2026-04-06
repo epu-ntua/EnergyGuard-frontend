@@ -182,6 +182,9 @@ class MetadataDatasetForm(forms.ModelForm):
 
         if metadata_map:
             cleaned_data['metadata'] = metadata_map
+        elif metadata_file:
+            metadata_file.seek(0)
+            cleaned_data['metadata'] = json.loads(metadata_file.read())
         elif not metadata_value:
             cleaned_data['metadata'] = None
 
