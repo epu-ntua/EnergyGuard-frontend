@@ -1,4 +1,7 @@
+import requests
+from django.conf import settings
 from django.contrib import messages
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -41,6 +44,22 @@ def dataset_delete(request, dataset_id):
     if request.method != "POST":
         return redirect("dataset_details", dataset_id=dataset_id)
 
+    username = dataset.publisher.username
+    dataset_name = dataset.name
+    dataset_slug = slugify(dataset_name)
+
+    url = f"{settings.DATA_MANAGEMENT_SERVER_URL}/api/v1/datasets/{username}/{dataset_slug}"
+    try:
+        response = requests.delete(
+            url,
+            headers={"X-API-Key": settings.DATA_MANAGEMENT_SERVER_API_KEY},
+            timeout=10,
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        messages.error(request, f'Failed to delete dataset from data management server: {e}')
+        return redirect("dataset_details", dataset_id=dataset_id)
+
     dataset.delete()
-    messages.success(request, f'Dataset "{dataset.name}" has been deleted.')
+    messages.success(request, f'Dataset "{dataset_name}" has been deleted.')
     return redirect(reverse("datasets_list") + "?tab=my")

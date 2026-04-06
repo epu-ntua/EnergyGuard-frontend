@@ -1,5 +1,4 @@
 ﻿from typing import Any
-from uuid import uuid4
 
 try:
     from boto3.s3.transfer import TransferConfig as S3TransferConfig
@@ -69,8 +68,7 @@ def upload_dataset_objects(
 
     user_part = user_name or "user"
     dataset_part = _safe_name(dataset_name, "dataset")
-    dataset_uid = uuid4().hex[:8]
-    root_prefix = f"user_{user_part}/dataset_{dataset_part}_{dataset_uid}"
+    root_prefix = f"user_{user_part}/{dataset_part}"
 
     data_filename = data_file.name.split("/")[-1].split("\\")[-1]
     data_key = f"{root_prefix}/{data_filename}"
