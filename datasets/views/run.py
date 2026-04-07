@@ -1,7 +1,9 @@
 import json
-from django.utils.text import slugify
+import logging
 
 import requests
+
+logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -28,25 +30,33 @@ def dataset_run(request, dataset_id):
     if not dataset.data_file:
         return JsonResponse({"error": "This dataset has no data file."}, status=400)
 
-    username = request.user.username
-    dataset_slug = slugify(dataset.name) or f"dataset_{dataset.id}"
+    # JupyterHub identifies users by email (OAuth), so the provision server
+    # must use the email as the username to land files in the right directory.
+    jupyterhub_username = request.user.email
+    dataset_local_name = dataset.name or f"dataset_{dataset.id}"
 
-    if dataset.publisher_id:
-        publisher_username = dataset.publisher.username
-    else:
-        publisher_username = "energyguard"
+    # Derive the MinIO prefix by stripping the filename from data_file.
+    # data_file is stored as "user_<owner>/<dataset_name>/<filename>".
+    # The provision server expects the key in the form "user_<owner>/<dataset_name>".
+    minio_prefix = "/".join(dataset.data_file.split("/")[:-1])
 
     payload = {
-        "username": username,
+        "username": jupyterhub_username,
         "datasets": {
-            publisher_username: dataset_slug,
+            minio_prefix: dataset_local_name,
         },
-        # "notebooks": None,
+        "notebooks": None,
     }
 
+    print("[dataset_run] dataset.data_file =", repr(dataset.data_file))
+    print("[dataset_run] minio_prefix =", repr(minio_prefix))
+    print("[dataset_run] POST payload =", json.dumps(payload, indent=2))
+
     try:
+        provision_url = f"{settings.DATA_MANAGEMENT_SERVER_URL}/api/v1/provision/user"
+        print("[dataset_run] POSTing to", provision_url)
         response = requests.post(
-            f"{settings.DATA_MANAGEMENT_SERVER_URL}/api/v1/provision/user",
+            provision_url,
             headers={
                 "X-API-Key": settings.DATA_MANAGEMENT_SERVER_API_KEY,
                 "Content-Type": "application/json",
@@ -54,15 +64,17 @@ def dataset_run(request, dataset_id):
             json=payload,
             timeout=30,
         )
+        print("[dataset_run] response status =", response.status_code)
+        print("[dataset_run] response body =", response.text)
         response.raise_for_status()
     except requests.RequestException as exc:
+        print("[dataset_run] provision request failed:", exc)
         return JsonResponse(
             {"error": f"Failed to provision dataset: {exc}"},
             status=502,
         )
 
-    user_email = request.user.email
     jupyterhub_url = settings.JUPYTERHUB_URL.rstrip("/")
-    redirect_url = f"{jupyterhub_url}/user/{user_email}/lab"
+    redirect_url = f"{jupyterhub_url}/user/{jupyterhub_username}/lab"
 
     return JsonResponse({"redirect_url": redirect_url})
