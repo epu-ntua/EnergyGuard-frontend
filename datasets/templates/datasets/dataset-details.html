@@ -290,6 +290,9 @@
         {% endif %}
       </div>
 
+      <!-- Error banner -->
+      <div id="runProjectError" class="d-none mx-3 mb-2 alert alert-danger py-2 px-3 fs-9 mb-0" role="alert"></div>
+
       <!-- Footer -->
       <div class="modal-footer">
         <a href="{% url 'project_creation' %}" class="btn btn-outline-primary btn-sm me-auto">
@@ -394,9 +397,45 @@
     });
   });
 
+  var RUN_URL = "{% url 'dataset_run' dataset_id=dataset.id %}";
+  var CSRF_TOKEN = "{{ csrf_token }}";
+
   runBtn.addEventListener('click', function () {
-    if (selectedCard) window.location.href = selectedCard.dataset.projectUrl;
+    if (!selectedCard) return;
+    var projectId = selectedCard.dataset.projectId;
+
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Running…';
+
+    fetch(RUN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN,
+      },
+      body: JSON.stringify({ project_id: projectId }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          showRunError(res.data.error || 'Something went wrong.');
+          return;
+        }
+        window.open(res.data.redirect_url, '_blank');
+        bootstrap.Modal.getInstance(modal).hide();
+      })
+      .catch(function (err) {
+        showRunError('Network error: ' + err.message);
+      });
   });
+
+  function showRunError(msg) {
+    runBtn.disabled = false;
+    runBtn.innerHTML = 'Run';
+    var errorEl = document.getElementById('runProjectError');
+    errorEl.textContent = msg;
+    errorEl.classList.remove('d-none');
+  }
 
   modal.addEventListener('hidden.bs.modal', function () {
     if (selectedCard) {
@@ -408,6 +447,8 @@
       selectedCard = null;
     }
     runBtn.setAttribute('disabled', '');
+    runBtn.innerHTML = 'Run';
+    document.getElementById('runProjectError').classList.add('d-none');
   });
 })();
 </script>
