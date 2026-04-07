@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
+from projects.models import Project
 from ..models import Dataset
 
 
@@ -26,6 +27,8 @@ def dataset_run(request, dataset_id):
 
     if not project_id:
         return JsonResponse({"error": "project_id is required."}, status=400)
+
+    project = get_object_or_404(Project, pk=project_id)
 
     if not dataset.data_file:
         return JsonResponse({"error": "This dataset has no data file."}, status=400)
@@ -73,6 +76,8 @@ def dataset_run(request, dataset_id):
             {"error": f"Failed to provision dataset: {exc}"},
             status=502,
         )
+
+    dataset.projects.add(project)
 
     jupyterhub_url = settings.JUPYTERHUB_URL.rstrip("/")
     redirect_url = f"{jupyterhub_url}/user/{jupyterhub_username}/lab"
