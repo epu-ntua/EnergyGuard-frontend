@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
-from ..services.data_management_client import delete_dataset_cache, provision_user_datasets
+from ..services import delete_dataset_cache, provision_user_datasets
 
 
 @login_required
