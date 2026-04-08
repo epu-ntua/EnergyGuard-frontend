@@ -97,18 +97,23 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                 name=default_experiment_name,
                 mlflow_experiment_id=mlflow_experiment_id,
             )
-
+        self.request.session["project_creation_success"] = True
         return redirect("project_creation_success")
 
 
 @login_required
 def project_creation_success(request):
+    if not request.session.pop("project_creation_success", False):
+        return redirect("project_creation")
+    wizard = {"steps": {"current": "done", "index": 0}}
+    wizard_steps = PROJECT_STEP_METADATA.values()
     return render(
         request,
         "projects/project-creation-success.html",
         {
-            "active_navbar_page": "projects",
-            "show_sidebar": True,
+            "wizard": wizard,
+            "wizard_steps": wizard_steps,
+            "cancel_url": "/projects/list/",
         },
     )
 
