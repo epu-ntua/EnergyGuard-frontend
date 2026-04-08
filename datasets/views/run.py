@@ -1,9 +1,6 @@
 import json
-import logging
 
 import requests
-
-logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -11,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
 from projects.models import Project
+from projects.services import provision_user_datasets
 from ..models import Dataset
 
 
@@ -38,44 +36,14 @@ def dataset_run(request, dataset_id):
     jupyterhub_username = request.user.email
     dataset_local_name = dataset.name or f"dataset_{dataset.id}"
 
-    # Derive the MinIO prefix by stripping the filename from data_file.
     # data_file is stored as "user_<owner>/<dataset_name>/<filename>".
     # The provision server expects the key in the form "user_<owner>/<dataset_name>".
     minio_prefix = "/".join(dataset.data_file.split("/")[:-1])
 
-    payload = {
-        "username": jupyterhub_username,
-        "datasets": {
-            minio_prefix: dataset_local_name,
-        },
-        "notebooks": None,
-    }
-
-    print("[dataset_run] dataset.data_file =", repr(dataset.data_file))
-    print("[dataset_run] minio_prefix =", repr(minio_prefix))
-    print("[dataset_run] POST payload =", json.dumps(payload, indent=2))
-
     try:
-        provision_url = f"{settings.DATA_MANAGEMENT_SERVER_URL}/api/v1/provision/user"
-        print("[dataset_run] POSTing to", provision_url)
-        response = requests.post(
-            provision_url,
-            headers={
-                "X-API-Key": settings.DATA_MANAGEMENT_SERVER_API_KEY,
-                "Content-Type": "application/json",
-            },
-            json=payload,
-            timeout=30,
-        )
-        print("[dataset_run] response status =", response.status_code)
-        print("[dataset_run] response body =", response.text)
-        response.raise_for_status()
+        provision_user_datasets(jupyterhub_username, {minio_prefix: dataset_local_name})
     except requests.RequestException as exc:
-        print("[dataset_run] provision request failed:", exc)
-        return JsonResponse(
-            {"error": f"Failed to provision dataset: {exc}"},
-            status=502,
-        )
+        return JsonResponse({"error": f"Failed to provision dataset: {exc}"}, status=502)
 
     dataset.projects.add(project)
 
