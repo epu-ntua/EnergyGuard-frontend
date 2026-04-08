@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
+from ..services.data_management_client import delete_dataset_cache, provision_user_datasets
 
 
 @login_required
@@ -23,7 +24,19 @@ def dataset_edit(request, dataset_id):
 
     form = GeneralDatasetForm(request.POST, instance=dataset)
     if form.is_valid():
+        old_name = dataset.name
         form.save()
+        new_name = dataset.name
+        if old_name != new_name and dataset.data_file:
+            minio_prefix = "/".join(dataset.data_file.split("/")[:-1])
+            try:
+                delete_dataset_cache(request.user.email, old_name)
+            except Exception:
+                pass
+            try:
+                provision_user_datasets(request.user.email, {minio_prefix: new_name})
+            except Exception:
+                pass
         messages.success(request, "Dataset updated successfully.")
     else:
         for field_errors in form.errors.values():

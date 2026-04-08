@@ -10,11 +10,6 @@ from .mlflow_client import (
     set_experiment_tags,
     update_experiment_name,
 )
-from .data_management_client import (
-    delete_dataset_cache,
-    provision_user_datasets,
-    sync_jupyterhub,
-)
 
 __all__ = [
     "MlflowClientError",
@@ -27,7 +22,4 @@ __all__ = [
     "make_deleted_experiment_name",
     "set_experiment_tags",
     "update_experiment_name",
-    "delete_dataset_cache",
-    "provision_user_datasets",
-    "sync_jupyterhub",
 ]

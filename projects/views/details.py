@@ -7,17 +7,7 @@ from django.utils import timezone
 
 from ..forms import EditProjectForm
 from ..models import Project
-from ..services import MlflowClientError, list_experiment_runs, sync_jupyterhub
-
-
-def _dataset_map(project: Project) -> dict[str, str]:
-    """Return {minio_prefix: local_name} for all datasets with a data file."""
-    result: dict[str, str] = {}
-    for dataset in project.datasets.filter(data_file__gt="").all():
-        minio_prefix = "/".join(dataset.data_file.split("/")[:-1])
-        local_name = dataset.name or f"dataset_{dataset.id}"
-        result[minio_prefix] = local_name
-    return result
+from ..services import MlflowClientError, list_experiment_runs
 
 
 def _latest_project_run_datetime(project: Project, user):
@@ -70,10 +60,7 @@ def project_details(request, project_id):
     if request.method == "POST" and request.POST.get("action") == "edit_project":
         edit_project_form = EditProjectForm(request.POST, instance=project)
         if edit_project_form.is_valid():
-            datasets_before = _dataset_map(project)
             edit_project_form.save()
-            datasets_after = _dataset_map(project)
-            sync_jupyterhub(request.user.email, before=datasets_before, after=datasets_after)
             messages.success(request, "Project updated successfully.")
             return redirect("project_details", project_id=project_id)
 
