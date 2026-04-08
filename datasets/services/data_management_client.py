@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote
 
 import requests
 from django.conf import settings
@@ -44,9 +45,11 @@ def delete_dataset_cache(username: str, dataset_local_name: str) -> None:
     """
     DELETE /api/v1/datasets/cache/{username}/{dataset_local_name}
     """
+    encoded_username = quote(str(username), safe="")
+    encoded_name = quote(str(dataset_local_name), safe="")
     try:
         response = requests.delete(
-            f"{_base_url()}/api/v1/datasets/cache/{username}/{dataset_local_name}",
+            f"{_base_url()}/api/v1/datasets/cache/{encoded_username}/{encoded_name}",
             headers=_headers(),
             timeout=15,
         )
