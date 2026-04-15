@@ -22,9 +22,9 @@ def dataset_edit(request, dataset_id):
     if request.method != "POST":
         return redirect("dataset_details", dataset_id=dataset_id)
 
+    old_name = dataset.name
     form = GeneralDatasetForm(request.POST, instance=dataset)
     if form.is_valid():
-        old_name = dataset.name
         form.save()
         new_name = dataset.name
         if old_name != new_name and dataset.data_file:
