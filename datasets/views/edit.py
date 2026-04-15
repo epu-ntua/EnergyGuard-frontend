@@ -70,7 +70,13 @@ def dataset_delete(request, dataset_id):
         )
         response.raise_for_status()
     except requests.RequestException as e:
-        messages.error(request, f'Failed to delete dataset from data management server: {e}')
+        messages.error(request, f'Failed to delete dataset from storage: {e}')
+        return redirect("dataset_details", dataset_id=dataset_id)
+
+    try:
+        delete_dataset_cache(username, dataset_name)
+    except Exception as e:
+        messages.error(request, f'Failed to delete dataset from JupyterHub: {e}')
         return redirect("dataset_details", dataset_id=dataset_id)
 
     dataset.delete()
