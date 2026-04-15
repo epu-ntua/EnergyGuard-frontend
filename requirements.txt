@@ -13,3 +13,4 @@ pillow==11.3.0
 django-cleanup==9.0.0
 django-storages==1.14.6
 django-q2==1.9.0
+gunicorn==23.0.0
