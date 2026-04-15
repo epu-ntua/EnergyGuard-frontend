@@ -19,9 +19,9 @@ services:
     depends_on:
       - db
     restart: always
-    networks:
-      - default
-      - energyguard_net
+    # networks:
+    #   - default
+    #   - energyguard_net
 
   questionnaire:
     build:
@@ -81,8 +81,8 @@ volumes:
   pgadmin_data:
   static_volume:
 
-networks:
-  default: {}
-  energyguard_net:
-    external: true
-    name: nginxproxy_energyguard_net
+# networks:
+#   default: {}
+#   energyguard_net:
+#     external: true
+#     name: nginxproxy_energyguard_net
