@@ -13,7 +13,7 @@ services:
       - .:/app
       - static_volume:/app/staticfiles
     ports:
-      - "${PORT:-8000}:8000"
+      - "${PORT:-8080}:8000"
     env_file:
       - .env
     depends_on:
@@ -21,7 +21,7 @@ services:
     restart: always
     networks:
       - default
-      - data_management_energyguard_net
+      - energyguard_net
 
   questionnaire:
     build:
@@ -66,7 +66,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     ports:
-      - "5050:80"
+      - "5051:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -76,12 +76,13 @@ services:
       - db
     restart: always
 
-networks:
-  data_management_energyguard_net:
-    external: true
-    name: data_management_energyguard_net
-
 volumes:
   postgres_data:
   pgadmin_data:
   static_volume:
+
+networks:
+  default: {}
+  energyguard_net:
+    external: true
+    name: nginxproxy_energyguard_net
