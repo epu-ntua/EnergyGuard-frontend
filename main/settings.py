@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'projects.apps.ProjectsConfig',
     'billing',
     'django_q',
+    'digitaltwins',
 ]
 
 MIDDLEWARE = [
