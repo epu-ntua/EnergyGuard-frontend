@@ -25,6 +25,7 @@ from ..services import (
     set_experiment_tags as mlflow_set_experiment_tags,
     update_experiment_name as mlflow_update_experiment_name,
 )
+from .creation import _cleanup_mlflow_experiment
 from ..services.mlflow_client import (
     list_registered_model_versions_for_run,
     make_registered_model_links,
@@ -98,6 +99,7 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
 
+        # --- 1. Create the MLflow experiment first (external, not transactional) ---
         mlflow_experiment_id = ""
         try:
             mlflow_experiment_id = mlflow_create_experiment(
@@ -111,31 +113,29 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
                 user=self.request.user,
                 use_service_credentials=True,
             )
-            try:
-                mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
-            except MlflowClientError:
-                mlflow_update_experiment_name(
-                    mlflow_experiment_id,
-                    mlflow_make_deleted_experiment_name(),
-                    user=self.request.user,
-                )
-                mlflow_delete_experiment(mlflow_experiment_id, user=self.request.user)
-                raise
+            mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
         except MlflowClientError as exc:
+            if mlflow_experiment_id:
+                _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
             messages.error(
                 self.request,
                 f"Experiment creation failed because MLflow sync failed: {exc}",
             )
             return redirect("add_experiment", project_id=self.project.id)
 
-        with transaction.atomic():
-            Experiment.objects.create(
-                project=self.project,
-                creator=self.request.user,
-                name=general_info["name"],
-                mlflow_experiment_id=mlflow_experiment_id,
-                description=general_info.get("description", ""),
-            )
+        # --- 2. Persist to DB; if this fails, clean up MLflow ---
+        try:
+            with transaction.atomic():
+                Experiment.objects.create(
+                    project=self.project,
+                    creator=self.request.user,
+                    name=general_info["name"],
+                    mlflow_experiment_id=mlflow_experiment_id,
+                )
+        except Exception as exc:
+            _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
+            messages.error(self.request, f"Experiment creation failed: {exc}")
+            return redirect("add_experiment", project_id=self.project.id)
 
         messages.success(self.request, "Experiment created successfully.")
         return redirect("project_details", project_id=self.project.id)"""

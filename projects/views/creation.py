@@ -18,6 +18,19 @@ from ..services import (
     update_experiment_name as mlflow_update_experiment_name,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def _cleanup_mlflow_experiment(experiment_id: str, user) -> None:
+    """Best-effort cleanup of an MLflow experiment after a failure."""
+    try:
+        mlflow_update_experiment_name(experiment_id, mlflow_make_deleted_experiment_name(), user=user)
+        mlflow_delete_experiment(experiment_id, user=user)
+    except Exception:
+        logger.warning("Failed to clean up MLflow experiment %s", experiment_id, exc_info=True)
+
 PROJECT_TEMPLATE_NAMES = {
     "0": "projects/project-creation-step1.html",
     "1": "projects/project-creation-step2.html",
@@ -43,61 +56,58 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
 
-        project = None
-
+        # --- 1. Create the MLflow experiment first (external, not transactional) ---
+        default_experiment_name = f"{general_info['name']}-default"
         mlflow_experiment_id = ""
-        with transaction.atomic():
-            project = Project.objects.create(
-                name=general_info["name"],
-                description=general_info["description"],
-                project_type=general_info["project_type"],
-                creator=self.request.user,
-            )
-            try:
-                default_experiment_name = f"{project.name}-default"
-                while True:
-                    try:
-                        mlflow_experiment_id = mlflow_create_experiment(
-                            name=default_experiment_name,
-                            tags={"project_name": project.name},
-                            user=self.request.user,
-                        )
-                        mlflow_set_experiment_tags(
-                            mlflow_experiment_id,
-                            {"mlflow.note.content": "Default experiment created with the project."},
-                            user=self.request.user,
-                            use_service_credentials=True,
-                        )
-                        try:
-                            mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
-                        except MlflowClientError:
-                            mlflow_update_experiment_name(
-                                mlflow_experiment_id,
-                                mlflow_make_deleted_experiment_name(),
-                                user=self.request.user,
-                            )
-                            mlflow_delete_experiment(mlflow_experiment_id, user=self.request.user)
-                            raise
-                        break
-                    except MlflowClientError as exc:
-                        error_text = str(exc).lower()
-                        if "already exists" in error_text or "resource_already_exists" in error_text:
-                            default_experiment_name += "-"
-                            continue
-                        raise
-            except MlflowClientError as exc:
-                messages.warning(
-                    self.request,
-                    f"Project created, but initial MLflow experiment sync failed: {exc}",
-                )
+        try:
+            while True:
+                try:
+                    mlflow_experiment_id = mlflow_create_experiment(
+                        name=default_experiment_name,
+                        tags={"project_name": general_info["name"]},
+                        user=self.request.user,
+                    )
+                    mlflow_set_experiment_tags(
+                        mlflow_experiment_id,
+                        {"mlflow.note.content": "Default experiment created with the project."},
+                        user=self.request.user,
+                        use_service_credentials=True,
+                    )
+                    mlflow_create_experiment_permission(mlflow_experiment_id, self.request.user.email)
+                    break
+                except MlflowClientError as exc:
+                    error_text = str(exc).lower()
+                    if "already exists" in error_text or "resource_already_exists" in error_text:
+                        default_experiment_name += "-"
+                        continue
+                    raise
+        except MlflowClientError as exc:
+            # Clean up the MLflow experiment if it was partially created
+            if mlflow_experiment_id:
+                _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
+            messages.error(self.request, f"Project creation failed: MLflow sync failed: {exc}")
+            return redirect("project_creation")
 
-            Experiment.objects.create(
-                project=project,
-                creator=self.request.user,
-                name=default_experiment_name,
-                mlflow_experiment_id=mlflow_experiment_id,
-            )
-        self.request.session["project_creation_success"] = True
+        # --- 2. Persist to DB; if this fails, clean up MLflow ---
+        try:
+            with transaction.atomic():
+                project = Project.objects.create(
+                    name=general_info["name"],
+                    description=general_info["description"],
+                    project_type=general_info["project_type"],
+                    creator=self.request.user,
+                )
+                Experiment.objects.create(
+                    project=project,
+                    creator=self.request.user,
+                    name=default_experiment_name,
+                    mlflow_experiment_id=mlflow_experiment_id,
+                )
+        except Exception as exc:
+            _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
+            messages.error(self.request, f"Project creation failed: {exc}")
+            return redirect("project_creation")
+
         return redirect("project_creation_success")
 
 
