@@ -1,0 +1,31 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Digital Twins | EnergyGuard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="{% static 'digitaltwins/styles.css' %}"/>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div id="map-container">
+    <div id="map"></div>
+    <div id="minimap-toggle" title="Toggle minimap">▼</div>
+    <div id="minimap-wrapper">
+      <div id="minimap"></div>
+      <div class="minimap-viewport" id="viewport-rect"></div>
+    </div>
+  </div>
+  {% include 'core/footer.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  window.BUILDINGS_DATA_URL = "{% static 'digitaltwins/all_buildings_with_building_fields_heat_only_all_steps.json' %}";
+</script>
+<script src="{% static 'digitaltwins/app.js' %}"></script>
+{% endblock %}

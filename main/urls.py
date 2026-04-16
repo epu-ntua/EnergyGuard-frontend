@@ -26,6 +26,7 @@ urlpatterns = [
     path('datasets/', include('datasets.urls')),
     path('accounts/', include('accounts.urls')),
     path('billing/', include('billing.urls')),
+    path('digitaltwins/', include('digitaltwins.urls')),
     path('accounts/', include('allauth.urls')),
 ]
 
