@@ -108,6 +108,7 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             messages.error(self.request, f"Project creation failed: {exc}")
             return redirect("project_creation")
 
+        self.request.session["project_creation_success"] = True
         return redirect("project_creation_success")
 
 
