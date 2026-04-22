@@ -1,0 +1,150 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Riga's Multi-Apartment Residential Buildings | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="mb-9 p-5">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+      <h2 class="mb-2">{{ digital_twin.name }}</h2>
+      <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
+        <span>
+          <strong class="text-body">Organization:</strong>
+          <a href="https://rea.riga.lv/" target="_blank" class="ms-1">Riga Energy Agency</a>,
+          <a href="https://www.bvkb.gov.lv/lv" target="_blank" class="ms-1">State Construction Control Bureau of Latvia</a>
+        </span>
+        <span><strong class="text-body">Location:</strong> Riga, Latvia</span>
+        <span><strong class="text-body">Domain:</strong> Buildings</span>
+      </div>
+    </div>
+
+    <hr class="mb-5">
+
+    <!-- OVERVIEW -->
+    <div class="row g-5 mb-5">
+      <div class="col-lg-3">
+        <img src="{% static 'assets/img/generic/riga.jpg' %}" alt="Riga Buildings" class="img-fluid rounded mb-4" >
+        <a href="{% url 'digitaltwins-map' %}" class="btn btn-primary w-100">Open Digital Twin</a>
+      </div>
+      <div class="col-lg-9">
+        <h5 class="mb-2">Facility</h5>
+        <p class="fs-8-5 text-body-secondary">
+          This facility represents the large-scale residential building stock of the city of Riga, mainly composed of multi-apartment buildings from different construction periods and with diverse building types and energy performance characteristics. It provides a real urban environment for evaluating AI-driven energy efficiency solutions at building and city scale. The facility is supported by data from the national EPC registry, Latvia's Construction Information Systems, municipal geospatial databases, and monitored heating consumption records.
+        </p>
+        <h5 class="mt-6 mb-2">Digital Twin</h5>
+        <p class="fs-8-5 text-body-secondary">
+          Within the EnergyGuard platform, the facility is represented through the Digital Twin of Riga's Buildings, a geospatial data-enriched visualization of the city's residential building stock, presented via an interactive map interface. Each building is enriched with EPC information, structural and audit data, continuously updated heating consumption records and city-level historical and real-time meteorological data. Users can explore, filter, and analyze building performance within the urban context. Beyond visual exploration, API access to the underlying datasets enables solution providers to integrate building data into their applications, analytics pipelines and decision support tools, supporting AI experimentation and validation in the building sector.
+        </p>
+        <p class="fs-8-5 text-body-secondary mb-0 mt-6">
+          <strong>Use cases:</strong> Building energy performance analysis, Retrofit planning and renovation scenario simulation, Energy consumption savings estimation.
+        </p>
+      </div>
+    </div>
+
+    <hr class="mb-5">
+
+    <!-- HOW IT WORKS -->
+    <h4 class="mb-4">How it works</h4>
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="card p-4 h-100">
+          <h6 class="fw-bold mb-2">Data Sources</h6>
+          <p class="fs-9 text-body-secondary mb-0">EPCs, energy audit data, heating energy consumption, meteorological data, State Land Dataset.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 h-100">
+          <h6 class="fw-bold mb-2">Update Frequency</h6>
+          <p class="fs-9 text-body-secondary mb-0">Streaming heating energy consumption monitoring, combined with real-time and historical meteorological data updates.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 h-100">
+          <h6 class="fw-bold mb-2">Level of Abstraction</h6>
+          <p class="fs-9 text-body-secondary mb-0">Building-level structured data represented through a geospatial city-scale visualisation, complemented by city-level meteorological data collected from multiple monitoring stations.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-5 fs-9">
+      <div class="col-md-6">
+        <strong>Related assets:</strong> EPC Dataset Service
+      </div>
+      <div class="col-md-6">
+        <strong>Projects using this Digital Twin:</strong> —
+      </div>
+    </div>
+
+    <hr class="mb-5">
+
+    <!-- ACCESS & DOCUMENTATION -->
+    <h4 class="mb-4">Access &amp; Documentation</h4>
+    <div class="row g-4 mb-5 align-items-start">
+        
+
+      <!-- Access requirements -->
+      <div class="col-lg-4 p-4">
+        <p class="fs-9 text-body-secondary fw-bold mb-2">Access requires a formal request and review process.</p>
+        <ul class="fs-9 text-body-secondary ps-3">
+          <li>Active EnergyGuard account</li>
+          <li>Signed Non-Disclosure Agreement</li>
+          <li>Approval from the EnergyGuard access management committee</li>
+        </ul>
+        <div class="mt-3">
+          <a href="#contact" class="btn btn-primary w-75">Get Access</a>
+        </div>
+      </div>
+
+      <!-- User Guides -->
+      <div class="col-lg-4">
+        <div class="card p-4 h-100 d-flex flex-column">
+          <h6 class="fw-bold mb-2"><span class="fas fa-book me-2"></span>User Guides</h6>
+          <p class="fs-9 text-body-secondary flex-grow-1">Detailed manuals for navigating the Digital Twin interface, leveraging its functionalities, configuring available tools or scenarios, and interpreting results.</p>
+          <a href="#contact" class="text-primary fs-9 fw-semibold text-decoration-none">View Guides</a>
+        </div>
+      </div>
+
+      <!-- API Documentation -->
+      <div class="col-lg-4">
+        <div class="card p-4 h-100 d-flex flex-column">
+          <h6 class="fw-bold mb-2"><span class="fas fa-code me-2"></span>API Documentation</h6>
+          <p class="fs-9 text-body-secondary flex-grow-1">Comprehensive technical documentation for integrating the Digital Twin into external applications, programmatic access to data and services, including available endpoints, request parameters and guidance for custom application development.</p>
+          <a href="#" class="text-primary fs-9 fw-semibold text-decoration-none">Explore API</a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="mb-7">
+
+    <!-- CONTACT FORM -->
+    <div id="contact" class="row justify-content-start mb-6">
+      <div class="col-lg-6">
+        <h4 class="mb-4 text-center">Ask EnergyGuard</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fs-9">Name</label>
+            <input type="text" class="form-control fs-9" placeholder="Your Name">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fs-9">Email</label>
+            <input type="email" class="form-control fs-9" placeholder="you@example.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fs-9">Message</label>
+            <textarea class="form-control fs-9" rows="4" placeholder="How can we help you?"></textarea>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% include "core/footer.html" %}
+  </div>
+</div>
+{% endblock content %}
