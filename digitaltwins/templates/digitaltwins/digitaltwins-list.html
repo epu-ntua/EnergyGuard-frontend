@@ -5,29 +5,32 @@
 
 {% block content %}
 <div class="content">
-    <h1>Digital Twins</h1>
-    <p>Here you can find all the digital twins available in EnergyGuard platform.</p>
-    <div class="row g-5 mt-3">
-        {% for digital_twin in digital_twins %}
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                <div class="card h-100" style="cursor: pointer;">
-                    {% if digital_twin.image %}
-                    <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 280px;" width="auto">
-                    {% else %}
-                    <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 180px; object-fit: cover;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ digital_twin.name }}</h5>
-                        <p class="card-text text-body-tertiary fs-9">{{ digital_twin.description }}</p>
-                        <a href="{% url 'digitaltwins-detail' digital_twin.slug %}" class="stretched-link"></a>
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2>Digital Twins</h2>
+        <p>Here you can find all the digital twins available in EnergyGuard platform.</p>
+        <div class="row g-5 mt-3">
+            {% for digital_twin in digital_twins %}
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100" style="cursor: pointer;">
+                        {% if digital_twin.image %}
+                        <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 280px;" width="auto">
+                        {% else %}
+                        <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 180px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ digital_twin.name }}</h5>
+                            <p class="card-text text-body-tertiary fs-9">{{ digital_twin.description }}</p>
+                            <a href="{% url 'digitaltwins-detail' digital_twin.slug %}" class="stretched-link"></a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% empty %}
-            <div class="col-12">
-                <p class="text-body-tertiary fs-9">No digital twins found.</p>
-            </div>
-        {% endfor %}
+            {% empty %}
+                <div class="col-12">
+                    <p class="text-body-tertiary fs-9">No digital twins found.</p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
     
 </div>
