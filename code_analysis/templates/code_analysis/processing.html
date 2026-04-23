@@ -1,0 +1,404 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Processing Analysis - Code Analysis{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2 class="mb-8">Code Analysis</h2>
+        <div class="row g-4">
+            <div class="col-12 col-xl-9 mx-auto">
+    
+                <div class="card theme-wizard mb-5">
+    
+                    <!-- Stepper -->
+                    <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+                        <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-search"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Results</span>
+                                    </div>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+    
+                    <!-- Hero -->
+                    <div class="text-center pt-5 pb-3 px-4 d-flex flex-column align-items-center gap-2">
+                        {% if analysis_error %}
+                            <span class="badge badge-phoenix badge-phoenix-danger fs-9">
+                                <span class="fas fa-times-circle me-1"></span>Backend Error
+                            </span>
+                            <h2 class="fw-bolder text-body-emphasis mb-1">Analysis could not be completed</h2>
+                            <p class="text-body-tertiary fs-8 mb-0">The backend returned an error while processing <strong>{{ source_label }}</strong>.</p>
+                        {% elif analysis_result %}
+                            <span class="badge badge-phoenix badge-phoenix-success fs-9">
+                                <span class="fas fa-check-circle me-1"></span>Analysis Complete
+                            </span>
+                            <h2 class="fw-bolder text-body-emphasis mb-1">Analysis finished for {{ analysis_result.project_name }}</h2>
+                            <p class="text-body-tertiary fs-8 mb-0">The latest scan completed successfully for <strong>{{ source_label }}</strong> and the summary is shown below.</p>
+                        {% else %}
+                            <span class="badge badge-phoenix badge-phoenix-warning fs-9">
+                                <span class="fas fa-spinner fa-spin me-1"></span>Analysis Running
+                            </span>
+                            <h2 class="fw-bolder text-body-emphasis mb-1">Processing your code analysis</h2>
+                            <p class="text-body-tertiary fs-8 mb-0">We are preparing the analysis pipeline for <strong>{{ source_label }}</strong> and scanning the submitted codebase.</p>
+                        {% endif %}
+                    </div>
+    
+                    <!-- Body -->
+                    <div class="card-body pt-2 pb-5 px-4">
+                        <div class="row g-3">
+    
+                            {% if analysis_error %}
+                            <!-- Error state -->
+                            <div class="col-12 col-lg-8">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <span class="badge badge-phoenix badge-phoenix-danger mb-3">The scan request did not complete successfully.</span>
+                                        <p class="text-body-tertiary mb-0">{{ analysis_error }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Submission summary</h6>
+                                        <dl class="mb-0">
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Source</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">{{ source_label }}</dd>
+                                            </div>
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Status</dt>
+                                                <dd class="fw-semibold text-danger mb-0">Failed</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Backend</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">sonar-api</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}">Back to sources</a>
+                                </div>
+                            </div>
+    
+                            {% elif analysis_result %}
+                            <!-- Complete state -->
+                            <div class="col-12 col-lg-8">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                            <div>
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block">Analysis summary</span>
+                                                <h5 class="fw-bold text-body-emphasis mt-1 mb-0">{{ analysis_result.project_name }}</h5>
+                                            </div>
+                                            <span class="badge badge-phoenix badge-phoenix-success fs-8">100%</span>
+                                        </div>
+    
+                                        <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+                                            <div class="col">
+                                                <div class="card text-center">
+                                                    <div class="card-body py-3">
+                                                        <span class="small text-uppercase fw-bold text-body-tertiary d-block">Issues</span>
+                                                        <strong class="fs-5 text-body-emphasis">{{ issues_count }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card text-center">
+                                                    <div class="card-body py-3">
+                                                        <span class="small text-uppercase fw-bold text-body-tertiary d-block">Bugs</span>
+                                                        <strong class="fs-5 text-body-emphasis">{{ metrics_summary.bugs }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card text-center">
+                                                    <div class="card-body py-3">
+                                                        <span class="small text-uppercase fw-bold text-body-tertiary d-block">Vulnerabilities</span>
+                                                        <strong class="fs-5 text-body-emphasis">{{ metrics_summary.vulnerabilities }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card text-center">
+                                                    <div class="card-body py-3">
+                                                        <span class="small text-uppercase fw-bold text-body-tertiary d-block">Code Smells</span>
+                                                        <strong class="fs-5 text-body-emphasis">{{ metrics_summary.code_smells }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card text-center">
+                                                    <div class="card-body py-3">
+                                                        <span class="small text-uppercase fw-bold text-body-tertiary d-block">Coverage</span>
+                                                        <strong class="fs-5 text-body-emphasis">{{ metrics_summary.coverage }}%</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <h6 class="fw-bold text-body-emphasis mb-2">Scanner output</h6>
+                                        <pre class="bg-dark text-light p-3 rounded-3 fs-10" style="white-space:pre-wrap;word-break:break-word;">{{ analysis_result.scan_output }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Submission summary</h6>
+                                        <dl class="mb-0">
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Source</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">{{ source_label }}</dd>
+                                            </div>
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Status</dt>
+                                                <dd class="fw-semibold text-success mb-0">Completed</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Project key</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">{{ analysis_result.project_key }}</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="fw-bold text-body-emphasis mb-0">Detected findings</h6>
+                                            <span class="badge badge-phoenix badge-phoenix-info">top {{ issues_preview|length }}</span>
+                                        </div>
+                                        <ul class="ps-3 text-body-tertiary mb-0">
+                                            {% for issue in issues_preview %}
+                                                <li class="mb-1">{{ issue.display_message|default:issue.message|default:issue.rule }} on {{ issue.component|default:issue.path }}</li>
+                                            {% empty %}
+                                                <li>No issues were returned in the scan preview.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}">Back to sources</a>
+                                </div>
+                            </div>
+    
+                            {% else %}
+                            <!-- Running state -->
+                            <div class="col-12 col-lg-8">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                            <div>
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block">Current job</span>
+                                                <h5 class="fw-bold text-body-emphasis mt-1 mb-0">Trustworthiness benchmark scan</h5>
+                                            </div>
+                                            <span class="fs-4 fw-bold text-success flex-shrink-0" id="progress-percent">12%</span>
+                                        </div>
+    
+                                        <div class="progress mb-3" style="height:10px">
+                                            <div class="progress-bar bg-success" id="progress-bar-fill" role="progressbar"
+                                                style="width:12%;transition:width 700ms ease" aria-valuenow="12" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+    
+                                        <p class="text-body-tertiary mb-4" id="progress-caption">Preparing analysis workspace and validating submitted input.</p>
+    
+                                        <ol class="list-unstyled d-flex flex-column gap-2 mb-0" id="stage-list">
+                                            <li class="card mb-0 border-primary" data-stage-item>
+                                                <div class="card-body py-3 d-flex align-items-start gap-3">
+                                                    <span class="fas fa-circle text-primary mt-1 flex-shrink-0" data-stage-icon></span>
+                                                    <div>
+                                                        <strong class="text-body-emphasis d-block">Initialize environment</strong>
+                                                        <span class="text-body-tertiary fs-9">Set up analysis runtime and normalize source input.</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="card mb-0" data-stage-item>
+                                                <div class="card-body py-3 d-flex align-items-start gap-3">
+                                                    <span class="fas fa-circle text-body-tertiary mt-1 flex-shrink-0" data-stage-icon></span>
+                                                    <div>
+                                                        <strong class="text-body-emphasis d-block">Extract code structure</strong>
+                                                        <span class="text-body-tertiary fs-9">Resolve folders, detect languages, and map package layout.</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="card mb-0" data-stage-item>
+                                                <div class="card-body py-3 d-flex align-items-start gap-3">
+                                                    <span class="fas fa-circle text-body-tertiary mt-1 flex-shrink-0" data-stage-icon></span>
+                                                    <div>
+                                                        <strong class="text-body-emphasis d-block">Run benchmark checks</strong>
+                                                        <span class="text-body-tertiary fs-9">Execute static checks and trustworthiness benchmark rules.</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="card mb-0" data-stage-item>
+                                                <div class="card-body py-3 d-flex align-items-start gap-3">
+                                                    <span class="fas fa-circle text-body-tertiary mt-1 flex-shrink-0" data-stage-icon></span>
+                                                    <div>
+                                                        <strong class="text-body-emphasis d-block">Compile report</strong>
+                                                        <span class="text-body-tertiary fs-9">Assemble findings, metrics, and recommendations.</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Submission summary</h6>
+                                        <dl class="mb-0">
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Source</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">{{ source_label }}</dd>
+                                            </div>
+                                            <div class="mb-2">
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Status</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0" id="summary-status">{% if job_status == 'running' %}Running{% else %}Queued and starting{% endif %}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="small text-uppercase fw-bold text-body-tertiary">Estimated time</dt>
+                                                <dd class="fw-semibold text-body-emphasis mb-0">2–4 minutes</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}">Back to sources</a>
+                                    <button class="btn btn-primary" type="button" disabled>Results will appear here next</button>
+                                </div>
+                            </div>
+                            {% endif %}
+    
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Page state passed to JS without mixing Django tags into script blocks -->
+<script type="application/json" id="processing-data">
+{
+    "isRunning": {% if not analysis_result and not analysis_error %}true{% else %}false{% endif %},
+    "jobId": "{{ job_id|default:'' }}",
+    "jobRunning": {% if job_id and job_status == 'running' %}true{% else %}false{% endif %},
+    "statusUrl": "{% url 'code_analysis:job_status_api' %}",
+    "resultsBaseUrl": "{% url 'code_analysis:results' job_id='JOBID' %}"
+}
+</script>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var data = JSON.parse(document.getElementById('processing-data').textContent);
+    if (!data.isRunning) { return; }
+
+    var steps = [
+        { percent: 18, caption: 'Preparing analysis workspace and validating submitted input.',       status: 'Initializing environment' },
+        { percent: 42, caption: 'Inspecting repository structure, dependencies, and entry points.',   status: 'Extracting code structure' },
+        { percent: 73, caption: 'Running code quality and trustworthiness benchmark checks.',         status: 'Executing benchmark checks' },
+        { percent: 92, caption: 'Waiting for the backend to finish and publish the analysis report.', status: 'Finalizing analysis' }
+    ];
+
+    var progressPercent = document.getElementById('progress-percent');
+    var progressBarFill = document.getElementById('progress-bar-fill');
+    var progressCaption  = document.getElementById('progress-caption');
+    var summaryStatus    = document.getElementById('summary-status');
+    var stageItems       = Array.from(document.querySelectorAll('[data-stage-item]'));
+
+    function renderStep(index) {
+        var step = steps[index];
+        if (!step) { return; }
+
+        progressPercent.textContent = step.percent + '%';
+        progressBarFill.style.width = step.percent + '%';
+        progressBarFill.setAttribute('aria-valuenow', step.percent);
+        progressCaption.textContent = step.caption;
+        summaryStatus.textContent   = step.status;
+
+        stageItems.forEach(function (item, i) {
+            var icon = item.querySelector('[data-stage-icon]');
+            item.classList.remove('border-primary', 'border-success');
+            if (i < index) {
+                item.classList.add('border-success');
+                if (icon) { icon.className = 'fas fa-check-circle text-success mt-1 flex-shrink-0'; }
+            } else if (i === index) {
+                item.classList.add('border-primary');
+                if (icon) { icon.className = 'fas fa-circle text-primary mt-1 flex-shrink-0'; }
+            } else {
+                if (icon) { icon.className = 'fas fa-circle text-body-tertiary mt-1 flex-shrink-0'; }
+            }
+        });
+    }
+
+    renderStep(0);
+    steps.slice(1).forEach(function (_, index) {
+        window.setTimeout(function () { renderStep(index + 1); }, (index + 1) * 1600);
+    });
+
+    if (data.jobRunning) {
+        var statusUrl = data.statusUrl + '?job=' + data.jobId;
+        var resultsUrl = data.resultsBaseUrl.replace('JOBID', data.jobId);
+        (function poll() {
+            window.setTimeout(function () {
+                fetch(statusUrl)
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (d.status === 'completed') {
+                            window.location.href = resultsUrl;
+                        } else if (d.status === 'failed' || d.status === 'not_found') {
+                            window.location.reload();
+                        } else {
+                            poll();
+                        }
+                    })
+                    .catch(function () { poll(); });
+            }, 1500);
+        })();
+    }
+})();
+</script>
+{% endblock scripts %}

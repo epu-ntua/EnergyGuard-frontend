@@ -1,0 +1,447 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Scan Results - Code Analysis{% endblock %}
+
+{% block head %}
+<style>
+  #severityPieChart { width:100%; height:180px; }
+  .eg-table-head { background-color: var(--phoenix-body-highlight-bg, #f8f9fa); }
+  [data-bs-theme="dark"] .eg-table-head { background-color: rgba(255,255,255,0.06); }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2 class="mb-8">Code Analysis</h2>
+        <div class="row g-4">
+            <div class="col-12 col-xl-9 mx-auto">
+    
+                <div class="card theme-wizard mb-5">
+    
+                    <!-- Stepper -->
+                    <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+                        <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Results</span>
+                                    </div>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+    
+                    <div class="card-body pt-4 pb-5 px-4">
+    
+                        {% if error %}
+                        <div class="alert alert-danger rounded-3" role="alert">{{ error }}</div>
+    
+                        {% else %}
+    
+                        <!-- Results hero -->
+                        <div class="card mb-6">
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="small text-uppercase text-body-tertiary mb-2">Analysis Report</div>
+                                        <div class="d-flex align-items-center flex-wrap gap-6 mb-2">
+                                            <div class="fw-bolder fs-5 text-body-emphasis">{{ project_name }}</div>
+                                            <div class="badge badge-phoenix badge-phoenix-success">
+                                                <span class="fas fa-check-circle me-1"></span>Completed
+                                            </div>
+                                        </div>
+                                        <p class="text-body-tertiary fw-light mb-0">{{ report_subtitle }}</p>
+                                        <a class="btn btn-primary btn-sm mt-6 d-sm-none" href="{% url 'code_analysis:results_json' job_id=job_id %}">
+                                            <span class="fas fa-download me-1"></span>Download JSON
+                                        </a>
+                                    </div>
+                                    <div class="d-none d-sm-block flex-shrink-0">
+                                        <a class="btn btn-primary btn-sm" href="{% url 'code_analysis:results_json' job_id=job_id %}">
+                                            <span class="fas fa-download me-1"></span>Download JSON
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <!-- Tabs -->
+                        <div class="d-inline-flex rounded-pill p-1 mb-4 gap-1 bg-body-highlight" role="tablist">
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 border-0"
+                                    data-tab-target="#tab-overview" role="tab" aria-selected="true">Overview</button>
+                            <button type="button" class="btn btn-sm rounded-pill px-3 border-0 bg-transparent text-body"
+                                    data-tab-target="#tab-details" role="tab" aria-selected="false">Details</button>
+                        </div>
+
+                        <div class="tab-content">
+    
+                            <!-- Overview tab -->
+                            <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+    
+                                <!-- Row 1: Metadata + Severity -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-lg-7">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Scan Metadata</span>
+                                                <h6 class="fw-bold text-body-emphasis mb-3">Project run details and quality summary</h6>
+                                                <table class="table table-sm mb-0">
+                                                    <tbody>
+                                                        <tr><td class="text-body-tertiary fw-semibold" style="width:44%">Job ID</td><td class="fw-semibold text-body-emphasis">{{ job_id }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Project key</td><td class="fw-semibold text-body-emphasis">{{ project_key }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Source</td><td class="fw-semibold text-body-emphasis">{{ source_label }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Total findings</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.findings_total }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Files scanned</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.files_scanned }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Scan time (sec)</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.scan_time_sec }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold">Unique CWE IDs</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.cwe_total }}</td></tr>
+                                                        <tr"><td class="text-body-tertiary fw-semibold">Unique CVE IDs</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.cve_total }}</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-5">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Severity Distribution</span>
+                                                <h6 class="fw-bold text-body-emphasis mb-3">Issue balance</h6>
+                                                {{ severity_buckets|json_script:"severity-data" }}
+                                                <div class="position-relative mb-3">
+                                                    <div id="severityPieChart"></div>
+                                                    <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events:none;">
+                                                        <div class="fw-bold fs-5 text-body-emphasis lh-1">{{ severity_buckets.total }}</div>
+                                                        <div class="text-body-tertiary" style="font-size:1rem;">total</div>
+                                                    </div>
+                                                </div>
+                                                <ul class="list-unstyled mb-0">
+                                                    <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                                        <span class="d-inline-flex align-items-center gap-2">
+                                                            <i style="width:.7rem;height:.7rem;border-radius:50%;display:inline-block;background:#d94841;flex-shrink:0;"></i>
+                                                            Errors
+                                                        </span>
+                                                        <strong class="fw-bold text-body-emphasis">{{ severity_buckets.errors }}</strong>
+                                                    </li>
+                                                    <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                                        <span class="d-inline-flex align-items-center gap-2">
+                                                            <i style="width:.7rem;height:.7rem;border-radius:50%;display:inline-block;background:#f2a93b;flex-shrink:0;"></i>
+                                                            Warnings
+                                                        </span>
+                                                        <strong class="fw-bold text-body-emphasis">{{ severity_buckets.warnings }}</strong>
+                                                    </li>
+                                                    <li class="d-flex justify-content-between align-items-center pt-2">
+                                                        <span class="d-inline-flex align-items-center gap-2">
+                                                            <i style="width:.7rem;height:.7rem;border-radius:50%;display:inline-block;background:#4ea6ff;flex-shrink:0;"></i>
+                                                            Info
+                                                        </span>
+                                                        <strong class="fw-bold text-body-emphasis">{{ severity_buckets.info }}</strong>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <!-- Row 2: CWE + Hotspots -->
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-5">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Security Standards</span>
+                                                <h6 class="fw-bold text-body-emphasis mb-3">Top CWE found</h6>
+                                                {% if top_cwe_rows %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm mb-0">
+                                                        <thead class="eg-table-head">
+                                                            <tr>
+                                                                <th class="small text-uppercase text-body-tertiary fw-bold">CWE</th>
+                                                                <th class="small text-uppercase text-body-tertiary fw-bold ps-4">Description</th>
+                                                                <th class="small text-uppercase text-body-tertiary fw-bold text-end" style="width:90px">Findings</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for row in top_cwe_rows %}
+                                                            <tr>
+                                                                <td class="fw-semibold text-body-emphasis fs-8-5">{{ row.id }}</td>
+                                                                <td class="text-body-tertiary ps-4">{{ row.description }}</td>
+                                                                <td class="text-end">
+                                                                    <span class="badge badge-phoenix badge-phoenix-warning">{{ row.count }}</span>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% else %}
+                                                <p class="text-body-tertiary fs-9 mb-0">No CWE identifiers were reported by Semgrep for this scan.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-7">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Hotspots</span>
+                                                <h6 class="fw-bold text-body-emphasis mb-3">Files with the most errors</h6>
+                                                {% if hotspots_preview %}
+                                                <div class="d-flex flex-column gap-3">
+                                                    {% for hotspot in hotspots_preview %}
+                                                    <div class="card mb-0">
+                                                        <div class="card-body py-3">
+                                                            <div class="d-flex justify-content-between align-items-baseline gap-3 mb-2">
+                                                                <strong class="text-body-emphasis fs-9 text-break">{{ hotspot.file }}</strong>
+                                                                <span class="text-body-tertiary fs-10 flex-shrink-0">{{ hotspot.total }} findings</span>
+                                                            </div>
+                                                            <div class="d-flex overflow-hidden rounded-pill" style="height:10px;background:#e8eef8;">
+                                                                <span data-bar-bg="#ff5757" data-bar-width="{{ hotspot.error_width }}" style="display:block;height:100%;"></span>
+                                                                <span data-bar-bg="#f3b13f" data-bar-width="{{ hotspot.warning_width }}" style="display:block;height:100%;"></span>
+                                                                <span data-bar-bg="#4ea6ff" data-bar-width="{{ hotspot.info_width }}" style="display:block;height:100%;"></span>
+                                                            </div>
+                                                            <div class="d-flex gap-3 flex-wrap mt-2">
+                                                                <span class="d-inline-flex align-items-center gap-1 text-body-tertiary fs-10">
+                                                                    <i style="width:.6rem;height:.6rem;border-radius:50%;display:inline-block;background:#ff5757;flex-shrink:0;"></i>{{ hotspot.errors }}
+                                                                </span>
+                                                                <span class="d-inline-flex align-items-center gap-1 text-body-tertiary fs-10">
+                                                                    <i style="width:.6rem;height:.6rem;border-radius:50%;display:inline-block;background:#f3b13f;flex-shrink:0;"></i>{{ hotspot.warnings }}
+                                                                </span>
+                                                                <span class="d-inline-flex align-items-center gap-1 text-body-tertiary fs-10">
+                                                                    <i style="width:.6rem;height:.6rem;border-radius:50%;display:inline-block;background:#4ea6ff;flex-shrink:0;"></i>{{ hotspot.info }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                                {% else %}
+                                                <p class="text-body-tertiary fs-9 mb-0">No file hotspots were derived from the current Semgrep findings.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                            </div><!-- /overview tab -->
+    
+                            <!-- Details tab -->
+                            <div class="tab-pane fade" id="tab-details" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="small text-uppercase text-body-tertiary mb-2">Findings</div>
+                                        <h4 class="fw-bold text-body-emphasis mb-5">Reported issues</h4>
+                                        <div class="d-flex flex-column gap-3">
+                                            {% for issue in issues_preview %}
+                                            <div class="card mb-0">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between gap-3 flex-wrap">
+                                                        <div class="flex-grow-1">
+                                                            {% if issue.severity|lower == 'error' or issue.severity|lower == 'critical' or issue.severity|lower == 'blocker' %}
+                                                                <span class="badge badge-phoenix badge-phoenix-danger mb-2">{{ issue.severity }}</span>
+                                                            {% elif issue.severity|lower == 'major' or issue.severity|lower == 'warning' %}
+                                                                <span class="badge badge-phoenix badge-phoenix-warning mb-2">{{ issue.severity }}</span>
+                                                            {% else %}
+                                                                <span class="badge badge-phoenix badge-phoenix-info mb-2">{{ issue.severity }}</span>
+                                                            {% endif %}
+                                                            <h6 class="fw-bold text-body-emphasis mb-1">{{ issue.display_message|default:issue.message }}</h6>
+                                                            <p class="text-body-tertiary fs-9 mb-0">{{ issue.location }}{% if issue.line %} (line {{ issue.line }}){% endif %}</p>
+                                                        </div>
+                                                        <div class="d-flex flex-column gap-1 text-end flex-shrink-0">
+                                                            <span class="text-body-tertiary fs-9">{{ issue.type }}</span>
+                                                            <span class="text-body-tertiary fs-9">{{ issue.rule }}</span>
+                                                            <span class="text-body-tertiary fs-9">Status: {{ issue.status }}</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <details class="mt-3 pt-3 border-top" >
+                                                        <summary class="text-primary fw-semibold fs-9" style="cursor:pointer;">Show standards and technical details</summary>
+                                                        <div class="d-flex flex-column gap-3 mt-3">
+    
+                                                            <!-- Taxonomy chips -->
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                {% for cwe in issue.cwe_refs %}
+                                                                    <span class="badge badge-phoenix badge-phoenix-info">{{ cwe }}</span>
+                                                                {% endfor %}
+                                                                {% for cve in issue.cve_refs %}
+                                                                    <span class="badge badge-phoenix badge-phoenix-danger">{{ cve }}</span>
+                                                                {% endfor %}
+                                                                {% if not issue.cwe_refs and not issue.cve_refs %}
+                                                                    <span class="text-body-tertiary fs-9 fst-italic">No explicit CWE/CVE mapping was found for this issue.</span>
+                                                                {% endif %}
+                                                            </div>
+    
+                                                            <!-- Rule + Effort -->
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <div class="card mb-0">
+                                                                        <div class="card-body py-2">
+                                                                            <span class="small text-uppercase fw-bold text-body-tertiary d-block">Rule</span>
+                                                                            <span class="fw-semibold text-body-emphasis fs-9">{{ issue.rule }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <div class="card mb-0">
+                                                                        <div class="card-body py-2">
+                                                                            <span class="small text-uppercase fw-bold text-body-tertiary d-block">Effort</span>
+                                                                            <span class="fw-semibold text-body-emphasis fs-9">{{ issue.effort }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+    
+                                                            <!-- Metadata table -->
+                                                            {% if issue.metadata_rows %}
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm mb-0">
+                                                                    <thead class="eg-table-head">
+                                                                        <tr>
+                                                                            <th class="small text-uppercase text-body-tertiary fw-bold">Metadata</th>
+                                                                            <th class="small text-uppercase text-body-tertiary fw-bold">Value</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for item in issue.metadata_rows %}
+                                                                        <tr>
+                                                                            <td class="text-body-tertiary fw-semibold">{{ item.key }}</td>
+                                                                            <td class="text-body-emphasis" style="word-break:break-word;">{{ item.display_value|default:item.value }}</td>
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            {% else %}
+                                                            <span class="text-body-tertiary fs-9 fst-italic">No additional rule metadata is available for this issue.</span>
+                                                            {% endif %}
+    
+                                                        </div>
+                                                    </details>
+                                                </div>
+                                            </div>
+                                            {% empty %}
+                                            <p class="text-body-tertiary fs-9 mb-0">No issues were returned in the latest report preview.</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!-- /details tab -->
+    
+                        </div><!-- /tab-content -->
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-3 mt-4">
+                            <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}">
+                                <span class="fas fa-plus me-1"></span>New Analysis
+                            </a>
+                        </div>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script>
+(function () {
+    // Manual tab switcher (bypasses Bootstrap's .nav requirement)
+    var tabBtns = document.querySelectorAll('[data-tab-target]');
+    tabBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var target = document.querySelector(btn.dataset.tabTarget);
+            if (!target) return;
+            document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('show', 'active'); });
+            target.classList.add('show', 'active');
+            tabBtns.forEach(function (b) {
+                b.classList.remove('btn-primary');
+                b.classList.add('bg-transparent', 'text-body');
+                b.setAttribute('aria-selected', 'false');
+            });
+            btn.classList.remove('bg-transparent', 'text-body');
+            btn.classList.add('btn-primary');
+            btn.setAttribute('aria-selected', 'true');
+        });
+    });
+    // Apply hotspot bar widths and colours
+    document.querySelectorAll('[data-bar-bg]').forEach(function (el) {
+        el.style.width      = el.dataset.barWidth + '%';
+        el.style.background = el.dataset.barBg;
+    });
+})();
+
+am5.ready(function () {
+    var root = am5.Root.new("severityPieChart");
+    root.setThemes([am5themes_Animated.new(root)]);
+
+    var chart = root.container.children.push(
+        am5percent.PieChart.new(root, {
+            innerRadius: am5.percent(65),
+        })
+    );
+
+    var series = chart.series.push(
+        am5percent.PieSeries.new(root, {
+            valueField: "value",
+            categoryField: "category",
+            alignLabels: false,
+        })
+    );
+
+    series.labels.template.set("forceHidden", true);
+    series.ticks.template.set("forceHidden", true);
+    series.get("colors").set("colors", [
+        am5.color(0xd94841),
+        am5.color(0xf2a93b),
+        am5.color(0x4ea6ff),
+    ]);
+
+    var sev = JSON.parse(document.getElementById("severity-data").textContent || "{}");
+
+    series.data.setAll([
+        { category: "Errors",   value: sev.errors   || 0 },
+        { category: "Warnings", value: sev.warnings  || 0 },
+        { category: "Info",     value: sev.info      || 0 },
+    ]);
+
+    series.appear(1000, 100);
+});
+</script>
+{% endblock scripts %}

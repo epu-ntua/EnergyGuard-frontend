@@ -1,0 +1,126 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Code Analysis - Select Source{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+        
+        <h2 class="mb-8">Code Analysis</h2>
+        <div class="row g-4">
+            <div class="col-12 col-xl-9 mx-auto">
+    
+                <div class="card theme-wizard mb-5">
+    
+                    <!-- Stepper -->
+                    <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+                    <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+                        <li class="nav-item">
+                        <span class="nav-link fw-semibold active">
+                            <div class="text-center d-inline-block">
+                            <span class="nav-item-circle-parent">
+                                <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                            </span>
+                            <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
+                            </div>
+                        </span>
+                        </li>
+                        <li class="nav-item">
+                        <span class="nav-link fw-semibold">
+                            <div class="text-center d-inline-block">
+                            <span class="nav-item-circle-parent">
+                                <span class="nav-item-circle"><span class="fas fa-cog"></span></span>
+                            </span>
+                            <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
+                            </div>
+                        </span>
+                        </li>
+                        <li class="nav-item">
+                        <span class="nav-link fw-semibold">
+                            <div class="text-center d-inline-block">
+                            <span class="nav-item-circle-parent">
+                                <span class="nav-item-circle"><span class="fas fa-search"></span></span>
+                            </span>
+                            <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
+                            </div>
+                        </span>
+                        </li>
+                        <li class="nav-item">
+                        <span class="nav-link fw-semibold">
+                            <div class="text-center d-inline-block">
+                            <span class="nav-item-circle-parent">
+                                <span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span>
+                            </span>
+                            <span class="d-none d-md-block mt-1 fs-9">Results</span>
+                            </div>
+                        </span>
+                        </li>
+                    </ul>
+                    </div>
+    
+                    <!-- Hero -->
+                    <div class="text-center pt-5 pb-2 px-4">
+                    <h2 class="fw-bolder text-body-emphasis">Select the source of your code</h2>
+                    <p class="text-body-tertiary fs-8 mb-0">Choose how you want to provide the code for analysis.</p>
+                    </div>
+    
+                    <!-- Source cards -->
+                    <div class="card-body pt-4 pb-6 px-4">
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+    
+                        <!-- JupyterHub (disabled) -->
+                        <div class="col pe-none">
+                        <div class="card text-center h-100 opacity-50" style="filter: grayscale(60%)">
+                            <div class="card-body d-flex flex-column align-items-center pt-4">
+                            <img src="{% static 'assets/img/generic/source-jupyter.svg' %}" alt="JupyterHub Workspace"
+                                class="d-block mx-auto mb-3" style="width:5rem;height:5rem;">
+                            <h5 class="fw-bold mb-2">JupyterHub Workspace</h5>
+                            <p class="text-body-tertiary fs-9 flex-grow-1">Analyze code directly from your JupyterHub environment.</p>
+                            </div>
+                            <div class="card-footer text-body-tertiary fs-9">Coming soon</div>
+                        </div>
+                        </div>
+    
+                        <!-- GitHub -->
+                        <div class="col">
+                        <a href="{% url 'code_analysis:configure_github' %}" class="text-decoration-none card-link">
+                            <div class="card text-center h-100 hover-actions-trigger">
+                            <div class="card-body d-flex flex-column align-items-center pt-4">
+                                <img src="{% static 'assets/img/generic/source-github.svg' %}" alt="GitHub Repository"
+                                class="d-block mx-auto mb-3" style="width:5rem;height:5rem;">
+                                <h5 class="fw-bold mb-2">GitHub Repository</h5>
+                                <p class="text-body-tertiary fs-9 flex-grow-1">Provide a GitHub repository URL to analyze its source code.</p>
+                            </div>
+                            <div class="card-footer text-body-tertiary fs-9">Public repositories only</div>
+                            </div>
+                        </a>
+                        </div>
+    
+                        <!-- Upload ZIP -->
+                        <div class="col">
+                        <a href="{% url 'code_analysis:configure_upload' %}" class="text-decoration-none card-link">
+                            <div class="card text-center h-100 hover-actions-trigger">
+                            <div class="card-body d-flex flex-column align-items-center pt-4">
+                                <!-- <img src="{% static 'code_analysis/images/source-upload.svg' %}" alt="Upload ZIP File"
+                                class="d-block mx-auto mb-3" style="width:5rem;height:5rem;"> -->
+                                <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:5rem;height:5rem">
+                                    <i class="fa-solid fa-cloud-arrow-up fs-5"></i> 
+                                </div>
+                                <h5 class="fw-bold mb-2">Upload ZIP File</h5>
+                                <p class="text-body-tertiary fs-9 flex-grow-1">Upload a compressed archive containing your source code.</p>
+                            </div>
+                            <div class="card-footer text-body-tertiary fs-9">Max size 500 MB, supports .zip and .tar.gz</div>
+                            </div>
+                        </a>
+                        </div>
+    
+                    </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

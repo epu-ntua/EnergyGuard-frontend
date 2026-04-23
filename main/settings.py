@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'billing',
     'django_q',
     'digitaltwins',
+    'code_analysis',
 ]
 
 MIDDLEWARE = [
@@ -293,3 +294,7 @@ Q_CLUSTER = {
 DATA_MANAGEMENT_SERVER_URL = env('DATA_MANAGEMENT_SERVER_URL')
 DATA_MANAGEMENT_SERVER_API_KEY = env('DATA_MANAGEMENT_SERVER_API_KEY')
 JUPYTERHUB_URL = env('JUPYTERHUB_URL')
+
+# Code Analysis (Semgrep backend)
+SCAN_API_URL = env('SCAN_API_URL', default='http://localhost:9001').rstrip('/')
+SCAN_API_TIMEOUT = env.int('SCAN_API_TIMEOUT', default=300)

@@ -1,0 +1,231 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Configure GitHub Repository - Code Analysis{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2 class="mb-8">Code Analysis</h2>
+        <div class="row g-4">
+            <div class="col-12 col-xl-9 mx-auto">
+    
+                <div class="card theme-wizard mb-5">
+    
+                    <!-- Stepper -->
+                    <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+                        <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-cog"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-search"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Results</span>
+                                    </div>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+    
+                    <!-- Hero -->
+                    <div class="text-center pt-5 pb-3 px-4 d-flex flex-column align-items-center gap-2">
+                        <div class="rounded-3 overflow-hidden shadow-sm flex-shrink-0" style="width:56px;height:56px;">
+                            <svg width="56" height="56" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="44" height="44" rx="12" fill="#24292f"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M22 7C13.716 7 7 13.716 7 22c0 6.627 4.3 12.253 10.264 14.235.75.138 1.025-.325 1.025-.721 0-.355-.013-1.296-.02-2.546-4.173.906-5.053-2.01-5.053-2.01-.682-1.732-1.665-2.193-1.665-2.193-1.36-.93.103-.912.103-.912 1.505.106 2.297 1.545 2.297 1.545 1.337 2.29 3.51 1.628 4.364 1.245.136-.968.523-1.628.952-2.003-3.33-.379-6.831-1.665-6.831-7.41 0-1.637.585-2.976 1.545-4.026-.155-.38-.67-1.904.147-3.97 0 0 1.26-.403 4.125 1.536a14.38 14.38 0 0 1 3.752-.505c1.273.006 2.556.173 3.752.505 2.863-1.94 4.121-1.536 4.121-1.536.82 2.066.304 3.59.15 3.97.962 1.05 1.543 2.389 1.543 4.026 0 5.76-3.507 7.027-6.847 7.398.538.463 1.017 1.38 1.017 2.78 0 2.007-.018 3.623-.018 4.115 0 .4.27.866 1.03.72C32.703 34.25 37 28.625 37 22c0-8.284-6.716-15-15-15z"
+                                    fill="#ffffff"/>
+                            </svg>
+                        </div>
+                        <h2 class="fw-bolder text-body-emphasis mb-1">Configure GitHub Repository</h2>
+                        <p class="text-body-tertiary fs-8 mb-0">Connect a public or private GitHub repository to analyze its code quality and trustworthiness.</p>
+                    </div>
+    
+                    <!-- Form -->
+                    <div class="card-body pt-2 pb-5 px-4">
+                        <form action="{% url 'code_analysis:processing' %}" method="post" novalidate>
+                            {% csrf_token %}
+                            <input type="hidden" name="source_type" value="GitHub Repository">
+    
+                            <!-- Repository section -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Repository</h6>
+    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold" for="repo-url">
+                                            Repository URL
+                                            <span class="badge badge-phoenix badge-phoenix-danger ms-1">required</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><span class="fas fa-globe text-body-tertiary"></span></span>
+                                            <input
+                                                id="repo-url"
+                                                name="repo_url"
+                                                type="url"
+                                                class="form-control"
+                                                placeholder="https://github.com/organisation/repository"
+                                                autocomplete="url"
+                                                required>
+                                        </div>
+                                    </div>
+    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="branch">Branch</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="fas fa-code-branch text-body-tertiary"></span></span>
+                                                <input
+                                                    id="branch"
+                                                    name="branch"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="main (leave blank for default branch)">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="subdirectory">
+                                                Subdirectory
+                                                <span class="text-body-tertiary fw-normal fs-10 ms-1">(optional)</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="fas fa-folder text-body-tertiary"></span></span>
+                                                <input
+                                                    id="subdirectory"
+                                                    name="subdirectory"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="src/models">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- Authentication section -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Authentication</h6>
+    
+                                    <div class="d-flex align-items-center justify-content-between gap-3 py-1">
+                                        <div>
+                                            <div class="fw-semibold text-body-emphasis">Private repository</div>
+                                            <small class="text-body-tertiary">Enable to provide a Personal Access Token for private repos</small>
+                                        </div>
+                                        <div class="form-check form-switch mb-0 flex-shrink-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="is-private" name="is_private">
+                                        </div>
+                                    </div>
+    
+                                    <div id="private-fields" class="d-none mt-3">
+                                        <div class="mb-1">
+                                            <label class="form-label fw-semibold" for="pat">
+                                                Personal Access Token
+                                                <span class="badge badge-phoenix badge-phoenix-danger ms-1">required</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><span class="fas fa-lock text-body-tertiary"></span></span>
+                                                <input
+                                                    id="pat"
+                                                    name="pat"
+                                                    type="password"
+                                                    class="form-control"
+                                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                                                    autocomplete="off">
+                                                <button type="button" class="btn btn-outline-secondary" aria-label="Show/hide token" data-toggle-pass="pat">
+                                                    <span class="fas fa-eye"></span>
+                                                </button>
+                                            </div>
+                                            <div class="form-text text-body-tertiary">
+                                                Tokens are used only for this request and are never stored. Generate one at
+                                                <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">github.com/settings/tokens</a>.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- Actions -->
+                            <div class="d-flex justify-content-end gap-3 pt-2">
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="{% url 'code_analysis:select_source' %}">
+                                    <span class="fas fa-chevron-left"></span>Back
+                                </a>
+                                <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
+                                    Analyze Repository<span class="fas fa-chevron-right"></span>
+                                </button>
+                            </div>
+    
+                        </form>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    const privateSwitch = document.getElementById('is-private');
+    const privateFields = document.getElementById('private-fields');
+    const pat = document.getElementById('pat');
+
+    if (privateSwitch && privateFields) {
+        privateSwitch.addEventListener('change', function () {
+            const on = privateSwitch.checked;
+            privateFields.classList.toggle('d-none', !on);
+            if (pat) pat.required = on;
+        });
+    }
+
+    document.querySelectorAll('[data-toggle-pass]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const input = document.getElementById(btn.getAttribute('data-toggle-pass'));
+            if (!input) return;
+            const icon = btn.querySelector('.fas');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            } else {
+                input.type = 'password';
+                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            }
+        });
+    });
+})();
+</script>
+{% endblock scripts %}
