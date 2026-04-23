@@ -6,6 +6,7 @@ from .public import (
     error_does_not_exist,
     home,
 )
+from .trustworthiness import benchmark_detail, trustworthiness
 from .wizard import BaseWizardView
 
 __all__ = [
@@ -16,4 +17,6 @@ __all__ = [
     "documentation",
     "error_does_not_exist",
     "home",
+    "benchmark_detail",
+    "trustworthiness",
 ]

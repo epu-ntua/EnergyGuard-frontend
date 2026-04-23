@@ -9,4 +9,6 @@ urlpatterns = [
     path('contact-form/', views.contact_form, name='contact_form'),
     path('error-not-exist/<str:error>/', views.error_does_not_exist, name='error_does_not_exist'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('trustworthiness/', views.trustworthiness, name='trustworthiness'),
+    path('trustworthiness/<str:slug>/', views.benchmark_detail, name='benchmark_detail'),
 ]

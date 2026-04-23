@@ -1,0 +1,61 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Trustworthiness Benchmarks | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2>Trustworthiness Benchmarks</h2>
+        <p>Explore our comprehensive benchmarks for evaluating the trustworthiness of AI solutions, covering robustness, fairness, transparency, and privacy.</p>
+        
+        <div class="row g-5 mt-8">
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card h-100" style="cursor: pointer;">
+                    <img class="card-img-top" src="{% static 'assets/img/digital_twins/no-img.webp' %}" alt="AI Act Questionnaire" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">AI Act Questionnaire</h5>
+                        <p class="card-text text-body-tertiary fs-9">Assess your AI system's conformity with the EU AI Act's requirements for high-risk systems, focusing on safety, transparency, and fundamental rights.</p>
+                        <ul class="fs-9 text-body-tertiary">
+                            <li>34 Services Assessed in Q4</li>
+                            <li>Identified 12 Bias Vulnerabilities</li>
+                            <li>Enhanced 8 Model Explanations</li>
+                        </ul>
+                        <a href="#" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card h-100" style="cursor: pointer;">
+                    <img class="card-img-top" src="{% static 'assets/img/digital_twins/no-img.webp' %}" alt="Code Analysis" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">Code Analysis</h5>
+                        <p class="card-text text-body-tertiary fs-9">Automatically scan source code to detect security vulnerabilities, coding standard violations, and potential biases within the algorithm.</p>
+                        <ul class="fs-9 text-body-tertiary">
+                            <li>15 Penetration Tests Conducted</li>
+                            <li>Detected 24 Critical Vulnerabilities</li>
+                            <li>Implemented 20 Security Patches</li>
+                        </ul>
+                        <a href="{% url 'benchmark_detail' 'code-analysis' %}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card h-100" style="cursor: pointer;">
+                    <img class="card-img-top" src="{% static 'assets/img/digital_twins/no-img.webp' %}" alt="ALTAI Self-Assessment" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">ALTAI Self-Assessment</h5>
+                        <p class="card-text text-body-tertiary fs-9">Perform a comprehensive self-evaluation based on the EU's Ethics Guidelines, covering human agency, privacy, transparency, and accountability.</p>
+                        <p class="fs-9 text-body-tertiary">Has not started yet</p>
+                        <a href="#" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+    
+        </div>
+    </div>    
+</div>
+{% endblock %}
