@@ -1,0 +1,38 @@
+{% extends "questionnaire/base_questionnaire.html" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 800px;">
+    <div class="card shadow border-0">
+        <div class="card-body p-5">
+
+            <h1 class="mb-4 text-center">{{ questionnaire.title }}</h1>
+            <hr>
+
+            <div class="my-4" style="font-size: 1.15rem; line-height: 1.7; text-align: justify; color: #333;">
+                {% if questionnaire.introduction_text %}
+                    {{ questionnaire.introduction_text|linebreaks }}
+                {% else %}
+                    <p class="text-muted text-center italic"></p>
+                {% endif %}
+            </div>
+
+            <div class="mt-5 text-center">
+                {% if first_question %}
+                    <a href="{% url 'questionnaire:detail' question_id=first_question.id %}"
+                       class="btn btn-dark btn-lg px-5 shadow"
+                       style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
+                       Start Survey <i class="bi bi-play-fill ms-2"></i>
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning shadow-sm border-0" style="border-radius: 12px;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No questions were found for this questionnaire.
+                        Please check if Sub-Questionnaires and Questions are assigned in the Admin.
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -16,7 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from questionnaire import views
+
+app_name = 'questionnaire'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('<int:questionnaire_id>/', views.start_questionnaire, name='start'),
+    path('question/<str:question_id>/', views.question_detail, name='detail'),
+    path('question/<str:question_id>/submit/', views.submit_answer, name='submit'),
+    path('out-of-scope/', views.out_of_scope_view, name='out_of_scope'),
+    path('assessment-completed/', views.assessment_completed_view, name='assessment_completed'),
 ]

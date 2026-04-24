@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('billing/', include('billing.urls')),
     path('accounts/', include('allauth.urls')),
+    path('surveys/', include('questionnaire.config.urls')),
 ]
 
 # Serve media files during development

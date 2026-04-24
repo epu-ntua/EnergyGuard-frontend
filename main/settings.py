@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'datasets',
     'projects.apps.ProjectsConfig',
     'billing',
+    'questionnaire',
 ]
 
 MIDDLEWARE = [
