@@ -5,14 +5,14 @@ from questionnaire.models import Questionnaire, SubQuestionnaire, Question, Choi
 
 
 class Command(BaseCommand):
-    help = 'Import data from questions_AI_System.json with support for multiple choice answers'
+    help = 'Import data from questions.json with support for multiple choice answers'
 
     def handle(self, *args, **options):
         try:
-            with open('questions_AI_System.json', 'r', encoding='utf-8') as f:
+            with open(os.path.join("questionnaire", "questions.json"), 'r', encoding='utf-8') as f:
                 data = json.load(f)
         except FileNotFoundError:
-            self.stdout.write(self.style.ERROR("File questions_AI_System.json was not found."))
+            self.stdout.write(self.style.ERROR("File questions.json was not found."))
             return
 
         # Data Cleanup: Remove existing records before importing

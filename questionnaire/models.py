@@ -55,7 +55,7 @@ class Question(models.Model):
     id = models.CharField(
         primary_key=True,
         max_length=100,
-        help_text="The ID from questions_AI_System.json (e.g. 1.1.1)"
+        help_text="The ID from questions.json (e.g. 1.1.1)"
     )
 
     sub_questionnaire = models.ForeignKey(
@@ -110,6 +110,7 @@ class Question(models.Model):
         sub_title = self.sub_questionnaire.title if self.sub_questionnaire else "No Sub"
         return f"[{self.id}] {self.text[:50]}..."
 
+
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     text = models.CharField("Choice Text", max_length=255)
@@ -130,3 +131,22 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.text
+
+class UserAnswer(models.Model):
+    session_key = models.CharField(max_length=40, db_index=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_choices = models.ManyToManyField(Choice)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('session_key', 'question')
+
+
+class Assessment(models.Model):
+    session_key = models.CharField(max_length=40, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    final_classification = models.CharField(max_length=100)
+    full_responses_dump = models.JSONField()
+
+    def __str__(self):
+        return f"Assessment {self.id} - {self.final_classification}"

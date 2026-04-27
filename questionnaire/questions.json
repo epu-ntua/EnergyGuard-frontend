@@ -7,7 +7,7 @@
       "sections": [
         {
           "section_number": "1",
-          "title": "What Type of AI Solution Do You Have?",
+          "title": "AI System & Model Identification",
           "description": "Let's identify if your solution is an AI system, an AI model, or something else",
           "questions": [
             {
@@ -103,30 +103,34 @@
             {
               "id": "1.1.6",
               "question": "What type of outputs does your solution produce?",
-              "help_text": "Please select the most representative output",
-              "answer_type": "yes/no",
-              "options": [
-                {
-                  "text": "Predictions (e.g., forecasting energy demand)",
+              "help_text": "Select all outputs that your system can generate during operation",
+              "answer_type": "checklist",
+              "answers": {
+                "Predictions (e.g., forecasting energy demand)": {
                   "next": "1.1.7"
                 },
-                {
-                  "text": "Content generation (e.g., reports, visualizations)",
+                "Content generation (e.g., reports, visualizations)": {
                   "next": "1.1.7"
                 },
-                {
-                  "text": "Recommendations (e.g., suggested actions)",
+                "Recommendations (e.g., suggested actions)": {
                   "next": "1.1.7"
                 },
-                {
-                  "text": "Decisions (e.g., automatic control actions)",
+                "Decisions (e.g., automatic control actions)": {
                   "next": "1.1.7"
                 },
-                {
-                  "text": "None",
-                  "next": "1.2.1"
+                "all_checked": {
+                  "next": "1.1.7",
+                  "action": "Multiple outputs identified"
+                },
+                "some_checked": {
+                  "next": "1.1.7",
+                  "action": "Specific outputs identified"
+                },
+                "none_checked": {
+                  "next": "1.2.1",
+                  "action": "No AI outputs - Possible exemption"
                 }
-              ]
+              }
             },
             {
               "id": "1.1.7",
@@ -272,23 +276,35 @@
             {
               "id": "1.2.7",
               "question": "What can your model generate or produce?",
-              "help_text": "Select all that apply",
-              "answer_type": "multiple_choice",
-              "options": [
-                "Text content",
-                "Audio/speech",
-                "Images",
-                "Videos",
-                "None of the above"
-              ],
+              "help_text": "Select all types of output that your model is capable of generating",
+              "answer_type": "checklist",
               "answers": {
-                "any_except_none": {
-                  "next": "1.2.result",
-                  "action": "Your model appears to be a General-Purpose AI Model"
+                "Text content": {
+                  "next": "1.2.result"
                 },
-                "only_none": {
+                "Audio/speech": {
+                  "next": "1.2.result"
+                },
+                "Images": {
+                  "next": "1.2.result"
+                },
+                "Videos": {
+                  "next": "1.2.result"
+                },
+                "None of the above": {
+                  "next": "1.3"
+                },
+                "all_checked": {
+                  "next": "1.2.result",
+                  "action": "Multimodal GPAI model identified"
+                },
+                "some_checked": {
+                  "next": "1.2.result",
+                  "action": "GPAI model capabilities confirmed"
+                },
+                "none_checked": {
                   "next": "1.3",
-                  "action": "Your solution may not fall under the AI Act"
+                  "action": "No generative capabilities - reviewing other criteria"
                 }
               }
             },
@@ -330,7 +346,7 @@
         },
         {
           "section_number": "2",
-          "title": "What Is Your Role?",
+          "title": "Operator Role & Responsibility Definition",
           "description": "Understanding your role helps determine which obligations apply to you",
           "questions": [
             {
@@ -611,7 +627,7 @@
         },
         {
           "section_number": "3",
-          "title": "Does Your AI System Qualify for Exemptions?",
+          "title": "Scope & Exemptions Analysis",
           "description": "Some AI systems are exempt from certain requirements",
           "questions": [
             {
@@ -791,7 +807,7 @@
         },
         {
           "section_number": "4",
-          "title": "What Risk Category Is Your AI System?",
+          "title": "AI System Risk Classification",
           "description": "The AI Act classifies systems by risk level: Unacceptable, High, Limited, or Minimal",
           "questions": [
             {
@@ -2899,7 +2915,7 @@
       "sections": [
         {
           "section_number": "1",
-          "title": "Is This a General-Purpose AI Model?",
+          "title": "General-Purpose AI Model Identification",
           "description": "Let's verify if your model qualifies under the AI Act",
           "questions":
           [
@@ -3014,17 +3030,38 @@
             {
               "id": "1.6",
               "question": "What can your model generate or produce?",
-              "help_text": "Select all that apply",
-              "answer_type": "multiple_choice",
-              "options": [ "Language/text (like writing, translation, conversation)", "Audio or speech", "Images (from text descriptions or other inputs)", "Video content", "Code generation", "Other creative or analytical content" ],
+              "help_text": "Select all that apply to your model's capabilities",
+              "answer_type": "checklist",
               "answers": {
-                "any_selected": {
-                  "next": "1.result_confirmed_gpai",
-                  "action": "Your model appears to be a General-Purpose AI Model"
+                "Language/text (like writing, translation, conversation)": {
+                  "next": "1.result_confirmed_gpai"
                 },
-                "none_selected": {
+                "Audio or speech": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Images (from text descriptions or other inputs)": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Video content": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Code generation": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Other creative or analytical content": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "all_checked": {
+                  "next": "1.result_confirmed_gpai",
+                  "action": "Multimodal GPAI capabilities confirmed"
+                },
+                "some_checked": {
+                  "next": "1.result_confirmed_gpai",
+                  "action": "GPAI capabilities identified"
+                },
+                "none_checked": {
                   "next": "1.result_not_gpai",
-                  "action": "May not be a general-purpose AI model"
+                  "action": "No general-purpose generative capabilities identified"
                 }
               }
             },
@@ -3090,7 +3127,8 @@
           ]
         },
         {
-          "section_number": "2", "title": "Are You a Provider?",
+          "section_number": "2",
+          "title": "Role Definition: AI Provider",
           "description": "Determine if you're the provider of this model",
           "questions":
           [
@@ -3171,7 +3209,7 @@
         },
         {
           "section_number": "3",
-          "title": "Do Any Exemptions Apply?",
+          "title": "Applicability of Exemptions",
           "description": "Check if your model qualifies for exemptions",
           "questions": [
             {
@@ -3410,20 +3448,21 @@
               "id": "4.3",
               "question": "Have you provided information and documentation to downstream providers?",
               "help_text": "Providers who will integrate your model into their AI systems need specific information",
-              "answer_type": "yes/no", "answers":
-            {
-              "yes":
+              "answer_type": "yes/no",
+              "answers":
               {
-                "next": "4.4",
-                "action": "Continue transparency check"
-              },
-              "no":
-              {
-                "next": "4.4",
-                "action": "️ Required - Continue to copyright compliance",
-                "compliance_status": "non_compliant"
+                "yes":
+                {
+                  "next": "4.4",
+                  "action": "Continue transparency check"
+                },
+                "no":
+                {
+                  "next": "4.4",
+                  "action": "️ Required - Continue to copyright compliance",
+                  "compliance_status": "non_compliant"
+                }
               }
-            }
             },
             {
               "id": "4.4",

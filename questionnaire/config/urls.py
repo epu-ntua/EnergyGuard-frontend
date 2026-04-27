@@ -26,4 +26,5 @@ urlpatterns = [
     path('question/<str:question_id>/submit/', views.submit_answer, name='submit'),
     path('out-of-scope/', views.out_of_scope_view, name='out_of_scope'),
     path('assessment-completed/', views.assessment_completed_view, name='assessment_completed'),
+    path('download-json/', views.download_assessment_json, name='download_json'),
 ]
