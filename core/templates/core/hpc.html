@@ -1,0 +1,114 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}HPC | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <!-- No Activity State -->
+    <div class="text-center mb-6">
+      <h3 class="text-body-emphasis mb-4">No HPC activity yet</h3>
+      <a href="#" class="btn btn-primary px-5">Request access to HPC</a>
+    </div>
+
+    <!-- Meluxina AI Offerings Card -->
+    <div class="col-12 col-md-6 card border mb-5 mx-auto">
+      <div class="card-body p-5">
+        <h5 class="card-title fw-bold mb-4">Meluxina AI offerings</h5>
+        <div class="row align-items-center g-4">
+          <div class="col-12 col-md-5">
+            <img src="{% static 'assets/img/generic/meluxina.png' %}" alt="Meluxina HPC"
+              class="img-fluid rounded"
+              onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80'; this.onerror=null;"
+              style="max-height: 230px; width: 100%; object-fit: cover;">
+          </div>
+          <div class="col-12 col-md-7">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-3 d-flex align-items-start gap-2">Access to 3000 A100 GPUs
+              </li>
+              <li class="mb-3 d-flex align-items-start gap-2">Pre-configured AI Frameworks (PyTorch, TensorFlow)
+              </li>
+              <li class="mb-3 d-flex align-items-start gap-2">Large-Scale Model Training
+              </li>
+              <li class="mb-3 d-flex align-items-start gap-2">Distributed Inference
+              </li>
+              <li class="d-flex align-items-start gap-2">AI-Optimized Storage (245 TB)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estimate Your HPC Needs Card -->
+    <div class="col-12 col-md-6 card border mx-auto">
+      <div class="card-body p-5">
+        <h4 class="fw-bold mb-1">Estimate Your HPC Needs</h4>
+        <p class="text-body-tertiary fs-9 mb-5">Adjust the sliders to get an instant estimate for your project.</p>
+
+        <div class="row g-5">
+          <!-- Project Name -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold fs-9">Project Name</label>
+            <input type="text" class="form-control" id="hpcProjectName"
+              placeholder="e.g., Deep Learning Model Training">
+          </div>
+
+          <!-- GPU Count Slider -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold fs-9">GPU Count: <span id="gpuCountValue">10</span></label>
+            <input type="range" class="form-range hpc-slider" id="gpuCountSlider"
+              min="1" max="100" step="1" value="10">
+          </div>
+
+          <!-- Storage Slider -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold fs-9">Storage (GB): <span id="storageValue">500</span></label>
+            <input type="range" class="form-range hpc-slider" id="storageSlider"
+              min="100" max="10000" step="100" value="500">
+          </div>
+        </div>
+
+        <!-- Estimated Cost -->
+        <div class="d-flex align-items-center justify-content-between mt-6 pt-4 border-top">
+          <h5 class="mb-0 fw-bold">Estimated Monthly Cost:</h5>
+          <h4 class="mb-0 text-primary fw-bold" id="estimatedCost">200 credits</h4>
+        </div>
+      </div>
+    </div>
+    {% include "core/footer.html" %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<style>
+  .hpc-slider {
+    accent-color: #3bc9db;
+  }
+</style>
+<script>
+  (function () {
+    var gpuSlider = document.getElementById('gpuCountSlider');
+    var storageSlider = document.getElementById('storageSlider');
+    var gpuVal = document.getElementById('gpuCountValue');
+    var storageVal = document.getElementById('storageValue');
+    var costEl = document.getElementById('estimatedCost');
+
+    function updateCost() {
+      var gpus = parseInt(gpuSlider.value, 10);
+      var storage = parseInt(storageSlider.value, 10);
+      var cost = Math.round(gpus * 10 + storage * 0.2);
+      gpuVal.textContent = gpus;
+      storageVal.textContent = storage;
+      costEl.textContent = cost + ' credits';
+    }
+
+    gpuSlider.addEventListener('input', updateCost);
+    storageSlider.addEventListener('input', updateCost);
+    updateCost();
+  })();
+</script>
+{% endblock scripts %}

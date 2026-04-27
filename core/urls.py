@@ -11,4 +11,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('trustworthiness/', views.trustworthiness, name='trustworthiness'),
     path('trustworthiness/<str:slug>/', views.benchmark_detail, name='benchmark_detail'),
+    path('hpc/', views.hpc, name='hpc'),
 ]
