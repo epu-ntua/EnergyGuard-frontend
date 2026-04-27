@@ -91,9 +91,15 @@
                         </a>
                         <!-- Sign in -->
                         {% if not user.is_authenticated %}
-                            <a class="btn btn-link text-body order-1 order-lg-0 ps-4 me-lg-2 fs-8-5" href="{% url 'login' %}">Sign in</a>
+                            <form method="post" action="{% provider_login_url 'openid_connect' uid='keycloak' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link text-body order-1 order-lg-0 ps-4 me-lg-2 fs-8-5">Sign in</button>
+                            </form>
                             <!-- Sign up -->                   
-                            <a class="btn btn-phoenix-primary order-0 fs-8-5 ms-lg-2" href="{% url 'register' %}" role="button">Sign up</a>
+                            <form method="post" action="{% url 'keycloak_register' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-phoenix-primary order-0 fs-8-5 ms-lg-2">Sign up</button>
+                            </form>
                         {% else %}
                             <form method="post" action="{% url 'account_logout' %}">
                                 {% csrf_token %}

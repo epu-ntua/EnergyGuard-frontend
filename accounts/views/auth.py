@@ -53,6 +53,25 @@ def keycloak_logout(request):
 
     return redirect(f"{end_session_url}?{urlencode(params)}")
 
+def keycloak_register(request):
+    provider_config = settings.SOCIALACCOUNT_PROVIDERS.get("openid_connect", {}).get(
+        "APPS", [{}]
+    )[0]
+    server_url = provider_config.get("settings", {}).get("server_url")
+    client_id = provider_config.get("client_id")
+
+    callback_uri = request.build_absolute_uri("/accounts/keycloak/login/callback/")
+
+    params = urlencode({
+        "client_id": client_id,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "redirect_uri": callback_uri,
+    })
+
+    return redirect(f"{server_url}/protocol/openid-connect/registrations?{params}")
+
+
 def keycloak_front_channel_logout(request):
     """
     Front-channel logout endpoint for Keycloak.
