@@ -6,7 +6,24 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
+from allauth.socialaccount.providers.openid_connect.views import OpenIDConnectOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.views import OAuth2LoginView
+
 from ..forms import CustomAuthenticationForm
+
+
+class _KeycloakRegistrationAdapter(OpenIDConnectOAuth2Adapter):
+    @property
+    def authorize_url(self):
+        auth_url = self.openid_config["authorization_endpoint"]
+        return auth_url.rsplit("/auth", 1)[0] + "/registrations"
+
+
+class _KeycloakRegistrationLoginView(OAuth2LoginView):
+    def get_provider(self):
+        provider = super().get_provider()
+        provider.oauth2_adapter_class = _KeycloakRegistrationAdapter
+        return provider
 
 
 def login_view(request):
@@ -53,8 +70,9 @@ def keycloak_logout(request):
 
     return redirect(f"{end_session_url}?{urlencode(params)}")
 
-def keycloak_register(_request):
-    return redirect("/accounts/oidc/keycloak/login/")
+def keycloak_register(request):
+    view = _KeycloakRegistrationLoginView.adapter_view(_KeycloakRegistrationAdapter(request, "keycloak"))
+    return view(request)
 
 
 def keycloak_front_channel_logout(request):
@@ -66,37 +84,3 @@ def keycloak_front_channel_logout(request):
     """
     django_logout(request)
     return HttpResponse(status=200)
-
-
-# Signal handler to track new Keycloak signups
-# @receiver(pre_social_login)
-# def keycloak_signup_signal(sender, request, sociallogin, **kwargs):
-#     """
-#     Signal fired before social login completes.
-#     Marks new signups in the session.
-#     """
-#     if sociallogin.account.provider == 'keycloak':
-#         # Check if this is a new user (doesn't have a user object yet)
-#         if not sociallogin.is_existing:
-#             request.session['keycloak_new_signup'] = True
-
-# def keycloak_redirect(request):
-#     """
-#     Custom redirect handler for Keycloak login/signup.
-#     Redirects new signups to platform entry wizard
-#     Redirects existing users to experiments
-#     """
-#     if not request.user.is_authenticated:
-#         return redirect('login')
-    
-#     is_new_signup = request.session.pop('keycloak_new_signup', False)
-    
-#     # Also check if user has a profile - new users won't have one
-#     has_profile = Profile.objects.filter(user=request.user).exists()
-    
-#     if is_new_signup or not has_profile:
-#         # New user signup - redirect to platform entry wizard
-#         return redirect('platform_entry')
-#     else:
-#         # Existing user login - redirect to experiments
-#         return redirect('experiment_index')
