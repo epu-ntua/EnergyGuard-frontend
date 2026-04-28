@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from django.urls import reverse_lazy
 from pathlib import Path
 import environ
 import os
@@ -243,6 +244,7 @@ KEYCLOAK_USER_SYNC_CONFIG = {
 
 # Redirects user to home page after logout
 LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = reverse_lazy('openid_connect_login', kwargs={'provider_id': 'keycloak'})
 ACCOUNT_LOGOUT_ON_GET = False  # Require POST request to logout (for security reasons)
 SOCIALACCOUNT_LOGIN_ON_GET = True  # Skip intermediate "Sign in via Keycloak" confirmation page
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when password is changed
