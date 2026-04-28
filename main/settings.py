@@ -244,6 +244,7 @@ KEYCLOAK_USER_SYNC_CONFIG = {
 # Redirects user to home page after logout
 LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_ON_GET = False  # Require POST request to logout (for security reasons)
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Skip intermediate "Sign in via Keycloak" confirmation page
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when password is changed
 SOCIALACCOUNT_LOGOUT = True  # Logout from social account when logging out from the site
 ACCOUNT_EMAIL_VERIFICATION = 'none'
