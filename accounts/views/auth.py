@@ -23,6 +23,14 @@ class _KeycloakRegistrationLoginView(OAuth2LoginView):
     def get_provider(self):
         provider = super().get_provider()
         provider.oauth2_adapter_class = _KeycloakRegistrationAdapter
+        original = provider.get_auth_params_from_request
+
+        def get_auth_params_without_prompt(request, action):
+            params = original(request, action)
+            params.pop("prompt", None)
+            return params
+
+        provider.get_auth_params_from_request = get_auth_params_without_prompt
         return provider
 
 
