@@ -12,4 +12,5 @@ urlpatterns = [
     path('trustworthiness/', views.trustworthiness, name='trustworthiness'),
     path('trustworthiness/<str:slug>/', views.benchmark_detail, name='benchmark_detail'),
     path('hpc/', views.hpc, name='hpc'),
+    path('ai-models/', views.ai_models, name='ai_models'),
 ]

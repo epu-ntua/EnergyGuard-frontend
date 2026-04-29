@@ -1,3 +1,4 @@
+from .ai_models import ai_models
 from .dashboard import dashboard
 from .hpc import hpc
 from .public import (
@@ -11,6 +12,7 @@ from .trustworthiness import benchmark_detail, trustworthiness
 from .wizard import BaseWizardView
 
 __all__ = [
+    "ai_models",
     "BaseWizardView",
     "benchmark_detail",
     "collaboration_hub",
