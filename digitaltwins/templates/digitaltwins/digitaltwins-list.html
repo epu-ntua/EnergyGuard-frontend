@@ -14,9 +14,9 @@
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                     <div class="card h-100" style="cursor: pointer;">
                         {% if digital_twin.image %}
-                        <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 280px;" width="auto">
+                        <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
                         {% else %}
-                        <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 180px; object-fit: cover;">
+                        <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ digital_twin.name }}</h5>
