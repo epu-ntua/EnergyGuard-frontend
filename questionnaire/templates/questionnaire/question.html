@@ -1,197 +1,166 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 {% load custom_filters %}
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-12 col-lg-11">
-            <div class="card border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
-                <div class="card-body p-4 p-md-5">
+{% block title %}Assessment Question | EnergyGuard{% endblock %}
 
-                    {% if ".result" in question.id %}
-                        <div class="text-center py-4">
-                            <div class="display-6 text-success mb-4">
-                                <i class="bi bi-check-circle-fill"></i>
-                            </div>
-                            <h3 class="fw-bold mb-3">{{ question.text }}</h3>
+{% block questionnaire_content %}
+<div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+  <div class="card-body p-4 p-md-5">
 
-                            {% if category and question.id == "8.result" %}
-                                <div class="mb-5 text-center">
-                                    <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">
-                                        AI Act Classification:
-                                    </span>
-                                    <div class="d-inline-block px-5 py-3 shadow-sm"
-                                         style="background: #1a202c; color: white; border-radius: 16px;">
-                                        <h4 class="mb-0 fw-bold">
-                                            <i class="bi bi-shield-check me-2"></i> {{ category }}
-                                        </h4>
-                                    </div>
-                                </div>
-                            {% endif %}
-
-                            {% if result_text %}
-                                <div class="alert alert-info border-0 shadow-sm mb-5 text-start" style="border-radius: 16px; background-color: #f0f9ff; color: #2c5282;">
-                                    <div class="d-flex align-items-start p-2">
-                                        <i class="bi bi-info-circle-fill me-3 fs-3"></i>
-                                        <div style="font-size: 1.25rem; line-height: 1.6; font-weight: 500;">
-                                            {{ result_text|linebreaksbr }}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="mb-4">
-                            <span class="badge bg-light text-dark px-3 py-2 mb-3 shadow-sm" style="border-radius: 8px; font-size: 0.9rem; border: 1px solid #dee2e6;">
-                                {{ question.sub_questionnaire.title }}
-                            </span>
-                            <h2 class="fw-bold mb-3" style="color: #1a202c;">{{ question.text }}</h2>
-
-                            {% if question.help_text %}
-                                <div class="help-note d-flex flex-column align-items-center mb-4 text-center">
-                                    <p class="text-muted small mb-0 italic" style="line-height: 1.5; max-width: 80%;">
-                                        {{ question.help_text|cut:"?" }}
-                                    </p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    <form id="survey-form" method="post" action="{% url 'questionnaire:submit' question.id %}">
-                        {% csrf_token %}
-
-                        <div class="options-container mb-5 {% if '.result' in question.id %}d-none{% endif %}">
-                            {% for choice in question.choices.all %}
-                                {% if choice.text != 'all_checked' and choice.text != 'some_checked' and choice.text != 'none_checked' %}
-                                    <div class="mb-3">
-                                        <input type="{% if question.answer_type == 'checklist' or question.answer_type == 'multiple_list' %}checkbox{% else %}radio{% endif %}"
-                                               class="btn-check"
-                                               name="choices"
-                                               id="choice_{{ choice.id }}"
-                                               value="{{ choice.id }}"
-                                               {% if ".result" in question.id and forloop.first %}checked{% endif %}
-                                               {% if question.answer_type != 'checklist' and question.answer_type != 'multiple_list' %}required{% endif %}>
-
-                                        <label class="btn btn-outline-light d-flex align-items-center p-4 w-100 text-start shadow-sm custom-option-label" for="choice_{{ choice.id }}">
-                                            <div class="custom-checkbox me-3">
-                                                <i class="bi bi-check-lg"></i>
-                                            </div>
-                                            <span class="fs-5 fw-medium text-dark">{{ choice.text }}</span>
-                                        </label>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-5">
-                            <button type="button" class="btn btn-link text-decoration-none text-muted fw-bold p-0" onclick="history.back()">
-                                <i class="bi bi-arrow-left me-2"></i> Back
-                            </button>
-                            <button type="submit" id="submit-btn" class="btn btn-dark btn-lg px-5 py-3 shadow" style="border-radius: 16px; min-width: 200px; font-weight: 600;">
-                                {% if question.id == "8.result" or ".result_exempt" in question.id %}
-                                    <i class="bi bi-arrow-counterclockwise me-2"></i> Restart Assessment
-                                    <div class="mt-4 text-center">
-                                        <a href="{% url 'questionnaire:download_json' %}" class="btn btn-outline-dark px-4 py-2" style="border-radius: 12px;">
-                                            <i class="bi bi-download me-2"></i> Download Assessment JSON
-                                        </a>
-                                    </div>
-                                {% else %}
-                                    Continue <i class="bi bi-arrow-right ms-2"></i>
-                                {% endif %}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    {% if ".result" in question.id %}
+      <div class="text-center py-4">
+        <div class="display-6 text-success mb-4">
+          <span class="fas fa-check-circle"></span>
         </div>
-    </div>
+        <h3 class="fw-bold mb-3 text-body-emphasis">{{ question.text }}</h3>
+
+        {% if category and question.id == "8.result" %}
+          <div class="mb-5 text-center">
+            <span class="text-body-tertiary text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">
+              AI Act Classification:
+            </span>
+            <div class="d-inline-block px-5 py-3 shadow-sm rounded-3 bg-dark text-white">
+              <h4 class="mb-0 fw-bold">
+                <span class="fas fa-shield-alt me-2"></span> {{ category }}
+              </h4>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if result_text %}
+          <div class="alert alert-info border-0 shadow-sm mb-5 text-start rounded-3">
+            <div class="d-flex align-items-start p-2">
+              <span class="fas fa-info-circle me-3 fs-4 mt-1"></span>
+              <div style="font-size: 1.1rem; line-height: 1.6; font-weight: 500;">
+                {{ result_text|linebreaksbr }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <div class="mb-4">
+        <span class="badge bg-body-secondary text-body px-3 py-2 mb-3 shadow-sm border" style="border-radius: 8px;">
+          {{ question.sub_questionnaire.title }}
+        </span>
+        <h2 class="fw-bold mb-3 text-body-emphasis">{{ question.text }}</h2>
+
+        {% if question.help_text %}
+          <div class="d-flex justify-content-center mb-4">
+            <p class="text-body-tertiary small fst-italic mb-0" style="line-height: 1.5; max-width: 80%; text-align: center;">
+              {{ question.help_text|cut:"?" }}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form id="survey-form" method="post" action="{% url 'questionnaire:submit' question.id %}">
+      {% csrf_token %}
+
+      <div class="options-container mb-5 {% if '.result' in question.id %}d-none{% endif %}">
+        {% for choice in question.choices.all %}
+          {% if choice.text != 'all_checked' and choice.text != 'some_checked' and choice.text != 'none_checked' %}
+            <div class="mb-3">
+              <input type="{% if question.answer_type == 'checklist' or question.answer_type == 'multiple_list' %}checkbox{% else %}radio{% endif %}"
+                     class="btn-check"
+                     name="choices"
+                     id="choice_{{ choice.id }}"
+                     value="{{ choice.id }}"
+                     {% if ".result" in question.id and forloop.first %}checked{% endif %}
+                     {% if question.answer_type != 'checklist' and question.answer_type != 'multiple_list' %}required{% endif %}>
+
+              <label class="btn btn-outline-light d-flex align-items-center p-4 w-100 text-start shadow-sm custom-option-label" for="choice_{{ choice.id }}">
+                <div class="custom-checkbox me-3">
+                  <span class="fas fa-check"></span>
+                </div>
+                <span class="fs-6 fw-medium text-body-emphasis">{{ choice.text }}</span>
+              </label>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-5">
+        <button type="button" class="btn btn-link text-decoration-none text-body-tertiary fw-bold p-0" onclick="history.back()">
+          <span class="fas fa-arrow-left me-2"></span> Back
+        </button>
+        <button type="submit" id="submit-btn" class="btn btn-primary btn-lg px-5 py-3 shadow fw-semibold" style="border-radius: 12px; min-width: 180px;">
+          {% if question.id == "8.result" or ".result_exempt" in question.id %}
+            <span class="fas fa-redo me-2"></span> Restart Assessment
+            <div class="mt-4 text-center">
+              <a href="{% url 'questionnaire:download_json' %}" class="btn btn-phoenix-secondary px-4 py-2" style="border-radius: 10px;">
+                <span class="fas fa-download me-2"></span> Download Assessment JSON
+              </a>
+            </div>
+          {% else %}
+            Continue <span class="fas fa-arrow-right ms-2"></span>
+          {% endif %}
+        </button>
+      </div>
+    </form>
+
+  </div>
 </div>
 
 <style>
-.help-note p {
-    font-style: italic;
-    color: #718096 !important;
-}
 .custom-option-label {
-    border: 2px solid #edf2f7 !important;
-    border-radius: 20px !important;
-    transition: all 0.2s;
-}
-.btn-check:checked + label {
-    border-color: #1a202c !important;
-    background-color: #f7fafc !important;
-}
-.custom-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #cbd5e0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    transition: all 0.2s;
-}
-.btn-check:checked + label .custom-checkbox {
-    background-color: #1a202c;
-    border-color: #1a202c;
-    color: white;
-}
-.custom-option-label {
-    border: 2px solid #edf2f7 !important;
-    border-radius: 20px !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
-    background-color: white;
-    cursor: pointer;
+  border: 2px solid var(--phoenix-border-color, #e9ecef) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-color: var(--phoenix-body-bg, #fff);
+  cursor: pointer;
 }
 .custom-option-label:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    border-color: #cbd5e0 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--phoenix-primary, #4fd4f1) !important;
 }
-.btn-check:checked + label {
-    border-color: #1a202c !important;
-    background-color: #f7fafc !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+.btn-check:checked + label.custom-option-label {
+  border-color: var(--phoenix-primary, #4fd4f1) !important;
+  background-color: rgba(79, 212, 241, 0.06) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 212, 241, 0.15) !important;
 }
 .custom-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #cbd5e0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    transition: all 0.2s;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--phoenix-border-color, #dee2e6);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 .btn-check:checked + label .custom-checkbox {
-    background-color: #1a202c;
-    border-color: #1a202c;
-    color: white;
+  background-color: var(--phoenix-primary, #4fd4f1);
+  border-color: var(--phoenix-primary, #4fd4f1);
+  color: var(--phoenix-dark, #141824);
 }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('survey-form');
-        const submitBtn = document.getElementById('submit-btn');
-        const isResult = "{{ question.id }}".includes(".result");
-        const isChecklist = form.querySelector('input[type="checkbox"]');
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('survey-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const isResult = "{{ question.id }}".includes(".result");
+  const isChecklist = form.querySelector('input[type="checkbox"]');
 
-        function validate() {
-            if (isResult) {
-                submitBtn.disabled = false;
-            } else {
-                const checkedCount = form.querySelectorAll('input[name="choices"]:checked').length;
-                if (!isChecklist) {
-                    submitBtn.disabled = checkedCount === 0;
-                }
-            }
-        }
-        form.addEventListener('change', validate);
-        validate();
-    });
+  function validate() {
+    if (isResult) {
+      submitBtn.disabled = false;
+    } else {
+      const checkedCount = form.querySelectorAll('input[name="choices"]:checked').length;
+      if (!isChecklist) {
+        submitBtn.disabled = checkedCount === 0;
+      }
+    }
+  }
+  form.addEventListener('change', validate);
+  validate();
+});
 </script>
 {% endblock %}

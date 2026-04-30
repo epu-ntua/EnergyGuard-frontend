@@ -1,45 +1,61 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 
-{% block content %}
-<div class="container mt-5" style="max-width: 800px;">
-    <div class="card shadow border-0">
-        <div class="card-body p-5">
+{% block title %}{{ questionnaire.title }} | EnergyGuard{% endblock %}
 
-            <h1 class="mb-4 text-center">{{ questionnaire.title }}</h1>
-            <hr>
+{% block questionnaire_content %}
+<div class="mb-5">
+  <h2 class="text-body-emphasis fw-bolder mb-1">{{ questionnaire.title }}</h2>
+  <p class="text-body-tertiary">EU AI Act risk classification assessment</p>
+</div>
 
-            <div class="my-4" style="font-size: 1.15rem; line-height: 1.7; text-align: justify; color: #333;">
-                <p>Welcome to the assessment guide for the <strong>European Artificial Intelligence Act (EU AI Act)</strong>.</p>
-                <p>This tool helps you determine your system's risk classification (<strong>High, Limited, or Minimal Risk</strong>) and identifies core regulatory obligations for your organization.</p>
-                <h5 class="fw-bold mt-4">What to expect:</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="bi bi-clock me-2 text-primary"></i><strong>Duration:</strong> 5-10 minutes.</li>
-                    <li class="mb-2"><i class="bi bi-gear me-2 text-primary"></i><strong>Process:</strong> Answer questions regarding your technology's nature and intended use.</li>
-                    <li class="mb-2"><i class="bi bi-file-earmark-check me-2 text-primary"></i><strong>Outcome:</strong> A preliminary risk classification according to EU standards.</li>
-                </ul>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4 p-lg-5">
 
-                <p class="small text-muted mt-5 italic" style="border-top: 1px solid #eee; pt-3;">
-                    *Note: This assessment is for informational purposes only and does not constitute legal advice.
-                </p>
-            </div>
+    <div class="mb-4" style="line-height: 1.7;">
+      <p class="text-body-secondary">
+        Welcome to the assessment guide for the <strong class="text-body-emphasis">European Artificial Intelligence Act (EU AI Act)</strong>.
+      </p>
+      <p class="text-body-secondary">
+        This tool helps you determine your system's risk classification
+        (<strong class="text-body-emphasis">High, Limited, or Minimal Risk</strong>) and identifies core regulatory obligations for your organization.
+      </p>
 
-            <div class="mt-5 text-center">
-                {% if first_question %}
-                    <a href="{% url 'questionnaire:detail' question_id=first_question.id %}"
-                       class="btn btn-dark btn-lg px-5 shadow"
-                       style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
-                       Start Survey <i class="bi bi-play-fill ms-2"></i>
-                    </a>
-                {% else %}
-                    <div class="alert alert-warning shadow-sm border-0" style="border-radius: 12px;">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        No questions were found for this questionnaire.
-                        Please check if Sub-Questionnaires and Questions are assigned in the Admin.
-                    </div>
-                {% endif %}
-            </div>
+      <h5 class="fw-bold mt-4 mb-3 text-body-emphasis">What to expect:</h5>
+      <ul class="list-unstyled">
+        <li class="mb-2 d-flex align-items-start gap-2">
+          <span class="fas fa-clock text-primary mt-1"></span>
+          <span class="text-body-secondary"><strong class="text-body-emphasis">Duration:</strong> 5–10 minutes.</span>
+        </li>
+        <li class="mb-2 d-flex align-items-start gap-2">
+          <span class="fas fa-cog text-primary mt-1"></span>
+          <span class="text-body-secondary"><strong class="text-body-emphasis">Process:</strong> Answer questions regarding your technology's nature and intended use.</span>
+        </li>
+        <li class="mb-2 d-flex align-items-start gap-2">
+          <span class="fas fa-file-alt text-primary mt-1"></span>
+          <span class="text-body-secondary"><strong class="text-body-emphasis">Outcome:</strong> A preliminary risk classification according to EU standards.</span>
+        </li>
+      </ul>
 
-        </div>
+      <p class="text-body-tertiary small mt-4 pt-3 border-top fst-italic">
+        *Note: This assessment is for informational purposes only and does not constitute legal advice.
+      </p>
     </div>
+
+    <div class="mt-4">
+      {% if first_question %}
+        <a href="{% url 'questionnaire:detail' question_id=first_question.id %}"
+           class="btn btn-primary btn-lg px-5 fw-semibold">
+          Start Survey <span class="fas fa-play ms-2"></span>
+        </a>
+      {% else %}
+        <div class="alert alert-warning border-0 shadow-sm">
+          <span class="fas fa-exclamation-triangle me-2"></span>
+          No questions were found for this questionnaire.
+          Please check if Sub-Questionnaires and Questions are assigned in the Admin.
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
 </div>
 {% endblock %}
