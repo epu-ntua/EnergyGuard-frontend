@@ -38,6 +38,27 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                {% if "2.result_summary" in question.id %}
+                                    <div class="mb-5 text-center">
+                                        <span class="text-muted text-uppercase fw-bold d-block mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                            Your Identified Roles:
+                                        </span>
+                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                            {% if user_roles %}
+                                                {% for role in user_roles %}
+                                                    <span class="badge rounded-pill px-4 py-2 shadow-sm"
+                                                          style="background-color: #1a202c; color: #fff; font-size: 1rem; border: 1px solid #2d3748;">
+                                                        <i class="bi bi-person-badge me-2"></i>{{ role }}
+                                                    </span>
+                                                {% endfor %}
+                                            {% else %}
+                                                {# Debug message αν η λίστα είναι άδεια #}
+                                                <span class="text-danger small">No roles found in context.</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
                             {% endif %}
                         </div>
                     {% else %}
