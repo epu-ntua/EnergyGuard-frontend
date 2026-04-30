@@ -17,7 +17,9 @@ def start_questionnaire(request, questionnaire_id):
 
     return render(request, 'questionnaire/intro.html', {
         'questionnaire': questionnaire,
-        'first_question': first_question
+        'first_question': first_question,
+        'active_navbar_page': 'trustworthiness',
+        'show_sidebar': True,
     })
 
 def question_detail(request, question_id):
@@ -68,6 +70,8 @@ def question_detail(request, question_id):
         'category': category,
         'result_text': request.session.pop('flash_result_text', None),
     }
+    context['active_navbar_page'] = 'trustworthiness'
+    context['show_sidebar'] = True
     return render(request, 'questionnaire/question.html', context)
 
 
@@ -171,10 +175,16 @@ def submit_answer(request, question_id):
     return redirect('questionnaire:start', questionnaire_id=parent_id)
 
 def out_of_scope_view(request):
-    return render(request, 'questionnaire/out_of_scope.html')
+    return render(request, 'questionnaire/out_of_scope.html', {
+        'active_navbar_page': 'trustworthiness',
+        'show_sidebar': True,
+    })
 
 def assessment_completed_view(request):
-    return render(request, 'questionnaire/assessment_completed.html')
+    return render(request, 'questionnaire/assessment_completed.html', {
+        'active_navbar_page': 'trustworthiness',
+        'show_sidebar': True,
+    })
 
 def download_assessment_json(request):
     session_key = request.session.session_key
