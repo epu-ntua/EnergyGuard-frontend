@@ -29,6 +29,7 @@ urlpatterns = [
     path('digitaltwins/', include('digitaltwins.urls')),
     path('trustworthiness/code-analysis/', include('code_analysis.urls')),
     path('accounts/', include('allauth.urls')),
+    path('surveys/', include('questionnaire.config.urls')),
 ]
 
 # Serve media files during development

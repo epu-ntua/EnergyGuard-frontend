@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'datasets',
     'projects.apps.ProjectsConfig',
     'billing',
+    'questionnaire',
     'django_q',
     'digitaltwins',
     'code_analysis',

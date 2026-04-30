@@ -1,0 +1,45 @@
+{% extends "questionnaire/base_questionnaire.html" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 800px;">
+    <div class="card shadow border-0">
+        <div class="card-body p-5">
+
+            <h1 class="mb-4 text-center">{{ questionnaire.title }}</h1>
+            <hr>
+
+            <div class="my-4" style="font-size: 1.15rem; line-height: 1.7; text-align: justify; color: #333;">
+                <p>Welcome to the assessment guide for the <strong>European Artificial Intelligence Act (EU AI Act)</strong>.</p>
+                <p>This tool helps you determine your system's risk classification (<strong>High, Limited, or Minimal Risk</strong>) and identifies core regulatory obligations for your organization.</p>
+                <h5 class="fw-bold mt-4">What to expect:</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-clock me-2 text-primary"></i><strong>Duration:</strong> 5-10 minutes.</li>
+                    <li class="mb-2"><i class="bi bi-gear me-2 text-primary"></i><strong>Process:</strong> Answer questions regarding your technology's nature and intended use.</li>
+                    <li class="mb-2"><i class="bi bi-file-earmark-check me-2 text-primary"></i><strong>Outcome:</strong> A preliminary risk classification according to EU standards.</li>
+                </ul>
+
+                <p class="small text-muted mt-5 italic" style="border-top: 1px solid #eee; pt-3;">
+                    *Note: This assessment is for informational purposes only and does not constitute legal advice.
+                </p>
+            </div>
+
+            <div class="mt-5 text-center">
+                {% if first_question %}
+                    <a href="{% url 'questionnaire:detail' question_id=first_question.id %}"
+                       class="btn btn-dark btn-lg px-5 shadow"
+                       style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
+                       Start Survey <i class="bi bi-play-fill ms-2"></i>
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning shadow-sm border-0" style="border-radius: 12px;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No questions were found for this questionnaire.
+                        Please check if Sub-Questionnaires and Questions are assigned in the Admin.
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

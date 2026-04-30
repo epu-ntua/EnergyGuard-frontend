@@ -1,0 +1,3671 @@
+{
+  "questionnaires": [
+    {
+      "id": "ai_system_questionnaire",
+      "title": "AI System Compliance Check",
+      "description": "Help us determine if your solution needs to comply with the EU AI Act",
+      "sections": [
+        {
+          "section_number": "1",
+          "title": "AI System & Model Identification",
+          "description": "Let's identify if your solution is an AI system, an AI model, or something else",
+          "questions": [
+            {
+              "id": "1.1.1",
+              "question": "Is your solution built using machines or computers?",
+              "help_text": "Does it run on hardware like servers, computers, or embedded systems?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.1.2",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.2.1",
+                  "action": "Skip to General-Purpose AI Model questions"
+                }
+              }
+            },
+            {
+              "id": "1.1.2",
+              "question": "Can your solution work independently without constant human control?",
+              "help_text": "Can it make decisions or take actions on its own, at least to some degree?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.1.3",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.2.1",
+                  "action": "Your solution may not be an AI system. Check if it's a General-Purpose AI Model"
+                }
+              }
+            },
+            {
+              "id": "1.1.3",
+              "question": "Can your solution learn or improve after it's been deployed?",
+              "help_text": "This is optional - it's okay if your system doesn't self-learn",
+              "answer_type": "yes/no/optional",
+              "answers": {
+                "yes": {
+                  "next": "1.1.4",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.1.4",
+                  "action": "That's fine. Continue to next question"
+                },
+                "optional": {
+                  "next": "1.1.4",
+                  "action": "This feature is optional. Continue to next question"
+                }
+              }
+            },
+            {
+              "id": "1.1.4",
+              "question": "Does your solution have specific goals it's trying to achieve?",
+              "help_text": "These goals might be explicitly programmed or learned from data",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.1.5",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.2.1",
+                  "action": "Your solution may not be an AI system. Check if it's a General-Purpose AI Model"
+                }
+              }
+            },
+            {
+              "id": "1.1.5",
+              "question": "Does your solution analyze input data to create outputs?",
+              "help_text": "For example: predictions, recommendations, decisions, or generated content",
+              "answer_type": "yes/no",
+              "examples": [
+                "Predicting energy consumption",
+                "Recommending grid adjustments",
+                "Deciding when to switch systems",
+                "Generating reports or insights"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "1.1.6",
+                  "action": "Continue to specify output types"
+                },
+                "no": {
+                  "next": "1.2.1",
+                  "action": "Your solution may not be an AI system. Check if it's a General-Purpose AI Model"
+                }
+              }
+            },
+            {
+              "id": "1.1.6",
+              "question": "What type of outputs does your solution produce?",
+              "help_text": "Select all outputs that your system can generate during operation",
+              "answer_type": "checklist",
+              "answers": {
+                "Predictions (e.g., forecasting energy demand)": {
+                  "next": "1.1.7"
+                },
+                "Content generation (e.g., reports, visualizations)": {
+                  "next": "1.1.7"
+                },
+                "Recommendations (e.g., suggested actions)": {
+                  "next": "1.1.7"
+                },
+                "Decisions (e.g., automatic control actions)": {
+                  "next": "1.1.7"
+                },
+                "all_checked": {
+                  "next": "1.1.7",
+                  "action": "Multiple outputs identified"
+                },
+                "some_checked": {
+                  "next": "1.1.7",
+                  "action": "Specific outputs identified"
+                },
+                "none_checked": {
+                  "next": "1.2.1",
+                  "action": "No AI outputs - Possible exemption"
+                }
+              }
+            },
+            {
+              "id": "1.1.7",
+              "question": "Can your solution's outputs affect physical or digital systems?",
+              "help_text": "For example: controlling equipment, managing energy flows, or updating digital systems",
+              "answer_type": "yes/no",
+              "examples": [
+                "Controlling power grid equipment",
+                "Managing building systems",
+                "Adjusting energy distribution",
+                "Updating digital twins or simulations"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "1.1.result",
+                  "action": "Your solution appears to be an AI system. See results"
+                },
+                "no": {
+                  "next": "1.2.1",
+                  "action": "Your solution may not be an AI system. Check if it's a General-Purpose AI Model"
+                }
+              }
+            },
+            {
+              "id": "1.1.result",
+              "question": "Assessment Result: AI System Classification",
+              "result_text": "Based on your answers, your solution is likely an AI System under the EU AI Act.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.1.1",
+                  "action": "Continue to Section 2: Determine Your Role"
+                }
+              },
+              "notes": "Traditional rule-based software (where all rules are manually programmed by humans) is NOT considered an AI system"
+            },
+            {
+              "id": "1.2.1",
+              "question": "Is your solution a general-purpose AI model (like ChatGPT or similar)?",
+              "help_text": "General-purpose AI models can perform many different tasks and are often used as building blocks in other applications",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2.2",
+                  "action": "Continue to verify it's a general-purpose AI model"
+                },
+                "no": {
+                  "next": "1.3",
+                  "action": "Your solution may not fall under the AI Act"
+                }
+              }
+            },
+            {
+              "id": "1.2.2",
+              "question": "Was your model trained on large amounts of data?",
+              "help_text": "Did it learn from extensive datasets without requiring labeled examples for every task?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2.3",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.3",
+                  "action": "Your solution may not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+              "id": "1.2.3",
+              "question": "Can your model perform many different types of tasks?",
+              "help_text": "Is it versatile enough to handle various problems, not just one specific function?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2.4",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.3",
+                  "action": "Your solution may not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+              "id": "1.2.4",
+              "question": "Can your model be integrated into different applications or systems?",
+              "help_text": "Can other developers or systems use your model as a component?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2.5",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "1.3",
+                  "action": "Your solution may not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+              "id": "1.2.5",
+              "question": "Has your model been released on the market or is it used beyond research/testing?",
+              "help_text": "Is it available for commercial or operational use, not just for internal research?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2.6",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "3.3.1",
+                  "action": "Your model may be exempt as it's still in research/testing phase"
+                }
+              }
+            },
+            {
+              "id": "1.2.6",
+              "question": "How much computing power was used to train your model?",
+              "help_text": "This helps determine if it's a foundation model with significant capabilities",
+              "answer_type": "single_choice",
+              "options": [
+                {
+                  "text": "More than 10^23 FLOP (floating point operations)",
+                  "value": "high_compute",
+                  "next": "1.2.7",
+                  "action": "Continue to next question - potential high-impact model"
+                },
+                {
+                  "text": "Less than 10^23 FLOP",
+                  "value": "low_compute",
+                  "next": "1.2.7",
+                  "action": "Continue to next question"
+                },
+                {
+                  "text": "I don't know",
+                  "value": "unknown",
+                  "next": "1.2.7",
+                  "action": "Continue to next question - you may need to determine this later"
+                }
+              ]
+            },
+            {
+              "id": "1.2.7",
+              "question": "What can your model generate or produce?",
+              "help_text": "Select all types of output that your model is capable of generating",
+              "answer_type": "checklist",
+              "answers": {
+                "Text content": {
+                  "next": "1.2.result"
+                },
+                "Audio/speech": {
+                  "next": "1.2.result"
+                },
+                "Images": {
+                  "next": "1.2.result"
+                },
+                "Videos": {
+                  "next": "1.2.result"
+                },
+                "None of the above": {
+                  "next": "1.3"
+                },
+                "all_checked": {
+                  "next": "1.2.result",
+                  "action": "Multimodal GPAI model identified"
+                },
+                "some_checked": {
+                  "next": "1.2.result",
+                  "action": "GPAI model capabilities confirmed"
+                },
+                "none_checked": {
+                  "next": "1.3",
+                  "action": "No generative capabilities - reviewing other criteria"
+                }
+              }
+            },
+            {
+              "id": "1.2.result",
+              "question": "Assessment Result: General-Purpose AI Model",
+              "result_text": "Based on your answers, your solution is likely a General-Purpose AI Model under the EU AI Act.",
+              "answer_type": "choice",
+              "answers": {
+                "switch_questionnaire": {
+                  "next": "ai_model_questionnaire",
+                  "action": "Switch to AI Model Questionnaire for specific obligations"
+                },
+                "continue_both": {
+                  "next": "2.1.1",
+                  "action": "If your model is integrated into a system, continue to assess the complete AI system as well"
+                }
+              },
+              "notes": "AI models are components of AI systems but are not complete systems on their own. If your model is part of a larger system, you may need to complete both questionnaires."
+            },
+            {
+              "id": "1.3",
+              "question": "Assessment Result: Outside AI Act Scope",
+              "result_text": "Your solution likely falls outside the scope of the EU AI Act",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "finish": {
+                  "next": "END",
+                  "action": "Assessment complete - no AI Act obligations apply"
+                },
+                "reassess": {
+                  "next": "1.1.1",
+                  "action": "Start over if you want to reassess"
+                }
+              },
+              "notes": "This does not constitute legal advice. If your solution changes significantly, you should reassess."
+            }
+          ]
+        },
+        {
+          "section_number": "2",
+          "title": "Operator Role & Responsibility Definition",
+          "description": "Understanding your role helps determine which obligations apply to you",
+          "questions": [
+            {
+              "id": "2.0",
+              "question": "Let's determine your role in relation to this AI system",
+              "help_text": "You may have multiple roles. We'll check each one.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.1.1",
+                  "action": "Start with Provider role assessment"
+                }
+              }
+            },
+            {
+              "id": "2.1.1",
+              "question": "Did you develop or commission the development of this AI system?",
+              "help_text": "You're a provider if you created it or had someone create it for you",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.1.2",
+                  "action": "Continue to verify provider status"
+                },
+                "no": {
+                  "next": "2.2.1",
+                  "action": "Check if you're a deployer instead"
+                }
+              }
+            },
+            {
+              "id": "2.1.2",
+              "question": "Are you making this AI system available in the European Union market for the first time?",
+              "help_text": "This means being the first to offer it for distribution or use in the EU, regardless of whether it's free or paid",
+              "answer_type": "yes/no",
+              "examples": [
+                "Making an AI system available via API in the EU",
+                "Selling or distributing software with AI in the EU",
+                "Offering AI-powered services to EU customers"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "2.1.result_provider",
+                  "action": "You are a Provider - specific obligations apply"
+                },
+                "no": {
+                  "next": "2.1.3",
+                  "action": "Continue to next question"
+                }
+              }
+            },
+            {
+              "id": "2.1.3",
+              "question": "Are you using the AI system under your own name or brand?",
+              "help_text": "Does it appear to customers/users as your product or service?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.1.result_provider",
+                  "action": "You are a Provider - specific obligations apply"
+                },
+                "no": {
+                  "next": "2.2.1",
+                  "action": "Check if you're a deployer instead"
+                }
+              }
+            },
+            {
+              "id": "2.1.result_provider",
+              "question": "Role Assessment Result: You are a PROVIDER",
+              "result_text": "Based on your answers, you are a Provider of this AI system. Providers have significant obligations under the AI Act.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.3.1",
+                  "action": "Check if you also modified someone else's system (making you provider of that too)"
+                },
+                "skip_to_exemptions": {
+                  "next": "3.1.1",
+                  "action": "Skip to check if exemptions apply"
+                }
+              }
+            },
+            {
+              "id": "2.2.1",
+              "question": "Are you using an AI system developed by someone else?",
+              "help_text": "You're a deployer if you're operating or using an AI system in your organization",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.2.2",
+                  "action": "Continue to verify deployer status"
+                },
+                "no": {
+                  "next": "2.3.1",
+                  "action": "Check if you modified someone else's system"
+                }
+              }
+            },
+            {
+              "id": "2.2.2",
+              "question": "Do you have authority and responsibility for how this AI system is used?",
+              "help_text": "For example: deciding when and how to use it, who uses it, and for what purposes",
+              "answer_type": "yes/no",
+              "examples": [
+                "A grid operator using an AI tool for optimization",
+                "A company using AI for predictive maintenance",
+                "A facility using AI for energy management"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "2.2.result_deployer",
+                  "action": "You are a Deployer - specific obligations apply"
+                },
+                "no": {
+                  "next": "2.3.1",
+                  "action": "Check if you modified someone else's system"
+                }
+              }
+            },
+            {
+              "id": "2.2.result_deployer",
+              "question": "Role Assessment Result: You are a DEPLOYER",
+              "result_text": "Based on your answers, you are a Deployer of this AI system. Deployers have important obligations under the AI Act.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.3.1",
+                  "action": "Continue to check for other potential roles"
+                },
+                "skip_to_exemptions": {
+                  "next": "3.1.1",
+                  "action": "Skip to check if exemptions apply"
+                }
+              }
+            },
+            {
+              "id": "2.3.1",
+              "question": "Did you take someone else's high-risk AI system and do any of the following?",
+              "help_text": "Select any that apply",
+              "answer_type": "yes/no",
+              "options": [
+                {
+                  "text": "Put your own name or brand on it",
+                  "next": "2.3.result_provider"
+                },
+                {
+                  "text": "Made substantial changes to how it works",
+                  "next": "2.3.result_provider"
+                },
+                {
+                  "text": "Changed its intended purpose or use case",
+                  "next": "2.3.result_provider"
+                },
+                {
+                  "text": "None of the above",
+                  "next": "2.4.1"
+                }
+              ]
+            },
+            {
+              "id": "2.3.2",
+              "question": "Please describe the substantial changes you made:",
+              "help_text": "Substantial modifications are changes made after market release that weren't originally planned and affect compliance",
+              "answer_type": "text",
+              "examples": [
+                "Modified the AI model or algorithms",
+                "Changed what the system is designed to do",
+                "Altered how the system makes decisions"
+              ],
+              "answers": {
+                "submitted": {
+                  "next": "2.3.result_provider",
+                  "action": "Based on your modifications, you may now be considered a Provider"
+                }
+              }
+            },
+            {
+              "id": "2.3.result_provider",
+              "question": "Role Assessment Result: You are now a PROVIDER (through modification)",
+              "result_text": "Because you substantially modified or rebranded someone else's AI system, you are now considered the Provider of that system.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.4.1",
+                  "action": "Continue to complete role assessment"
+                },
+                "skip_to_exemptions": {
+                  "next": "3.1.1",
+                  "action": "Skip to check if exemptions apply"
+                }
+              }
+            },
+            {
+              "id": "2.4.1",
+              "question": "Is your AI system built into a physical product (like equipment or machinery)?",
+              "help_text": "For example: sensors, controllers, safety systems, or monitoring equipment",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.4.2",
+                  "action": "Continue to assess product manufacturer status"
+                },
+                "no": {
+                  "next": "2.result_summary",
+                  "action": "Role assessment complete - see summary"
+                }
+              }
+            },
+            {
+              "id": "2.4.2",
+              "question": "Is this AI system critical for the product's safety?",
+              "help_text": "Would the product be unsafe if the AI system failed or malfunctioned?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.4.3",
+                  "action": "Continue to next question"
+                },
+                "no": {
+                  "next": "2.result_summary",
+                  "action": "Role assessment complete - see summary"
+                }
+              }
+            },
+            {
+              "id": "2.4.3",
+              "question": "Are you selling or deploying this product under your name or brand?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "2.4.result_provider",
+                  "action": "You are also a Provider as product manufacturer"
+                },
+                "no": {
+                  "next": "2.result_summary",
+                  "action": "Role assessment complete - see summary"
+                }
+              }
+            },
+            {
+              "id": "2.4.result_provider",
+              "question": "Role Assessment Result: You are a PROVIDER (as product manufacturer)",
+              "result_text": "Because your AI system is a safety component of a product sold under your name, you are the Provider of the high-risk AI system.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "2.result_summary",
+                  "action": "See complete role summary"
+                }
+              }
+            },
+            {
+              "id": "2.result_summary",
+              "question": "Your Role(s) Summary",
+              "result_text": "Based on your answers, we have determined your specific standing under the AI Act framework.",
+              "answer_type": "summary",
+              "answers": {
+                "continue_provider": {
+                  "next": "3.0",
+                  "action": "You have been identified as a Provider. Continue to Section 3 to check for specific exemptions.",
+                  "condition": "if_provider"
+                },
+                "continue_deployer": {
+                  "next": "3.0",
+                  "action": "You have been identified as a Deployer. Continue to Section 3 to check for specific exemptions.",
+                  "condition": "if_deployer"
+                },
+                "no_role": {
+                  "next": "END",
+                  "action": "No specific AI Act role (Provider or Deployer) was identified based on your responses. You may not have direct obligations at this stage.",
+                  "condition": "if_no_role"
+                }
+              },
+              "notes": "If you have multiple roles (e.g., both Provider and Deployer), you must comply with all applicable obligations for each role."
+            }
+          ]
+        },
+        {
+          "section_number": "3",
+          "title": "Scope & Exemptions Analysis",
+          "description": "Some AI systems are exempt from certain requirements",
+          "questions": [
+            {
+              "id": "3.0",
+              "question": "Let's check if any exemptions apply to your AI system",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "3.1.1",
+                  "action": "Start exemption assessment"
+                }
+              }
+            },
+            {
+              "id": "3.1.1",
+              "question": "Is your AI system used exclusively for military, defense, or national security purposes?",
+              "answer_type": "yes/no",
+              "help_text": "It must be developed AND used only for these purposes",
+              "answers": {
+                "yes": {
+                  "next": "3.1.result_exempt",
+                  "action": "Your system is exempt from the AI Act"
+                },
+                "no": {
+                  "next": "3.2.1",
+                  "action": "Continue to check other exemptions"
+                }
+              }
+            },
+            {
+              "id": "3.1.result_exempt",
+              "question": "Exemption Result: Military/Defense Exemption",
+              "result_text": "Your system is exempt from the AI Act due to military, defense, or national security use.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "finish": {
+                  "next": "END",
+                  "action": "Assessment complete - exemption apply"
+                }
+              }
+            },
+            {
+              "id": "3.2.1",
+              "question": "Is your AI system used solely for scientific research and development?",
+              "answer_type": "yes/no",
+              "help_text": "Not for commercial use or operational deployment",
+              "answers": {
+                "yes": {
+                  "next": "3.2.result_exempt",
+                  "action": "Your system is exempt from the AI Act"
+                },
+                "no": {
+                  "next": "3.3.1",
+                  "action": "Continue to check other exemptions"
+                }
+              }
+            },
+            {
+              "id": "3.2.result_exempt",
+              "question": "Exemption Result: Research Exemption",
+              "result_text": "Your system is exempt from the AI Act as it's used solely for scientific research.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "finish": {
+                  "next": "END",
+                  "action": "Assessment complete - but ethical standards still apply"
+                }
+              },
+              "notes": "Recognized ethical and professional standards for scientific research still apply"
+            },
+            {
+              "id": "3.3.1",
+              "question": "Is your AI system still in testing or development and not yet released to market?",
+              "answer_type": "yes/no",
+              "help_text": "Pre-market testing and prototyping are typically exempt",
+              "answers": {
+                "yes": {
+                  "next": "3.3.result_exempt",
+                  "action": "Your system is currently exempt"
+                },
+                "no": {
+                  "next": "3.4.1",
+                  "action": "Continue to check open-source exemption"
+                }
+              }
+            },
+            {
+              "id": "3.3.result_exempt",
+              "question": "Exemption Result: Pre-Market Testing Exemption",
+              "result_text": "Your system is currently exempt as it's in pre-market testing/development phase.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "finish": {
+                  "next": "END",
+                  "action": "Assessment complete - reassess before market release"
+                }
+              },
+              "notes": "You must reassess compliance before placing the system on the market"
+            },
+            {
+              "id": "3.4.1",
+              "question": "Is your AI system available as free and open-source software?",
+              "answer_type": "yes/no",
+              "help_text": "Users can freely run, copy, distribute, study, change, and improve it",
+              "answers": {
+                "yes": {
+                  "next": "3.4.2",
+                  "action": "Continue to verify open-source requirements"
+                },
+                "no": {
+                  "next": "3.result_no_exemption",
+                  "action": "No exemptions apply - continue to risk assessment"
+                }
+              }
+            },
+            {
+              "id": "3.4.2",
+              "question": "Are all model parameters publicly available?",
+              "help_text": "Including weights, architecture information, and usage instructions",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "3.4.3",
+                  "action": "Continue to check restrictions"
+                },
+                "no": {
+                  "next": "3.result_no_exemption",
+                  "action": "Doesn't qualify for open-source exemption - continue to risk assessment"
+                }
+              }
+            },
+            {
+              "id": "3.4.3",
+              "question": "Is your system classified as high-risk OR does it fall under prohibited practices?",
+              "answer_type": "yes/no",
+              "help_text": "We'll determine this in the next section if you're not sure",
+              "answers": {
+                "yes": {
+                  "next": "3.result_no_exemption",
+                  "action": "Open-source systems still must comply if high-risk or prohibited"
+                },
+                "no": {
+                  "next": "3.4.result_partial_exempt",
+                  "action": "Some exemptions may apply to your open-source system"
+                },
+                "not_sure": {
+                  "next": "4.0",
+                  "action": "Continue to risk assessment to determine this"
+                }
+              }
+            },
+            {
+              "id": "3.4.result_partial_exempt",
+              "question": "Exemption Result: Partial Open-Source Exemption",
+              "result_text": "As an open-source system that's not high-risk, certain obligations may not apply. However, you must still complete risk assessment.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "4.0",
+                  "action": "Continue to Section 4: Risk Assessment"
+                }
+              }
+            },
+            {
+              "id": "3.result_no_exemption",
+              "question": "Exemption Result: No Exemptions Apply",
+              "result_text": "No exemptions apply to your AI system. You must complete the full compliance assessment.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "4.0",
+                  "action": "Continue to Section 4: Risk Assessment"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "4",
+          "title": "AI System Risk Classification",
+          "description": "The AI Act classifies systems by risk level: Unacceptable, High, Limited, or Minimal",
+          "questions": [
+            {
+              "id": "4.0",
+              "question": "Let's determine your AI system's risk level",
+              "help_text": "This determines which obligations apply to you",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "4.1.1",
+                  "action": "Start with prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.1",
+              "question": "Does your AI system manipulate people's behavior in harmful ways?",
+              "help_text": "Using subliminal techniques or exploiting vulnerabilities to cause significant harm",
+              "answer_type": "yes/no",
+              "examples": [
+                "Misleading information that tricks people into bad decisions",
+                "Manipulating vulnerable groups (elderly, disabled, economically disadvantaged)"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                },
+                "no": {
+                  "next": "4.1.2",
+                  "action": "Continue prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.2",
+              "question": "Does it create 'social scoring' systems?",
+              "help_text": "Evaluating or classifying people based on their social behavior or personal characteristics in ways that harm them",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                },
+                "no": {
+                  "next": "4.1.3",
+                  "action": "Continue prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.3",
+              "question": "Does it predict criminal behavior based solely on profiling?",
+              "help_text": "Without objective evidence of actual involvement in criminal activity",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                },
+                "no": {
+                  "next": "4.1.4",
+                  "action": "Continue prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.4",
+              "question": "Does it create or expand facial recognition databases through untargeted scraping?",
+              "help_text": "Collecting facial images from the internet or CCTV without specific purpose",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                },
+                "no": {
+                  "next": "4.1.5",
+                  "action": "Continue prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.5",
+              "question": "Does it detect emotions in workplace or educational settings?",
+              "help_text": "Unless it's for medical or safety reasons",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.5a",
+                  "action": "Clarify the purpose"
+                },
+                "no": {
+                  "next": "4.1.6",
+                  "action": "Continue prohibited practices check"
+                }
+              }
+            },
+            {
+              "id": "4.1.5a",
+              "question": "Is the emotion detection for medical or safety reasons?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.6",
+                  "action": "Exemption applies - continue check"
+                },
+                "no": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                }
+              }
+            },
+            {
+              "id": "4.1.6",
+              "question": "Does it categorize people based on sensitive characteristics?",
+              "help_text": "Such as race, political opinions, religion, sexual orientation, etc., inferred from biometric data",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.1.result_prohibited",
+                  "action": "STOP - Your system is PROHIBITED"
+                },
+                "no": {
+                  "next": "4.1.result_not_prohibited",
+                  "action": "Your system is not prohibited - continue to high-risk assessment"
+                }
+              }
+            },
+            {
+              "id": "4.1.result_prohibited",
+              "question": "CRITICAL: Your AI System is PROHIBITED",
+              "result_text": "Based on your answers, your AI system uses prohibited practices under the EU AI Act. You CANNOT deploy this system.",
+              "answer_type": "acknowledgment",
+              "severity": "critical",
+              "answers": {
+                "understand": {
+                  "next": "END",
+                  "action": "Assessment complete - immediate review and system redesign required"
+                },
+                "review_answer": {
+                  "next": "4.1.1",
+                  "action": "Go back to review your answers"
+                }
+              }
+            },
+            {
+              "id": "4.1.result_not_prohibited",
+              "question": "Result: Not Prohibited",
+              "result_text": "Your system doesn't fall under prohibited practices. Let's continue to check if it's high-risk.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "4.2.1",
+                  "action": "Continue to high-risk assessment"
+                }
+              }
+            },
+            {
+              "id": "4.2.1",
+              "question": "Is your AI system used for managing or operating critical infrastructure?",
+              "help_text": "This is the most relevant category for the energy sector",
+              "answer_type": "yes/no",
+              "examples": [
+                "Controlling electrical substations",
+                "Managing power grid supply and demand",
+                "Operating transmission or distribution systems",
+                "Regulating reactor conditions",
+                "Managing energy storage systems"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "4.2.2",
+                  "action": "Continue to verify high-risk status"
+                },
+                "no": {
+                  "next": "4.2.4",
+                  "action": "Check other high-risk categories"
+                }
+              }
+            },
+            {
+              "id": "4.2.2",
+              "question": "Is your system a safety component for this infrastructure?",
+              "help_text": "Is it used to directly protect physical infrastructure, health, or safety of people?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.3",
+                  "action": "Continue verification"
+                },
+                "no": {
+                  "next": "4.2.4",
+                  "action": "May not be high-risk - check other categories"
+                }
+              }
+            },
+            {
+              "id": "4.2.3",
+              "question": "Could malfunction of your AI system lead to safety issues or service disruptions?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.4",
+                  "action": "Check other high-risk categories"
+                }
+              }
+            },
+            {
+              "id": "4.2.4",
+              "question": "Does your system identify people remotely using biometric data?",
+              "help_text": "Such as facial recognition or other biometric identification",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.5",
+                  "action": "Continue high-risk check"
+                }
+              }
+            },
+            {
+              "id": "4.2.5",
+              "question": "Does your system categorize people based on biometric data?",
+              "help_text": "Assigning people to categories based on their biometric characteristics",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.6",
+                  "action": "Continue high-risk check"
+                }
+              }
+            },
+            {
+              "id": "4.2.6",
+              "question": "Does your system recognize emotions?",
+              "help_text": "Identifying or inferring emotions or intentions from biometric data (excluding prohibited workplace use)",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.7",
+                  "action": "Continue high-risk check"
+                }
+              }
+            },
+            {
+              "id": "4.2.7",
+              "question": "Is your system used to evaluate creditworthiness or create credit scores?",
+              "help_text": "Making financial decisions about individuals",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.8",
+                  "action": "Continue high-risk check"
+                }
+              }
+            },
+            {
+              "id": "4.2.8",
+              "question": "Is your system used for recruitment or employee selection?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.9",
+                  "action": "Continue high-risk check"
+                }
+              }
+            },
+            {
+              "id": "4.2.9",
+              "question": "Is your system used to make workplace decisions about employees?",
+              "help_text": "Such as promotions, terminations, task allocation, or performance monitoring",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.2.result_highrisk",
+                  "action": "Your system is HIGH-RISK"
+                },
+                "no": {
+                  "next": "4.2.result_not_highrisk",
+                  "action": "Your system is not high-risk under these categories"
+                }
+              }
+            },
+            {
+              "id": "4.2.result_highrisk",
+              "question": "Result: Your System May Be HIGH-RISK",
+              "result_text": "Based on your answers, your system appears to be in a high-risk category. Let's check if any exceptions apply.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "check_exceptions": {
+                  "next": "4.3.1",
+                  "action": "Check for possible high-risk exceptions"
+                },
+                "accept_highrisk": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "Skip exceptions - accept high-risk classification"
+                }
+              }
+            },
+            {
+              "id": "4.3.1",
+              "question": "Does your AI system only perform a narrow, specific task?",
+              "help_text": "Such as transforming data from one format to another",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.3.2",
+                  "action": "Continue exception check"
+                },
+                "no": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "No exception applies - system is high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.2",
+              "question": "Is your system only used to improve results of previous human work?",
+              "help_text": "Not making the primary decision, just enhancing human decisions",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.3.3",
+                  "action": "Continue exception check"
+                },
+                "no": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "No exception applies - system is high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.3",
+              "question": "Does your system only detect patterns or flag anomalies for human review?",
+              "help_text": "Humans make the final decisions, not the AI",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.3.4",
+                  "action": "Continue exception check"
+                },
+                "no": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "No exception applies - system is high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.4",
+              "question": "Does your system perform only preparatory tasks?",
+              "help_text": "Gathering or organizing information for human assessment",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.3.5",
+                  "action": "Continue exception check"
+                },
+                "no": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "No exception applies - system is high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.5",
+              "question": "Does your system pose no significant risk of harm to health, safety, or fundamental rights?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.3.6",
+                  "action": "Final exception check"
+                },
+                "no": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "No exception applies - system is high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.6",
+              "question": "Does your system perform profiling of natural persons?",
+              "help_text": "Profiling means analyzing or predicting personal aspects",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "4.result_confirmed_highrisk",
+                  "action": "Exception does NOT apply due to profiling - system is high-risk"
+                },
+                "no": {
+                  "next": "4.3.result_exception",
+                  "action": "Exception may apply - system might not be high-risk"
+                }
+              }
+            },
+            {
+              "id": "4.3.result_exception",
+              "question": "Result: High-Risk Exception May Apply",
+              "result_text": "Based on your answers, your system might qualify for a high-risk exception. However, you must still document this assessment and register the system.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "7.0",
+                  "action": "Skip to Section 7: Transparency Requirements (Limited Risk)"
+                }
+              },
+              "notes": "You must document why your system is not high-risk and register this assessment."
+            },
+            {
+              "id": "4.2.result_not_highrisk",
+              "question": "Result: Not High-Risk",
+              "result_text": "Your system doesn't fall under high-risk categories based on your answers.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "7.0",
+                  "action": "Continue to Section 7: Transparency Requirements"
+                }
+              }
+            },
+            {
+              "id": "4.result_confirmed_highrisk",
+              "question": "CONFIRMED: Your System is HIGH-RISK",
+              "result_text": "Your system is classified as HIGH-RISK under the EU AI Act. Significant compliance obligations apply.",
+              "answer_type": "acknowledgment",
+              "severity": "high",
+              "answers": {
+                "continue_provider": {
+                  "next": "5.0",
+                  "action": "Continue to Section 5: Provider Obligations",
+                  "condition": "if_provider_role"
+                },
+                "continue_deployer": {
+                  "next": "6.0",
+                  "action": "Continue to Section 6: Deployer Obligations",
+                  "condition": "if_deployer_role_only"
+                },
+                "both_roles": {
+                  "next": "5.0",
+                  "action": "Continue to Section 5: Provider Obligations (you'll do Deployer after)",
+                  "condition": "if_both_roles"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "5",
+          "title": "Provider Obligations (High-Risk Systems)",
+          "description": "If you're a provider of a high-risk AI system, you must meet these requirements",
+          "questions": [
+            {
+              "id": "5.0",
+              "question": "Provider Obligations Overview",
+              "help_text": "As a provider of a high-risk AI system, you have extensive obligations. Let's go through them step by step.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "5.1.1",
+                  "action": "Start with Risk Management requirements"
+                }
+              }
+            },
+            {
+              "id": "5.1.1",
+              "question": "Have you identified potential risks your AI system could create?",
+              "help_text": "For health, safety, or fundamental rights when used as intended",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.1.2",
+                  "action": "Continue risk management assessment"
+                },
+                "no": {
+                  "next": "5.1.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.1.2",
+              "question": "Have you estimated and evaluated these risks?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.1.3",
+                  "action": "Continue risk management assessment"
+                },
+                "no": {
+                  "next": "5.1.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.1.3",
+              "question": "Do you monitor your system after deployment to identify new risks?",
+              "help_text": "Using data from real-world use",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.1.4",
+                  "action": "Continue risk management assessment"
+                },
+                "no": {
+                  "next": "5.1.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.1.4",
+              "question": "Have you implemented measures to address identified risks?",
+              "help_text": "To reduce risk to an acceptable level",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.1.5",
+                  "action": "Continue risk management assessment"
+                },
+                "no": {
+                  "next": "5.1.5",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.1.5",
+              "question": "Do you test your AI system to ensure it performs as intended?",
+              "help_text": "With defined metrics and thresholds",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.2.1",
+                  "action": " Risk Management complete - Continue to Data Quality"
+                },
+                "no": {
+                  "next": "5.2.1",
+                  "action": "️ Required - Continue to Data Quality",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.1",
+              "question": "Do you have documented processes for data collection and management?",
+              "help_text": "Including where data comes from and how it's prepared",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.2.2",
+                  "action": "Continue data governance assessment"
+                },
+                "no": {
+                  "next": "5.2.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.2",
+              "question": "Is your data relevant and representative for your AI system's intended use?",
+              "help_text": "Does it reflect real-world conditions where the system will operate?",
+              "answer_type": "yes/no",
+              "examples": [
+                "Grid measurements from actual power systems",
+                "Historical consumption data",
+                "Weather and sensor data",
+                "Geographic and contextual variations"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "5.2.3",
+                  "action": "Continue data quality assessment"
+                },
+                "no": {
+                  "next": "5.2.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.3",
+              "question": "Have you checked your data for errors and ensured it's complete?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.2.4",
+                  "action": "Continue data quality assessment"
+                },
+                "no": {
+                  "next": "5.2.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.4",
+              "question": "Have you examined your data for potential biases?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.2.5",
+                  "action": "Continue bias assessment"
+                },
+                "no": {
+                  "next": "5.2.5",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.5",
+              "question": "Have you implemented measures to detect and prevent bias?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.2.6",
+                  "action": "Continue to sensitive data question"
+                },
+                "no": {
+                  "next": "5.2.6",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.2.6",
+              "question": "Do you process sensitive personal data (race, health, etc.)?",
+              "help_text": "Only if strictly necessary for bias detection",
+              "answer_type": "yes/no/not_applicable",
+              "answers": {
+                "yes": {
+                  "next": "5.2.6a",
+                  "action": "Verify GDPR compliance"
+                },
+                "no": {
+                  "next": "5.3.1",
+                  "action": " Data Quality complete - Continue to Documentation"
+                },
+                "not_applicable": {
+                  "next": "5.3.1",
+                  "action": "Continue to Documentation"
+                }
+              }
+            },
+            {
+              "id": "5.2.6a",
+              "question": "Do you comply with GDPR and data protection regulations for this sensitive data?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.3.1",
+                  "action": " Data Quality complete - Continue to Documentation"
+                },
+                "no": {
+                  "next": "5.3.1",
+                  "action": "️ GDPR compliance required - Continue to Documentation",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.3.1",
+              "question": "Have you documented your AI system's design and development?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.3.2",
+                  "action": "Continue documentation check"
+                },
+                "no": {
+                  "next": "5.3.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.3.2",
+              "question": "Have you documented the training process and data used?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.3.3",
+                  "action": "Continue documentation check"
+                },
+                "no": {
+                  "next": "5.3.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.3.3",
+              "question": "Have you documented testing procedures and results?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.3.4",
+                  "action": "Continue documentation check"
+                },
+                "no": {
+                  "next": "5.3.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.3.4",
+              "question": "Is this documentation up-to-date and available for authorities?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.4.1",
+                  "action": " Documentation complete - Continue to Logging"
+                },
+                "no": {
+                  "next": "5.4.1",
+                  "action": "️ Required - Continue to Logging",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.4.1",
+              "question": "Does your system automatically record events relevant to safety and performance?",
+              "help_text": "This should be built into the system by default",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.4.2",
+                  "action": "Continue logging assessment"
+                },
+                "no": {
+                  "next": "5.4.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.4.2",
+              "question": "Do these logs help identify potential risks or issues?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.4.3",
+                  "action": "Continue logging assessment"
+                },
+                "no": {
+                  "next": "5.4.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.4.3",
+              "question": "Can deployers monitor system operation using these logs?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.5.1",
+                  "action": " Logging complete - Continue to Transparency"
+                },
+                "no": {
+                  "next": "5.5.1",
+                  "action": "️ Required - Continue to Transparency",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.5.1",
+              "question": "Can deployers understand how your system works?",
+              "help_text": "Is it designed to be sufficiently transparent?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.5.2",
+                  "action": "Continue transparency assessment"
+                },
+                "no": {
+                  "next": "5.5.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.5.2",
+              "question": "Have you provided instructions for use in an appropriate format?",
+              "help_text": "Complete, correct, and understandable",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.5.3",
+                  "action": "Continue to check instruction content"
+                },
+                "no": {
+                  "next": "5.5.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.5.3",
+              "question": "Do your instructions include all required information?",
+              "help_text": "Check all that you've included",
+              "answer_type": "checklist",
+              "options": [
+                "Provider details and contact information",
+                "System capabilities and limitations",
+                "Expected performance levels",
+                "Human oversight requirements",
+                "Computing and hardware requirements",
+                "Maintenance and care instructions"
+              ],
+              "answers": {
+                "all_checked": {
+                  "next": "5.6.1",
+                  "action": " Transparency complete - Continue to Human Oversight"
+                },
+                "some_checked": {
+                  "next": "5.6.1",
+                  "action": "️ All items required - Continue to Human Oversight",
+                  "compliance_status": "non_compliant"
+                },
+                "none_checked": {
+                  "next": "5.6.1",
+                  "action": "️ All items required - Continue to Human Oversight",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.6.1",
+              "question": "Is your system designed to allow human oversight during operation?",
+              "help_text": "Can humans monitor and intervene when needed?",
+              "answer_type": "yes/no",
+              "examples": [
+                "A person can intervene if AI proposes shutting down a power line",
+                "Operators can override automated decisions",
+                "System provides alerts for human review"
+              ],
+              "answers": {
+                "yes": {
+                  "next": "5.6.2",
+                  "action": "Continue human oversight assessment"
+                },
+                "no": {
+                  "next": "5.6.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.6.2",
+              "question": "Have you identified appropriate oversight measures?",
+              "help_text": "Either built into the system or for deployers to implement",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.6.3",
+                  "action": "Continue to check oversight capabilities"
+                },
+                "no": {
+                  "next": "5.6.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.6.3",
+              "question": "Do your oversight measures enable humans to:",
+              "help_text": "Check all that apply",
+              "answer_type": "checklist",
+              "options": [
+                "Understand the system's capabilities and limitations",
+                "Monitor system operation",
+                "Correctly interpret system outputs",
+                "Decide not to use the system or ignore its recommendations",
+                "Intervene or interrupt system operation when needed"
+              ],
+              "answers": {
+                "all_checked": {
+                  "next": "5.7.1",
+                  "action": " Human Oversight complete - Continue to Technical Requirements"
+                },
+                "some_checked": {
+                  "next": "5.7.1",
+                  "action": "️ All capabilities required - Continue to Technical Requirements",
+                  "compliance_status": "non_compliant"
+                },
+                "none_checked": {
+                  "next": "5.7.1",
+                  "action": "️ All capabilities required - Continue to Technical Requirements",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.7.1",
+              "question": "Is your system accurate for its intended purpose?",
+              "help_text": "Can it reliably perform the tasks it was designed for?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.7.2",
+                  "action": "Continue accuracy assessment"
+                },
+                "no": {
+                  "next": "5.7.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.7.2",
+              "question": "Have you documented accuracy levels and metrics?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.7.3",
+                  "action": "Continue robustness assessment"
+                },
+                "no": {
+                  "next": "5.7.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.7.3",
+              "question": "Is your system resilient to errors and unexpected situations?",
+              "help_text": "Can it handle faults, inconsistencies, or unusual conditions safely?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.7.4",
+                  "action": "Continue security assessment"
+                },
+                "no": {
+                  "next": "5.7.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.7.4",
+              "question": "Does your system have protections against unauthorized modifications?",
+              "help_text": "Can it resist attempts by third parties to alter its operation?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.7.5",
+                  "action": "Continue security assessment"
+                },
+                "no": {
+                  "next": "5.7.5",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.7.5",
+              "question": "Have you implemented cybersecurity measures?",
+              "help_text": "Protection against attacks like data poisoning, adversarial examples, or model theft",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.8.1",
+                  "action": " Technical Requirements complete - Continue to Provider Identification"
+                },
+                "no": {
+                  "next": "5.8.1",
+                  "action": "️ Required - Continue to Provider Identification",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.8.1",
+              "question": "Are your name, brand, and contact details visible on the system or documentation?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.1",
+                  "action": " Provider ID complete - Continue to Quality Management"
+                },
+                "no": {
+                  "next": "5.9.1",
+                  "action": "️ Required - Continue to Quality Management",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.1",
+              "question": "Have you documented policies and procedures for regulatory compliance?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.2",
+                  "action": "Continue quality management assessment"
+                },
+                "no": {
+                  "next": "5.9.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.2",
+              "question": "Do you have systematic processes for design and development?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.3",
+                  "action": "Continue quality management assessment"
+                },
+                "no": {
+                  "next": "5.9.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.3",
+              "question": "Do you have quality control and assurance procedures?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.4",
+                  "action": "Continue quality management assessment"
+                },
+                "no": {
+                  "next": "5.9.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.4",
+              "question": "Do you have testing and validation procedures?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.5",
+                  "action": "Continue quality management assessment"
+                },
+                "no": {
+                  "next": "5.9.5",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.5",
+              "question": "Do you have a post-market monitoring system?",
+              "help_text": "To collect and analyze data about system performance after deployment",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.9.6",
+                  "action": "Continue quality management assessment"
+                },
+                "no": {
+                  "next": "5.9.6",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.9.6",
+              "question": "Do you have procedures for reporting serious incidents?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.10.1",
+                  "action": " Quality Management complete - Continue to Document Retention"
+                },
+                "no": {
+                  "next": "5.10.1",
+                  "action": "️ Required - Continue to Document Retention",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.10.1",
+              "question": "Will you retain all required documentation for 10 years after market release?",
+              "help_text": "Including technical docs, quality management docs, and compliance certificates",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.11.1",
+                  "action": " Document Retention complete - Continue to Conformity Assessment"
+                },
+                "no": {
+                  "next": "5.11.1",
+                  "action": "️ Required - Continue to Conformity Assessment",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.11.1",
+              "question": "Which conformity assessment procedure applies to your system?",
+              "answer_type": "single_choice",
+              "options": [
+                {
+                  "text": "Internal control (self-assessment) - for most critical infrastructure systems",
+                  "value": "internal_control",
+                  "next": "5.11.2",
+                  "action": "Continue to verify completion"
+                },
+                {
+                  "text": "Assessment with notified body - required when harmonized standards don't exist or weren't fully applied",
+                  "value": "notified_body",
+                  "next": "5.11.2",
+                  "action": "Continue to verify completion"
+                },
+                {
+                  "text": "Product-specific assessment - for AI systems built into regulated products",
+                  "value": "product_specific",
+                  "next": "5.11.2",
+                  "action": "Continue to verify completion"
+                },
+                {
+                  "text": "Not sure",
+                  "value": "not_sure",
+                  "next": "5.11.2",
+                  "action": "️ You need to determine this - Continue",
+                  "compliance_status": "needs_clarification"
+                }
+              ]
+            },
+            {
+              "id": "5.11.2",
+              "question": "Have you completed the conformity assessment?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.12.1",
+                  "action": " Conformity Assessment complete - Continue to Declaration"
+                },
+                "no": {
+                  "next": "5.12.1",
+                  "action": "️ Required before market release - Continue to Declaration",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.12.1",
+              "question": "Have you signed a declaration stating your system meets all requirements?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.12.2",
+                  "action": "Continue to verify declaration content"
+                },
+                "no": {
+                  "next": "5.12.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.12.2",
+              "question": "Does your declaration include all required information?",
+              "help_text": "System identification, your details, conformity statement, standards applied, date and signature",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.13.1",
+                  "action": " Declaration complete - Continue to CE Marking"
+                },
+                "no": {
+                  "next": "5.13.1",
+                  "action": "️ All information required - Continue to CE Marking",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.13.1",
+              "question": "Is the CE marking visible on your system's packaging or documentation?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.13.2",
+                  "action": "Continue to verify CE marking quality"
+                },
+                "no": {
+                  "next": "5.13.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.13.2",
+              "question": "Is the CE marking legible and permanent?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.14.1",
+                  "action": " CE Marking complete - Continue to Registration"
+                },
+                "no": {
+                  "next": "5.14.1",
+                  "action": "️ Must be legible and permanent - Continue to Registration",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.14.1",
+              "question": "Where should your system be registered?",
+              "answer_type": "single_choice",
+              "options": [
+                {
+                  "text": "EU database (for most high-risk systems)",
+                  "value": "eu_database",
+                  "next": "5.14.2",
+                  "action": "Continue to verify registration"
+                },
+                {
+                  "text": "National level (for critical infrastructure in energy sector)",
+                  "value": "national",
+                  "next": "5.14.2",
+                  "action": "Continue to verify registration"
+                },
+                {
+                  "text": "Both EU and national",
+                  "value": "both",
+                  "next": "5.14.2",
+                  "action": "Continue to verify registration"
+                },
+                {
+                  "text": "Not sure",
+                  "value": "not_sure",
+                  "next": "5.14.2",
+                  "action": "️ You need to determine this - Continue",
+                  "compliance_status": "needs_clarification"
+                }
+              ]
+            },
+            {
+              "id": "5.14.2",
+              "question": "Have you completed the registration?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.15.1",
+                  "action": " Registration complete - Continue to Corrective Actions"
+                },
+                "no": {
+                  "next": "5.15.1",
+                  "action": "️ Required - Continue to Corrective Actions",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.15.1",
+              "question": "If you discover your system doesn't comply, will you take corrective action?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.15.2",
+                  "action": "Continue corrective action assessment"
+                },
+                "no": {
+                  "next": "5.15.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.15.2",
+              "question": "Will you investigate the causes of non-compliance?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.15.3",
+                  "action": "Continue corrective action assessment"
+                },
+                "no": {
+                  "next": "5.15.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.15.3",
+              "question": "Will you inform authorities if your system presents risks?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "5.result",
+                  "action": " Corrective Actions complete - See Provider Obligations Summary"
+                },
+                "no": {
+                  "next": "5.result",
+                  "action": "️ Required by law - See Provider Obligations Summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "5.result",
+              "question": "Provider Obligations Assessment Complete",
+              "result_text": "You've completed the Provider obligations assessment. Review your compliance status below.",
+              "answer_type": "summary",
+              "answers": {
+                "continue_deployer": {
+                  "next": "6.0",
+                  "action": "If you're also a Deployer, continue to Section 6",
+                  "condition": "if_also_deployer"
+                },
+                "continue_transparency": {
+                  "next": "7.0",
+                  "action": "Continue to Section 7: Transparency Requirements",
+                  "condition": "if_provider_only"
+                },
+                "view_report": {
+                  "next": "REPORT",
+                  "action": "Generate compliance report"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "6",
+          "title": "Deployer Obligations (High-Risk Systems)",
+          "description": "If you're using (deploying) a high-risk AI system, you must meet these requirements",
+          "questions": [
+            {
+              "id": "6.0",
+              "question": "Deployer Obligations Overview",
+              "help_text": "As a deployer of a high-risk AI system, you have important obligations. Let's review them.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "6.1.1",
+                  "action": "Start Deployer obligations assessment"
+                }
+              }
+            },
+            {
+              "id": "6.1.1",
+              "question": "Have you implemented measures to ensure you follow the system's instructions for use?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.2.1",
+                  "action": " Instructions compliance - Continue to Human Oversight"
+                },
+                "no": {
+                  "next": "6.2.1",
+                  "action": "️ Required - Continue to Human Oversight",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.2.1",
+              "question": "Have you assigned people who understand the technology and domain?",
+              "help_text": "They need both technical knowledge and expertise in the application area",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.2.2",
+                  "action": "Continue human oversight assessment"
+                },
+                "no": {
+                  "next": "6.2.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.2.2",
+              "question": "Have these people been trained?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.2.3",
+                  "action": "Continue human oversight assessment"
+                },
+                "no": {
+                  "next": "6.2.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.2.3",
+              "question": "Do they have authority to override or stop the system?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.2.4",
+                  "action": "Continue human oversight assessment"
+                },
+                "no": {
+                  "next": "6.2.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.2.4",
+              "question": "Do they have necessary support and resources?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.3.1",
+                  "action": " Human Oversight complete - Continue to Input Data"
+                },
+                "no": {
+                  "next": "6.3.1",
+                  "action": "️ Required - Continue to Input Data",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.3.1",
+              "question": "Do you control the input data for this system?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.3.2",
+                  "action": "Continue to verify data quality"
+                },
+                "no": {
+                  "next": "6.4.1",
+                  "action": "Input data quality not applicable - Continue to Monitoring"
+                }
+              }
+            },
+            {
+              "id": "6.3.2",
+              "question": "Is your input data relevant for the system's intended purpose?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.3.3",
+                  "action": "Continue data quality check"
+                },
+                "no": {
+                  "next": "6.3.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.3.3",
+              "question": "Is your input data representative of real conditions?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.4.1",
+                  "action": " Input Data complete - Continue to Monitoring"
+                },
+                "no": {
+                  "next": "6.4.1",
+                  "action": "️ Required - Continue to Monitoring",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.4.1",
+              "question": "Do you monitor how the system performs based on instructions?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.4.2",
+                  "action": "Continue monitoring assessment"
+                },
+                "no": {
+                  "next": "6.4.2",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.4.2",
+              "question": "Do you have mechanisms to report information to the provider?",
+              "help_text": "For their post-market monitoring",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.4.3",
+                  "action": "Continue monitoring assessment"
+                },
+                "no": {
+                  "next": "6.4.3",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.4.3",
+              "question": "Would you inform the provider and authorities if the system presents risks?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.4.4",
+                  "action": "Continue monitoring assessment"
+                },
+                "no": {
+                  "next": "6.4.4",
+                  "action": "️ Required - Continue to next question",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.4.4",
+              "question": "Would you report serious incidents to the provider and authorities?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.5.1",
+                  "action": " Monitoring complete - Continue to Log Retention"
+                },
+                "no": {
+                  "next": "6.5.1",
+                  "action": "️ Required - Continue to Log Retention",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.5.1",
+              "question": "Do you keep automatically generated logs for at least 6 months?",
+              "help_text": "Only if the logs are under your control",
+              "answer_type": "yes/no/not_applicable",
+              "answers": {
+                "yes": {
+                  "next": "6.6.1",
+                  "action": " Log Retention complete - Continue to Worker Information"
+                },
+                "no": {
+                  "next": "6.6.1",
+                  "action": "️ Required if logs are under your control - Continue to Worker Information",
+                  "compliance_status": "non_compliant"
+                },
+                "not_applicable": {
+                  "next": "6.6.1",
+                  "action": "Continue to Worker Information"
+                }
+              }
+            },
+            {
+              "id": "6.6.1",
+              "question": "Does your system affect workers or employees?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.6.2",
+                  "action": "You must inform them - Continue"
+                },
+                "no": {
+                  "next": "6.7.1",
+                  "action": "Worker information not applicable - Continue to Registration"
+                }
+              }
+            },
+            {
+              "id": "6.6.2",
+              "question": "Have you informed worker representatives and affected workers?",
+              "help_text": "That they'll be subject to the AI system's use",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.7.1",
+                  "action": " Worker Information complete - Continue to Registration"
+                },
+                "no": {
+                  "next": "6.7.1",
+                  "action": "️ Required - Continue to Registration",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.7.1",
+              "question": "Are you a public authority or institution?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.7.2",
+                  "action": "Registration required - Continue"
+                },
+                "no": {
+                  "next": "6.8.1",
+                  "action": "Registration not applicable - Continue to DPIA"
+                }
+              }
+            },
+            {
+              "id": "6.7.2",
+              "question": "Have you registered yourself and the system before using it?",
+              "help_text": "In the EU database (except for critical infrastructure systems)",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.8.1",
+                  "action": " Registration complete - Continue to DPIA"
+                },
+                "no": {
+                  "next": "6.8.1",
+                  "action": "️ Required for public authorities - Continue to DPIA",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.8.1",
+              "question": "Is a Data Protection Impact Assessment required for your use case?",
+              "help_text": "Check with your Data Protection Officer or authority",
+              "answer_type": "yes/no/not_sure",
+              "answers": {
+                "yes": {
+                  "next": "6.8.2",
+                  "action": "DPIA is required - Continue"
+                },
+                "no": {
+                  "next": "6.9.1",
+                  "action": "DPIA not required - Continue to Information Provision"
+                },
+                "not_sure": {
+                  "next": "6.8.2",
+                  "action": "️ You should verify this - Continue",
+                  "compliance_status": "needs_clarification"
+                }
+              }
+            },
+            {
+              "id": "6.8.2",
+              "question": "Have you used the provider's instructions to help conduct the DPIA?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.9.1",
+                  "action": " DPIA complete - Continue to Information Provision"
+                },
+                "no": {
+                  "next": "6.9.1",
+                  "action": "️ Required - Continue to Information Provision",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+
+            {
+              "id": "6.9.1",
+              "question": "Does your system make or assist in making decisions about people?",
+              "help_text": "Especially in critical infrastructure management",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.9.2",
+                  "action": "Information provision required - Continue"
+                },
+                "no": {
+                  "next": "6.10.1",
+                  "action": "Information provision not applicable - Continue to FRIA"
+                }
+              }
+            },
+            {
+              "id": "6.9.2",
+              "question": "Have you informed those people that they're subject to the AI system?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.10.1",
+                  "action": " Information Provision complete - Continue to FRIA"
+                },
+                "no": {
+                  "next": "6.10.1",
+                  "action": "️ Required - Continue to FRIA",
+                  "compliance_status": "non_compliant" }
+              }
+            },
+            {
+              "id": "6.10.1",
+              "question": "Are you a public authority or entity providing public services?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.10.3",
+                  "action": "FRIA may be required - Continue to verify"
+                },
+                "no": {
+                  "next": "6.10.2",
+                  "action": "Continue to check other FRIA requirements"
+                }
+              }
+            },
+            {
+              "id": "6.10.2",
+              "question": "Does your system evaluate creditworthiness or credit scores?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.10.3",
+                  "action": "FRIA required - Continue"
+                },
+                "no": {
+                  "next": "6.result",
+                  "action": "FRIA not applicable - See Deployer Summary"
+                }
+              }
+            },
+            {
+              "id": "6.10.3",
+              "question": "Have you conducted a Fundamental Rights Impact Assessment?",
+              "help_text": "Before using the system",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.10.4",
+                  "action": "Continue to verify notification"
+                },
+                "no": {
+                  "next": "6.10.4",
+                  "action": "️ Required for your type of deployer - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "6.10.4",
+              "question": "Have you notified the results to the market surveillance authority?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "6.result",
+                  "action": " FRIA complete - See Deployer Summary"
+                },
+                "no": {
+                  "next": "6.result",
+                  "action": "️ Notification required - See Deployer Summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            { "id": "6.result",
+              "question": "Deployer Obligations Assessment Complete",
+              "result_text": "You've completed the Deployer obligations assessment. Review your compliance status below.",
+              "answer_type": "summary",
+              "answers": {
+                "continue_transparency": {
+                  "next": "7.0",
+                  "action": "Continue to Section 7: Transparency Requirements"
+                },
+                "view_report": {
+                  "next": "REPORT",
+                  "action": "Generate compliance report"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "7",
+          "title": "Transparency Requirements (Limited Risk)",
+          "description": "Even if your system isn't high-risk, transparency obligations may apply",
+          "questions": [
+            {
+              "id": "7.0",
+              "question": "Transparency Obligations Overview",
+              "help_text": "Certain AI systems must meet transparency requirements regardless of their risk level.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": { "next": "7.1.1",
+                  "action": "Start transparency assessment"
+                }
+              }
+            },
+            {
+              "id": "7.1.1",
+              "question": "Does your AI system interact directly with people?",
+              "answer_type": "yes/no",
+              "examples": [ "Customer service chatbots", "Voice assistants", "Smart home systems with user interfaces", "Virtual agents" ],
+              "answers": {
+                "yes": {
+                  "next": "7.1.2",
+                  "action": "Transparency requirements apply - Continue" },
+                "no": {
+                  "next": "7.2.1",
+                  "action": "Skip to synthetic content check"
+                }
+              }
+            }, {
+              "id": "7.1.2",
+              "question": "Do people know they're interacting with an AI system?",
+              "help_text": "Is it clearly indicated, preferably at the first interaction?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.2.1",
+                  "action": " Interaction transparency complete - Continue to synthetic content"
+                },
+                "no": {
+                  "next": "7.2.1",
+                  "action": "️ Required - must inform users they're interacting with AI - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "7.2.1",
+              "question": "Does your system generate synthetic content?",
+              "help_text": "Such as text, images, audio, or video",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.2.2",
+                  "action": "Content marking required - Continue"
+                },
+                "no": {
+                  "next": "7.3.1",
+                  "action": "Skip to emotion/biometric check"
+                }
+              }
+            }, {
+              "id": "7.2.2",
+              "question": "Is this content marked as AI-generated?",
+              "help_text": "In a way that's machine-readable and detectable",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": { "next": "7.3.1",
+                  "action": " Content marking complete - Continue to emotion/biometric" },
+                "no": { "next": "7.3.1",
+                  "action": "️ Required - content must be marked as AI-generated - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "7.3.1",
+              "question": "Does your system recognize emotions?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.3.3",
+                  "action": "Information requirements apply - Continue"
+                },
+                "no": {
+                  "next": "7.3.2",
+                  "action": "Continue to biometric categorization check"
+                }
+              }
+            },
+            {
+              "id": "7.3.2",
+              "question": "Does it categorize people based on biometric data?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.3.3",
+                  "action": "Information requirements apply - Continue"
+                },
+                "no": {
+                  "next": "7.4.1",
+                  "action": "Skip to deepfake check"
+                }
+              }
+            },
+            {
+              "id": "7.3.3",
+              "question": "Have you informed people who are exposed to this system?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.3.4",
+                  "action": "Continue to verify GDPR compliance"
+                },
+                "no": {
+                  "next": "7.3.4",
+                  "action": "️ Required - must inform exposed persons - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "7.3.4",
+              "question": "Do you process this data in compliance with GDPR?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.4.1",
+                  "action": " Emotion/biometric transparency complete - Continue to deepfake"
+                },
+                "no": {
+                  "next": "7.4.1",
+                  "action": "️ GDPR compliance required - Continue to deepfake",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "7.4.1",
+              "question": "Does your system create or manipulate deepfake content?",
+              "help_text": "Highly realistic content that could be mistaken for real",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.4.3",
+                  "action": "Disclosure required - Continue"
+                },
+                "no": { "next": "7.4.2", "action": "Continue to public information text check"
+                }
+              }
+            },
+            { "id": "7.4.2",
+              "question": "Does it generate text for public information purposes?",
+              "help_text": "Content published to inform the public on matters of public interest",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.4.3",
+                  "action": "Disclosure required - Continue"
+                },
+                "no": {
+                  "next": "7.result",
+                  "action": "No deepfake/public text disclosure needed - See Transparency Summary"
+                }
+              }
+            },
+            {
+              "id": "7.4.3",
+              "question": "Do you disclose that this content was artificially generated?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "7.result",
+                  "action": " Deepfake disclosure complete - See Transparency Summary"
+                },
+                "no": {
+                  "next": "7.result",
+                  "action": "️ Required - must disclose AI-generated content - See Summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "7.result",
+              "question": "Transparency Requirements Assessment Complete",
+              "result_text": "You've completed the transparency obligations assessment.",
+              "answer_type": "summary",
+              "answers": {
+                "continue_literacy": {
+                  "next": "8.0",
+                  "action": "Continue to Section 8: AI Literacy (applies to all)" },
+                "view_report": {
+                  "next": "REPORT",
+                  "action": "Generate compliance report"
+                }
+              }
+            }
+          ]
+        },
+        { "section_number": "8",
+          "title": "AI Literacy (All Systems)",
+          "description": "This applies to everyone working with AI systems",
+          "questions": [
+            {
+            "id": "8.0",
+              "question": "AI Literacy Requirements Overview",
+              "help_text": "All providers and deployers must ensure adequate AI literacy among their staff.",
+              "answer_type": "acknowledgment",
+              "answers": {
+                "continue": {
+                  "next": "8.1.1",
+                  "action": "Start AI literacy assessment"
+                }
+              }
+            },
+            { "id": "8.1.1",
+              "question": "Have you ensured your staff has adequate AI literacy?",
+              "help_text": "Do they understand how AI works, its benefits, and its limitations?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "8.1.2",
+                  "action": "Continue literacy assessment" },
+                "no": { "next": "8.1.2",
+                  "action": "️ Required for all AI systems - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "8.1.2",
+              "question": "Does your AI literacy program cover:",
+              "help_text": "Check all that apply",
+              "answer_type": "checklist",
+              "options": [ "Understanding of AI within the organization", "Clear definition of your organization's role (provider/deployer)", "Awareness of risks posed by AI systems", "Technical knowledge appropriate to staff roles", "Training tailored to different user groups (technical vs. non-technical)" ],
+              "answers": {
+                "all_checked": {
+                  "next": "8.result",
+                  "action": " AI Literacy complete - See Final Summary" },
+                "some_checked": {
+                  "next": "8.result",
+                  "action": "️ All elements recommended - See Final Summary",
+                  "compliance_status": "partial_compliance" },
+                "none_checked": {
+                  "next": "8.result",
+                  "action": "️ AI literacy program needed - See Final Summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "8.result",
+              "question": "AI Literacy Assessment Complete",
+              "result_text": "You've completed all sections of the AI System questionnaire.",
+              "answer_type": "summary",
+              "answers": {
+                "view_final_report": {
+                  "next": "FINAL_REPORT",
+                  "action": "Generate complete compliance report"
+                },
+                "restart": {
+                  "next": "1.1.1",
+                  "action": "Start over with a new assessment"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    { "id": "ai_model_questionnaire",
+      "title": "General-Purpose AI Model Compliance Check",
+      "description": "For general-purpose AI models under the EU AI Act",
+      "sections": [
+        {
+          "section_number": "1",
+          "title": "General-Purpose AI Model Identification",
+          "description": "Let's verify if your model qualifies under the AI Act",
+          "questions":
+          [
+            {
+              "id": "1.0",
+              "question": "General-Purpose AI Model Assessment",
+              "help_text": "This questionnaire is for AI models that can perform many different tasks. If your model is part of a specific AI system, you may also need to complete the AI System questionnaire.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue": {
+                  "next": "1.1",
+                  "action": "Start model classification"
+                }
+              }
+            },
+            {
+              "id": "1.1",
+              "question": "Is your model trained with large amounts of data using self-supervised learning?",
+              "help_text": "Self-supervised means it learned patterns from data without needing labels for every example",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.2",
+                  "action": "Continue model verification" },
+                "no": { "next": "1.result_not_gpai",
+                  "action": "May not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+              "id": "1.2",
+              "question": "Can your model perform many different types of tasks?",
+              "help_text": "Is it versatile enough to handle various problems, not just one specific function?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.3",
+                  "action": "Continue model verification"
+                },
+                "no": {
+                  "next": "1.result_not_gpai",
+                  "action": "May not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+            "id": "1.3",
+              "question": "Can your model be integrated into different applications or systems?",
+              "help_text": "Can other developers or systems use your model as a component?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                  "next": "1.4",
+                  "action": "Continue model verification"
+                },
+                "no": {
+                  "next": "1.result_not_gpai",
+                  "action": "May not be a general-purpose AI model"
+                }
+              }
+            },
+            {
+            "id": "1.4",
+              "question": "Is your model currently used for research, development, or prototyping only?",
+              "help_text": "Or has it been placed on the market/made available?",
+              "answer_type": "yes/no",
+              "answers": {
+                "yes": {
+                "next": "1.result_research_exempt",
+                "action": "Research models are exempt"
+                },
+                "no": {
+                  "next": "1.5",
+                  "action": "Continue - your model appears to be in scope"
+                }
+              }
+            },
+            {
+              "id": "1.5",
+              "question": "How much computing power was used to train your model?",
+              "help_text": "This helps determine if it has systemic risk",
+              "answer_type": "single_choice",
+              "options": [
+                {
+                  "text": "More than 10^25 FLOP (very high - potential systemic risk)",
+                  "value": "systemic_risk",
+                  "next": "1.result_systemic_risk",
+                  "action": "Your model has SYSTEMIC RISK - additional obligations apply"
+                },
+                {
+                  "text": "Between 10^23 and 10^25 FLOP",
+                  "value": "high_compute",
+                  "next": "1.6",
+                  "action": "Continue verification"
+                },
+                {
+                  "text": "Less than 10^23 FLOP",
+                  "value": "low_compute",
+                  "next": "1.6",
+                  "action": "Continue verification"
+                },
+                {
+                  "text": "I don't know",
+                  "value": "unknown",
+                  "next": "1.6",
+                  "action": "️ You'll need to determine this - Continue",
+                  "compliance_status": "needs_clarification"
+                }
+              ]
+            },
+            {
+              "id": "1.6",
+              "question": "What can your model generate or produce?",
+              "help_text": "Select all that apply to your model's capabilities",
+              "answer_type": "checklist",
+              "answers": {
+                "Language/text (like writing, translation, conversation)": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Audio or speech": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Images (from text descriptions or other inputs)": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Video content": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Code generation": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "Other creative or analytical content": {
+                  "next": "1.result_confirmed_gpai"
+                },
+                "all_checked": {
+                  "next": "1.result_confirmed_gpai",
+                  "action": "Multimodal GPAI capabilities confirmed"
+                },
+                "some_checked": {
+                  "next": "1.result_confirmed_gpai",
+                  "action": "GPAI capabilities identified"
+                },
+                "none_checked": {
+                  "next": "1.result_not_gpai",
+                  "action": "No general-purpose generative capabilities identified"
+                }
+              }
+            },
+            {
+              "id": "1.result_not_gpai",
+              "question": "Assessment Result: Not a General-Purpose AI Model",
+              "result_text": "Based on your answers, your model doesn't appear to be a general-purpose AI model under the AI Act.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "check_ai_system":
+                {
+                  "next": "ai_system_questionnaire",
+                  "action": "Check if it's an AI System instead"
+                },
+                "finish":
+                {
+                  "next": "END", "action": "Assessment complete"
+                }
+              }
+            },
+            {
+              "id": "1.result_research_exempt",
+              "question": "Assessment Result: Research Exemption",
+              "result_text": "Your model is exempt from the AI Act as it's used solely for research, development, or prototyping.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "finish":
+                {
+                  "next": "END",
+                  "action": "Assessment complete - reassess before market release"
+                }
+              },
+              "notes": "You must reassess before placing the model on the market"
+            },
+            {
+            "id": "1.result_confirmed_gpai",
+              "question": "Confirmed: General-Purpose AI Model",
+              "result_text": "Your model is a General-Purpose AI Model under the EU AI Act.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "2.1.1",
+                  "action": "Continue to determine your role and obligations" } } },
+            {
+              "id": "1.result_systemic_risk",
+              "question": "IMPORTANT: Systemic Risk Model",
+              "result_text": "Your model is classified as having SYSTEMIC RISK due to its high computing power (>10^25 FLOP). Additional strict obligations apply.",
+              "answer_type": "acknowledgment",
+              "severity": "high",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "2.1.1",
+                  "action": "Continue to provider obligations (including systemic risk requirements)"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "2",
+          "title": "Role Definition: AI Provider",
+          "description": "Determine if you're the provider of this model",
+          "questions":
+          [
+            {
+              "id": "2.0",
+              "question": "Let's determine if you're a provider of this general-purpose AI model",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "2.1",
+                  "action": "Start provider assessment"
+                }
+              }
+            },
+            {
+            "id": "2.1", "question": "Did you develop this AI model or commission its development?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes": {
+                  "next": "2.2",
+                  "action": "Continue provider verification"
+                },
+                "no":
+                {
+                  "next": "2.result_not_provider",
+                  "action": "You may not be a provider"
+                }
+              }
+            },
+            {
+            "id": "2.2",
+              "question": "Are you making this model available on the EU market?",
+              "help_text": "Or are you established in the EU and the model's output is used in the EU?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes": {
+                  "next": "2.result_provider",
+                  "action": "You are a Provider - obligations apply"
+                },
+                "no": { "next": "2.result_not_provider",
+                  "action": "You may not fall under EU AI Act jurisdiction"
+                }
+              }
+            },
+            {
+              "id": "2.result_provider",
+              "question": "Role Confirmed: You are a PROVIDER",
+              "result_text": "As a provider of a general-purpose AI model, specific obligations apply to you.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "3.0",
+                  "action": "Continue to check for exemptions"
+                }
+              }
+            },
+            {
+            "id": "2.result_not_provider",
+              "question": "Assessment Result: Not a Provider",
+              "result_text": "Based on your answers, you don't appear to be a provider under the EU AI Act.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "finish":
+                {
+                  "next": "END",
+                  "action": "Assessment complete - no AI Act obligations"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "3",
+          "title": "Applicability of Exemptions",
+          "description": "Check if your model qualifies for exemptions",
+          "questions": [
+            {
+              "id": "3.0",
+              "question": "Let's check if any exemptions apply to your model",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "3.1",
+                  "action": "Start exemption check"
+                }
+              }
+            },
+            {
+              "id": "3.1",
+              "question": "Is your model released under a free and open-source license?",
+              "help_text": "Users can freely use, modify, and distribute it",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes": {
+                  "next": "3.1a",
+                  "action": "Continue to verify open-source requirements"
+                },
+                "no": { "next": "3.2", "action": "Check scientific research exemption"
+                }
+              }
+            },
+            {
+              "id": "3.1a",
+              "question": "Are all model parameters publicly available?",
+              "help_text": "Including weights, architecture, and usage information",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "3.1b", "action": "Continue open-source verification"
+                },
+                "no": {
+                  "next": "3.2",
+                  "action": "Doesn't qualify for open-source exemption - check other exemptions"
+                }
+              }
+            },
+            {
+              "id": "3.1b",
+              "question": "Does your model have systemic risk (>10^25 FLOP training compute)?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes": {
+                  "next": "3.result_no_exemption",
+                  "action": "Open-source exemption does NOT apply to systemic risk models"
+                },
+                "no": {
+                  "next": "3.result_opensource_exemption",
+                  "action": "Partial open-source exemption may apply"
+                }
+              }
+            },
+            {
+              "id": "3.2",
+              "question": "Is your model used solely for scientific research and development?",
+              "help_text": "Not for commercial purposes or operational use",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "3.result_research_exempt",
+                  "action": "Research exemption applies"
+                },
+                "no":
+                {
+                  "next": "3.3",
+                  "action": "Check pre-market testing exemption"
+                }
+              }
+            },
+            {
+              "id": "3.3",
+              "question": "Is your model still in testing or development and not yet released?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "3.result_premarket_exempt",
+                  "action": "Pre-market exemption applies"
+                },
+                "no": { "next": "3.result_no_exemption",
+                  "action": "No exemptions apply"
+                }
+              }
+            },
+            {
+              "id": "3.result_opensource_exemption",
+              "question": "Result: Partial Open-Source Exemption",
+              "result_text": "Some obligations may not apply to your open-source model. However, you still have certain transparency obligations.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "4.0",
+                  "action": "Continue to Section 4: Provider Obligations (reduced)"
+                }
+              }
+            },
+            {
+              "id": "3.result_research_exempt",
+              "question": "Result: Research Exemption",
+              "result_text": "Your model is exempt as it's used solely for research.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "finish":
+                {
+                  "next": "END",
+                  "action": "Assessment complete - ethical standards still apply"
+                }
+              }
+            },
+            {
+              "id": "3.result_premarket_exempt",
+              "question": "Result: Pre-Market Exemption",
+              "result_text": "Your model is currently exempt as it's in pre-market testing.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "finish":
+                {
+                  "next": "END",
+                  "action": "Assessment complete - reassess before market release"
+                }
+              }
+            },
+            {
+              "id": "3.result_no_exemption",
+              "question": "Result: No Exemptions Apply",
+              "result_text": "You must comply with all provider obligations for general-purpose AI models.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "4.0",
+                  "action": "Continue to Section 4: Provider Obligations"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "section_number": "4",
+          "title": "Provider Obligations for General-Purpose AI Models",
+          "description": "Compliance requirements for providers",
+          "questions":
+          [
+            {
+              "id": "4.0",
+              "question": "Provider Obligations Overview",
+              "help_text": "As a provider of a general-purpose AI model, you have specific obligations under the AI Act.",
+              "answer_type": "acknowledgment",
+              "answers":
+              {
+                "continue":
+                {
+                  "next": "4.1",
+                  "action": "Start obligations assessment"
+                }
+              }
+            },
+            {
+              "id": "4.1",
+              "question": "Have you adhered to the Code of Practice for general-purpose AI models?",
+              "help_text": "The Code of Practice provides detailed guidance on meeting your obligations",
+              "answer_type": "yes/no/not_yet_available",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.5",
+                  "action": " Code adherence simplifies compliance - Continue to summary requirements"
+                },
+                "no":
+                {
+                  "next": "4.1a",
+                  "action": "You must demonstrate alternative compliance measures"
+                },
+                "not_yet_available":
+                {
+                  "next": "4.2",
+                  "action": "Proceed with individual obligations assessment"
+                }
+              }
+            },
+            {
+              "id": "4.1a",
+              "question": "Why are you not adhering to the Code of Practice?",
+              "help_text": "This is for documentation purposes",
+              "answer_type": "text",
+              "answers":
+              {
+                "submitted":
+                {
+                  "next": "4.2",
+                  "action": "You must meet obligations through alternative adequate means"
+                }
+              }
+            },
+            {
+              "id": "4.2",
+              "question": "Have you created and maintained technical documentation of your model?",
+              "help_text": "Including training process, testing, and evaluation results",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.3",
+                  "action": "Continue documentation check"
+                },
+                "no":
+                {
+                  "next": "4.3",
+                  "action": "️ Required - Continue to next requirement",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.3",
+              "question": "Have you provided information and documentation to downstream providers?",
+              "help_text": "Providers who will integrate your model into their AI systems need specific information",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.4",
+                  "action": "Continue transparency check"
+                },
+                "no":
+                {
+                  "next": "4.4",
+                  "action": "️ Required - Continue to copyright compliance",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.4",
+              "question": "Have you implemented a policy to comply with EU copyright law?",
+              "help_text": "Including respecting text and data mining opt-outs",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.5",
+                  "action": "Continue to training data summary"
+                },
+                "no":
+                {
+                  "next": "4.5",
+                  "action": "️ Required - Continue to training data summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.5",
+              "question": "Have you published a summary of the content used for training your model?",
+              "help_text": "Using the template provided by the AI Office",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.6",
+                  "action": "Continue to location check"
+                },
+                "no":
+                {
+                  "next": "4.6",
+                  "action": "️ Required - Continue to location check",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.6",
+              "question": "Is your organization established in a third country (outside the EU)?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.6a",
+                  "action": "Authorized representative required"
+                },
+                "no":
+                {
+                  "next": "4.check_systemic",
+                  "action": "Skip to systemic risk check"
+                }
+              }
+            },
+            {
+              "id": "4.6a",
+              "question": "Have you appointed an authorized representative in the EU?",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.check_systemic",
+                  "action": " Representative appointed - Continue to systemic risk check"
+                },
+                "no":
+                {
+                  "next": "4.check_systemic",
+                  "action": "️ Required for third-country providers - Continue to systemic risk check",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.check_systemic",
+              "question": "Does your model have systemic risk?",
+              "help_text": "Training compute >10^25 FLOP or designated by the Commission",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.7",
+                  "action": "️ Additional systemic risk obligations apply - Continue"
+                },
+                "no":
+                {
+                  "next": "4.result",
+                  "action": "Standard obligations complete - See summary"
+                }
+              }
+            },
+            {
+              "id": "4.7",
+              "question": "Have you performed model evaluation to assess systemic risks?",
+              "help_text": "Including adversarial testing and assessment of dangerous capabilities",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.8",
+                  "action": "Continue systemic risk assessment"
+                },
+                "no":
+                {
+                  "next": "4.8",
+                  "action": "️ Required for systemic risk models - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.8",
+              "question": "Have you assessed and mitigated possible systemic risks?",
+              "help_text": "Including sources of risk and implemented mitigation measures",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.9",
+                  "action": "Continue systemic risk assessment"
+                },
+                "no":
+                {
+                  "next": "4.9",
+                  "action": "️ Required for systemic risk models - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.9",
+              "question": "Do you track and report serious incidents to the AI Office?",
+              "help_text": "And report possible corrective measures",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.10",
+                  "action": "Continue systemic risk assessment"
+                },
+                "no": { "next": "4.10",
+                  "action": "️ Required for systemic risk models - Continue",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.10",
+              "question": "Have you ensured adequate cybersecurity protection for your model?",
+              "help_text": "Appropriate to the level of systemic risk",
+              "answer_type": "yes/no",
+              "answers":
+              {
+                "yes":
+                {
+                  "next": "4.result",
+                  "action": " Systemic risk obligations complete - See summary"
+                },
+                "no": { "next": "4.result",
+                  "action": "️ Required for systemic risk models - See summary",
+                  "compliance_status": "non_compliant"
+                }
+              }
+            },
+            {
+              "id": "4.result",
+              "question": "Provider Obligations Assessment Complete",
+              "result_text": "You've completed all obligations for general-purpose AI model providers.",
+              "answer_type": "summary",
+              "answers":
+              {
+                "view_report":
+                {
+                  "next": "REPORT",
+                  "action": "Generate compliance report"
+                },
+                "restart":
+                {
+                  "next": "1.0",
+                  "action": "Start a new assessment"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata":
+  { "version": "2.0",
+    "last_updated": "2026-01-09",
+    "applicable_regulation": "EU AI Act (Regulation EU 2024/1689)",
+    "target_sector": "Energy sector (EnergyGuard platform)",
+    "navigation_type": "conditional",
+    "notes": "This questionnaire structure provides explicit navigation for each answer. Each question specifies the next question ID based on the user's response. This does not constitute legal advice and should be used for informational purposes only."
+  }
+}
