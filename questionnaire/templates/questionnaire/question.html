@@ -36,6 +36,25 @@
               </div>
             </div>
           </div>
+
+          {% if "2.result_summary" in question.id %}
+            <div class="mb-5 text-center">
+              <span class="text-body-tertiary text-uppercase fw-bold d-block mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                Your Identified Roles:
+              </span>
+              <div class="d-flex flex-wrap justify-content-center gap-2">
+                {% if user_roles %}
+                  {% for role in user_roles %}
+                    <span class="badge rounded-pill px-4 py-2 shadow-sm bg-dark text-white" style="font-size: 1rem;">
+                      <span class="fas fa-id-badge me-2"></span>{{ role }}
+                    </span>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-danger small">No roles found in context.</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
         {% endif %}
       </div>
 

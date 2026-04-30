@@ -60,6 +60,9 @@ def question_detail(request, question_id):
 
     category = request.session.get('final_risk_display', None)
 
+    user_roles = request.session.get('user_roles', [])
+    logic_conditions = request.session.get('logic_conditions', {})
+
     context = {
         'question': question,
         'questionnaire': questionnaire,  # Defining variable to avoid NameError
@@ -69,11 +72,12 @@ def question_detail(request, question_id):
         'next_question_id': next_question_id,
         'category': category,
         'result_text': request.session.pop('flash_result_text', None),
+        'user_roles': user_roles,
+        'logic_conditions': logic_conditions,
     }
     context['active_navbar_page'] = 'trustworthiness'
     context['show_sidebar'] = True
     return render(request, 'questionnaire/question.html', context)
-
 
 def submit_answer(request, question_id):
     current_question = get_object_or_404(Question, id=question_id)
@@ -98,7 +102,50 @@ def submit_answer(request, question_id):
         user_answer.selected_choices.set(selected_ids)
         user_answer.save()
 
-        choice = None
+        choice = get_object_or_404(Choice, id=selected_ids[0])
+        next_q = choice.next_question
+
+        # --- Dynamic Risk Identification ---
+
+        # 1. Control for Prohibited Practices (Unacceptable Risk)
+        if next_q and "4.1.result_prohibited" in next_q.id:
+            request.session['ai_risk_level'] = "Unacceptable Risk (Prohibited)"
+            request.session['is_high_risk'] = False
+
+        # 2. Temporary Marking of Potential High Risk (Before Exemptions)
+        elif next_q and "4.2.result_highrisk" in next_q.id:
+            # Εδώ το σύστημα ΔΕΝ θεωρείται ακόμα High Risk, αλλά "Potential High Risk"
+            request.session['ai_risk_level'] = "Potential High Risk"
+            request.session['is_high_risk'] = False  # Παραμένει False μέχρι την επιβεβαίωση
+
+        # 3. CONFIRMATION of High Risk (After Section 4.3, if there was no exception)
+        elif next_q and "4.result_confirmed_highrisk" in next_q.id:
+            request.session['ai_risk_level'] = "High Risk"
+            request.session['is_high_risk'] = True
+
+        # 4. APPLICATION OF EXCEPTION (Conversion to Limited Risk)
+        # If the user is led to 4.3.result_exception, the risk is downgraded
+        elif next_q and "4.3.result_exception" in next_q.id:
+            request.session['ai_risk_level'] = "Limited Risk"
+            request.session['is_high_risk'] = False
+
+        # 5. Check for Non-High Risk from the beginning (Section 4.2 -> No)
+        elif next_q and "4.2.result_not_highrisk" in next_q.id:
+            request.session['ai_risk_level'] = "Limited/Minimal Risk"
+            request.session['is_high_risk'] = False
+
+        # 6. Transparency (Limited Risk - Section 7)
+        elif next_q and "7.result" in next_q.id:
+            # Αν δεν έχουμε ήδη "κλειδώσει" σε High Risk, τότε είναι Limited
+            if request.session.get('ai_risk_level') != "High Risk":
+                request.session['ai_risk_level'] = "Limited Risk"
+                request.session['is_high_risk'] = False
+
+        # 7. Out of Scope
+        if next_q and ("result_exempt" in next_q.id or next_q.id == "1.3"):
+            request.session['ai_risk_level'] = "Exempt (Out of Scope)"
+            request.session['is_high_risk'] = False
+
         # 2. Checklist vs Radio logic for navigation
         if current_question.answer_type == 'checklist':
             # Exclude technical markers to calculate real selection coverage
@@ -124,10 +171,10 @@ def submit_answer(request, question_id):
 
         # 3. Classification Logic (Risk Level & Exemptions)
 
-        # High Risk detection based on specific question IDs
-        high_risk_ids = ['1.1.4', '1.1.5', '2.1.1']
-        if current_question.id in high_risk_ids and choice.text.lower() == "yes":
-            request.session['ai_risk_level'] = "High Risk"
+        # # High Risk detection based on specific question IDs
+        # high_risk_ids = ['1.1.4', '1.1.5', '2.1.1']
+        # if current_question.id in high_risk_ids and choice.text.lower() == "yes":
+        #     request.session['ai_risk_level'] = "High Risk"
 
         # Determine next navigation step
         next_q = choice.next_question if choice else None
@@ -159,8 +206,39 @@ def submit_answer(request, question_id):
                 }
             )
 
-        # 5. Redirect Handling
+        # 5. Redirect Handling & Role Identification
         if next_q:
+            user_roles = request.session.get('user_roles', [])
+
+            if next_q.id == "2.1.result_provider" or next_q.id == "2.3.result_provider" or next_q.id == "2.4.result_provider":
+                if "provider" not in user_roles:
+                    user_roles.append("provider")
+
+            if next_q.id == "2.2.result_deployer":
+                if "deployer" not in user_roles:
+                    user_roles.append("deployer")
+
+            request.session['user_roles'] = user_roles
+            request.session.modified = True
+
+            # Ορισμός των conditions για την πλοήγηση που χρησιμοποιεί το JSON
+            is_provider = "provider" in user_roles
+            is_deployer = "deployer" in user_roles
+
+            # Ειδική λογική για τη σελίδα αποτελεσμάτων (π.χ. 4.result_confirmed_highrisk)
+            # Εδώ προετοιμάζουμε τις μεταβλητές που περιμένει το template ή η επόμενη ερώτηση
+            context_conditions = {
+                'if_provider_role': is_provider and not is_deployer,
+                'if_deployer_role_only': is_deployer and not is_provider,
+                'if_both_roles': is_provider and is_deployer,
+                'if_provider': is_provider,
+                'if_deployer': is_deployer,
+            }
+            # Αποθήκευση στο session για να είναι διαθέσιμα στο επόμενο request
+            request.session['logic_conditions'] = context_conditions
+
+
+
             # Special logic for the very last result page (summary)
             if next_q.id == "8.result":
                 request.session['final_risk_display'] = request.session.get('ai_risk_level', "Minimal Risk")
