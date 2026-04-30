@@ -65,7 +65,7 @@
         </div>
         <!-- AI MODELS -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <a href="" class=" text-decoration-none">
+          <a href="{% url 'ai_models' %}" class=" text-decoration-none">
             <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-cube text-danger-dark"></span>
               <div class="ms-2">
                 <div class="d-flex align-items-end">
@@ -79,12 +79,12 @@
         </div>
         <!-- DTs -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-6 col-xl-3 col-xxl-12">
-          <a href="" class=" text-decoration-none">
+          <a href="{% url 'digitaltwins-list' %}" class=" text-decoration-none">
             <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-building text-success-dark"></span>
               <div class="ms-2">
                 <div class="d-flex align-items-end">
                   <!-- TODO: Replace with dynamic count -->
-                  <h2 class="mb-0 me-2">24</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
+                  <h2 class="mb-0 me-2">5</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
               </div>
@@ -138,7 +138,7 @@
           </ul>
           <div class="py-0 z-1 mt-6">
             <!-- TODO: Add functionality to button -->
-            <button class="btn btn-outline-primary p-2">Learn how trustworthiness works<i class="fa-solid fa-angle-right ms-2"></i></button>
+            <a class="btn btn-outline-primary p-2" href="{% url 'trustworthiness' %}">Learn how trustworthiness works<i class="fa-solid fa-angle-right ms-2"></i></a>
           </div>
         </div>
         
@@ -158,7 +158,7 @@
               <p class="text-body-tertiary mb-md-7">How registered models are distributed by model type</p>
               <!-- LEGEND -->
               <div id="donutLegend" style="width: 100%; min-height: 220px;"></div>
-              <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
+              <div class="border-0"><a class="fw-bold fs-9 mt-3" href="{% url 'ai_models' %}">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
             </div>
             <div class="col-12 col-md-6">
               <div class="position-relative mb-sm-4 mb-xl-0">
@@ -174,13 +174,13 @@
           <h3 class="mb-4">Digital Twins</h3>
           <p class="text-body-tertiary mb-3 mb-xl-5">Digital Twins enable simulation, monitoring and AI-driven optimization across energy systems.</p>
           <ul>
-            <li class="mb-2">24 Configured Twins</li>
+            <li class="mb-2">5 Configured Twins</li>
             <li class="mb-2">Model & Dataset Integration</li>
             <li class="mb-2">Simulation & Scenario Testing</li>
           </ul>
           <div class="py-0 z-1 mt-4 mt-xl-9">
             <!-- TODO: Add functionality to link -->
-            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">Browse Digital Twins<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
+            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="{% url 'digitaltwins-list' %}">Browse Digital Twins<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
           </div>
         </div>
       </div>
@@ -198,9 +198,9 @@
             <li class="mb-2">1000+ Nodes Available</li>
             <li class="mb-2">Large Scale Model Training</li>
           </ul>
-          <div class="py-0 z-1 mt-4 mt-xl-9">
+          <div class="py-0 z-1 position-relative mt-4 mt-xl-9">
             <!-- TODO: Add functionality to link -->
-            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="#!">View HPC details<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
+            <div class="border-0"><a class="fw-bold fs-9 mt-3" href="{% url 'hpc' %}">View HPC details<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
           </div>
         </div>
       </div>  

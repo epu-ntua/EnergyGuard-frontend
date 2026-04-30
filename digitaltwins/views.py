@@ -40,7 +40,7 @@ _DT_BY_SLUG = {dt['slug']: dt for dt in DIGITAL_TWINS}
 
 @login_required
 def map_view(request):
-    return render(request, 'digitaltwins/map.html', {'show_sidebar': True})
+    return render(request, 'digitaltwins/map.html', {'show_sidebar': True, 'active_navbar_page': 'facilities'})
 
 
 @login_required

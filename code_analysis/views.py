@@ -92,7 +92,7 @@ def _add_stepper_context(context, source_label=None, job_id=None):
 	context["configure_step_url_name"] = _get_configure_url(source_label) if source_label else None
 	context["processing_step_query"] = urlencode({"job": job_id, "source": source_label}) if job_id and source_label else None
 	context.setdefault("show_sidebar", True)
-	context.setdefault("active_navbar_page", "codeanalysis")
+	context.setdefault("active_navbar_page", "trustworthiness")
 	return context
 
 
@@ -100,7 +100,7 @@ def _add_stepper_context(context, source_label=None, job_id=None):
 def select_source(request):
 	return render(request, "code_analysis/mockup1.html", {
 		"show_sidebar": True,
-		"active_navbar_page": "codeanalysis",
+		"active_navbar_page": "trustworthiness",
 	})
 
 
@@ -600,7 +600,7 @@ def configure_jupyter(request):
 		"submit_label": "Submit",
 		"source_type": "JupyterHub Workspace",
 		"show_sidebar": True,
-		"active_navbar_page": "codeanalysis",
+		"active_navbar_page": "trustworthiness",
 	}
 	return render(
 		request,
@@ -616,7 +616,7 @@ def configure_github(request):
 		"code_analysis/configure_github.html",
 		_add_stepper_context({
 			"show_sidebar": True,
-			"active_navbar_page": "codeanalysis",
+			"active_navbar_page": "trustworthiness",
 		}, source_label="GitHub Repository"),
 	)
 
@@ -628,7 +628,7 @@ def configure_upload(request):
 		"code_analysis/configure_upload.html",
 		_add_stepper_context({
 			"show_sidebar": True,
-			"active_navbar_page": "codeanalysis",
+			"active_navbar_page": "trustworthiness",
 		}, source_label="Local ZIP File"),
 	)
 
@@ -762,7 +762,7 @@ def results(request, job_id):
 			"error": "Job not found. The server may have restarted since the scan ran.",
 			"result_json": None,
 			"show_sidebar": True,
-			"active_navbar_page": "codeanalysis",
+			"active_navbar_page": "trustworthiness",
 		})
 	if job.get("status") != "completed":
 		query = urlencode({"job": job_id, "source": job.get("source_label", "")})
@@ -776,7 +776,7 @@ def results(request, job_id):
 				**_build_results_context(job.get("result") or {}, source_label, job_id),
 				"error": None,
 				"show_sidebar": True,
-				"active_navbar_page": "codeanalysis",
+				"active_navbar_page": "trustworthiness",
 			},
 			source_label=source_label,
 			job_id=job_id,
