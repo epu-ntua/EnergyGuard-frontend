@@ -1,5 +1,4 @@
 from django.urls import reverse
-
 from .models import Notification, Profile
 
 
@@ -8,6 +7,7 @@ def header_notifications(request):
         return {
             "header_notifications": [],
             "header_notifications_count": 0,
+            "current_user_profile": None,
         }
 
     notifications = []
@@ -55,4 +55,5 @@ def header_notifications(request):
     return {
         "header_notifications": notifications,
         "header_notifications_count": len(notifications),
+        "current_user_profile": profile,
     }

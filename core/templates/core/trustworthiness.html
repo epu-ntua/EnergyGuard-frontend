@@ -48,9 +48,13 @@
                     <img class="card-img-top" src="{% static 'assets/img/trust/robustness.jpg' %}" alt="Adversarial Robustness" style="height: 180px; object-fit:unset;">
                     <div class="card-body">
                         <h5 class="card-title">Adversarial Robustness</h5>
-                        <p class="card-text text-body-tertiary fs-9">Evaluate how your AI model performs under adverse conditions — including noisy inputs, out-of-distribution data, and adversarial attacks. </p>
-                        <p class="fs-9 text-body-tertiary">Has not started yet</p>
-                        <a href="#" class="stretched-link"></a>
+                        <p class="card-text text-body-tertiary fs-9">Benchmark your model against noisy inputs, out-of-distribution samples, and adversarial attacks to quantify resilience before deployment.</p>
+                        <ul class="fs-9 text-body-tertiary">
+                            <li>8 Attack Methods Evaluated (FGSM, PGD &amp; more)</li>
+                            <li>Detected 17 Robustness Vulnerabilities</li>
+                            <li>Hardened 11 Model Configurations</li>
+                        </ul>
+                        <a href="{% url 'robustness:config_input' %}" class="stretched-link"></a>
                     </div>
                 </div>
             </div>

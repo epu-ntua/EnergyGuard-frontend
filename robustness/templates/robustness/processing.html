@@ -1,0 +1,277 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Running Evaluation - Robustness Benchmarks{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'robustness/processing.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <h2 class="mb-8">Robustness Benchmarks</h2>
+    <div class="row g-4">
+      <div class="col-12 col-xl-9 mx-auto">
+
+        <div class="card theme-wizard mb-5">
+
+          <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+            <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+              <li class="nav-item">
+                <span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Select Source</span></div></span>
+              </li>
+              <li class="nav-item">
+                <span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Configure Source</span></div></span>
+              </li>
+              <li class="nav-item">
+                <span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-search"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Analyze</span></div></span>
+              </li>
+              <li class="nav-item">
+                <span class="nav-link fw-semibold"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Results</span></div></span>
+              </li>
+            </ul>
+          </div>
+
+        <header class="hero processing-hero">
+          <div class="yaml-hero-icon" aria-hidden="true" style="margin-top:0.2rem;">
+            <img src="{% static 'assets/img/spot-illustrations/shield-2.png' %}" alt="" style="width:52px;height:52px;object-fit:contain;">
+          </div>
+          {% if analysis_error %}
+            <div class="processing-badge processing-badge--error">
+              <span class="processing-badge-dot"></span>
+              Backend Error
+            </div>
+            <h1>Evaluation could not be completed</h1>
+            <p>The backend returned an error while processing <strong>{{ config_name }}</strong>.</p>
+          {% else %}
+            <div class="processing-badge">
+              <span class="processing-badge-dot"></span>
+              Evaluation Running
+            </div>
+            <h1>Running robustness evaluation</h1>
+            <p>We are running the evaluation pipeline for <strong>{{ config_name }}</strong> against the configured attack scenarios.</p>
+          {% endif %}
+        </header>
+
+        <section class="config-wrap processing-wrap">
+          {% if analysis_error %}
+            <div class="processing-grid">
+              <section class="processing-card processing-card--primary">
+                <div class="result-banner result-banner--error">The evaluation request did not complete successfully.</div>
+                <p class="progress-caption">{{ analysis_error }}</p>
+              </section>
+
+              <aside class="processing-sidebar">
+                <section class="processing-card processing-card--meta">
+                  <h2>Submission summary</h2>
+                  <dl class="summary-list">
+                    <div>
+                      <dt>Config</dt>
+                      <dd>{{ config_name }}</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>Failed</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <div class="processing-actions">
+                  <a class="btn btn-ghost" href="{% url 'robustness:config_input' %}">Back to Config Input</a>
+                </div>
+              </aside>
+            </div>
+          {% else %}
+            <div class="processing-grid">
+              <section class="processing-card processing-card--primary">
+                <div class="progress-head">
+                  <div>
+                    <span class="progress-kicker">Current job</span>
+                    <h2>Robustness benchmark evaluation</h2>
+                  </div>
+                  <div class="progress-percent" id="progress-percent">12%</div>
+                </div>
+
+                <div class="progress-bar" aria-hidden="true">
+                  <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                </div>
+
+                <p class="progress-caption" id="progress-caption">Connecting to MLflow and loading the registered model — inspecting architecture, inputs, and outputs.</p>
+
+                <ol class="stage-list" id="stage-list">
+                  <li class="stage-item is-active">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Analyse model</strong>
+                      <span>Connect to MLflow, load the registered model and inspect its architecture, inputs, and outputs.</span>
+                    </div>
+                  </li>
+                  <li class="stage-item">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Define evaluation flavour</strong>
+                      <span>Detect framework (PyTorch / TensorFlow / sklearn), resolve backend wrapper, and validate dataset compatibility.</span>
+                    </div>
+                  </li>
+                  <li class="stage-item">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Perform baseline evaluation</strong>
+                      <span>Run the model on the clean test set to measure accuracy before any perturbation.</span>
+                    </div>
+                  </li>
+                  <li class="stage-item">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Execute adversarial attacks</strong>
+                      <span>Apply configured attacks (e.g. HopSkipJump, Boundary Attack, Random Search) across the sample set.</span>
+                    </div>
+                  </li>
+                  <li class="stage-item">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Calculate robust accuracy</strong>
+                      <span>Measure model accuracy under each attack and compute per-epsilon robustness scores.</span>
+                    </div>
+                  </li>
+                  <li class="stage-item">
+                    <span class="stage-dot"></span>
+                    <div>
+                      <strong>Compile report</strong>
+                      <span>Aggregate metrics, generate the robustness report, and publish results to the output directory.</span>
+                    </div>
+                  </li>
+                </ol>
+              </section>
+
+              <aside class="processing-sidebar">
+                <section class="processing-card processing-card--meta">
+                  <h2>Submission summary</h2>
+                  <dl class="summary-list">
+                    <div>
+                      <dt>Config</dt>
+                      <dd>{{ config_name }}</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd id="summary-status">{% if job_status == 'running' %}Running{% else %}Queued and starting{% endif %}</dd>
+                    </div>
+                    <div>
+                      <dt>Stages</dt>
+                      <dd>6 evaluation steps</dd>
+                    </div>
+                    <div>
+                      <dt>Estimated time</dt>
+                      <dd>2–5 minutes</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <div class="processing-actions">
+                  <a class="btn btn-ghost" href="{% url 'robustness:config_input' %}">Back to Config Input</a>
+                  <button class="btn btn-primary" type="button" disabled>Results will appear here next</button>
+                </div>
+              </aside>
+            </div>
+          {% endif %}
+        </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-nav-group]').forEach(function (group) {
+        var toggle = group.querySelector('[data-nav-toggle]');
+        if (!toggle) return;
+        toggle.addEventListener('click', function () {
+          var open = group.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      });
+
+      {% if not analysis_error %}
+      var steps = [
+        {
+          percent: 8,
+          caption: 'Connecting to MLflow and loading the registered model — inspecting architecture, inputs, and outputs.',
+          status: 'Analysing model',
+        },
+        {
+          percent: 22,
+          caption: 'Detecting framework flavour and resolving the evaluation backend wrapper.',
+          status: 'Defining evaluation flavour',
+        },
+        {
+          percent: 40,
+          caption: 'Running the model on the clean test set to establish a pre-attack accuracy baseline.',
+          status: 'Performing baseline evaluation',
+        },
+        {
+          percent: 60,
+          caption: 'Applying adversarial perturbations (HopSkipJump, Boundary Attack, Random Search) across the sample set.',
+          status: 'Executing adversarial attacks',
+        },
+        {
+          percent: 80,
+          caption: 'Measuring model accuracy under each attack and computing per-epsilon robustness scores.',
+          status: 'Calculating robust accuracy',
+        },
+        {
+          percent: 94,
+          caption: 'Aggregating metrics and generating the final robustness report.',
+          status: 'Compiling report',
+        }
+      ];
+
+      var progressPercent = document.getElementById('progress-percent');
+      var progressBarFill = document.getElementById('progress-bar-fill');
+      var progressCaption = document.getElementById('progress-caption');
+      var summaryStatus = document.getElementById('summary-status');
+      var stageItems = Array.from(document.querySelectorAll('.stage-item'));
+
+      function renderStep(index) {
+        var step = steps[index];
+        if (!step) return;
+        progressPercent.textContent = step.percent + '%';
+        progressBarFill.style.width = step.percent + '%';
+        progressCaption.textContent = step.caption;
+        if (summaryStatus) summaryStatus.textContent = step.status;
+        stageItems.forEach(function (item, i) {
+          item.classList.toggle('is-complete', i < index);
+          item.classList.toggle('is-active', i === index);
+        });
+      }
+
+      renderStep(0);
+      steps.slice(1).forEach(function (_, index) {
+        window.setTimeout(function () { renderStep(index + 1); }, (index + 1) * 1600);
+      });
+
+      {% if job_id and job_status == 'running' %}
+      (function poll() {
+        window.setTimeout(function () {
+          fetch('{{ status_url }}?job={{ job_id }}')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.status === 'completed') {
+                var resultId = data.backend_job_id || '{{ job_id }}';
+                window.location.href = '{{ results_base_url }}' + resultId + '/';
+              } else if (data.status === 'failed' || data.status === 'not_found') {
+                window.location.reload();
+              } else {
+                poll();
+              }
+            })
+            .catch(function () { poll(); });
+        }, 1500);
+      })();
+      {% endif %}
+      {% endif %}
+    })();
+  </script>
+</div>
+{% endblock content %}

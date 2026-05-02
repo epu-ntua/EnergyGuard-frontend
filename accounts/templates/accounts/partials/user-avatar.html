@@ -1,7 +1,7 @@
 {% load static %}
 
-{%if request.user.profile.profile_picture %}
-<img class="rounded-circle" src="{{ request.user.profile.profile_picture.url }}" alt="avatar"/>
+{% if current_user_profile and current_user_profile.profile_picture %}
+<img class="rounded-circle" src="{{ current_user_profile.profile_picture.url }}" alt="avatar"/>
 {%else%}
 <img class="rounded-circle" src="{% static 'assets/img/team/avatar.webp' %}" alt="default_avatar"/>
 {%endif%}

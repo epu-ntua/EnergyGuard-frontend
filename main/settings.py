@@ -28,7 +28,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env')) # Reads the .env file
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
+ENABLE_LOCAL_DEV_LOGIN = env.bool('ENABLE_LOCAL_DEV_LOGIN', default=False)
+DEV_AUTO_LOGIN_EMAIL = env('DEV_AUTO_LOGIN_EMAIL', default='dev@local.test')
+DEV_AUTO_LOGIN_FIRST_NAME = env('DEV_AUTO_LOGIN_FIRST_NAME', default='Local')
+DEV_AUTO_LOGIN_LAST_NAME = env('DEV_AUTO_LOGIN_LAST_NAME', default='Developer')
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '147.102.6.166', 'dashboard.energy-guard.eu'] 
 
@@ -62,6 +66,7 @@ INSTALLED_APPS = [
     'django_q',
     'digitaltwins',
     'code_analysis',
+    'robustness',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +76,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.LocalDevAutoLoginMiddleware',
     'accounts.middleware.KeycloakTokenExpiryMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -102,15 +108,23 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+}
+
+# Use SQLite for local development when requested (avoids requiring a local Postgres server)
+if env.bool('USE_SQLITE', default=True):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
+    }
+else:
+    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('POSTGRES_DB'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'PORT': env('POSTGRES_PORT'),
-        'HOST': env('POSTGRES_HOST'), 
+        'HOST': env('POSTGRES_HOST'),
     }
-}
 
 
 # Password validation
@@ -203,7 +217,7 @@ AUTH_USER_MODEL = 'accounts.User'
 #Default: 1209600 (2 weeks, in seconds)
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
 
-SITE_ID = 2 # Required for django-allauth - in Django Admin site_id=2 corresponds to 127.0.0.1:8000
+SITE_ID = 1 # Required for django-allauth - matches site id=1 (127.0.0.1:8000)
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -301,4 +315,11 @@ JUPYTERHUB_URL = env('JUPYTERHUB_URL')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='http://localhost:9001').rstrip('/')
+
+REPORTS_DIR = str(BASE_DIR / 'robustness_reports')
+ROBUSTNESS_API_URL = env('ROBUSTNESS_API_URL', default='')
+ROBUSTNESS_API_TIMEOUT = env.int('ROBUSTNESS_API_TIMEOUT', default=1800)
+ROBUSTNESS_API_SUBMIT_TIMEOUT = env.int('ROBUSTNESS_API_SUBMIT_TIMEOUT', default=60)
+ROBUSTNESS_API_POLL_TIMEOUT = env.int('ROBUSTNESS_API_POLL_TIMEOUT', default=30)
+ROBUSTNESS_API_POLL_INTERVAL = float(env('ROBUSTNESS_API_POLL_INTERVAL', default='2.0'))
 SCAN_API_TIMEOUT = env.int('SCAN_API_TIMEOUT', default=300)

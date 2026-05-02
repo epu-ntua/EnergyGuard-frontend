@@ -1,9 +1,11 @@
 import logging
+import secrets
 from datetime import timedelta
 
 import requests
 from django.conf import settings
 from django.contrib.auth import logout
+from django.contrib.auth import get_user_model, login
 from django.shortcuts import redirect
 from django.utils import timezone
 
@@ -119,5 +121,41 @@ class KeycloakTokenExpiryMiddleware:
                     # Refresh token is also expired – session is truly over
                     logout(request)
                     return redirect("account_login")
+
+        return self.get_response(request)
+
+
+class LocalDevAutoLoginMiddleware:
+    """Automatically signs in a local development user when enabled.
+
+    This is intentionally gated behind DEBUG and an explicit environment flag so
+    the production authentication flow stays unchanged.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if (
+            settings.DEBUG
+            and getattr(settings, "ENABLE_LOCAL_DEV_LOGIN", False)
+            and not request.user.is_authenticated
+        ):
+            user_model = get_user_model()
+            email = getattr(settings, "DEV_AUTO_LOGIN_EMAIL", "dev@local.test").strip().lower()
+            first_name = getattr(settings, "DEV_AUTO_LOGIN_FIRST_NAME", "Local")
+            last_name = getattr(settings, "DEV_AUTO_LOGIN_LAST_NAME", "Developer")
+
+            user = user_model.objects.filter(email=email).first()
+            if user is None:
+                user = user_model.objects.create_user(
+                    email=email,
+                    password=secrets.token_urlsafe(24),
+                    first_name=first_name,
+                    last_name=last_name,
+                    is_active=True,
+                )
+
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
         return self.get_response(request)

@@ -1,0 +1,248 @@
+:root {
+  --bg-1: #edf3ff;
+  --bg-2: #f6f8fc;
+  --panel: #ffffff;
+  --sidebar: #f8fbff;
+  --text: #1f2937;
+  --muted: #637087;
+  --line: #d9e0eb;
+  --active: #2d7ebd;
+  --accent: #2ea8ff;
+  --card-shadow: 0 16px 34px rgba(20, 42, 74, 0.09);
+  --warn-bg: #fffcf0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 8% 12%, #e4f8ff 0%, transparent 26%),
+    radial-gradient(circle at 92% 88%, #eef3ff 0%, transparent 32%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #fbfdff 0%, var(--sidebar) 100%);
+  border-right: 1px solid #dce5f2;
+  padding: 0.8rem 0.5rem;
+}
+
+.brand-wrap {
+  padding: 0.35rem 0.4rem 0.8rem;
+}
+
+.brand-wrap a {
+  display: block;
+  line-height: 0;
+}
+
+.brand-wrap img {
+  display: block;
+  width: 100%;
+  max-width: 164px;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  color: #647793;
+  font-weight: 600;
+  padding: 0.58rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  background: #edf5ff;
+}
+
+.nav-link.is-active {
+  color: #1f5f9f;
+  background: linear-gradient(90deg, #d9ebff, #edf6ff);
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-toggle {
+  color: #5f7392;
+}
+
+.caret {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: #7487a3;
+  transform: rotate(-90deg);
+  transition: transform 200ms ease;
+}
+
+.nav-group.is-open .caret {
+  transform: rotate(0deg);
+}
+
+.sub-nav {
+  display: none;
+  padding-left: 0.45rem;
+}
+
+.nav-group.is-open .sub-nav {
+  display: block;
+}
+
+.nav-sublink {
+  font-size: 0.91rem;
+  padding-left: 1.05rem;
+}
+
+.dot {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: #8da2bf;
+  flex-shrink: 0;
+}
+
+.nav-link.is-active .dot {
+  background: #2d7ebd;
+}
+
+.page-shell {
+  padding: 1.2rem 1.2rem 1.2rem 0.95rem;
+}
+
+.panel {
+  max-width: 1220px;
+  margin: 0 auto;
+  background: var(--panel);
+  border-radius: 20px;
+  border: 1px solid #e4e9f2;
+  box-shadow: 0 8px 28px rgba(26, 40, 75, 0.07);
+  overflow: hidden;
+}
+
+.stepper {
+  margin: 0;
+  padding: 1.4rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  list-style: none;
+  background: #f9fbff;
+  border-bottom: 1px solid #ebeff6;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  position: relative;
+  text-align: center;
+  color: #6e7c92;
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  font-weight: 600;
+}
+
+.step-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.step-link:hover .label {
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  left: calc(50% + 1.65rem);
+  width: calc(100% - 3.3rem);
+  height: 4px;
+  border-radius: 999px;
+  background: #d5dee9;
+  transform: translateY(-50%);
+}
+
+.bubble {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  border: 2px solid #c4cedf;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.label {
+  line-height: 1.25;
+}
+
+.step.is-complete {
+  color: var(--active);
+}
+
+.step.is-complete::after {
+  background: var(--active);
+}
+
+.step.is-complete .bubble {
+  background: var(--active);
+  border-color: var(--active);
+  color: #fff;
+}
+
+.step.is-current {
+  color: var(--accent);
+}
+
+.step.is-current .bubble {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.87em;
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  background: #eef3ff;
+  color: #2d5fa8;
+}

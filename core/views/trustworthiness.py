@@ -6,6 +6,7 @@ BENCHMARK_TEMPLATES = {
     'ai-act-questionnaire': 'ai_act/mockup1.html',
     'code-analysis': 'code_analysis/mockup1.html',
     'altai-self-assessment': 'altai/mockup1.html',
+    'robustness': 'robustness/config_input.html',
 }
 
 
