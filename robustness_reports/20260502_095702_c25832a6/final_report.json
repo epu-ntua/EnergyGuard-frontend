@@ -1,0 +1,969 @@
+{
+  "report_meta": {
+    "family": "white_box",
+    "task_type": "regression",
+    "attack_name": "Fgsm",
+    "run_name": "efi_dss_whitebox_regression_fgsm_pgd_bim",
+    "description": "White-box FGSM+PGD+BIM on EFI-DSS DNN via MLflow pytorch flavor (regression)",
+    "model_backend": "mlflow",
+    "mlflow_run_id": "c2068b4cb348438780117e2a92fe1819",
+    "mlflow_tracking_uri": "/app/examples/mlflow/store",
+    "dataset": "/app/examples/data/efi_dss_dataset_orig.csv",
+    "target_columns": [
+      "area_Basement/slab",
+      "area_Roof/attic",
+      "area_Walls",
+      "area_doors",
+      "area_windows",
+      "U_Basement/slab",
+      "U_Roof/attic",
+      "U_Walls",
+      "U_doors",
+      "U_windows",
+      "air_exchange",
+      "specific_heat_gains"
+    ],
+    "auto_thresholds": {
+      "query_budget_auto": true,
+      "query_budget_pilot_samples": 5,
+      "query_budget_pilot_percentile": 0.9
+    },
+    "status": "warning"
+  },
+  "attack_setup": {
+    "norm": "inf",
+    "epsilon": 0.05,
+    "delta": null,
+    "query_budget": 10,
+    "steps": 10,
+    "step_size": null,
+    "targeted": false,
+    "samples_evaluated": 80,
+    "constraints": [
+      0.0,
+      1.0
+    ]
+  },
+  "performance_summary": {
+    "primary_metrics": [
+      {
+        "key": "clean_rmse",
+        "label": "Clean RMSE",
+        "value": 124.48501001197805,
+        "format": "number"
+      },
+      {
+        "key": "adversarial_rmse",
+        "label": "Adversarial RMSE (\u03b5=0.05)",
+        "value": 170.0858933677768,
+        "format": "number"
+      },
+      {
+        "key": "rmse_increase",
+        "label": "RMSE Increase (\u03b5=0.05)",
+        "value": 45.60088335579876,
+        "format": "number"
+      },
+      {
+        "key": "mae",
+        "label": "Clean MAE",
+        "value": 46.64135164141314,
+        "format": "number"
+      },
+      {
+        "key": "adversarial_mae",
+        "label": "Adversarial MAE (\u03b5=0.05)",
+        "value": 80.02467930241487,
+        "format": "number"
+      },
+      {
+        "key": "mae_increase",
+        "label": "MAE Increase (\u03b5=0.05)",
+        "value": 33.38332766100173,
+        "format": "number"
+      },
+      {
+        "key": "mean_prediction_shift",
+        "label": "Mean Prediction Shift (\u03b5=0.05)",
+        "value": 64.66134643554688,
+        "format": "number"
+      },
+      {
+        "key": "r2",
+        "label": "R2",
+        "value": 0.2691325989792639,
+        "format": "number"
+      }
+    ]
+  },
+  "charts": {
+    "robustness_curve": {
+      "type": "line",
+      "x_label": "epsilon",
+      "y_label": "error_increase",
+      "points": [
+        [
+          0.05,
+          45.60088335579876
+        ]
+      ]
+    },
+    "attack_efficiency": {
+      "type": "line",
+      "x_label": "queries",
+      "y_label": "success_rate",
+      "points": []
+    },
+    "attack_profile": {
+      "type": "bar",
+      "x_label": "feature",
+      "y_label": "mean perturbation (fraction of feature range)",
+      "points": [
+        [
+          "apartments",
+          0.09290948510169983
+        ],
+        [
+          "total_area",
+          0.09106960892677307
+        ],
+        [
+          "useful_area",
+          0.08710300177335739
+        ],
+        [
+          "Light",
+          0.049999967217445374
+        ],
+        [
+          "serie_101",
+          0.049999967217445374
+        ],
+        [
+          "serie_102",
+          0.047499969601631165
+        ],
+        [
+          "floors",
+          0.03928569704294205
+        ],
+        [
+          "serie_464",
+          0.036249980330467224
+        ],
+        [
+          "serie_316_318",
+          0.03499998152256012
+        ],
+        [
+          "serie_119",
+          0.031249985098838806
+        ],
+        [
+          "serie_467",
+          0.027499988675117493
+        ],
+        [
+          "serie_105",
+          0.021874992176890373
+        ],
+        [
+          "serie_0",
+          0.016249999403953552
+        ],
+        [
+          "serie_602",
+          0.014375001192092896
+        ],
+        [
+          "serie_103",
+          0.009375001303851604
+        ],
+        [
+          "serie_110",
+          0.004375000484287739
+        ],
+        [
+          "serie_104",
+          0.0012500003213062882
+        ],
+        [
+          "Heavy",
+          0.0
+        ]
+      ]
+    },
+    "per_sample_perturbation": {
+      "type": "bar",
+      "x_label": "sample",
+      "y_label": "perturbation",
+      "points": [
+        [
+          "#1",
+          0.05
+        ],
+        [
+          "#2",
+          0.05
+        ],
+        [
+          "#3",
+          0.05
+        ],
+        [
+          "#4",
+          0.05
+        ],
+        [
+          "#5",
+          0.05
+        ],
+        [
+          "#6",
+          0.05
+        ],
+        [
+          "#7",
+          0.05
+        ],
+        [
+          "#8",
+          0.05
+        ],
+        [
+          "#9",
+          0.05
+        ],
+        [
+          "#10",
+          0.05
+        ],
+        [
+          "#11",
+          0.05
+        ],
+        [
+          "#12",
+          0.05
+        ],
+        [
+          "#13",
+          0.05
+        ],
+        [
+          "#14",
+          0.05
+        ],
+        [
+          "#15",
+          0.05
+        ],
+        [
+          "#16",
+          0.05
+        ],
+        [
+          "#17",
+          0.05
+        ],
+        [
+          "#18",
+          0.05
+        ],
+        [
+          "#19",
+          0.05
+        ],
+        [
+          "#20",
+          0.05
+        ],
+        [
+          "#21",
+          0.05
+        ],
+        [
+          "#22",
+          0.05
+        ],
+        [
+          "#23",
+          0.05
+        ],
+        [
+          "#24",
+          0.05
+        ],
+        [
+          "#25",
+          0.05
+        ],
+        [
+          "#26",
+          0.05
+        ],
+        [
+          "#27",
+          0.05
+        ],
+        [
+          "#28",
+          0.05
+        ],
+        [
+          "#29",
+          0.05
+        ],
+        [
+          "#30",
+          0.05
+        ],
+        [
+          "#31",
+          0.05
+        ],
+        [
+          "#32",
+          0.05
+        ],
+        [
+          "#33",
+          0.05
+        ],
+        [
+          "#34",
+          0.05
+        ],
+        [
+          "#35",
+          0.05
+        ],
+        [
+          "#36",
+          0.05
+        ],
+        [
+          "#37",
+          0.05
+        ],
+        [
+          "#38",
+          0.05
+        ],
+        [
+          "#39",
+          0.05
+        ],
+        [
+          "#40",
+          0.05
+        ],
+        [
+          "#41",
+          0.05
+        ],
+        [
+          "#42",
+          0.05
+        ],
+        [
+          "#43",
+          0.05
+        ],
+        [
+          "#44",
+          0.05
+        ],
+        [
+          "#45",
+          0.05
+        ],
+        [
+          "#46",
+          0.05
+        ],
+        [
+          "#47",
+          0.05
+        ],
+        [
+          "#48",
+          0.05
+        ],
+        [
+          "#49",
+          0.05
+        ],
+        [
+          "#50",
+          0.05
+        ],
+        [
+          "#51",
+          0.05
+        ],
+        [
+          "#52",
+          0.05
+        ],
+        [
+          "#53",
+          0.05
+        ],
+        [
+          "#54",
+          0.05
+        ],
+        [
+          "#55",
+          0.05
+        ],
+        [
+          "#56",
+          0.05
+        ],
+        [
+          "#57",
+          0.05
+        ],
+        [
+          "#58",
+          0.05
+        ],
+        [
+          "#59",
+          0.05
+        ],
+        [
+          "#60",
+          0.05
+        ],
+        [
+          "#61",
+          0.05
+        ],
+        [
+          "#62",
+          0.05
+        ],
+        [
+          "#63",
+          0.05
+        ],
+        [
+          "#64",
+          0.05
+        ],
+        [
+          "#65",
+          0.05
+        ],
+        [
+          "#66",
+          0.05
+        ],
+        [
+          "#67",
+          0.05
+        ],
+        [
+          "#68",
+          0.05
+        ],
+        [
+          "#69",
+          0.05
+        ],
+        [
+          "#70",
+          0.05
+        ],
+        [
+          "#71",
+          0.05
+        ],
+        [
+          "#72",
+          0.05
+        ],
+        [
+          "#73",
+          0.05
+        ],
+        [
+          "#74",
+          0.05
+        ],
+        [
+          "#75",
+          0.05
+        ],
+        [
+          "#76",
+          0.05
+        ],
+        [
+          "#77",
+          0.05
+        ],
+        [
+          "#78",
+          0.05
+        ],
+        [
+          "#79",
+          0.05
+        ],
+        [
+          "#80",
+          0.05
+        ]
+      ]
+    },
+    "stress_comparison": {
+      "type": "bar",
+      "x_label": "stress_type",
+      "y_label": "mse_increase",
+      "points": []
+    },
+    "prediction_comparison": {
+      "type": "bar",
+      "x_label": "sample",
+      "y_label": "max single-output prediction shift (%)",
+      "points": [
+        [
+          "11",
+          3552.6503,
+          "area_windows"
+        ],
+        [
+          "14",
+          1450.8666,
+          "area_windows"
+        ],
+        [
+          "29",
+          1094.656,
+          "area_windows"
+        ],
+        [
+          "99",
+          1020.9075,
+          "area_windows"
+        ],
+        [
+          "60",
+          969.2806,
+          "area_windows"
+        ],
+        [
+          "40",
+          736.893,
+          "area_windows"
+        ],
+        [
+          "30",
+          640.6265,
+          "area_windows"
+        ],
+        [
+          "46",
+          358.0543,
+          "area_windows"
+        ],
+        [
+          "73",
+          336.3064,
+          "area_windows"
+        ],
+        [
+          "87",
+          304.6209,
+          "area_windows"
+        ],
+        [
+          "32",
+          303.0588,
+          "area_windows"
+        ],
+        [
+          "80",
+          206.023,
+          "area_windows"
+        ],
+        [
+          "35",
+          168.6249,
+          "area_windows"
+        ],
+        [
+          "70",
+          146.7935,
+          "area_windows"
+        ],
+        [
+          "7",
+          146.6086,
+          "area_windows"
+        ],
+        [
+          "96",
+          138.2559,
+          "area_windows"
+        ],
+        [
+          "15",
+          137.6044,
+          "area_windows"
+        ],
+        [
+          "91",
+          136.4792,
+          "area_windows"
+        ],
+        [
+          "79",
+          119.1657,
+          "area_windows"
+        ],
+        [
+          "52",
+          104.406,
+          "area_windows"
+        ],
+        [
+          "53",
+          100.4576,
+          "area_windows"
+        ],
+        [
+          "34",
+          85.3595,
+          "area_windows"
+        ],
+        [
+          "63",
+          84.7102,
+          "area_windows"
+        ],
+        [
+          "89",
+          82.5748,
+          "area_windows"
+        ],
+        [
+          "25",
+          82.3944,
+          "area_windows"
+        ],
+        [
+          "68",
+          81.6141,
+          "area_windows"
+        ],
+        [
+          "86",
+          81.6077,
+          "area_windows"
+        ],
+        [
+          "83",
+          80.7611,
+          "area_windows"
+        ],
+        [
+          "47",
+          78.7094,
+          "area_windows"
+        ],
+        [
+          "45",
+          72.9197,
+          "area_windows"
+        ],
+        [
+          "54",
+          62.0529,
+          "area_windows"
+        ],
+        [
+          "97",
+          54.4611,
+          "area_windows"
+        ],
+        [
+          "85",
+          52.0672,
+          "area_windows"
+        ],
+        [
+          "50",
+          50.0244,
+          "area_windows"
+        ],
+        [
+          "58",
+          49.2099,
+          "area_windows"
+        ],
+        [
+          "84",
+          48.8027,
+          "area_windows"
+        ],
+        [
+          "48",
+          48.1831,
+          "area_windows"
+        ],
+        [
+          "2",
+          45.5587,
+          "area_windows"
+        ],
+        [
+          "1",
+          45.5328,
+          "area_windows"
+        ],
+        [
+          "61",
+          45.0832,
+          "area_windows"
+        ],
+        [
+          "3",
+          43.2467,
+          "area_windows"
+        ],
+        [
+          "81",
+          42.3115,
+          "area_windows"
+        ],
+        [
+          "12",
+          42.0289,
+          "area_Roof/attic"
+        ],
+        [
+          "10",
+          39.4388,
+          "area_windows"
+        ],
+        [
+          "4",
+          38.4598,
+          "area_windows"
+        ],
+        [
+          "16",
+          37.8787,
+          "area_windows"
+        ],
+        [
+          "67",
+          37.4862,
+          "area_windows"
+        ],
+        [
+          "74",
+          37.2767,
+          "area_windows"
+        ],
+        [
+          "18",
+          34.5803,
+          "area_windows"
+        ],
+        [
+          "90",
+          34.4827,
+          "area_windows"
+        ],
+        [
+          "31",
+          33.5398,
+          "area_windows"
+        ],
+        [
+          "44",
+          33.4928,
+          "area_Roof/attic"
+        ],
+        [
+          "66",
+          33.3659,
+          "area_windows"
+        ],
+        [
+          "94",
+          33.2159,
+          "area_windows"
+        ],
+        [
+          "20",
+          31.656,
+          "area_windows"
+        ],
+        [
+          "64",
+          30.9485,
+          "area_Roof/attic"
+        ],
+        [
+          "95",
+          30.5028,
+          "area_Roof/attic"
+        ],
+        [
+          "22",
+          30.0537,
+          "area_Roof/attic"
+        ],
+        [
+          "6",
+          30.019,
+          "area_windows"
+        ],
+        [
+          "55",
+          29.0335,
+          "area_windows"
+        ],
+        [
+          "56",
+          28.7658,
+          "area_windows"
+        ],
+        [
+          "19",
+          28.6261,
+          "area_windows"
+        ],
+        [
+          "72",
+          28.1053,
+          "area_windows"
+        ],
+        [
+          "43",
+          27.8864,
+          "area_Roof/attic"
+        ],
+        [
+          "39",
+          26.0424,
+          "area_windows"
+        ],
+        [
+          "41",
+          25.5389,
+          "area_Roof/attic"
+        ],
+        [
+          "93",
+          25.191,
+          "area_windows"
+        ],
+        [
+          "17",
+          25.0476,
+          "area_Roof/attic"
+        ],
+        [
+          "75",
+          24.0538,
+          "area_windows"
+        ],
+        [
+          "49",
+          23.8758,
+          "area_windows"
+        ],
+        [
+          "26",
+          23.0162,
+          "area_Roof/attic"
+        ],
+        [
+          "5",
+          22.8066,
+          "area_Roof/attic"
+        ],
+        [
+          "38",
+          22.5079,
+          "area_Roof/attic"
+        ],
+        [
+          "57",
+          22.3928,
+          "area_Roof/attic"
+        ],
+        [
+          "78",
+          22.1154,
+          "area_Roof/attic"
+        ],
+        [
+          "24",
+          22.0071,
+          "area_windows"
+        ],
+        [
+          "37",
+          21.7794,
+          "area_Roof/attic"
+        ],
+        [
+          "28",
+          21.1788,
+          "area_windows"
+        ],
+        [
+          "42",
+          20.3207,
+          "area_Roof/attic"
+        ],
+        [
+          "65",
+          19.7499,
+          "area_windows"
+        ]
+      ]
+    }
+  },
+  "attack_profile": {
+    "metrics": [
+      {
+        "key": "avg_perturbation",
+        "label": "Average Perturbation",
+        "value": 0.050000011920928955,
+        "format": "number"
+      },
+      {
+        "key": "perturbation_max",
+        "label": "Max Perturbation",
+        "value": 0.050000011920928955,
+        "format": "number"
+      },
+      {
+        "key": "mean_prediction_shift",
+        "label": "Mean Prediction Shift",
+        "value": 64.66134643554688,
+        "format": "number"
+      },
+      {
+        "key": "max_prediction_shift",
+        "label": "Max Prediction Shift",
+        "value": 578.96240234375,
+        "format": "number"
+      }
+    ],
+    "highlights": []
+  },
+  "warnings": [
+    "Model does not expose input schema; strict alignment check skipped"
+  ]
+}

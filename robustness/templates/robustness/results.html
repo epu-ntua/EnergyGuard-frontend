@@ -1,0 +1,243 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Robustness Report - Robustness Benchmarks{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'robustness/results.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <h2 class="mb-8">Robustness Benchmarks</h2>
+    <div class="row g-4">
+      <div class="col-12 col-xl-9 mx-auto">
+
+        <div class="card theme-wizard mb-5">
+
+          <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+            <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+              <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Select Source</span></div></span></li>
+              <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Configure Source</span></div></span></li>
+              <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Analyze</span></div></span></li>
+              <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Results</span></div></span></li>
+            </ul>
+          </div>
+
+        <section class="results-shell">
+          {% if error %}
+            <div class="results-error">{{ error }}</div>
+          {% else %}
+            <header class="results-hero">
+              <div>
+                <span class="results-kicker">Robustness Report</span>
+                <h1>{{ config_name }}</h1>
+                <p>{{ report_subtitle }}</p>
+              </div>
+              <div class="results-hero-meta">
+                <span class="results-status">Completed</span>
+                <a class="btn btn-primary" href="{% url 'robustness:results_json' job_id=job_id %}">Download JSON</a>
+              </div>
+            </header>
+
+            <div class="results-tabs" role="tablist" aria-label="Results views">
+              <button class="results-tab is-active" type="button" role="tab" aria-selected="true" data-tab-target="overview">Overview</button>
+              <button class="results-tab" type="button" role="tab" aria-selected="false" data-tab-target="details">Details</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <section class="results-tab-panel is-active" data-tab-panel="overview">
+              <div class="results-grid results-grid--top">
+
+                <!-- Scan metadata -->
+                <section class="report-card report-card--metadata">
+                  <div class="report-card-head">
+                    <div>
+                      <span class="report-kicker">Evaluation Metadata</span>
+                      <h2>Run details and configuration summary</h2>
+                    </div>
+                  </div>
+                  <div class="standards-table-wrap metadata-table-wrap">
+                    <table class="standards-table metadata-table">
+                      <tbody>
+                        <tr><td>Job ID</td><td>{{ job_id }}</td></tr>
+                        <tr><td>Config name</td><td>{{ config_name }}</td></tr>
+                        <tr><td>Model</td><td>{{ model_name }}</td></tr>
+                        <tr><td>Dataset</td><td>{{ dataset }}</td></tr>
+                        <tr><td>Attack scenarios</td><td>{{ attacks_count }}</td></tr>
+                        <tr><td>Clean accuracy</td><td>{{ clean_accuracy }}</td></tr>
+                        <tr><td>Robust accuracy</td><td>{{ robust_accuracy }}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <!-- Key metrics -->
+                <section class="report-card report-card--severity">
+                  <div class="report-card-head">
+                    <div>
+                      <span class="report-kicker">Key Metrics</span>
+                      <h2>Accuracy overview</h2>
+                    </div>
+                  </div>
+                  <div class="robustness-metrics">
+                    <div class="robustness-metric robustness-metric--clean">
+                      <span>Clean Accuracy</span>
+                      <strong>{{ clean_accuracy }}</strong>
+                    </div>
+                    <div class="robustness-metric robustness-metric--robust">
+                      <span>Robust Accuracy</span>
+                      <strong>{{ robust_accuracy }}</strong>
+                    </div>
+                    {% for key, value in metrics.items %}
+                      {% if key != "clean_accuracy" and key != "robust_accuracy" %}
+                        <div class="robustness-metric">
+                          <span>{{ key|title }}</span>
+                          <strong>{{ value }}</strong>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </section>
+              </div>
+
+              <!-- Attack results summary -->
+              {% if attack_rows %}
+              <div class="results-grid results-grid--bottom" style="margin-top:1rem">
+                <section class="report-card report-card--cwe" style="max-width:100%">
+                  <div class="report-card-head">
+                    <div>
+                      <span class="report-kicker">Attack Scenarios</span>
+                      <h2>Per-attack robustness results</h2>
+                    </div>
+                  </div>
+                  <div class="attack-table-wrap">
+                    <table class="attack-table">
+                      <thead>
+                        <tr>
+                          <th>Attack</th>
+                          <th>Epsilon / Strength</th>
+                          <th>Robust Accuracy</th>
+                          <th>Attack Success Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for atk in attack_rows %}
+                          <tr>
+                            <td><strong>{{ atk.name }}</strong></td>
+                            <td>{{ atk.epsilon }}</td>
+                            <td>
+                              <span class="severity-pill severity-pill--info">{{ atk.robust_accuracy }}</span>
+                            </td>
+                            <td>{{ atk.success_rate }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+              {% else %}
+                <div class="taxonomy-empty" style="margin-top:1rem">No per-attack results were returned in this report.</div>
+              {% endif %}
+            </section>
+
+            <!-- Details Tab -->
+            <section class="results-tab-panel" data-tab-panel="details" hidden>
+              <div class="results-grid results-grid--bottom">
+                <section class="report-card report-card--issues">
+                  <div class="report-card-head">
+                    <div>
+                      <span class="report-kicker">Full Report</span>
+                      <h2>Raw evaluation output</h2>
+                    </div>
+                  </div>
+
+                  {% if attack_rows %}
+                    <div class="findings-list">
+                      {% for atk in attack_rows %}
+                        <article class="finding-row finding-row--expandable">
+                          <div class="finding-main">
+                            <span class="finding-severity finding-severity--info">{{ atk.name }}</span>
+                            <h3>{{ atk.name }} — Robust Accuracy: {{ atk.robust_accuracy }}</h3>
+                            <p>Epsilon/strength: {{ atk.epsilon }} &bull; Attack success rate: {{ atk.success_rate }}</p>
+                          </div>
+                          <div class="finding-meta">
+                            <span>Robust Accuracy</span>
+                            <span>{{ atk.robust_accuracy }}</span>
+                          </div>
+                          {% if atk.extra %}
+                            <details class="finding-details">
+                              <summary>Show additional parameters</summary>
+                              <div class="finding-details-body">
+                                <div class="issue-meta-table-wrap">
+                                  <table class="issue-meta-table">
+                                    <thead>
+                                      <tr><th>Parameter</th><th>Value</th></tr>
+                                    </thead>
+                                    <tbody>
+                                      {% for k, v in atk.extra.items %}
+                                        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+                                      {% endfor %}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </details>
+                          {% endif %}
+                        </article>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="findings-empty">No detailed attack results were returned in this report.</div>
+                  {% endif %}
+                </section>
+              </div>
+            </section>
+
+            <div class="results-actions" style="margin-top:1.5rem">
+              <a class="btn btn-ghost" href="{% url 'robustness:config_input' %}">New Evaluation</a>
+            </div>
+          {% endif %}
+        </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-nav-group]').forEach(function (group) {
+        var toggle = group.querySelector('[data-nav-toggle]');
+        if (!toggle) return;
+        toggle.addEventListener('click', function () {
+          var open = group.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      });
+
+      var tabs = Array.from(document.querySelectorAll('[data-tab-target]'));
+      var panels = Array.from(document.querySelectorAll('[data-tab-panel]'));
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var target = tab.getAttribute('data-tab-target');
+          tabs.forEach(function (item) {
+            var active = item === tab;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          panels.forEach(function (panel) {
+            var active = panel.getAttribute('data-tab-panel') === target;
+            panel.classList.toggle('is-active', active);
+            panel.hidden = !active;
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

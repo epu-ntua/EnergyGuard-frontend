@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django_q',
     'digitaltwins',
     'code_analysis',
+    'robustness',
 ]
 
 MIDDLEWARE = [
@@ -108,7 +109,7 @@ DATABASES = {
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'PORT': env('POSTGRES_PORT'),
-        'HOST': env('POSTGRES_HOST'), 
+        'HOST': env('POSTGRES_HOST'),
     }
 }
 
@@ -203,7 +204,7 @@ AUTH_USER_MODEL = 'accounts.User'
 #Default: 1209600 (2 weeks, in seconds)
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds
 
-SITE_ID = 2 # Required for django-allauth - in Django Admin site_id=2 corresponds to 127.0.0.1:8000
+SITE_ID = 2 # Required for django-allauth - in Django Admin site_id=2 corresponds to 127.0.0.1:8080
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -301,4 +302,11 @@ JUPYTERHUB_URL = env('JUPYTERHUB_URL')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='http://localhost:9001').rstrip('/')
+
+REPORTS_DIR = str(BASE_DIR / 'robustness_reports')
+ROBUSTNESS_API_URL = env('ROBUSTNESS_API_URL', default='')
+ROBUSTNESS_API_TIMEOUT = env.int('ROBUSTNESS_API_TIMEOUT', default=1800)
+ROBUSTNESS_API_SUBMIT_TIMEOUT = env.int('ROBUSTNESS_API_SUBMIT_TIMEOUT', default=60)
+ROBUSTNESS_API_POLL_TIMEOUT = env.int('ROBUSTNESS_API_POLL_TIMEOUT', default=30)
+ROBUSTNESS_API_POLL_INTERVAL = float(env('ROBUSTNESS_API_POLL_INTERVAL', default='2.0'))
 SCAN_API_TIMEOUT = env.int('SCAN_API_TIMEOUT', default=300)

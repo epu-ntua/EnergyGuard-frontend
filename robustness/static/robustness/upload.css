@@ -1,0 +1,361 @@
+.yaml-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.6rem 2rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ebeff6;
+  background: #f9fbff;
+}
+
+.yaml-hero h1 {
+  margin: 0.35rem 0 0;
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  color: #24344d;
+}
+
+.yaml-hero p {
+  margin: 0.5rem 0 0;
+  color: #60728f;
+  max-width: 540px;
+  line-height: 1.55;
+}
+
+.yaml-hero-icon {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #f5fbff, #eaf5ff);
+  border: 1px solid #d5e8fb;
+  box-shadow: 0 10px 24px rgba(49, 110, 178, 0.14);
+  font-size: 2rem;
+}
+
+.yaml-config-wrap {
+  padding: 1.4rem 1.6rem 1.6rem;
+}
+
+.yaml-form {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.yaml-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 1.2rem;
+}
+
+.yaml-panel {
+  border: 1px solid #dce5f2;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #f9fbff);
+  box-shadow: 0 10px 24px rgba(31, 50, 86, 0.05);
+}
+
+.yaml-panel--primary {
+  padding: 1.45rem 1.45rem 1.55rem;
+}
+
+.yaml-panel--secondary {
+  padding: 1.45rem 1.35rem;
+}
+
+.yaml-section-title {
+  margin: 0 0 1rem;
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2b3a52;
+}
+
+.yaml-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 260px;
+  border: 2px dashed #b8d6f0;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(232, 247, 255, 0.95), transparent 38%),
+    linear-gradient(180deg, #fbfdff, #f1f8ff);
+  cursor: pointer;
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.yaml-dropzone:hover,
+.yaml-dropzone.is-dragover {
+  border-color: #2ea8ff;
+  background:
+    radial-gradient(circle at top left, rgba(220, 242, 255, 0.95), transparent 44%),
+    linear-gradient(180deg, #ffffff, #edf7ff);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(46, 168, 255, 0.12);
+}
+
+.yaml-dropzone-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.yaml-dropzone-title {
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #233248;
+}
+
+.yaml-dropzone-copy {
+  color: #6f8099;
+  font-size: 0.98rem;
+}
+
+.yaml-file-pill {
+  margin-top: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: #eaf5ff;
+  color: #236bb0;
+  font-weight: 700;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yaml-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.95rem;
+}
+
+.yaml-chip {
+  padding: 0.34rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #d6e4f4;
+  background: #fff;
+  color: #55708f;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.yaml-field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.1rem;
+}
+
+.yaml-field {
+  margin-top: 1rem;
+}
+
+.yaml-label {
+  display: block;
+  margin-bottom: 0.38rem;
+  font-weight: 700;
+  color: #3d4d66;
+}
+
+.yaml-input,
+.yaml-textarea {
+  width: 100%;
+  border: 1.5px solid #bdd0e6;
+  border-radius: 10px;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.yaml-input {
+  padding: 0.78rem 0.9rem;
+}
+
+.yaml-textarea {
+  padding: 0.85rem 0.9rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.yaml-input:focus,
+.yaml-textarea:focus {
+  outline: none;
+  border-color: #2ea8ff;
+  box-shadow: 0 0 0 3px rgba(46, 168, 255, 0.18);
+}
+
+.yaml-valid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  background: #ecfbf1;
+  color: #1d7b3a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 0.7rem;
+}
+
+.yaml-checklist {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #5f7290;
+  line-height: 1.6;
+}
+
+.yaml-checklist li + li {
+  margin-top: 0.55rem;
+}
+
+.yaml-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.15rem;
+  color: #2d7ebd;
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.yaml-download-link:hover {
+  text-decoration: underline;
+}
+
+.yaml-summary-card {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1rem 1.05rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #edf7ff, #f7fbff);
+  border: 1px solid #d7e8f9;
+}
+
+.yaml-summary-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5f84ab;
+}
+
+.yaml-summary-name {
+  color: #20324c;
+  font-size: 1rem;
+}
+
+.yaml-summary-meta {
+  color: #6f8099;
+  font-size: 0.9rem;
+}
+
+.yaml-error-banner {
+  max-width: 980px;
+  margin: 0 auto 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: #fff3f1;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.yaml-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.3rem 0 0.35rem;
+}
+
+.yaml-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Shared button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.3rem;
+  border-radius: 10px;
+  font: 700 0.95rem/1 inherit;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  transition: opacity 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #2ea8ff, #74c7ff);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(46, 168, 255, 0.25);
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+  box-shadow: 0 12px 26px rgba(46, 168, 255, 0.32);
+}
+
+.btn-ghost {
+  background: #f0f4fb;
+  color: #3d5275;
+  border: 1px solid #d5dff0;
+}
+
+.btn-ghost:hover {
+  background: #e6edf8;
+}
+
+/* Stepper override: 3 steps */
+.stepper {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 980px) {
+  .yaml-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .yaml-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .yaml-dropzone {
+    min-height: 220px;
+  }
+
+  .yaml-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .yaml-actions .btn {
+    justify-content: center;
+  }
+}

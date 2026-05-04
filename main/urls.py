@@ -28,6 +28,7 @@ urlpatterns = [
     path('billing/', include('billing.urls')),
     path('digitaltwins/', include('digitaltwins.urls')),
     path('trustworthiness/code-analysis/', include('code_analysis.urls')),
+    path('trustworthiness/robustness/', include('robustness.urls')),
     path('accounts/', include('allauth.urls')),
     path('surveys/', include('questionnaire.config.urls')),
 ]

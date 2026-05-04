@@ -1,0 +1,758 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Adversarial Robustness Report - EnergyGuard.TEF{% endblock title %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'robustness/mockup.css' %}">
+<link rel="stylesheet" href="{% static 'robustness/results.css' %}">
+<link rel="stylesheet" href="{% static 'robustness/style.css' %}">
+<style>
+    /* ── Section labels ─────────────────────────────────────── */
+    .section-label-row {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: #637087; margin-bottom: 1rem;
+    }
+    .section-line { flex: 1; height: 1px; background: #d9e0eb; }
+
+    /* ── Performance summary — paired 3-column rows ────────── */
+    .metric-header-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem; margin-bottom: 0.4rem;
+    }
+    .metric-col-label {
+      text-align: center; font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #6e85a5; padding: 0 0.5rem;
+    }
+    .metrics-comparison { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .metric-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+    .metric-cell {
+      padding: 1rem 1.1rem; border-radius: 14px;
+      border: 1px solid #e3eaf4; background: #fbfdff;
+    }
+    .metric-cell--clean       { background: linear-gradient(180deg,#f4fbf6,#eefaf2); border-color:#cde8d6; }
+    .metric-cell--adversarial { background: linear-gradient(180deg,#fff7f5,#fff1ee); border-color:#f5c9c2; }
+    .metric-cell--delta       { background: linear-gradient(180deg,#f0f7ff,#e6f2ff); border-color:#c5dff8; }
+    .metric-cell > span {
+      display: block; font-size: 0.78rem; font-weight: 800;
+      letter-spacing: 0.03em; text-transform: uppercase; color: #6e85a5;
+    }
+    .metric-cell > strong {
+      display: block; margin-top: 0.35rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.55rem; font-weight: 600; color: #24344d; line-height: 1;
+    }
+    .metric-cell > small {
+      display: block; margin-top: 0.3rem;
+      font-size: 0.78rem; color: #8fa3bf; line-height: 1.4;
+    }
+    .metric-cell--adversarial > strong { color: #c14534; }
+    .metric-cell--delta > strong       { color: #2d7ebd; }
+    .metric-cell.delta-up > strong     { color: #c14534; }
+    .metric-cell.delta-down > strong   { color: #1d7b3a; }
+    /* Fallback flat grid for unpaired metrics */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 0.75rem; margin-bottom: 2rem;
+    }
+    @media (max-width: 760px) {
+      .metric-header-row, .metric-row { grid-template-columns: 1fr; }
+    }
+
+    /* ── Download button ────────────────────────────────────── */
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+      color: #fff; background: #43b1ff; border: none;
+      transition: background 0.15s;
+    }
+    .download-btn:hover { background: #1f9ef0; }
+
+    /* ── Attack config badge strip ─────────────────────────── */
+    .attack-config-strip {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-start;
+      margin-top: 0.75rem;
+    }
+    .atk-badge {
+      display: inline-flex; flex-direction: column;
+      padding: 0.45rem 0.75rem; border-radius: 8px;
+      background: #f0f4ff; border: 1px solid #d0dcf4;
+      min-width: 64px;
+    }
+    .atk-badge-label {
+      font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #7b93b8; line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .atk-badge-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.9rem; font-weight: 600; color: #24344d; line-height: 1;
+    }
+
+    /* ── Attack profile table ───────────────────────────────── */
+    .profile-table-wrap {
+      border: 1px solid #e3eaf4; border-radius: 14px;
+      overflow: hidden; background: #fbfdff;
+    }
+    .profile-table { width: 100%; border-collapse: collapse; }
+    .profile-table tbody tr { border-bottom: 1px solid #eef2f8; }
+    .profile-table tbody tr:last-child { border-bottom: none; }
+    .profile-table tbody tr:hover { background: #f7faff; }
+    .profile-table tbody td {
+      padding: 0.75rem 1rem;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.84rem;
+    }
+    .profile-table tbody td:first-child { color: #637087; }
+    .profile-table tbody td:last-child  { color: #24344d; text-align: right; font-weight: 600; }
+
+    /* ── Chart cards ────────────────────────────────────────── */
+    .chart-title-inline {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #637087; margin-bottom: 2px;
+    }
+    .chart-desc-inline {
+      font-size: 12px; color: #9aadc4; margin-bottom: 12px;
+    }
+    .chart-wrap { position: relative; width: 100%; height: 180px; }
+    @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr !important; } }
+  </style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+  <div class="row g-4">
+    <div class="col-12 col-xl-9 mx-auto">
+      <div class="card theme-wizard mb-5">
+        <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+          <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+            <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Select Source</span></div></span></li>
+            <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Configure Source</span></div></span></li>
+            <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Analyze</span></div></span></li>
+            <li class="nav-item"><span class="nav-link fw-semibold active"><div class="text-center d-inline-block"><span class="nav-item-circle-parent"><span class="nav-item-circle"><span class="fas fa-check"></span></span></span><span class="d-none d-md-block mt-1 fs-9">Results</span></div></span></li>
+          </ul>
+        </div>
+
+        <section class="panel">
+      <div class="page" style="max-width:1200px;margin:0 auto;padding:2rem;">
+
+        <!-- Report header card -->
+        <section class="report-card report-card-head" style="margin-bottom:2rem;">
+          <div>
+            <span class="report-kicker">Robustness Report · MLflow Experiment</span>
+            <h2 id="run-name" style="margin:0.35rem 0 0;font-family:'IBM Plex Sans',sans-serif;color:#24344d;font-size:1.15rem;"></h2>
+            <div id="run-description" style="font-size:13px;color:var(--muted);margin-top:0.35rem;display:none;"></div>
+          </div>
+          <div class="results-hero-meta">
+            <button id="download-btn" class="download-btn" title="Download full metrics JSON">
+              ↓ Download Report
+            </button>
+            {% if backend_job_id %}
+            <div id="csv-download-btns" style="margin-top:0.5rem;"></div>
+            {% endif %}
+            <a href="{% url 'robustness:config_input' %}" class="download-btn" style="display:block;text-align:center;text-decoration:none;margin-top:0.5rem;">
+              ↺ Run new analysis
+            </a>
+          </div>
+        </section>
+
+        <!-- Run & Context -->
+        <section class="report-card" style="margin-bottom:1rem;">
+          <span class="report-kicker">Run &amp; Context</span>
+          <div class="meta-table-wrap">
+            <table class="meta-table">
+              <tbody id="run-context-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Attack Configuration -->
+        <section id="atk-cfg-card" class="report-card" style="margin-bottom:2rem;">
+          <span class="report-kicker">Attack Configuration</span>
+          <div id="attack-config-strip" class="attack-config-strip"></div>
+        </section>
+
+        <!-- Warning Banner -->
+        <section id="warnings-section" class="report-card" style="display:none;margin-bottom:1.5rem;background:var(--warn-bg);border:1px solid #f5c76c;">
+          <span class="report-kicker">Warning</span>
+          <div id="warnings-body" style="margin-top:0.6rem;font-size:0.93rem;color:#b46b12;line-height:1.55;"></div>
+        </section>
+
+        <!-- Performance Summary -->
+        <div class="section-label-row">
+          Performance Summary
+          <span id="worst-case-tag" style="display:none;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#c14534;background:#fff1ee;border:1px solid #f5c9c2;border-radius:5px;padding:2px 8px;white-space:nowrap;"></span>
+          <span class="section-line"></span>
+        </div>
+        <div id="metric-header-row" class="metric-header-row" style="display:none;">
+          <div class="metric-col-label">Clean (Baseline)</div>
+          <div class="metric-col-label">Adversarial (Under Attack)</div>
+          <div class="metric-col-label">Δ Difference</div>
+        </div>
+        <div id="metrics-comparison" class="metrics-comparison"></div>
+        <div id="perf-grid" class="perf-grid"></div>
+
+        <!-- Robustness Analysis Charts -->
+        <div class="section-label-row">
+          Robustness Analysis
+          <span class="section-line"></span>
+        </div>
+        <div id="rc-ae-row" class="charts-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+          <section id="rc-card" class="report-card">
+            <div class="chart-title-inline">Robustness Curve</div>
+            <div class="chart-desc-inline" id="rc-desc">Error increase vs epsilon</div>
+            <div class="chart-wrap"><canvas id="robustness-chart"></canvas></div>
+          </section>
+          <section id="ae-card" class="report-card">
+            <div class="chart-title-inline">Attack Efficiency</div>
+            <div class="chart-desc-inline" id="ae-desc">Success rate vs query count</div>
+            <div class="chart-wrap"><canvas id="efficiency-chart"></canvas></div>
+          </section>
+        </div>
+        <section class="report-card" style="margin-bottom:1.5rem;">
+          <div class="chart-title-inline">Clean vs Adversarial Metrics</div>
+          <div class="chart-desc-inline" id="cmp-desc">Primary metric values across evaluation conditions</div>
+          <div class="chart-wrap" style="height:220px;"><canvas id="comparison-chart"></canvas></div>
+        </section>
+        <section id="fp-card" class="report-card" style="margin-bottom:1.5rem;display:none;">
+          <div class="chart-title-inline">Feature Perturbation</div>
+          <div class="chart-desc-inline" id="fp-desc">Mean perturbation per feature, normalised by each feature's observed range — a value of 0.1 means the attack shifted that feature by 10 % of its range on average. Normalisation makes features with different scales (e.g. area vs. floor count) directly comparable. Larger bars indicate features the attack exploits most.</div>
+          <div id="profile-chart-wrap" class="chart-wrap"><canvas id="profile-chart"></canvas></div>
+        </section>
+        <section id="ps-card" class="report-card" style="margin-bottom:2rem;display:none;">
+          <div class="chart-title-inline">Per-Sample Perturbation</div>
+          <div class="chart-desc-inline">L∞ distance between original and adversarial example per sample — samples needing large perturbations were harder to fool</div>
+          <div class="chart-wrap" style="height:220px;"><canvas id="ps-chart"></canvas></div>
+        </section>
+        <section id="sc-card" class="report-card" style="margin-bottom:2rem;display:none;">
+          <div class="chart-title-inline">Stress Test Impact</div>
+          <div class="chart-desc-inline">Error increase per stress test scenario — shows which real-world distribution shifts hurt the model most</div>
+          <div id="sc-chart-wrap" class="chart-wrap"><canvas id="sc-chart"></canvas></div>
+        </section>
+        <section id="pc-card" class="report-card" style="margin-bottom:2rem;display:none;">
+          <div class="chart-title-inline">Clean vs Adversarial Predictions</div>
+          <div class="chart-desc-inline">Model output per sample — clean (baseline) vs adversarial (under attack). Large gaps indicate high sensitivity to perturbation.</div>
+          <div class="chart-wrap" style="height:260px;"><canvas id="pc-chart"></canvas></div>
+        </section>
+
+        <!-- Attack Profile -->
+        <div class="section-label-row">
+          Attack Profile
+          <span class="section-line"></span>
+        </div>
+        <div class="profile-table-wrap" style="margin-bottom:2rem;">
+          <table class="profile-table">
+            <tbody id="attack-profile-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="border-top:1px solid var(--line);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:1rem;">
+          <span id="footer-meta"></span>
+          <span id="ts"></span>
+        </div>
+
+      </div>
+      </section>
+
+      <!-- Embedded JSON data -->
+      <script id="report-meta-data"       type="application/json">{{ report_meta_json|safe }}</script>
+      <script id="attack-setup-data"      type="application/json">{{ attack_setup_json|safe }}</script>
+      <script id="performance-summary-data" type="application/json">{{ performance_summary_json|safe }}</script>
+      <script id="charts-data"            type="application/json">{{ charts_json|safe }}</script>
+      <script id="attack-profile-data"    type="application/json">{{ attack_profile_json|safe }}</script>
+      <script id="warnings-data"          type="application/json">{{ warnings_json|safe }}</script>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+      <script>
+        // ── Helpers ──────────────────────────────────────────────────────────
+        function getJson(id, fallback) {
+          const el = document.getElementById(id);
+          if (!el) return fallback !== undefined ? fallback : {};
+          try { return JSON.parse(el.textContent); } catch(e) { return fallback !== undefined ? fallback : {}; }
+        }
+
+        function row(label, value) {
+          if (value === null || value === undefined || value === '') return '';
+          const td = typeof value === 'string' && value.startsWith('<') ? value : `<td>${value}</td>`;
+          return `<tr><td>${label}</td>${td}</tr>`;
+        }
+
+        function fmt(v) {
+          if (v === null || v === undefined) return '—';
+          if (typeof v === 'number') return Number.isInteger(v) ? String(v) : v.toFixed(3);
+          return String(v);
+        }
+
+        // ── Parse data ───────────────────────────────────────────────────────
+        const meta   = getJson('report-meta-data');
+        const setup  = getJson('attack-setup-data');
+        const perf   = getJson('performance-summary-data');
+        const charts = getJson('charts-data');
+        const ap     = getJson('attack-profile-data');
+        const warns  = getJson('warnings-data', []);
+
+        // ── Header ───────────────────────────────────────────────────────────
+        document.getElementById('run-name').textContent = meta.run_name || '—';
+        if (meta.description) {
+          const d = document.getElementById('run-description');
+          d.textContent = meta.description;
+          d.style.display = '';
+        }
+        // ── CSV download buttons ──────────────────────────────────────────────
+        {% if backend_job_id %}
+        fetch('{% url "robustness:list_adversarial_csvs" job_id=job_id %}')
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            const container = document.getElementById('csv-download-btns');
+            if (!container || !data || !data.items.length) return;
+            data.items.forEach(({attack_key, label}) => {
+              const a = document.createElement('a');
+              a.href = '{% url "robustness:download_adversarial_csv" job_id=job_id attack_key="__KEY__" %}'.replace('__KEY__', attack_key);
+              a.className = 'download-btn';
+              a.style.cssText = 'display:block;text-align:center;text-decoration:none;margin-top:0.4rem;';
+              a.textContent = '↓ ' + label;
+              container.appendChild(a);
+            });
+          }).catch(() => {});
+        {% endif %}
+
+        // ── Download button ───────────────────────────────────────────────────
+        document.getElementById('download-btn').addEventListener('click', () => {
+          const payload = { report_meta: meta, attack_setup: setup,
+            performance_summary: perf, charts, attack_profile: ap, warnings: warns };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = (meta.run_name || 'robustness_report') + '_metrics.json';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        });
+
+        // ── Run & Context table ───────────────────────────────────────────────
+        const chips = (meta.target_columns || [])
+          .map(c => `<span class="chip">${c}</span>`).join('');
+        const pillClass = meta.status === 'warning' ? 'pill--warn' : 'pill--ok';
+
+        document.getElementById('run-context-tbody').innerHTML = [
+          row('Run name',        meta.run_name),
+          row('Model backend',   meta.model_backend),
+          meta.mlflow_run_id ? row('MLflow run ID', `<td><code style="font-size:0.8rem;word-break:break-all;">${meta.mlflow_run_id}</code></td>`) : '',
+          row('Dataset',         meta.dataset),
+          chips ? row('Target columns', `<td><div class="chips">${chips}</div></td>`) : '',
+          setup.samples_evaluated != null ? row('Samples evaluated', setup.samples_evaluated) : '',
+          row('Run status',      `<td><span class="pill ${pillClass}">${meta.status || '—'}</span></td>`),
+        ].join('');
+
+        // ── Attack Configuration badge strip ─────────────────────────────────
+        function badge(label, value) {
+          if (value == null || value === '' || value === 'unknown') return '';
+          return `<div class="atk-badge"><span class="atk-badge-label">${label}</span><span class="atk-badge-value">${value}</span></div>`;
+        }
+        document.getElementById('attack-config-strip').innerHTML = [
+          badge('Algorithm',    meta.attack_name),
+          badge('Family',       meta.family && meta.family !== 'unknown' ? meta.family : null),
+          badge('Norm',         setup.norm ? 'L' + (setup.norm === 'inf' ? '∞' : setup.norm) : null),
+          badge('ε (epsilon)',  setup.epsilon != null ? setup.epsilon : null),
+          badge('Queries',      setup.query_budget != null ? setup.query_budget + ' / sample' : null),
+          badge('Max iter',     setup.steps != null ? setup.steps : null),
+          badge('Targeted',     setup.targeted != null ? (setup.targeted ? 'Yes' : 'No') : null),
+        ].join('');
+        if (meta.family === 'stress_test' || (meta.family || 'unknown') === 'unknown')
+          document.getElementById('atk-cfg-card').style.display = 'none';
+
+        // ── Warnings ──────────────────────────────────────────────────────────
+        if (warns.length) {
+          document.getElementById('warnings-section').style.display = '';
+          document.getElementById('warnings-body').innerHTML =
+            warns.map(w => `<div><strong>⚠</strong> ${w}</div>`).join('');
+        }
+
+        // ── Worst-case tag (shown when multiple epsilons were swept) ─────────
+        const rcPoints = (charts.robustness_curve && charts.robustness_curve.points) || [];
+        if (rcPoints.length > 1) {
+          // Derive worst-case epsilon from the curve itself.
+          // For robust_accuracy: lower is worse. For error_increase (and similar): higher is worse.
+          const yLabel = String((charts.robustness_curve && charts.robustness_curve.y_label) || '').toLowerCase();
+          const lowerIsWorse = yLabel.includes('robust_accuracy');
+          let worstPoint = null;
+          rcPoints.forEach(([eps, val]) => {
+            if (!Number.isFinite(eps) || !Number.isFinite(val)) return;
+            if (!worstPoint) {
+              worstPoint = [eps, val];
+              return;
+            }
+            if (lowerIsWorse ? (val < worstPoint[1]) : (val > worstPoint[1])) {
+              worstPoint = [eps, val];
+            }
+          });
+
+          const worstEpsilon = worstPoint ? worstPoint[0] : setup.epsilon;
+          const worstEpsilonText = Number.isFinite(worstEpsilon)
+            ? Number(worstEpsilon).toFixed(4).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')
+            : setup.epsilon;
+          if (worstEpsilonText != null) {
+            const tagHtml = `<span style="display:inline-block;font-size:0.68rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#c14534;background:#fff1ee;border:1px solid #f5c9c2;border-radius:5px;padding:1px 7px;margin-left:8px;vertical-align:middle;white-space:nowrap;">Worst case · ε = ${worstEpsilonText}</span>`;
+            document.getElementById('worst-case-tag').textContent = `Worst case · ε = ${worstEpsilonText}`;
+            document.getElementById('worst-case-tag').style.display = '';
+            ['cmp-desc', 'ae-desc', 'fp-desc'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.innerHTML += tagHtml;
+            });
+          }
+        }
+
+        // ── Performance Summary ───────────────────────────────────────────────
+        const SUBTITLES = {
+          clean_rmse:            'Root mean squared error — clean data',
+          clean_mse:             'Mean squared error — clean data',
+          adversarial_rmse:      'Under attack',
+          adversarial_mse:       'Under attack',
+          rmse_increase:         '↑ degradation vs. baseline',
+          mse_increase:          '↑ degradation vs. baseline',
+          mae:                   'Mean absolute error — clean data',
+          adversarial_mae:       'Under attack',
+          mae_increase:          '↑ MAE degradation',
+          mean_prediction_shift: 'Avg per-sample output shift',
+          r2:                    'R² score',
+          clean_accuracy:        'Accuracy — clean data',
+          adversarial_accuracy:  'Under attack',
+          robust_accuracy:       'Originally-correct samples',
+          attack_success_rate:   '↑ fraction of successful attacks',
+          accuracy_drop:         '↓ clean vs adversarial',
+        };
+
+        // Pair definitions: [clean_key, adversarial_key, delta_key, short_label]
+        const PAIR_DEFS = [
+          ['clean_rmse',     'adversarial_rmse',     'rmse_increase',    'RMSE'],
+          ['clean_mse',      'adversarial_mse',      'mse_increase',     'MSE'],
+          ['mae',            'adversarial_mae',      'mae_increase',     'MAE'],
+          ['clean_accuracy', 'adversarial_accuracy', 'accuracy_drop',    'Accuracy'],
+          ['robust_accuracy','adversarial_accuracy', 'attack_success_rate','Robust Acc.'],
+        ];
+
+        const metricByKey = {};
+        (perf.primary_metrics || []).forEach(m => { metricByKey[m.key] = m; });
+
+        function metricCell(m, variant, deltaDir) {
+          if (!m) return `<div class="metric-cell metric-cell--${variant}"></div>`;
+          const val = m.value != null && m.value !== '' ? fmt(m.value) : '—';
+          const sub = SUBTITLES[m.key] || '';
+          const extra = deltaDir ? ` ${deltaDir}` : '';
+          return `<div class="metric-cell metric-cell--${variant}${extra}">
+            <span>${m.label || m.key}</span>
+            <strong>${val}</strong>
+            ${sub ? `<small>${sub}</small>` : ''}
+          </div>`;
+        }
+
+        const usedKeys = new Set();
+        const compEl   = document.getElementById('metrics-comparison');
+        let hasPairs   = false;
+
+        PAIR_DEFS.forEach(([ck, ak, dk]) => {
+          const c = metricByKey[ck], a = metricByKey[ak], d = metricByKey[dk];
+          if (!c && !a && !d) return;
+          hasPairs = true;
+          const dVal = d && typeof d.value === 'number' ? d.value : null;
+          const deltaDir = dVal !== null ? (dVal > 0 ? 'delta-up' : 'delta-down') : '';
+          const rowEl = document.createElement('div');
+          rowEl.className = 'metric-row';
+          rowEl.innerHTML = metricCell(c,'clean','') + metricCell(a,'adversarial','') + metricCell(d,'delta',deltaDir);
+          compEl.appendChild(rowEl);
+          [ck, ak, dk].forEach(k => k && usedKeys.add(k));
+        });
+
+        if (hasPairs) document.getElementById('metric-header-row').style.display = '';
+
+        // Unpaired metrics fall back to flat grid
+        const perfGrid = document.getElementById('perf-grid');
+        (perf.primary_metrics || []).filter(m => !usedKeys.has(m.key)).forEach(m => {
+          const val  = m.value != null && m.value !== '' ? fmt(m.value) : '—';
+          const sub  = SUBTITLES[m.key] || '';
+          const cell = document.createElement('div');
+          cell.className = 'metric-cell';
+          cell.innerHTML = `<span>${m.label || m.key}</span><strong>${val}</strong>${sub ? `<small>${sub}</small>` : ''}`;
+          perfGrid.appendChild(cell);
+        });
+
+        // ── Charts ────────────────────────────────────────────────────────────
+        const font    = "'IBM Plex Mono', monospace";
+        const gridCol = 'rgba(31,50,86,0.06)';
+        const textCol = '#637087';
+        Chart.defaults.color      = textCol;
+        Chart.defaults.font.family = font;
+        Chart.defaults.font.size   = 11;
+
+        // Hide robustness curve if only one epsilon; hide attack efficiency if not black-box
+        const isBlackBox = (meta.family || '').toLowerCase().includes('black');
+        const rcHasMultiple = rcPoints.length > 1;
+        const aePoints = (charts.attack_efficiency && charts.attack_efficiency.points) || [];
+        const isClassification = (meta.task_type || '').toLowerCase() === 'classification';
+        const showAe = isBlackBox && !isClassification && aePoints.length > 1;
+        if (!rcHasMultiple) document.getElementById('rc-card').style.display = 'none';
+        if (!showAe)        document.getElementById('ae-card').style.display = 'none';
+        // Collapse the row entirely if both cards are hidden
+        if (!rcHasMultiple && !showAe) document.getElementById('rc-ae-row').style.display = 'none';
+        // If only one is hidden, switch to single-column
+        else if (!rcHasMultiple || !showAe) document.getElementById('rc-ae-row').style.gridTemplateColumns = '1fr';
+
+        const rc = charts.robustness_curve;
+        if (rc && rc.points && rc.points.length) {
+          if (rc.x_label) document.getElementById('rc-desc').textContent =
+            `${rc.y_label || 'error increase'} vs ${rc.x_label}`;
+          new Chart(document.getElementById('robustness-chart'), {
+            type: 'scatter',
+            data: { datasets: [{ data: rc.points.map(([x,y]) => ({ x, y })),
+              borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.15)',
+              pointRadius: 6, showLine: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { title: { display: true, text: rc.x_label || 'epsilon', color: textCol }, grid: { color: gridCol } },
+                y: { title: { display: true, text: rc.y_label || 'error increase', color: textCol }, grid: { color: gridCol } }
+              }
+            }
+          });
+        }
+
+        const ae = charts.attack_efficiency;
+        if (ae && ae.points && ae.points.length) {
+          if (ae.x_label) document.getElementById('ae-desc').textContent =
+            `${ae.y_label || 'success rate'} vs ${ae.x_label}`;
+          new Chart(document.getElementById('efficiency-chart'), {
+            type: 'line',
+            data: { labels: ae.points.map(([x]) => x),
+              datasets: [{ data: ae.points.map(([,y]) => y),
+                borderColor: '#2ea8ff', backgroundColor: 'rgba(46,168,255,0.08)',
+                fill: true, tension: 0.3, pointRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { title: { display: !!ae.x_label, text: ae.x_label || '', color: textCol }, grid: { color: gridCol } },
+                y: { min: 0, grid: { color: gridCol },
+                  ticks: { callback: v => (v * 100).toFixed(0) + '%' } }
+              }
+            }
+          });
+        }
+
+        // ── Clean vs Adversarial grouped bar chart ────────────────────────────
+        const CLEAN_COLOR = { bg: 'rgba(36,161,72,0.18)',  border: '#24a148' };
+        const ADV_COLOR   = { bg: 'rgba(193,69,52,0.18)',  border: '#c14534' };
+        // Build paired labels + values from PAIR_DEFS
+        function numVal(m) {
+          if (!m) return null;
+          const v = parseFloat(m.value);
+          return isNaN(v) ? null : v;
+        }
+
+        const cmpLabels = [], cmpClean = [], cmpAdv = [];
+        PAIR_DEFS.forEach(([ck, ak]) => {
+          const c = metricByKey[ck], a = metricByKey[ak];
+          if (!c && !a) return;
+          const cv = numVal(c), av = numVal(a);
+          if (cv === null && av === null) return;
+          cmpLabels.push((c || a).label || ck);
+          cmpClean.push(cv);
+          cmpAdv.push(av);
+        });
+        if (cmpLabels.length) {
+          new Chart(document.getElementById('comparison-chart'), {
+            type: 'bar',
+            data: {
+              labels: cmpLabels,
+              datasets: [
+                { label: 'Clean',       data: cmpClean, backgroundColor: CLEAN_COLOR.bg, borderColor: CLEAN_COLOR.border, borderWidth: 2, borderRadius: 6 },
+                { label: 'Adversarial', data: cmpAdv,   backgroundColor: ADV_COLOR.bg,   borderColor: ADV_COLOR.border,   borderWidth: 2, borderRadius: 6 },
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } }
+              },
+              scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: gridCol }, title: { display: true, text: 'Value', color: textCol } }
+              }
+            }
+          });
+        }
+
+        const fp = charts.attack_profile;
+        const fpPoints = fp && fp.points ? fp.points.filter(([, v]) => v > 0) : [];
+        if (fpPoints.length) {
+          document.getElementById('fp-card').style.display = '';
+          const barHeight = 28;
+          const chartHeight = Math.max(220, fpPoints.length * barHeight + 60);
+          document.getElementById('profile-chart-wrap').style.height = chartHeight + 'px';
+          new Chart(document.getElementById('profile-chart'), {
+            type: 'bar',
+            data: { labels: fpPoints.map(([f]) => f),
+              datasets: [{ data: fpPoints.map(([,v]) => v),
+                backgroundColor: 'rgba(46,168,255,0.65)', borderColor: '#2ea8ff',
+                borderWidth: 1, borderRadius: 3 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  type: 'logarithmic',
+                  grid: { color: gridCol },
+                  title: { display: !!(fp && fp.y_label), text: (fp && fp.y_label) || 'mean perturbation', color: textCol },
+                  ticks: { font: { size: 10 } }
+                },
+                y: {
+                  grid: { display: false },
+                  ticks: {
+                    font: { size: 11 },
+                    autoSkip: false,
+                    maxRotation: 0,
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        // ── Per-sample perturbation chart ────────────────────────────────────
+        const ps = charts.per_sample_perturbation;
+        const psPoints = ps && ps.points ? ps.points.filter(([, v]) => v > 0) : [];
+        if (psPoints.length) {
+          document.getElementById('ps-card').style.display = '';
+          new Chart(document.getElementById('ps-chart'), {
+            type: 'bar',
+            data: { labels: psPoints.map(([s]) => s),
+              datasets: [{ data: psPoints.map(([,v]) => v),
+                backgroundColor: 'rgba(99,112,135,0.55)', borderColor: '#637087',
+                borderWidth: 1, borderRadius: 3 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { color: gridCol }, ticks: { font: { size: 11 } } },
+                y: { grid: { color: gridCol },
+                  title: { display: true, text: 'L∞ perturbation', color: textCol } }
+              }
+            }
+          });
+        }
+
+        // ── Stress Test Comparison chart ─────────────────────────────────────
+        const sc = charts.stress_comparison;
+        const scPoints = sc && sc.points ? sc.points.filter(([, v]) => v != null) : [];
+        if (scPoints.length) {
+          document.getElementById('sc-card').style.display = '';
+          const scHeight = Math.max(220, scPoints.length * 40 + 60);
+          document.getElementById('sc-chart-wrap').style.height = scHeight + 'px';
+          const scColors = scPoints.map(([, v]) => v > 0 ? 'rgba(255,99,99,0.65)' : 'rgba(72,199,142,0.65)');
+          const scBorders = scPoints.map(([, v]) => v > 0 ? '#ff6363' : '#48c78e');
+          new Chart(document.getElementById('sc-chart'), {
+            type: 'bar',
+            data: { labels: scPoints.map(([s]) => s),
+              datasets: [{ data: scPoints.map(([,v]) => v),
+                backgroundColor: scColors, borderColor: scBorders,
+                borderWidth: 1, borderRadius: 3 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { color: gridCol },
+                  title: { display: !!(sc && sc.y_label), text: (sc && sc.y_label) || 'error_increase', color: textCol },
+                  ticks: { font: { size: 10 } } },
+                y: { grid: { display: false },
+                  ticks: { font: { size: 11 }, autoSkip: false, maxRotation: 0 } }
+              }
+            }
+          });
+        }
+
+        // ── Clean vs Adversarial Predictions chart ───────────────────────────
+        const pc = charts.prediction_comparison;
+        const pcPoints = pc && pc.points ? pc.points : [];
+        if (pcPoints.length) {
+          document.getElementById('pc-card').style.display = '';
+          const pcLabels      = pcPoints.map(p => p[0]);
+          const pcValues      = pcPoints.map(p => p[1]);
+          const pcWorstOutput = pcPoints.map(p => p[2] || null);
+          const pcYLabel      = (pc.y_label || 'max single-output prediction shift (%)');
+
+          const descEl = document.querySelector('#pc-card .chart-desc-inline');
+          if (descEl) {
+            descEl.textContent =
+              'Samples ranked by worst single-output % prediction shift under attack. ' +
+              'Bar height = max % change across all output targets for that sample (log scale). ' +
+              'Hover to see which output drove the peak. Sample indices match the adversarial examples CSV.';
+          }
+
+          new Chart(document.getElementById('pc-chart'), {
+            type: 'bar',
+            data: {
+              labels: pcLabels,
+              datasets: [{
+                data: pcValues,
+                backgroundColor: 'rgba(193,69,52,0.65)',
+                borderColor: '#c14534',
+                borderWidth: 1,
+                borderRadius: 3,
+              }],
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    title: items => `Sample ${items[0].label}`,
+                    label: ctx => {
+                      const lines = [`Max shift: ${ctx.parsed.y.toFixed(2)}%`];
+                      const wo = pcWorstOutput[ctx.dataIndex];
+                      if (wo) lines.push(`Worst output: ${wo}`);
+                      return lines;
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, autoSkip: true, maxTicksLimit: 30 },
+                  title: { display: true, text: 'Sample index (original dataset row)', color: textCol },
+                },
+                y: {
+                  type: 'logarithmic',
+                  grid: { color: gridCol },
+                  title: { display: true, text: pcYLabel, color: textCol },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: v => v + '%',
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // ── Attack Profile table ──────────────────────────────────────────────
+        document.getElementById('attack-profile-tbody').innerHTML =
+          (ap.metrics || []).map(m =>
+            `<tr><td>${m.label || m.key}</td><td>${fmt(m.value)}</td></tr>`
+          ).join('');
+
+        // ── Footer ────────────────────────────────────────────────────────────
+        document.getElementById('footer-meta').textContent =
+          'adversarial-robustness-toolkit · ' + [meta.family, meta.task_type].filter(Boolean).join(' · ');
+        document.getElementById('ts').textContent =
+          new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+      </script>
+    </section>
+  </div>
+</div>
+{% endblock content %}
