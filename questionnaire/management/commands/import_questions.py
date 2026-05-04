@@ -37,6 +37,7 @@ class Command(BaseCommand):
             sub = SubQuestionnaire.objects.create(
                 parent_questionnaire=questionnaire,
                 title=section['title'],
+                description=section.get('description', ''),
                 order=int(section['section_number'])
             )
 

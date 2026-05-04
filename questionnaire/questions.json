@@ -28,7 +28,7 @@
             },
             {
               "id": "1.1.2",
-              "question": "Can your solution work independently without constant human control?",
+              "question": "Can your solution operate with varying levels of autonomy (independence from human involvement)?",
               "help_text": "Can it make decisions or take actions on its own, at least to some degree?",
               "answer_type": "yes/no",
               "answers": {
@@ -118,15 +118,7 @@
                 "Decisions (e.g., automatic control actions)": {
                   "next": "1.1.7"
                 },
-                "all_checked": {
-                  "next": "1.1.7",
-                  "action": "Multiple outputs identified"
-                },
-                "some_checked": {
-                  "next": "1.1.7",
-                  "action": "Specific outputs identified"
-                },
-                "none_checked": {
+                "Νone": {
                   "next": "1.2.1",
                   "action": "No AI outputs - Possible exemption"
                 }
@@ -146,7 +138,7 @@
               "answers": {
                 "yes": {
                   "next": "1.1.result",
-                  "action": "Your solution appears to be an AI system. See results"
+                  "action": "Your solution appears to be an AI system. An AI system is a machine-based system designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment and that, for explicit or implicit objectives, infers, from the input it receives, how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments."
                 },
                 "no": {
                   "next": "1.2.1",
@@ -169,7 +161,7 @@
             },
             {
               "id": "1.2.1",
-              "question": "Is your solution a general-purpose AI model (like ChatGPT or similar)?",
+              "question": "Is your solution a general-purpose AI model?",
               "help_text": "General-purpose AI models can perform many different tasks and are often used as building blocks in other applications",
               "answer_type": "yes/no",
               "answers": {
@@ -178,7 +170,7 @@
                   "action": "Continue to verify it's a general-purpose AI model"
                 },
                 "no": {
-                  "next": "1.3",
+                  "next": "1.3.result",
                   "action": "Your solution may not fall under the AI Act"
                 }
               }
@@ -194,7 +186,7 @@
                   "action": "Continue to next question"
                 },
                 "no": {
-                  "next": "1.3",
+                  "next": "1.3.result",
                   "action": "Your solution may not be a general-purpose AI model"
                 }
               }
@@ -210,7 +202,7 @@
                   "action": "Continue to next question"
                 },
                 "no": {
-                  "next": "1.3",
+                  "next": "1.3.result",
                   "action": "Your solution may not be a general-purpose AI model"
                 }
               }
@@ -226,7 +218,7 @@
                   "action": "Continue to next question"
                 },
                 "no": {
-                  "next": "1.3",
+                  "next": "1.3.result",
                   "action": "Your solution may not be a general-purpose AI model"
                 }
               }
@@ -292,7 +284,7 @@
                   "next": "1.2.result"
                 },
                 "None of the above": {
-                  "next": "1.3"
+                  "next": "1.3.result"
                 },
                 "all_checked": {
                   "next": "1.2.result",
@@ -303,7 +295,7 @@
                   "action": "GPAI model capabilities confirmed"
                 },
                 "none_checked": {
-                  "next": "1.3",
+                  "next": "1.3.result",
                   "action": "No generative capabilities - reviewing other criteria"
                 }
               }
@@ -326,9 +318,9 @@
               "notes": "AI models are components of AI systems but are not complete systems on their own. If your model is part of a larger system, you may need to complete both questionnaires."
             },
             {
-              "id": "1.3",
-              "question": "Assessment Result: Outside AI Act Scope",
-              "result_text": "Your solution likely falls outside the scope of the EU AI Act",
+              "id": "1.3.result",
+              "question": "Outside AI Act Scope",
+              "result_text": "Your solution likely falls outside the scope of the EU AI Act. The test is completed due to high probability of non-applicability of AI Act.",
               "answer_type": "acknowledgment",
               "answers": {
                 "finish": {
@@ -590,7 +582,7 @@
             {
               "id": "2.4.result_provider",
               "question": "Role Assessment Result: You are a PROVIDER (as product manufacturer)",
-              "result_text": "Because your AI system is a safety component of a product sold under your name, you are the Provider of the high-risk AI system.",
+              "result_text": "Based on your answers, you are a Provider of this AI system. Providers have significant obligations under the AI Act.",
               "answer_type": "acknowledgment",
               "answers": {
                 "continue": {
@@ -601,7 +593,7 @@
             },
             {
               "id": "2.result_summary",
-              "question": "Your Role(s) Summary",
+              "question": "Your Role Summary",
               "result_text": "Based on your answers, we have determined your specific standing under the AI Act framework.",
               "answer_type": "summary",
               "answers": {
@@ -1470,7 +1462,7 @@
               "id": "5.2.6",
               "question": "Do you process sensitive personal data (race, health, etc.)?",
               "help_text": "Only if strictly necessary for bias detection",
-              "answer_type": "yes/no/not_applicable",
+              "answer_type": "yes/no/not applicable",
               "answers": {
                 "yes": {
                   "next": "5.2.6a",
@@ -1480,7 +1472,7 @@
                   "next": "5.3.1",
                   "action": " Data Quality complete - Continue to Documentation"
                 },
-                "not_applicable": {
+                "not applicable": {
                   "next": "5.3.1",
                   "action": "Continue to Documentation"
                 }
@@ -2173,18 +2165,12 @@
             {
               "id": "5.result",
               "question": "Provider Obligations Assessment Complete",
-              "result_text": "You've completed the Provider obligations assessment. Review your compliance status below.",
+              "result_text": "You've completed the Provider obligations assessment.",
               "answer_type": "summary",
               "answers": {
-                "continue_deployer": {
-                  "next": "6.0",
-                  "action": "If you're also a Deployer, continue to Section 6",
-                  "condition": "if_also_deployer"
-                },
                 "continue_transparency": {
                   "next": "7.0",
-                  "action": "Continue to Section 7: Transparency Requirements",
-                  "condition": "if_provider_only"
+                  "action": "Continue to Section 7: Transparency Requirements"
                 },
                 "view_report": {
                   "next": "REPORT",
@@ -2408,7 +2394,7 @@
               "id": "6.5.1",
               "question": "Do you keep automatically generated logs for at least 6 months?",
               "help_text": "Only if the logs are under your control",
-              "answer_type": "yes/no/not_applicable",
+              "answer_type": "yes/no/not applicable",
               "answers": {
                 "yes": {
                   "next": "6.6.1",
@@ -2419,7 +2405,7 @@
                   "action": "️ Required if logs are under your control - Continue to Worker Information",
                   "compliance_status": "non_compliant"
                 },
-                "not_applicable": {
+                "not applicable": {
                   "next": "6.6.1",
                   "action": "Continue to Worker Information"
                 }
@@ -2623,7 +2609,7 @@
             },
             { "id": "6.result",
               "question": "Deployer Obligations Assessment Complete",
-              "result_text": "You've completed the Deployer obligations assessment. Review your compliance status below.",
+              "result_text": "You've completed the Deployer obligations assessment.",
               "answer_type": "summary",
               "answers": {
                 "continue_transparency": {
