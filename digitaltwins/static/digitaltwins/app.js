@@ -797,7 +797,7 @@ map.on("moveend zoomend", updateStatsPanel);
 /* ═══════════════════════════════════════════════════
    LOAD GEOJSON
 ═══════════════════════════════════════════════════ */
-fetch((window.BUILDINGS_DATA_URL || "all_buildings_with_building_fields_heat_only_all_steps.json") + "?v=" + Date.now())
+fetch((window.BUILDINGS_DATA_URL || "DT_data.json") + "?v=" + Date.now())
   .then(r => r.text())
   .then(text => {
     // Replace NaN with null (invalid JSON fix)
