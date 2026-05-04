@@ -104,6 +104,7 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -386,6 +387,7 @@ def _fmt_pct(value):
         return str(value)
 
 
+@login_required
 def config_input_view(request):
     if request.method == "POST":
         config_file = request.FILES.get("config_file")
@@ -417,6 +419,7 @@ def config_input_view(request):
     return _robustness_render(request, "robustness/config_input.html", {})
 
 
+@login_required
 def processing_view(request):
     job_id = request.GET.get("job")
     if not job_id:
@@ -469,6 +472,7 @@ def processing_view(request):
     )
 
 
+@login_required
 def job_status_api(request):
     job_id = request.GET.get("job")
     if not job_id:
@@ -483,6 +487,7 @@ def job_status_api(request):
     })
 
 
+@login_required
 def results_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
     if not job:
@@ -535,6 +540,7 @@ def results_view(request, job_id):
     return _robustness_render(request, "robustness/results_report.html", context)
 
 
+@login_required
 def results_json_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
     if not job:
@@ -545,6 +551,7 @@ def results_json_view(request, job_id):
     return response
 
 
+@login_required
 def list_adversarial_csvs_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
     if not job:
@@ -575,6 +582,7 @@ def list_adversarial_csvs_view(request, job_id):
     return JsonResponse({"items": items})
 
 
+@login_required
 def download_adversarial_csv_view(request, job_id, attack_key):
     job = _get_job(job_id) or _load_persisted(job_id)
     if not job:
