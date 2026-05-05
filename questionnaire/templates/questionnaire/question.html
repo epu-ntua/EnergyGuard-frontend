@@ -27,43 +27,44 @@
           </div>
         {% endif %}
 
-        {% if result_text %}
-          <div class="alert alert-info border-0 shadow-sm mb-5 text-start rounded-3">
-            <div class="d-flex align-items-start p-2">
-              <span class="fas fa-info-circle me-3 fs-4 mt-1"></span>
-              <div style="font-size: 1.1rem; line-height: 1.6; font-weight: 500;">
-                {{ result_text|linebreaksbr }}
-              </div>
-            </div>
-          </div>
+                            {% if result_text %}
+                                <div class="alert alert-info border-0 shadow-sm mb-5 text-start" style="border-radius: 16px; background-color: #f0f9ff; color: #2c5282;">
+                                    <div class="d-flex align-items-start p-2">
+                                        <i class="bi bi-info-circle-fill me-3 fs-3"></i>
+                                        <div style="font-size: 1.25rem; line-height: 1.6; font-weight: 500;">
+                                            {{ result_text|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                </div>
 
-          {% if "2.result_summary" in question.id %}
-            <div class="mb-5 text-center">
-              <span class="text-body-tertiary text-uppercase fw-bold d-block mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
-                Your Identified Roles:
-              </span>
-              <div class="d-flex flex-wrap justify-content-center gap-2">
-                {% if user_roles %}
-                  {% for role in user_roles %}
-                    <span class="badge rounded-pill px-4 py-2 shadow-sm bg-dark text-white" style="font-size: 1rem;">
-                      <span class="fas fa-id-badge me-2"></span>{{ role }}
-                    </span>
-                  {% endfor %}
-                {% else %}
-                  <span class="text-danger small">No roles found in context.</span>
-                {% endif %}
-              </div>
-            </div>
-          {% endif %}
-        {% endif %}
-      </div>
-
-    {% else %}
-      <div class="mb-4">
-        <span class="badge bg-body-secondary text-body px-3 py-2 mb-3 shadow-sm border" style="border-radius: 8px;">
-          {{ question.sub_questionnaire.title }}
-        </span>
-        <h2 class="fw-bold mb-3 text-body-emphasis">{{ question.text }}</h2>
+                                {% if "2.result_summary" in question.id %}
+                                    <div class="mb-5 text-center">
+                                        <span class="text-muted text-uppercase fw-bold d-block mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                            Your Identified Roles:
+                                        </span>
+                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                            {% if user_roles %}
+                                                {% for role in user_roles %}
+                                                    <span class="badge rounded-pill px-4 py-2 shadow-sm"
+                                                          style="background-color: #1a202c; color: #fff; font-size: 1rem; border: 1px solid #2d3748;">
+                                                        <i class="bi bi-person-badge me-2"></i>{{ role }}
+                                                    </span>
+                                                {% endfor %}
+                                            {% else %}
+                                                {# Debug message αν η λίστα είναι άδεια #}
+                                                <span class="text-danger small">No roles found in context.</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <span class="badge bg-light text-dark px-3 py-2 mb-3 shadow-sm" style="border-radius: 8px; font-size: 0.9rem; border: 1px solid #dee2e6;">
+                                {{ question.sub_questionnaire.title }}
+                            </span>
+                            <h2 class="fw-bold mb-3" style="color: #1a202c;">{{ question.text }}</h2>
 
         {% if question.help_text %}
           <div class="d-flex justify-content-center mb-4">
