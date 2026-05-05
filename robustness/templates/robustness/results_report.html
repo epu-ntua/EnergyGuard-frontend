@@ -4,9 +4,7 @@
 {% block title %}Adversarial Robustness Report - EnergyGuard.TEF{% endblock title %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'robustness/mockup.css' %}">
 <link rel="stylesheet" href="{% static 'robustness/results.css' %}">
-<link rel="stylesheet" href="{% static 'robustness/style.css' %}">
 <style>
     /* ── Section labels ─────────────────────────────────────── */
     .section-label-row {
@@ -129,7 +127,9 @@
 {% block content %}
 <div class="content">
   <div class="px-4 px-lg-6 pt-6 pb-9">
-  <div class="row g-4">
+
+    <h2 class="mb-8">Robustness Benchmarks</h2>
+    <div class="row g-4">
     <div class="col-12 col-xl-9 mx-auto">
       <div class="card theme-wizard mb-5">
         <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
@@ -141,8 +141,7 @@
           </ul>
         </div>
 
-        <section class="panel">
-      <div class="page" style="max-width:1200px;margin:0 auto;padding:2rem;">
+        <div class="card-body p-4">
 
         <!-- Report header card -->
         <section class="report-card report-card-head" style="margin-bottom:2rem;">
@@ -260,9 +259,6 @@
           <span id="ts"></span>
         </div>
 
-      </div>
-      </section>
-
       <!-- Embedded JSON data -->
       <script id="report-meta-data"       type="application/json">{{ report_meta_json|safe }}</script>
       <script id="attack-setup-data"      type="application/json">{{ attack_setup_json|safe }}</script>
@@ -271,8 +267,17 @@
       <script id="attack-profile-data"    type="application/json">{{ attack_profile_json|safe }}</script>
       <script id="warnings-data"          type="application/json">{{ warnings_json|safe }}</script>
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-      <script>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
         // ── Helpers ──────────────────────────────────────────────────────────
         function getJson(id, fallback) {
           const el = document.getElementById(id);
@@ -751,8 +756,5 @@
           'adversarial-robustness-toolkit · ' + [meta.family, meta.task_type].filter(Boolean).join(' · ');
         document.getElementById('ts').textContent =
           new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
-      </script>
-    </section>
-  </div>
-</div>
-{% endblock content %}
+</script>
+{% endblock scripts %}

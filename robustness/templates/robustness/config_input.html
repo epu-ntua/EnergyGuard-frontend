@@ -4,211 +4,223 @@
 {% block title %}Provide Evaluation Config – Robustness Benchmarks{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'robustness/upload.css' %}">
+<style>
+    .yaml-dropzone {
+        display: block; border: 2px dashed var(--phoenix-border-color); border-radius: .5rem;
+        padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    .yaml-dropzone:hover, .yaml-dropzone.is-dragover {
+        border-color: var(--phoenix-primary); background: rgba(var(--phoenix-primary-rgb), .04);
+    }
+</style>
 {% endblock head %}
 
 {% block content %}
 <div class="content">
-  <div class="px-4 px-lg-6 pt-6 pb-9">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
 
-    <h2 class="mb-8">Robustness Benchmarks</h2>
-    <div class="row g-4">
-      <div class="col-12 col-xl-9 mx-auto">
+        <h2 class="mb-8">Robustness Benchmarks</h2>
+        <div class="row g-4">
+            <div class="col-12 col-xl-9 mx-auto">
 
-        <div class="card theme-wizard mb-5">
+                <div class="card theme-wizard mb-5">
 
-          <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
-            <ul class="nav justify-content-between nav-wizard nav-wizard-success">
-              <li class="nav-item">
-                <span class="nav-link fw-semibold active">
-                  <div class="text-center d-inline-block">
-                    <span class="nav-item-circle-parent">
-                      <span class="nav-item-circle"><span class="fas fa-check"></span></span>
-                    </span>
-                    <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
-                  </div>
-                </span>
-              </li>
-              <li class="nav-item">
-                <span class="nav-link fw-semibold">
-                  <div class="text-center d-inline-block">
-                    <span class="nav-item-circle-parent">
-                      <span class="nav-item-circle"><span class="fas fa-cog"></span></span>
-                    </span>
-                    <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
-                  </div>
-                </span>
-              </li>
-              <li class="nav-item">
-                <span class="nav-link fw-semibold">
-                  <div class="text-center d-inline-block">
-                    <span class="nav-item-circle-parent">
-                      <span class="nav-item-circle"><span class="fas fa-search"></span></span>
-                    </span>
-                    <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
-                  </div>
-                </span>
-              </li>
-              <li class="nav-item">
-                <span class="nav-link fw-semibold">
-                  <div class="text-center d-inline-block">
-                    <span class="nav-item-circle-parent">
-                      <span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span>
-                    </span>
-                    <span class="d-none d-md-block mt-1 fs-9">Results</span>
-                  </div>
-                </span>
-              </li>
-            </ul>
-          </div>
+                    <!-- Stepper -->
+                    <div class="card-header bg-body-highlight pt-3 pb-2 border-bottom-0">
+                        <ul class="nav justify-content-between nav-wizard nav-wizard-success">
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold active">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-check"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Select Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-cog"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Configure Source</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-search"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Analyze</span>
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link fw-semibold">
+                                    <div class="text-center d-inline-block">
+                                        <span class="nav-item-circle-parent">
+                                            <span class="nav-item-circle"><span class="fas fa-chart-bar"></span></span>
+                                        </span>
+                                        <span class="d-none d-md-block mt-1 fs-9">Results</span>
+                                    </div>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
 
-        <header class="yaml-hero">
-          <div class="yaml-hero-icon" aria-hidden="true">
-            <img src="{% static 'assets/img/spot-illustrations/shield.png' %}" alt="" style="width:52px;height:52px;object-fit:contain;">
-          </div>
-          <h1>Provide Evaluation Config</h1>
-          <p>Upload a YAML configuration file that defines the model, dataset, and attack scenarios for the robustness evaluation.</p>
-        </header>
+                    <!-- Hero -->
+                    <div class="text-center pt-5 pb-3 px-4 d-flex flex-column align-items-center gap-2">
+                        <div class="rounded-3 overflow-hidden shadow-sm flex-shrink-0" style="width:56px;height:56px;">
+                            <img src="{% static 'assets/img/spot-illustrations/shield.png' %}" alt="" style="width:56px;height:56px;object-fit:contain;">
+                        </div>
+                        <h2 class="fw-bolder text-body-emphasis mb-1">Provide Evaluation Config</h2>
+                        <p class="text-body-tertiary fs-8 mb-0">Upload a YAML configuration file that defines the model, dataset, and attack scenarios for the robustness evaluation.</p>
+                    </div>
 
-        {% if error %}
-          <div class="yaml-error-banner">{{ error }}</div>
-        {% endif %}
+                    <!-- Form -->
+                    <div class="card-body pt-2 pb-5 px-4">
 
-        <section class="yaml-config-wrap">
-          <form class="yaml-form" action="{% url 'robustness:config_input' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+                        {% if error %}
+                        <div class="alert alert-danger rounded-3" role="alert">{{ error }}</div>
+                        {% endif %}
 
-            <div class="yaml-grid">
-              <section class="yaml-panel yaml-panel--primary">
-                <h2 class="yaml-section-title">Upload configuration</h2>
+                        <form action="{% url 'robustness:config_input' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
 
-                <label class="yaml-dropzone" for="config-file" id="yaml-dropzone">
-                  <input id="config-file" name="config_file" type="file" accept=".yaml,.yml" hidden>
-                  <span class="yaml-dropzone-icon" aria-hidden="true">📄</span>
-                  <span class="yaml-dropzone-title">Drag and drop your YAML config here</span>
-                  <span class="yaml-dropzone-copy">or click to browse your local files</span>
-                  <span class="yaml-file-pill" id="yaml-file-pill">No file selected</span>
-                </label>
+                            <div class="row g-3">
 
-                <div class="yaml-chip-row" aria-label="Supported file types">
-                  <span class="yaml-chip">.yaml</span>
-                  <span class="yaml-chip">.yml</span>
+                                <!-- Upload panel -->
+                                <div class="col-12 col-lg-8">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Upload configuration</h6>
+
+                                            <label class="yaml-dropzone mb-3" for="config-file" id="yaml-dropzone">
+                                                <input id="config-file" name="config_file" type="file" accept=".yaml,.yml" hidden>
+                                                <div class="text-center mb-2"><span class="fas fa-file-code fs-3 text-body-tertiary"></span></div>
+                                                <span class="fw-semibold text-body-emphasis d-block">Drag and drop your YAML config here</span>
+                                                <span class="text-body-tertiary fs-9 d-block">or click to browse your local files</span>
+                                                <span class="badge badge-phoenix badge-phoenix-secondary mt-2" id="yaml-file-pill">No file selected</span>
+                                            </label>
+
+                                            <div class="d-flex gap-2 mb-3">
+                                                <span class="badge badge-phoenix badge-phoenix-info">.yaml</span>
+                                                <span class="badge badge-phoenix badge-phoenix-info">.yml</span>
+                                            </div>
+
+                                            <div class="mb-0">
+                                                <label class="form-label fw-semibold" for="config-name">Evaluation name</label>
+                                                <input id="config-name" name="config_name" class="form-control" type="text" placeholder="blackbox_pytorch_classification">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Requirements sidebar -->
+                                <div class="col-12 col-lg-4">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Config requirements</h6>
+                                            <ul class="ps-3 text-body-tertiary mb-3 fs-9">
+                                                <li class="mb-2">Set a top-level <code>name:</code> and optional <code>description:</code>.</li>
+                                                <li class="mb-2">Provide dataset details under <code>dataset:</code> — <code>path</code>, <code>format</code>, and <code>target_column</code>.</li>
+                                                <li class="mb-2">Declare the model under <code>model:</code> with <code>backend</code>, <code>task_type</code>, and MLflow connection fields.</li>
+                                                <li class="mb-2">List attack scenarios under <code>robustness.attacks:</code> — each with <code>type</code>, <code>epsilon</code>, and attack-specific parameters.</li>
+                                                <li>Define output paths under <code>output:</code> — <code>output_dir</code>, <code>metrics_filename</code>, and <code>report_filename</code>.</li>
+                                            </ul>
+                                            <a href="#" class="btn btn-link btn-sm p-0 text-decoration-none">
+                                                <span class="fas fa-download me-1"></span>Download example config.yaml
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Selected config</span>
+                                            <strong class="fw-semibold text-body-emphasis d-block" id="yaml-summary-name">Waiting for file selection</strong>
+                                            <span class="text-body-tertiary fs-9" id="yaml-summary-meta">Choose a YAML file to continue</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-3 pt-4">
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="#">
+                                    <span class="fas fa-chevron-left"></span>Back
+                                </a>
+                                <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
+                                    Next<span class="fas fa-chevron-right"></span>
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+
                 </div>
-
-                <div class="yaml-field-row">
-                  <div class="yaml-field">
-                    <label class="yaml-label" for="config-name">Evaluation name</label>
-                    <input id="config-name" name="config_name" class="yaml-input" type="text" placeholder="blackbox_pytorch_classification">
-                  </div>
-                </div>
-              </section>
-
-              <aside class="yaml-panel yaml-panel--secondary">
-                <h2 class="yaml-section-title">Config requirements</h2>
-
-                <ul class="yaml-checklist">
-                  <li>Set a top-level <code>name:</code> and optional <code>description:</code>.</li>
-                  <li>Provide dataset details under <code>dataset:</code> — <code>path</code>, <code>format</code>, and <code>target_column</code>.</li>
-                  <li>Declare the model under <code>model:</code> with <code>backend</code>, <code>task_type</code>, and MLflow connection fields.</li>
-                  <li>List attack scenarios under <code>robustness.attacks:</code> — each with <code>type</code>, <code>epsilon</code>, and attack-specific parameters.</li>
-                  <li>Define output paths under <code>output:</code> — <code>output_dir</code>, <code>metrics_filename</code>, and <code>report_filename</code>.</li>
-                </ul>
-
-                <a href="#" class="yaml-download-link">
-                  ↓ Download example config.yaml
-                </a>
-
-                <div class="yaml-summary-card">
-                  <span class="yaml-summary-label">Selected config</span>
-                  <strong class="yaml-summary-name" id="yaml-summary-name">Waiting for file selection</strong>
-                  <span class="yaml-summary-meta" id="yaml-summary-meta">Choose a YAML file to continue</span>
-                </div>
-              </aside>
             </div>
+        </div>
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
 
-            <div class="yaml-actions">
-              <a class="btn btn-ghost" href="#">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M10.5 12.5 6 8l4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Back
-              </a>
-              <button class="btn btn-primary" type="submit">
-                Next
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M5.5 3.5 10 8l-4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </form>
-  <script>
-    (function () {
-      // Sidebar nav group toggle
-      document.querySelectorAll('[data-nav-group]').forEach(function (group) {
-        var toggle = group.querySelector('[data-nav-toggle]');
-        if (!toggle) return;
-        toggle.addEventListener('click', function () {
-          var open = group.classList.toggle('is-open');
-          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-      });
+{% block scripts %}
+<script>
+(function () {
+    var fileInput   = document.getElementById('config-file');
+    var dropzone    = document.getElementById('yaml-dropzone');
+    var pill        = document.getElementById('yaml-file-pill');
+    var summaryName = document.getElementById('yaml-summary-name');
+    var summaryMeta = document.getElementById('yaml-summary-meta');
 
-      // YAML file drop zone
-      var fileInput = document.getElementById('config-file');
-      var dropzone = document.getElementById('yaml-dropzone');
-      var pill = document.getElementById('yaml-file-pill');
-      var summaryName = document.getElementById('yaml-summary-name');
-      var summaryMeta = document.getElementById('yaml-summary-meta');
-
-      function formatSize(bytes) {
+    function formatSize(bytes) {
         if (!bytes && bytes !== 0) return '';
         if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-      }
+    }
 
-      function updateFileState(file) {
+    function updateFileState(file) {
         if (!file) {
-          pill.textContent = 'No file selected';
-          summaryName.textContent = 'Waiting for file selection';
-          summaryMeta.textContent = 'Choose a YAML file to continue';
-          return;
+            pill.textContent = 'No file selected';
+            summaryName.textContent = 'Waiting for file selection';
+            summaryMeta.textContent = 'Choose a YAML file to continue';
+            return;
         }
         pill.textContent = file.name;
         summaryName.textContent = file.name;
-        summaryMeta.textContent = formatSize(file.size) + ' \u2022 YAML configuration';
-      }
+        summaryMeta.textContent = formatSize(file.size) + ' • YAML configuration';
+    }
 
-      if (fileInput) {
+    if (fileInput) {
         fileInput.addEventListener('change', function () {
-          updateFileState(fileInput.files && fileInput.files[0]);
+            updateFileState(fileInput.files && fileInput.files[0]);
         });
-      }
+    }
 
-      if (dropzone && fileInput) {
+    if (dropzone && fileInput) {
         ['dragenter', 'dragover'].forEach(function (evt) {
-          dropzone.addEventListener(evt, function (e) {
-            e.preventDefault();
-            dropzone.classList.add('is-dragover');
-          });
+            dropzone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                dropzone.classList.add('is-dragover');
+            });
         });
         ['dragleave', 'drop'].forEach(function (evt) {
-          dropzone.addEventListener(evt, function (e) {
-            e.preventDefault();
-            dropzone.classList.remove('is-dragover');
-          });
+            dropzone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                dropzone.classList.remove('is-dragover');
+            });
         });
         dropzone.addEventListener('drop', function (e) {
-          var files = e.dataTransfer && e.dataTransfer.files;
-          if (!files || !files.length) return;
-          fileInput.files = files;
-          updateFileState(files[0]);
+            var files = e.dataTransfer && e.dataTransfer.files;
+            if (!files || !files.length) return;
+            fileInput.files = files;
+            updateFileState(files[0]);
         });
-      }
-    })();
-  </script>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock content %}
+    }
+})();
+</script>
+{% endblock scripts %}
