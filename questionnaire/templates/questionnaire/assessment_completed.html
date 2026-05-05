@@ -1,43 +1,21 @@
-{% extends "questionnaire/base_questionnaire.html" %}
+<div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: sans-serif;">
+    <div style="background-color: #f8f9fa; border-left: 6px solid #007bff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: #343a40; margin-bottom: 20px;">Assessment Result</h2>
 
-{% block title %}Assessment Completed | EnergyGuard{% endblock %}
+        <p style="font-size: 1.2rem; line-height: 1.6; color: #495057;">
+            Your assessment is now completed. From the answers provided, it is likely that you do not fall within the roles mentioned above mentioned for the AI system that is being submitted to the Energy Guard Platform to be tested.
+        </p>
 
-{% block questionnaire_content %}
-<div class="mb-5">
-  <h2 class="text-body-emphasis fw-bolder mb-1">Assessment Result</h2>
-  <p class="text-body-tertiary">EU AI Act risk classification</p>
-</div>
+        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #dee2e6;">
 
-<div class="card border-0 shadow-sm">
-  <div class="card-body p-4 p-lg-5">
+        <p style="font-size: 0.9rem; color: #6c757d; font-style: italic;">
+            Kindly note that this does not consist legal advice and can be used only for informational purposes.
+        </p>
 
-    <div class="d-flex align-items-center gap-3 mb-4">
-      <div class="avatar avatar-xl">
-        <div class="avatar-name rounded-circle bg-primary-subtle">
-          <span class="fas fa-clipboard-check text-primary fs-4"></span>
+        <div style="margin-top: 30px;">
+            <a href="{% url 'questionnaire:start' questionnaire_id=1 %}" style="text-decoration: none; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+                Return to Home
+            </a>
         </div>
-      </div>
-      <div>
-        <h5 class="fw-bold mb-1 text-body-emphasis">Assessment Completed</h5>
-        <p class="text-body-secondary mb-0 small">Your responses have been reviewed</p>
-      </div>
     </div>
-
-    <p class="text-body-secondary" style="line-height: 1.7;">
-      Your assessment is now completed. From the answers provided, it is likely that you do not fall within
-      the roles mentioned above for the AI system that is being submitted to the EnergyGuard Platform to be tested.
-    </p>
-
-    <hr class="my-4">
-
-    <p class="text-body-tertiary small fst-italic mb-4">
-      Kindly note that this does not constitute legal advice and can be used only for informational purposes.
-    </p>
-
-    <a href="{% url 'questionnaire:start' questionnaire_id=1 %}" class="btn btn-primary fw-semibold px-4">
-      <span class="fas fa-redo me-2"></span> Restart Assessment
-    </a>
-
-  </div>
 </div>
-{% endblock %}

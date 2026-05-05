@@ -1,33 +1,90 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 {% load custom_filters %}
 
-{% block title %}Assessment Question | EnergyGuard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12 col-lg-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+                <div class="card-body p-4 p-md-5">
 
-{% block questionnaire_content %}
-<div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
-  <div class="card-body p-4 p-md-5">
+                    {# Result view logic: Triggered when the question ID contains ".result" #}
+                    {% if ".result" in question.id %}
+                        <div class="text-center py-4">
+                            <div class="display-6 text-success mb-4">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <h3 class="fw-bold mb-3">
+                                {% if question.id == "8.result" %}
+                                    You've completed all sections of the AI System Compliance questionnaire.
+                                {% else %}
+                                    {{ question.text }}
+                                {% endif %}
+                            </h3>
 
-    {% if ".result" in question.id %}
-      <div class="text-center py-4">
-        <div class="display-6 text-success mb-4">
-          <span class="fas fa-check-circle"></span>
-        </div>
-        <h3 class="fw-bold mb-3 text-body-emphasis">{{ question.text }}</h3>
+                            {# AI Act Classification section for the final assessment step #}
+                            {% if category and question.id == "8.result" %}
+                                {% if question.id == "8.result" or question.id == "1.1.result" or question.id == "1.2.result" or question.id == "1.3.result" %}
+                                    <div class="mb-5 text-center">
+                                        <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                            AI Act Classification:
+                                        </span>
+                                        <div class="d-inline-block px-5 py-3 shadow-sm"
+                                             style="background: #1a202c; color: white; border-radius: 16px;">
+                                            <h4 class="mb-0 fw-bold">
+                                                <i class="bi bi-shield-check me-2"></i>
+                                                {% if category %}{{ category }}{% else %}Minimal Risk{% endif %}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
 
-        {% if category and question.id == "8.result" %}
-          <div class="mb-5 text-center">
-            <span class="text-body-tertiary text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">
-              AI Act Classification:
-            </span>
-            <div class="d-inline-block px-5 py-3 shadow-sm rounded-3 bg-dark text-white">
-              <h4 class="mb-0 fw-bold">
-                <span class="fas fa-shield-alt me-2"></span> {{ category }}
-              </h4>
-            </div>
-          </div>
-        {% endif %}
 
-                            {% if result_text %}
+                            {% if question.id == "8.result" %}
+                                <div class="mt-4 text-start p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; background-color: #ffffff; border: 1px solid #e2e8f0 !important;">
+                                    <h5 class="fw-bold text-dark mb-4 border-bottom pb-2">
+                                        <i class="bi bi-clipboard-data me-2"></i> Next Steps & Obligations
+                                    </h5>
+
+                                    {% if category == "Unacceptable Risk (Prohibited)" %}
+                                        <div class="alert alert-danger border-0" style="background-color: #fff5f5; color: #c53030;">
+                                            <h6 class="fw-bold"><i class="bi bi-x-octagon-fill me-2"></i> Critical: Prohibited Practice</h6>
+                                            <p class="mb-0">This AI system falls under practices prohibited by the AI Act. <strong>It cannot be placed on the EU market.</strong> You must redesign the core functionality to comply with fundamental rights.</p>
+                                        </div>
+
+                                    {% elif category == "High Risk" %}
+                                        <div class="list-group list-group-flush" style="font-size: 1rem;">
+                                            <div class="list-group-item border-0 px-0 py-2"><i class="bi bi-check2-circle me-2 text-primary"></i> <strong>Conformity Assessment:</strong> Required before market entry.</div>
+                                            <div class="list-group-item border-0 px-0 py-2"><i class="bi bi-check2-circle me-2 text-primary"></i> <strong>Risk Management:</strong> Continuous lifecycle monitoring is mandatory.</div>
+                                            <div class="list-group-item border-0 px-0 py-2"><i class="bi bi-check2-circle me-2 text-primary"></i> <strong>Human Oversight:</strong> Must allow effective oversight by natural persons.</div>
+                                        </div>
+
+                                    {% elif category == "Limited Risk" %}
+                                        <div class="p-3" style="background-color: #f0f9ff; border-radius: 12px; color: #2c5282;">
+                                            <h6 class="fw-bold"><i class="bi bi-eye-fill me-2"></i> Transparency Requirements</h6>
+                                            <ul class="mb-0 mt-2">
+                                                <li><strong>User Notification:</strong> Inform users they are interacting with AI.</li>
+                                                <li><strong>Content Marking:</strong> AI-generated media must be clearly labeled.</li>
+                                            </ul>
+                                        </div>
+
+                                    {% elif category == "General-Purpose AI Model (GPAI)" %}
+                                        <div class="p-3" style="background-color: #f7fafc; border-radius: 12px;">
+                                            <h6 class="fw-bold"><i class="bi bi-cpu-fill me-2"></i> GPAI Model Obligations</h6>
+                                            <p class="small mb-0">You must maintain technical documentation and provide a summary of training content to the AI Office.</p>
+                                        </div>
+
+                                    {% else %}
+                                        <div class="alert alert-success border-0" style="background-color: #f0fff4; color: #276749;">
+                                            <h6 class="fw-bold"><i class="bi bi-check-lg me-2"></i> Minimal Risk</h6>
+                                            <p class="mb-0">No mandatory obligations. Voluntary Codes of Conduct are encouraged.</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if result_text and question.id != "8.result" %}
                                 <div class="alert alert-info border-0 shadow-sm mb-5 text-start" style="border-radius: 16px; background-color: #f0f9ff; color: #2c5282;">
                                     <div class="d-flex align-items-start p-2">
                                         <i class="bi bi-info-circle-fill me-3 fs-3"></i>
@@ -36,7 +93,10 @@
                                         </div>
                                     </div>
                                 </div>
+                            {% endif %}
 
+                            {% if result_text %}
+                                {# User roles summary displayed in specific result steps #}
                                 {% if "2.result_summary" in question.id %}
                                     <div class="mb-5 text-center">
                                         <span class="text-muted text-uppercase fw-bold d-block mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
@@ -51,7 +111,6 @@
                                                     </span>
                                                 {% endfor %}
                                             {% else %}
-                                                {# Debug message αν η λίστα είναι άδεια #}
                                                 <span class="text-danger small">No roles found in context.</span>
                                             {% endif %}
                                         </div>
@@ -60,6 +119,7 @@
                             {% endif %}
                         </div>
                     {% else %}
+                        {# Default Question view: Displays titles and help text #}
                         <div class="mb-4">
                             <span class="badge px-3 py-2 mb-3 shadow-sm" style="border-radius: 8px; font-size: 0.9rem; background-color: #e2e8f0; color: #4a5568;">
                                 {{ question.sub_questionnaire.title }}
@@ -73,41 +133,43 @@
 
                             <h2 class="fw-bold mb-3" style="color: #1a202c;">{{ question.text }}</h2>
 
-        {% if question.help_text %}
-          <div class="d-flex justify-content-center mb-4">
-            <p class="text-body-tertiary small fst-italic mb-0" style="line-height: 1.5; max-width: 80%; text-align: center;">
-              {{ question.help_text|cut:"?" }}
-            </p>
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
+                            {% if question.help_text %}
+                                <div class="help-note d-flex flex-column align-items-center mb-4 text-center">
+                                    <p class="text-muted small mb-0 italic" style="line-height: 1.5; max-width: 80%;">
+                                        <i class="bi bi-question-circle me-1"></i> {{ question.help_text|cut:"?" }}
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
 
-    <form id="survey-form" method="post" action="{% url 'questionnaire:submit' question.id %}">
-      {% csrf_token %}
+                    <form id="survey-form" method="post" action="{% url 'questionnaire:submit' question.id %}">
+                        {% csrf_token %}
 
-      <div class="options-container mb-5 {% if '.result' in question.id %}d-none{% endif %}">
-        {% for choice in question.choices.all %}
-          {% if choice.text != 'all_checked' and choice.text != 'some_checked' and choice.text != 'none_checked' %}
-            <div class="mb-3">
-              <input type="{% if question.answer_type == 'checklist' or question.answer_type == 'multiple_list' %}checkbox{% else %}radio{% endif %}"
-                     class="btn-check"
-                     name="choices"
-                     id="choice_{{ choice.id }}"
-                     value="{{ choice.id }}"
-                     {% if ".result" in question.id and forloop.first %}checked{% endif %}
-                     {% if question.answer_type != 'checklist' and question.answer_type != 'multiple_list' %}required{% endif %}>
+                        {# Choice Selection Container: Hidden if the current view is a result page #}
+                        <div class="options-container mb-5 {% if '.result' in question.id %}d-none{% endif %}">
+                            {% for choice in question.choices.all %}
+                                {# Exclude internal logic keywords from being rendered as selectable options #}
+                                {% if choice.text != 'all_checked' and choice.text != 'some_checked' and choice.text != 'none_checked' %}
+                                    <div class="mb-3">
+                                        <input type="{% if question.answer_type == 'checklist' or question.answer_type == 'multiple_list' %}checkbox{% else %}radio{% endif %}"
+                                               class="btn-check"
+                                               name="choices"
+                                               id="choice_{{ choice.id }}"
+                                               value="{{ choice.id }}"
+                                               {% if ".result" in question.id and forloop.first %}checked{% endif %}
+                                               {% if question.answer_type != 'checklist' and question.answer_type != 'multiple_list' %}required{% endif %}>
 
-              <label class="btn btn-outline-light d-flex align-items-center p-4 w-100 text-start shadow-sm custom-option-label" for="choice_{{ choice.id }}">
-                <div class="custom-checkbox me-3">
-                  <span class="fas fa-check"></span>
-                </div>
-                <span class="fs-6 fw-medium text-body-emphasis">{{ choice.text }}</span>
-              </label>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
+                                        <label class="btn btn-outline-light d-flex align-items-center p-4 w-100 text-start shadow-sm custom-option-label" for="choice_{{ choice.id }}">
+                                            <div class="custom-checkbox me-3">
+                                                <i class="bi bi-check-lg"></i>
+                                            </div>
+                                            <span class="fs-5 fw-medium text-dark">{{ choice.text }}</span>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
 
                         {# Form Navigation Buttons #}
                         <div class="d-flex flex-column align-items-end mt-5">
@@ -154,6 +216,24 @@
 </div>
 
 <style>
+.container {
+    max-width: 1400px !important;
+}
+
+.card {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body {
+    padding: 4rem !important;
+}
+
+.help-note p {
+    font-style: italic;
+    color: #718096 !important;
+}
 .custom-option-label {
     border: 2px solid #edf2f7 !important;
     border-radius: 20px !important;
@@ -188,53 +268,56 @@
 }
 .custom-option-label:hover {
     transform: translateY(-4px);
-/*    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;*/
     border-color: #cbd5e0 !important;
 }
-.btn-check:checked + label.custom-option-label {
-  border-color: var(--phoenix-primary, #4fd4f1) !important;
-  background-color: rgba(79, 212, 241, 0.06) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 212, 241, 0.15) !important;
+.btn-check:checked + label {
+    border-color: #1a202c !important;
+    background-color: #f7fafc !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
 }
 .custom-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--phoenix-border-color, #dee2e6);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: transparent;
-  transition: all 0.2s;
-  flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #cbd5e0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
 }
 .btn-check:checked + label .custom-checkbox {
-  background-color: var(--phoenix-primary, #4fd4f1);
-  border-color: var(--phoenix-primary, #4fd4f1);
-  color: var(--phoenix-dark, #141824);
+    background-color: #1a202c;
+    border-color: #1a202c;
+    color: white;
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('survey-form');
-  const submitBtn = document.getElementById('submit-btn');
-  const isResult = "{{ question.id }}".includes(".result");
-  const isChecklist = form.querySelector('input[type="checkbox"]');
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('survey-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const isResult = "{{ question.id }}".includes(".result");
+        const isChecklist = form.querySelector('input[type="checkbox"]');
 
-  function validate() {
-    if (isResult) {
-      submitBtn.disabled = false;
-    } else {
-      const checkedCount = form.querySelectorAll('input[name="choices"]:checked').length;
-      if (!isChecklist) {
-        submitBtn.disabled = checkedCount === 0;
-      }
-    }
-  }
-  form.addEventListener('change', validate);
-  validate();
-});
+        /**
+         * Simple Form Validation
+         * Disables submit button for radio-type questions if no option is selected.
+         * Skips validation for result pages.
+         */
+        function validate() {
+            if (isResult) {
+                submitBtn.disabled = false;
+            } else {
+                const checkedCount = form.querySelectorAll('input[name="choices"]:checked').length;
+                if (!isChecklist) {
+                    submitBtn.disabled = checkedCount === 0;
+                }
+            }
+        }
+        form.addEventListener('change', validate);
+        validate();
+    });
 </script>
 {% endblock %}
