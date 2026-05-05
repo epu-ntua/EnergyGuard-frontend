@@ -823,23 +823,6 @@
     grid-template-columns: 1fr;
   }
 }
-/* Shared button styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.75rem 1.3rem;
-  border-radius: 10px;
-  font: 700 0.95rem/1 inherit;
-  cursor: pointer;
-  border: 0;
-  text-decoration: none;
-  transition: opacity 150ms ease, box-shadow 150ms ease, transform 150ms ease;
-}
-.btn:active { transform: translateY(1px); }
-.btn-primary { background: linear-gradient(135deg, #2ea8ff, #74c7ff); color: #fff; box-shadow: 0 8px 20px rgba(46,168,255,0.25); }
-.btn-primary:hover { opacity: 0.92; }
 .btn-ghost { background: #f0f4fb; color: #3d5275; border: 1px solid #d5dff0; }
 .btn-ghost:hover { background: #e6edf8; }
 
@@ -986,17 +969,6 @@
 }
 
 /* ── Badges ─────────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.28rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .badge--warn {
   background: #fff8eb;
   color: #b46b12;
