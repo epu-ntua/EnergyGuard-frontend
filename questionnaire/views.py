@@ -1,4 +1,5 @@
 import json
+from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,28 +18,22 @@ def start_questionnaire(request, questionnaire_id):
 
     return render(request, 'questionnaire/intro.html', {
         'questionnaire': questionnaire,
-        'first_question': first_question,
-        'active_navbar_page': 'trustworthiness',
-        'show_sidebar': True,
+        'first_question': first_question
     })
 
 def question_detail(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
-
-    # AUTOMATIC REDIRECT FOR ACKNOWLEDGMENT TYPES
-    if question.answer_type == 'acknowledgment':
-        # Get the first available choice
-        first_choice = question.choices.first()
-        if first_choice and first_choice.next_question:
-            # If result text exists, store it in the session
-            if question.result_text:
-                request.session['flash_result_text'] = question.result_text
-
-            # Redirect to the next question without rendering the current one
-            return redirect('questionnaire:detail', question_id=first_choice.next_question.id)
+    question = get_object_or_404(Question.objects.select_related('sub_questionnaire'), id=question_id)
 
     sub_q = question.sub_questionnaire
     questionnaire = sub_q.parent_questionnaire if sub_q else Questionnaire.objects.first()
+
+    # AUTOMATIC REDIRECT FOR ACKNOWLEDGMENT TYPES
+    if question.answer_type == 'acknowledgment':
+        first_choice = question.choices.first()
+        if first_choice and first_choice.next_question:
+            if question.result_text:
+                request.session['flash_result_text'] = question.result_text
+            return redirect('questionnaire:detail', question_id=first_choice.next_question.id)
 
     # Stepper logic
     stages_list = [stage[1] for stage in Question.STAGE_CHOICES]
@@ -58,14 +53,15 @@ def question_detail(request, question_id):
     if first_choice and first_choice.next_question:
         next_question_id = first_choice.next_question.id
 
+    # Retrieve session data for dynamic content rendering
     category = request.session.get('final_risk_display', None)
-
     user_roles = request.session.get('user_roles', [])
     logic_conditions = request.session.get('logic_conditions', {})
 
     context = {
         'question': question,
-        'questionnaire': questionnaire,  # Defining variable to avoid NameError
+        'questionnaire': questionnaire,
+        'sub_q': sub_q,
         'stages': stages_list,
         'current_stage': question.stage,
         'stage_links': stage_links,
@@ -75,8 +71,6 @@ def question_detail(request, question_id):
         'user_roles': user_roles,
         'logic_conditions': logic_conditions,
     }
-    context['active_navbar_page'] = 'trustworthiness'
-    context['show_sidebar'] = True
     return render(request, 'questionnaire/question.html', context)
 
 def submit_answer(request, question_id):
@@ -114,9 +108,8 @@ def submit_answer(request, question_id):
 
         # 2. Temporary Marking of Potential High Risk (Before Exemptions)
         elif next_q and "4.2.result_highrisk" in next_q.id:
-            # Εδώ το σύστημα ΔΕΝ θεωρείται ακόμα High Risk, αλλά "Potential High Risk"
             request.session['ai_risk_level'] = "Potential High Risk"
-            request.session['is_high_risk'] = False  # Παραμένει False μέχρι την επιβεβαίωση
+            request.session['is_high_risk'] = False
 
         # 3. CONFIRMATION of High Risk (After Section 4.3, if there was no exception)
         elif next_q and "4.result_confirmed_highrisk" in next_q.id:
@@ -136,7 +129,6 @@ def submit_answer(request, question_id):
 
         # 6. Transparency (Limited Risk - Section 7)
         elif next_q and "7.result" in next_q.id:
-            # Αν δεν έχουμε ήδη "κλειδώσει" σε High Risk, τότε είναι Limited
             if request.session.get('ai_risk_level') != "High Risk":
                 request.session['ai_risk_level'] = "Limited Risk"
                 request.session['is_high_risk'] = False
@@ -221,12 +213,9 @@ def submit_answer(request, question_id):
             request.session['user_roles'] = user_roles
             request.session.modified = True
 
-            # Ορισμός των conditions για την πλοήγηση που χρησιμοποιεί το JSON
             is_provider = "provider" in user_roles
             is_deployer = "deployer" in user_roles
 
-            # Ειδική λογική για τη σελίδα αποτελεσμάτων (π.χ. 4.result_confirmed_highrisk)
-            # Εδώ προετοιμάζουμε τις μεταβλητές που περιμένει το template ή η επόμενη ερώτηση
             context_conditions = {
                 'if_provider_role': is_provider and not is_deployer,
                 'if_deployer_role_only': is_deployer and not is_provider,
@@ -234,10 +223,7 @@ def submit_answer(request, question_id):
                 'if_provider': is_provider,
                 'if_deployer': is_deployer,
             }
-            # Αποθήκευση στο session για να είναι διαθέσιμα στο επόμενο request
             request.session['logic_conditions'] = context_conditions
-
-
 
             # Special logic for the very last result page (summary)
             if next_q.id == "8.result":
@@ -253,16 +239,10 @@ def submit_answer(request, question_id):
     return redirect('questionnaire:start', questionnaire_id=parent_id)
 
 def out_of_scope_view(request):
-    return render(request, 'questionnaire/out_of_scope.html', {
-        'active_navbar_page': 'trustworthiness',
-        'show_sidebar': True,
-    })
+    return render(request, 'questionnaire/out_of_scope.html')
 
 def assessment_completed_view(request):
-    return render(request, 'questionnaire/assessment_completed.html', {
-        'active_navbar_page': 'trustworthiness',
-        'show_sidebar': True,
-    })
+    return render(request, 'questionnaire/assessment_completed.html')
 
 def download_assessment_json(request):
     session_key = request.session.session_key
@@ -285,3 +265,19 @@ def download_assessment_json(request):
     )
     response['Content-Disposition'] = f'attachment; filename="AI_Report_{assessment.id}.json"'
     return response
+
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+
+    history = self.request.session.get('questionnaire_history', [])
+
+    category = "UNDER ASSESSMENT"
+    if "1.1.result" in history:
+        category = "AI SYSTEM"
+    elif "1.2.result" in history:
+        category = "GENERAL-PURPOSE AI MODEL (GPAI)"
+    elif "1.3.result" in history:
+        category = "OUTSIDE SCOPE"
+
+    context['category'] = category
+    return context

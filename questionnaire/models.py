@@ -22,6 +22,7 @@ class SubQuestionnaire(models.Model):
         on_delete=models.CASCADE
     )
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -51,7 +52,7 @@ class Question(models.Model):
         ('acknowledgment', 'Acknowledgment'),
     ]
 
-    # We use CharField for the ID to accept values ​​like "1.1.1" or "4.1.result_prohibited" from JSON
+    # We use CharField for the ID to accept values like "1.1.1" or "4.1.result_prohibited" from JSON
     id = models.CharField(
         primary_key=True,
         max_length=100,
