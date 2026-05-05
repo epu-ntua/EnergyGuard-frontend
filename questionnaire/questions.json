@@ -808,7 +808,7 @@
         {
           "section_number": "4",
           "title": "AI System Risk Classification",
-          "description": "The AI Act classifies systems by risk level: Unacceptable, High, Limited, or Minimal",
+          "description": "The AI Act classifies systems by risk level: Prohibited, High, Limited, or Minimal",
           "questions": [
             {
               "id": "4.0",
@@ -969,7 +969,7 @@
             {
               "id": "4.2.1",
               "question": "Is your AI system used for managing or operating critical infrastructure?",
-              "help_text": "This is the most relevant category for the energy sector",
+              "help_text": "Critical infrastructure refers to essential systems and assets—such as energy, transport, healthcare, water, and digital networks—whose disruption or failure would have serious impacts on public safety, the economy, or society as a whole.",
               "answer_type": "yes/no",
               "examples": [
                 "Controlling electrical substations",
