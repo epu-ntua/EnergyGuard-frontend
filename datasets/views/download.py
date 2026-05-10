@@ -1,3 +1,4 @@
+import logging
 import os
 
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,8 @@ from django.shortcuts import get_object_or_404
 
 from ..models import Dataset
 from ..services.minio_storage import MinioUploadError, _build_minio_client
+
+logger = logging.getLogger(__name__)
 
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
 
@@ -23,7 +26,8 @@ def dataset_download(request, dataset_id):
         s3_response = client.get_object(Bucket=dataset.bucket_name, Key=dataset.data_file)
     except MinioUploadError as exc:
         from django.http import HttpResponseServerError
-        return HttpResponseServerError(f"Storage error: {exc}")
+        logger.error("Storage error retrieving dataset %s: %s", dataset_id, exc)
+        return HttpResponseServerError("File could not be retrieved. Please try again.")
 
     filename = os.path.basename(dataset.data_file)
     content_type = s3_response.get("ContentType", "application/octet-stream")
