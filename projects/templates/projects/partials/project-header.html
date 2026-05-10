@@ -2,6 +2,7 @@
 <div class="d-flex justify-content-between align-items-start mb-8">
   <div class="d-flex align-items-center gap-2">
     <h2 class="text-body-emphasis fw-bolder mb-0">{{ project_details.name }}</h2>
+    {% if is_creator %}
     <div class="btn-reveal-trigger">
       <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
         data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
@@ -18,6 +19,7 @@
           data-action-url="{% url 'delete_project' project_details.id %}">Delete project</button>
       </div>
     </div>
+    {% endif %}
   </div>
   <button class="btn btn-warning text-white fw-semibold" type="button">Evaluate Project</button>
 </div>

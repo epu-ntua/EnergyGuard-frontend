@@ -56,6 +56,7 @@ def project_details(request, project_id):
         return redirect("home")
 
     edit_project_form = EditProjectForm(instance=project)
+    is_creator = project.creator == request.user
 
     if request.method == "POST" and request.POST.get("action") == "edit_project":
         edit_project_form = EditProjectForm(request.POST, instance=project)
@@ -89,6 +90,7 @@ def project_details(request, project_id):
             "edit_project_form": edit_project_form,
             "active_navbar_page": "projects",
             "show_sidebar": True,
+            "is_creator": is_creator,
         },
     )
 
