@@ -28,13 +28,28 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env')) # Reads the .env file
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '147.102.6.166', 'dashboard.energy-guard.eu'] 
 
 CSRF_TRUSTED_ORIGINS = ['https://dashboard.energy-guard.eu']    # Necessary if using HTTPS in production.
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Security headers — X_FRAME_OPTIONS and SECURE_CONTENT_TYPE_NOSNIFF are safe
+# in all environments; the rest activate only when DEBUG=False.
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
+# Cookie security
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Application definition
 
