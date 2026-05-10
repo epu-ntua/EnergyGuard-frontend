@@ -30,7 +30,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '147.102.6.166', 'dashboard.energy-guard.eu'] 
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '147.102.6.166', 'dashboard.energy-guard.eu']
 
 CSRF_TRUSTED_ORIGINS = ['https://dashboard.energy-guard.eu']    # Necessary if using HTTPS in production.
 
