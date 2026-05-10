@@ -31,7 +31,8 @@ class KeycloakUserSyncClient:
             response.raise_for_status()  # Raise an exception for bad status codes
             return response.json().get("access_token")
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting Keycloak service account token: {e}")
+            status = e.response.status_code if e.response is not None else "N/A"
+            logger.error(f"Error getting Keycloak service account token: {type(e).__name__} (status={status})")
             return None
 
     def update_user(self, user, user_data):
@@ -70,7 +71,8 @@ class KeycloakUserSyncClient:
             logger.info(f"Successfully updated user {user.id} in Keycloak.")
             return {"success": True}
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error updating user {user.id} in Keycloak: {e}. Response: {e.response.text if e.response else 'No response'}")
+            status = e.response.status_code if e.response is not None else "No response"
+            logger.error(f"Error updating user {user.id} in Keycloak: {type(e).__name__} (status={status})")
             return {"error": f"Failed to update user in Keycloak: {e}"}
 
     def send_reset_password_email(self, user):
@@ -99,5 +101,6 @@ class KeycloakUserSyncClient:
             logger.info(f"Successfully sent reset password email to user {user.id}.")
             return {"success": True}
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending reset password email for user {user.id}: {e}. Response: {e.response.text if e.response else 'No response'}")
+            status = e.response.status_code if e.response is not None else "No response"
+            logger.error(f"Error sending reset password email for user {user.id}: {type(e).__name__} (status={status})")
             return {"error": f"Failed to send reset password email: {e}"}
