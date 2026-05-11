@@ -92,3 +92,13 @@ def keycloak_front_channel_logout(request):
     """
     django_logout(request)
     return HttpResponse(status=200)
+
+
+def pending_approval(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    if not request.session.get('pending_approval'):
+        return redirect('home')
+    return render(request, 'accounts/pending_approval.html', {
+        'pending_user_name': request.session.get('pending_user_name', ''),
+    })

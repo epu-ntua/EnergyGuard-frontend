@@ -1,0 +1,25 @@
+{% load static %}
+<nav class="navbar navbar-top fixed-top navbar-expand" id="navbarDefault">
+  <div class="collapse navbar-collapse justify-content-between">
+    <div class="navbar-logo">
+      <a class="navbar-brand me-1 me-sm-3" href="/">
+        <div class="d-flex align-items-center">
+          <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="179" class="d-none d-sm-block"/>
+          <img src="{% static 'assets/img/logo/EnergyGuard_logo-192x174.png' %}" alt="energyguard-mobile" width="49" class="d-block d-sm-none">
+        </div>
+      </a>
+    </div>
+
+    <ul class="navbar-nav navbar-nav-icons flex-row align-items-center">
+      <li class="nav-item">
+        <form method="post" action="{% url 'account_logout' %}" class="d-flex align-items-center">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="/" />
+          <button type="submit" class="btn btn-link text-body p-0 d-flex align-items-center gap-2 text-decoration-none fs-8-5">
+            Sign out <span data-feather="log-out" style="width:20px;height:20px;"></span>
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</nav>

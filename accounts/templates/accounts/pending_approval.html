@@ -1,0 +1,90 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Approval Pending | EnergyGuard</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/img/logo/EnergyGuard_logo 32x24.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="{% static 'assets/css/theme.min.css' %}" type="text/css" rel="stylesheet" id="style-default">
+  <link href="{% static 'assets/css/user.min.css' %}" type="text/css" rel="stylesheet" id="user-style-default">
+  <meta name="theme-color" content="#ffffff">
+  <script src="{% static 'assets/js/config.js' %}"></script>
+</head>
+
+<body>
+  <main class="main" id="top">
+    {% include "core/header-pending.html" %}
+
+    <div class="content mt-0">
+      <div class="row g-4 justify-content-center" style="min-height: 80vh; align-items: center;">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4 p-sm-5">
+
+              <div class="row align-items-center g-4">
+                <div class="col-12 col-sm-5 text-center">
+                  <img class="d-dark-none img-fluid" src="{% static 'assets/img/spot-illustrations/38.webp' %}" alt="" style="max-width:180px;" />
+                  <img class="d-light-none img-fluid" src="{% static 'assets/img/spot-illustrations/dark_38.webp' %}" alt="" style="max-width:180px;" />
+                </div>
+                <div class="col-12 col-sm-7">
+                  <h4 class="mb-3 d-flex align-items-center gap-2">
+                    Approval pending
+                    <span data-feather="clock" style="width:20px;height:20px;color:var(--phoenix-primary);"></span>
+                  </h4>
+                  <p class="mb-1 text-body-secondary fs-9">Thank you! Your registration was successful.</p>
+                  <p class="mb-1 text-body-secondary fs-9">Your account is currently under review by our administrators.</p>
+                  <p class="mb-3 text-body-secondary fs-9">You will receive an email notification once your account is activated.</p>
+
+                  <div class="d-flex align-items-start gap-2 px-4 py-2 rounded mb-5" style="background:var(--phoenix-info-bg-subtle);">
+                    <span data-feather="mail" class="mt-2 me-2 flex-shrink-0" style="width:16px;height:16px;"></span>
+                    <div>
+                      <p class="mb-0 fs-9 fw-semibold">Didn't receive an email after approval?</p>
+                      <p class="mb-0 fs-9 text-body-secondary">Check your spam folder or contact support.</p>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2 flex-wrap">
+                    <a href="/" class="btn btn-primary">
+                      <span data-feather="home" class="me-1" style="width:14px;height:14px;"></span>Back to website
+                    </a>
+                    <a href="mailto:support@energy-guard.eu" class="btn btn-outline-secondary">
+                      <span data-feather="help-circle" class="me-1" style="width:14px;height:14px;"></span>Contact support
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      {% include "core/footer.html" %}
+    </div>
+
+    <script>
+      var navbarTopStyle = window.config.config.phoenixNavbarTopStyle;
+      var navbarTop = document.querySelector('.navbar-top');
+      if (navbarTopStyle === 'darker') {
+        navbarTop.setAttribute('data-navbar-appearance', 'darker');
+      }
+    </script>
+  </main>
+
+  <script src="{% static 'vendors/popper/popper.min.js' %}"></script>
+  <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/anchorjs/anchor.min.js' %}"></script>
+  <script src="{% static 'vendors/is/is.min.js' %}"></script>
+  <script src="{% static 'vendors/fontawesome/all.min.js' %}"></script>
+  <script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
+  <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>
+  <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>
+  <script src="{% static 'assets/js/phoenix.js' %}"></script>
+</body>
+
+</html>

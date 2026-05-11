@@ -267,6 +267,13 @@ SOCIALACCOUNT_LOGIN_ON_GET = True  # Skip intermediate "Sign in via Keycloak" co
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True # Logout user from all sessions when password is changed
 SOCIALACCOUNT_LOGOUT = True  # Logout from social account when logging out from the site
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_ADAPTER = 'accounts.adapter.KeycloakApprovalAdapter'
+
+# Emails for admin approval notifications (format: "Name:email@example.com")
+ADMINS = [
+    tuple(entry.split(':', 1))
+    for entry in env.list('DJANGO_ADMINS', default=[])
+]
 
 LOGIN_REDIRECT_URL = "/"  # Redirect to home page after login 
 
