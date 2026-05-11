@@ -108,6 +108,10 @@ class KeycloakTokenExpiryMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
+            backend = request.session.get('_auth_user_backend', '')
+            if 'ModelBackend' in backend:
+                return self.get_response(request)
+
             _, social_token = _get_keycloak_token(request.user)
 
             if (
