@@ -15,7 +15,7 @@ from .experiments import (
     eval_results_all,
     experiments_list,
 )
-from .listing import ProjectsListJson, projects_list, projects_list_tabs
+from .listing import ProjectsListJson, projects_list
 
 __all__ = [
     "AddProjectView",
@@ -34,5 +34,4 @@ __all__ = [
     "project_details",
     "project_index",
     "projects_list",
-    "projects_list_tabs",
 ]

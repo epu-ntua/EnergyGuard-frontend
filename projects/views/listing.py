@@ -43,13 +43,22 @@ class ProjectsListJson(BaseDatatableView):
         return super().render_column(row, column)
 
     def filter_queryset(self, qs):
+        user = self.request.user
         scope = self.request.GET.get("scope", "my")
+
         if scope == "public":
             qs = qs.filter(visibility=True)
-            if self.request.user.is_authenticated:
-                qs = qs.exclude(creator_id=self.request.user.id)
-        elif self.request.user.is_authenticated:
-            qs = qs.filter(creator_id=self.request.user.id)
+            if user.is_authenticated:
+                qs = qs.exclude(creator_id=user.id)
+        elif user.is_authenticated:
+            try:
+                team = user.profile.team
+            except Exception:
+                team = None
+            if team is not None:
+                qs = qs.filter(team=team)
+            else:
+                qs = qs.filter(creator_id=user.id, team__isnull=True)
         else:
             qs = qs.none()
 
@@ -66,7 +75,16 @@ class ProjectsListJson(BaseDatatableView):
 
 @login_required
 def projects_list(request):
-    my_qs = Project.objects.filter(creator_id=request.user.id)
+    try:
+        team = request.user.profile.team
+    except Exception:
+        team = None
+
+    if team is not None:
+        my_qs = Project.objects.filter(team=team)
+    else:
+        my_qs = Project.objects.filter(creator_id=request.user.id, team__isnull=True)
+
     public_qs = Project.objects.filter(visibility=True).exclude(creator_id=request.user.id)
 
     my_counts = {
@@ -106,82 +124,5 @@ def projects_list(request):
             "active_tab": active_tab,
             "active_navbar_page": "projects",
             "show_sidebar": True,
-        },
-    )
-
-
-@login_required
-def projects_list_tabs(request):
-    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("draw"):
-        draw = int(request.GET.get("draw", 1))
-        start = int(request.GET.get("start", 0))
-        length = int(request.GET.get("length", 10))
-        search_value = request.GET.get("search[value]", "")
-        visibility_filter = request.GET.get("visibility", "false")
-
-        order_col = request.GET.get("order[0][column]", "2")
-        order_dir = request.GET.get("order[0][dir]", "desc")
-        column_map = {
-            "1": "name",
-            "2": "collaborators__first_name",
-            "3": "created_at",
-            "4": "updated_at",
-            "5": "project_type",
-        }
-        ordering = column_map.get(order_col, "created_at")
-        if order_dir == "desc":
-            ordering = f"-{ordering}"
-
-        qs = (
-            Project.objects.select_related("creator")
-            .prefetch_related("collaborators")
-            .filter(visibility=visibility_filter == "true")
-        )
-
-        records_total = qs.count()
-
-        if search_value:
-            qs = qs.filter(Q(name__icontains=search_value)).distinct()
-
-        records_filtered = qs.count()
-        qs = qs.order_by(ordering)[start : start + length]
-
-        data = []
-        for exp in qs:
-            data.append(
-                {
-                    "id": exp.id,
-                    "name": exp.name,
-                    "description": exp.description,
-                    "collaborators": ", ".join(exp.collaborators.values_list("first_name", flat=True)),
-                    "created_at": exp.created_at.strftime("%b %d, %Y"),
-                    "updated_at": exp.updated_at.strftime("%b %d, %Y"),
-                    "type": exp.get_project_type_display(),
-                }
-            )
-
-        return JsonResponse(
-            {
-                "draw": draw,
-                "recordsTotal": records_total,
-                "recordsFiltered": records_filtered,
-                "data": data,
-            }
-        )
-
-    visibility_filter = request.GET.get("visibility", "false")
-    data = Project.objects.filter(visibility=visibility_filter == "true")
-    counts = {
-        "all": data.count(),
-    }
-    return render(
-        request,
-        "projects/projects-list-tabs-test.html",
-        {
-            "project": data,
-            "projects_num": counts,
-            "active_navbar_page": "projects",
-            "show_sidebar": True,
-            "visibility_filter": visibility_filter,
         },
     )

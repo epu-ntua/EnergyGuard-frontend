@@ -128,6 +128,10 @@ def accept_team_invite(token, user):
     profile.team_joined_at = timezone.now()
     profile.save()
 
+    # Assign all existing personal projects of this user to the new team
+    from projects.models import Project
+    Project.objects.filter(creator=user, team__isnull=True).update(team=invite.team)
+
     invite.accepted_at = timezone.now()
     invite.save()
 

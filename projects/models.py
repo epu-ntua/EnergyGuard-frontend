@@ -16,13 +16,25 @@ class Project(TimeStampedModel):
     name = models.CharField(max_length=255)
     collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL, through='ProjectCollaborator', related_name='collaborator_projects')
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='creator_projects')
+    team = models.ForeignKey('accounts.Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='projects')
     project_type = models.CharField(max_length=20, choices=ProjectType, default=ProjectType.AI_MODEL)
     description = models.TextField(blank=True)
     visibility = models.BooleanField(default=False)
 
+    def save(self, *args, **kwargs):
+        # Auto-assign to creator's team on creation; personal projects keep team=None
+        if self._state.adding and self.team_id is None and self.creator_id:
+            try:
+                team = self.creator.profile.team
+                if team is not None:
+                    self.team = team
+            except Exception:
+                pass
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
-    
+
     class Meta:
         db_table = 'project'
         verbose_name = 'Project'
