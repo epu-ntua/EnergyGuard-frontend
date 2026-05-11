@@ -553,6 +553,9 @@ def _build_results_context(analysis_result, source_label, job_id):
 
 
 def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None):
+	if not getattr(settings, "SCAN_API_URL", ""):
+		_set_scan_job(job_id, status="failed", result=None, error="SCAN_API_URL is not configured")
+		return
 	try:
 		if mode == "upload":
 			temp_path = upload_meta["temp_path"]

@@ -323,7 +323,7 @@ DATA_MANAGEMENT_SERVER_API_KEY = env('DATA_MANAGEMENT_SERVER_API_KEY')
 JUPYTERHUB_URL = env('JUPYTERHUB_URL')
 
 # Code Analysis (Semgrep backend)
-SCAN_API_URL = env('SCAN_API_URL', default='http://localhost:9001').rstrip('/')
+SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
 
 REPORTS_DIR = str(BASE_DIR / 'robustness_reports')
 ROBUSTNESS_API_URL = env('ROBUSTNESS_API_URL', default='')

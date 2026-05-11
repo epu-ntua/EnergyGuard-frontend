@@ -33,15 +33,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: always
 
-  code-analysis-backend:
-    build:
-      context: ./backends/code_analysis_backend
-      dockerfile: Dockerfile
-    container_name: code_analysis_backend
-    ports:
-      - "9001:5000"
-    restart: always
-
   qcluster:
     build: .
     command: python manage.py qcluster
