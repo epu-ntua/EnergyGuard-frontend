@@ -4,7 +4,13 @@
 {% block title %}Adversarial Robustness Report - EnergyGuard.TEF{% endblock title %}
 
 {% block head %}
+<<<<<<< Updated upstream
 <link rel="stylesheet" href="{% static 'robustness/mockup.css' %}">
+=======
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+>>>>>>> Stashed changes
 <link rel="stylesheet" href="{% static 'robustness/results.css' %}">
 <link rel="stylesheet" href="{% static 'robustness/style.css' %}">
 <style>
@@ -211,48 +217,31 @@
             <div class="chart-desc-inline" id="rc-desc">Error increase vs epsilon</div>
             <div class="chart-wrap"><canvas id="robustness-chart"></canvas></div>
           </section>
-          <section id="ae-card" class="report-card">
-            <div class="chart-title-inline">Attack Efficiency</div>
-            <div class="chart-desc-inline" id="ae-desc">Success rate vs query count</div>
-            <div class="chart-wrap"><canvas id="efficiency-chart"></canvas></div>
+          <section class="report-card" style="margin-bottom:1.5rem;">
+            <div class="chart-title-inline">Clean vs Adversarial Metrics</div>
+            <div class="chart-desc-inline" id="cmp-desc">Primary metric values across evaluation conditions</div>
+            <div class="chart-wrap" style="height:220px;"><canvas id="comparison-chart"></canvas></div>
           </section>
         </div>
-        <section class="report-card" style="margin-bottom:1.5rem;">
-          <div class="chart-title-inline">Clean vs Adversarial Metrics</div>
-          <div class="chart-desc-inline" id="cmp-desc">Primary metric values across evaluation conditions</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="comparison-chart"></canvas></div>
+        <section id="ae-card" class="report-card" style="margin-bottom:1.5rem;">
+          <div class="chart-title-inline">Attack Efficiency</div>
+          <div class="chart-desc-inline" id="ae-desc">Success rate vs query count</div>
+          <div style="font-size:12px;color:#8fa3bf;margin-top:6px;" id="ae-explain">Each point shows how many samples were successfully manipulated if the attack was allowed that many attempts. A steep curve means weaknesses were found early; a flat curve means the model held up well.</div>
+          <div class="chart-wrap"><canvas id="efficiency-chart"></canvas></div>
         </section>
         <section id="fp-card" class="report-card" style="margin-bottom:1.5rem;display:none;">
           <div class="chart-title-inline">Feature Perturbation</div>
-          <div class="chart-desc-inline" id="fp-desc">Mean perturbation per feature, normalised by each feature's observed range — a value of 0.1 means the attack shifted that feature by 10 % of its range on average. Normalisation makes features with different scales (e.g. area vs. floor count) directly comparable. Larger bars indicate features the attack exploits most.</div>
+          <div class="chart-desc-inline" id="fp-desc">Mean perturbation per feature. Hover a bar to see the raw magnitude and percentage of feature range.</div>
           <div id="profile-chart-wrap" class="chart-wrap"><canvas id="profile-chart"></canvas></div>
         </section>
-        <section id="ps-card" class="report-card" style="margin-bottom:2rem;display:none;">
-          <div class="chart-title-inline">Per-Sample Perturbation</div>
-          <div class="chart-desc-inline">L∞ distance between original and adversarial example per sample — samples needing large perturbations were harder to fool</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="ps-chart"></canvas></div>
-        </section>
-        <section id="sc-card" class="report-card" style="margin-bottom:2rem;display:none;">
-          <div class="chart-title-inline">Stress Test Impact</div>
-          <div class="chart-desc-inline">Error increase per stress test scenario — shows which real-world distribution shifts hurt the model most</div>
-          <div id="sc-chart-wrap" class="chart-wrap"><canvas id="sc-chart"></canvas></div>
-        </section>
+
         <section id="pc-card" class="report-card" style="margin-bottom:2rem;display:none;">
           <div class="chart-title-inline">Clean vs Adversarial Predictions</div>
-          <div class="chart-desc-inline">Model output per sample — clean (baseline) vs adversarial (under attack). Large gaps indicate high sensitivity to perturbation.</div>
+          <div class="chart-desc-inline">Clean vs adversarial model outputs per sample. Large gaps indicate high sensitivity to perturbation.</div>
           <div class="chart-wrap" style="height:260px;"><canvas id="pc-chart"></canvas></div>
         </section>
 
-        <!-- Attack Profile -->
-        <div class="section-label-row">
-          Attack Profile
-          <span class="section-line"></span>
-        </div>
-        <div class="profile-table-wrap" style="margin-bottom:2rem;">
-          <table class="profile-table">
-            <tbody id="attack-profile-tbody"></tbody>
-          </table>
-        </div>
+        <!-- Warnings section removed -->
 
         <!-- Footer -->
         <div style="border-top:1px solid var(--line);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:1rem;">
@@ -261,6 +250,7 @@
         </div>
 
       </div>
+<<<<<<< Updated upstream
       </section>
 
       <!-- Embedded JSON data -->
@@ -273,6 +263,23 @@
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
       <script>
+=======
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<!-- Embedded JSON data -->
+<script id="report-meta-data"       type="application/json">{{ report_meta_json|safe }}</script>
+<script id="attack-setup-data"      type="application/json">{{ attack_setup_json|safe }}</script>
+<script id="performance-summary-data" type="application/json">{{ performance_summary_json|safe }}</script>
+<script id="charts-data"            type="application/json">{{ charts_json|safe }}</script>
+<script id="warnings-data"          type="application/json">{{ warnings_json|safe }}</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+>>>>>>> Stashed changes
         // ── Helpers ──────────────────────────────────────────────────────────
         function getJson(id, fallback) {
           const el = document.getElementById(id);
@@ -287,7 +294,7 @@
         }
 
         function fmt(v) {
-          if (v === null || v === undefined) return '—';
+          if (v === null || v === undefined) return '-';
           if (typeof v === 'number') return Number.isInteger(v) ? String(v) : v.toFixed(3);
           return String(v);
         }
@@ -301,7 +308,7 @@
         const warns  = getJson('warnings-data', []);
 
         // ── Header ───────────────────────────────────────────────────────────
-        document.getElementById('run-name').textContent = meta.run_name || '—';
+        document.getElementById('run-name').textContent = meta.run_name || '-';
         if (meta.description) {
           const d = document.getElementById('run-description');
           d.textContent = meta.description;
@@ -313,13 +320,29 @@
           .then(r => r.ok ? r.json() : null)
           .then(data => {
             const container = document.getElementById('csv-download-btns');
-            if (!container || !data || !data.items.length) return;
-            data.items.forEach(({attack_key, label}) => {
+            if (!container || !data) return;
+            const items = data.adversarial_examples || data.items || [];
+            if (!items.length) return;
+            items.forEach(item => {
+              const attack_key = item.attack_key || item.attack || item.label;
+              const filename = item.filename || (attack_key ? `adversarial_examples_${attack_key}.csv` : 'adversarial_examples.csv');
+              // Friendly label: prefer explicit filename, otherwise parse attack_key like "fgsm_eps0.1" -> "FGSM (ε=0.1)"
+              let labelText = item.filename || '';
+              if (!labelText && attack_key) {
+                const m = attack_key.match(/^(.*?_?)(?:eps([-+]?\d*\.?\d+))$/i);
+                if (m) {
+                  const method = m[1].replace(/_+$/,'').replace(/_/g, ' ').toUpperCase();
+                  labelText = `${method} (ε=${m[2]})`;
+                } else {
+                  labelText = attack_key.replace(/_/g, ' ');
+                }
+              }
+              if (!labelText) labelText = filename;
               const a = document.createElement('a');
               a.href = '{% url "robustness:download_adversarial_csv" job_id=job_id attack_key="__KEY__" %}'.replace('__KEY__', attack_key);
               a.className = 'download-btn';
               a.style.cssText = 'display:block;text-align:center;text-decoration:none;margin-top:0.4rem;';
-              a.textContent = '↓ ' + label;
+              a.textContent = '↓ ' + labelText;
               container.appendChild(a);
             });
           }).catch(() => {});
@@ -328,7 +351,7 @@
         // ── Download button ───────────────────────────────────────────────────
         document.getElementById('download-btn').addEventListener('click', () => {
           const payload = { report_meta: meta, attack_setup: setup,
-            performance_summary: perf, charts, attack_profile: ap, warnings: warns };
+            performance_summary: perf, charts, warnings: warns };
           const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -340,7 +363,6 @@
         // ── Run & Context table ───────────────────────────────────────────────
         const chips = (meta.target_columns || [])
           .map(c => `<span class="chip">${c}</span>`).join('');
-        const pillClass = meta.status === 'warning' ? 'pill--warn' : 'pill--ok';
 
         document.getElementById('run-context-tbody').innerHTML = [
           row('Run name',        meta.run_name),
@@ -349,7 +371,6 @@
           row('Dataset',         meta.dataset),
           chips ? row('Target columns', `<td><div class="chips">${chips}</div></td>`) : '',
           setup.samples_evaluated != null ? row('Samples evaluated', setup.samples_evaluated) : '',
-          row('Run status',      `<td><span class="pill ${pillClass}">${meta.status || '—'}</span></td>`),
         ].join('');
 
         // ── Attack Configuration badge strip ─────────────────────────────────
@@ -357,24 +378,25 @@
           if (value == null || value === '' || value === 'unknown') return '';
           return `<div class="atk-badge"><span class="atk-badge-label">${label}</span><span class="atk-badge-value">${value}</span></div>`;
         }
+
+        // Build epsilon badge with raw-space translation
+        let epsilonBadgeHTML = '';
+        if (setup.epsilon != null) {
+          let epsilonValue = setup.epsilon.toFixed(4).replace(/\.?0+$/, '');
+          epsilonBadgeHTML = badge('ε (normalized)', epsilonValue);
+        }
+
         document.getElementById('attack-config-strip').innerHTML = [
           badge('Algorithm',    meta.attack_name),
           badge('Family',       meta.family && meta.family !== 'unknown' ? meta.family : null),
           badge('Norm',         setup.norm ? 'L' + (setup.norm === 'inf' ? '∞' : setup.norm) : null),
-          badge('ε (epsilon)',  setup.epsilon != null ? setup.epsilon : null),
+          epsilonBadgeHTML,
           badge('Queries',      setup.query_budget != null ? setup.query_budget + ' / sample' : null),
           badge('Max iter',     setup.steps != null ? setup.steps : null),
           badge('Targeted',     setup.targeted != null ? (setup.targeted ? 'Yes' : 'No') : null),
-        ].join('');
-        if (meta.family === 'stress_test' || (meta.family || 'unknown') === 'unknown')
+        ].filter(b => b).join('');
+        if ((meta.family || 'unknown') === 'unknown')
           document.getElementById('atk-cfg-card').style.display = 'none';
-
-        // ── Warnings ──────────────────────────────────────────────────────────
-        if (warns.length) {
-          document.getElementById('warnings-section').style.display = '';
-          document.getElementById('warnings-body').innerHTML =
-            warns.map(w => `<div><strong>⚠</strong> ${w}</div>`).join('');
-        }
 
         // ── Worst-case tag (shown when multiple epsilons were swept) ─────────
         const rcPoints = (charts.robustness_curve && charts.robustness_curve.points) || [];
@@ -496,8 +518,7 @@
         const isBlackBox = (meta.family || '').toLowerCase().includes('black');
         const rcHasMultiple = rcPoints.length > 1;
         const aePoints = (charts.attack_efficiency && charts.attack_efficiency.points) || [];
-        const isClassification = (meta.task_type || '').toLowerCase() === 'classification';
-        const showAe = isBlackBox && !isClassification && aePoints.length > 1;
+        const showAe = isBlackBox && aePoints.length > 1;
         if (!rcHasMultiple) document.getElementById('rc-card').style.display = 'none';
         if (!showAe)        document.getElementById('ae-card').style.display = 'none';
         // Collapse the row entirely if both cards are hidden
@@ -525,17 +546,43 @@
         }
 
         const ae = charts.attack_efficiency;
-        if (ae && ae.points && ae.points.length) {
+        const aeSeries = ae && Array.isArray(ae.series) ? ae.series : [];
+        if ((aeSeries.length && aeSeries.some(s => s.points && s.points.length)) || (ae && ae.points && ae.points.length)) {
           if (ae.x_label) document.getElementById('ae-desc').textContent =
             `${ae.y_label || 'success rate'} vs ${ae.x_label}`;
+          // Use scatter so each point is visible; connect with a light line for readability.
+          const aeDatasets = aeSeries.length ? aeSeries.map((series, index) => {
+            const palette = [
+              { border: '#2ea8ff', fill: 'rgba(46,168,255,0.08)' },
+              { border: '#8b5cf6', fill: 'rgba(139,92,246,0.08)' },
+              { border: '#24a148', fill: 'rgba(36,161,72,0.08)' },
+            ];
+            const color = palette[index % palette.length];
+            return {
+              label: series.label || series.method || `Series ${index + 1}`,
+              data: (series.points || []).map(([x, y]) => ({ x, y })),
+              borderColor: color.border,
+              backgroundColor: color.fill,
+              showLine: true,
+              fill: false,
+              tension: 0.15,
+              pointRadius: 5,
+            };
+          }) : [{
+            label: 'Attack',
+            data: ae.points.map(([x, y]) => ({ x, y })),
+            borderColor: '#2ea8ff',
+            backgroundColor: 'rgba(46,168,255,0.08)',
+            showLine: true,
+            fill: false,
+            tension: 0.15,
+            pointRadius: 6,
+          }];
           new Chart(document.getElementById('efficiency-chart'), {
-            type: 'line',
-            data: { labels: ae.points.map(([x]) => x),
-              datasets: [{ data: ae.points.map(([,y]) => y),
-                borderColor: '#2ea8ff', backgroundColor: 'rgba(46,168,255,0.08)',
-                fill: true, tension: 0.3, pointRadius: 4 }] },
+            type: 'scatter',
+            data: { datasets: aeDatasets },
             options: { responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
+              plugins: { legend: { display: aeDatasets.length > 1, position: 'top' } },
               scales: {
                 x: { title: { display: !!ae.x_label, text: ae.x_label || '', color: textCol }, grid: { color: gridCol } },
                 y: { min: 0, grid: { color: gridCol },
@@ -596,14 +643,36 @@
           const barHeight = 28;
           const chartHeight = Math.max(220, fpPoints.length * barHeight + 60);
           document.getElementById('profile-chart-wrap').style.height = chartHeight + 'px';
+          const fpLabels = fpPoints.map(([fname]) => fname);
+          const fpRawValues = fpPoints.map(([, , rawPert]) => rawPert);
+          const fpPctValues = fpPoints.map(([, , , pctPert]) => pctPert);
+
           new Chart(document.getElementById('profile-chart'), {
             type: 'bar',
-            data: { labels: fpPoints.map(([f]) => f),
+            data: { labels: fpLabels,
               datasets: [{ data: fpPoints.map(([,v]) => v),
                 backgroundColor: 'rgba(46,168,255,0.65)', borderColor: '#2ea8ff',
                 borderWidth: 1, borderRadius: 3 }] },
             options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    title: items => items[0].label,
+                    label: ctx => {
+                      const lines = [`Mean perturbation: ${ctx.parsed.x.toFixed(4)}`];
+                      const rawPert = fpRawValues[ctx.dataIndex];
+                      const pctPert = fpPctValues[ctx.dataIndex];
+                      if (rawPert != null && pctPert != null) {
+                        const rawDisplay = Math.abs(rawPert) >= 10 ? rawPert.toFixed(1) : rawPert.toFixed(2);
+                        lines.push(`Raw change: ±${rawDisplay}`);
+                        lines.push(`Feature range: ${pctPert.toFixed(1)}%`);
+                      }
+                      return lines;
+                    },
+                  },
+                },
+              },
               scales: {
                 x: {
                   type: 'logarithmic',
@@ -624,72 +693,27 @@
           });
         }
 
-        // ── Per-sample perturbation chart ────────────────────────────────────
-        const ps = charts.per_sample_perturbation;
-        const psPoints = ps && ps.points ? ps.points.filter(([, v]) => v > 0) : [];
-        if (psPoints.length) {
-          document.getElementById('ps-card').style.display = '';
-          new Chart(document.getElementById('ps-chart'), {
-            type: 'bar',
-            data: { labels: psPoints.map(([s]) => s),
-              datasets: [{ data: psPoints.map(([,v]) => v),
-                backgroundColor: 'rgba(99,112,135,0.55)', borderColor: '#637087',
-                borderWidth: 1, borderRadius: 3 }] },
-            options: { responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { grid: { color: gridCol }, ticks: { font: { size: 11 } } },
-                y: { grid: { color: gridCol },
-                  title: { display: true, text: 'L∞ perturbation', color: textCol } }
-              }
-            }
-          });
-        }
-
-        // ── Stress Test Comparison chart ─────────────────────────────────────
-        const sc = charts.stress_comparison;
-        const scPoints = sc && sc.points ? sc.points.filter(([, v]) => v != null) : [];
-        if (scPoints.length) {
-          document.getElementById('sc-card').style.display = '';
-          const scHeight = Math.max(220, scPoints.length * 40 + 60);
-          document.getElementById('sc-chart-wrap').style.height = scHeight + 'px';
-          const scColors = scPoints.map(([, v]) => v > 0 ? 'rgba(255,99,99,0.65)' : 'rgba(72,199,142,0.65)');
-          const scBorders = scPoints.map(([, v]) => v > 0 ? '#ff6363' : '#48c78e');
-          new Chart(document.getElementById('sc-chart'), {
-            type: 'bar',
-            data: { labels: scPoints.map(([s]) => s),
-              datasets: [{ data: scPoints.map(([,v]) => v),
-                backgroundColor: scColors, borderColor: scBorders,
-                borderWidth: 1, borderRadius: 3 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { grid: { color: gridCol },
-                  title: { display: !!(sc && sc.y_label), text: (sc && sc.y_label) || 'error_increase', color: textCol },
-                  ticks: { font: { size: 10 } } },
-                y: { grid: { display: false },
-                  ticks: { font: { size: 11 }, autoSkip: false, maxRotation: 0 } }
-              }
-            }
-          });
-        }
+        // Per-sample perturbation chart removed (backend no longer supplies data)
 
         // ── Clean vs Adversarial Predictions chart ───────────────────────────
         const pc = charts.prediction_comparison;
-        const pcPoints = pc && pc.points ? pc.points : [];
+        const isClassification = meta.task_type === 'classification';
+        const rawPcPoints = pc && pc.points ? pc.points : [];
+        // For classification, zero-height bars are invisible — filter them out here
+        // so old reports (generated before the backend fix) render correctly too.
+        const pcPoints = isClassification ? rawPcPoints.filter(p => p[1] > 0) : rawPcPoints;
         if (pcPoints.length) {
           document.getElementById('pc-card').style.display = '';
           const pcLabels      = pcPoints.map(p => p[0]);
           const pcValues      = pcPoints.map(p => p[1]);
           const pcWorstOutput = pcPoints.map(p => p[2] || null);
-          const pcYLabel      = (pc.y_label || 'max single-output prediction shift (%)');
+          const pcYLabel = isClassification ? 'Attack succeeded (1=yes, 0=no)' : 'Max shift (%)';
 
           const descEl = document.querySelector('#pc-card .chart-desc-inline');
           if (descEl) {
-            descEl.textContent =
-              'Samples ranked by worst single-output % prediction shift under attack. ' +
-              'Bar height = max % change across all output targets for that sample (log scale). ' +
-              'Hover to see which output drove the peak. Sample indices match the adversarial examples CSV.';
+            descEl.textContent = isClassification
+              ? 'Samples where the attack successfully changed the predicted class. Samples whose prediction was unchanged are excluded.'
+              : 'Samples ranked by worst prediction shift under attack. Bar height shows the largest % change across output targets. Hover to see which output drove the peak.';
           }
 
           new Chart(document.getElementById('pc-chart'), {
@@ -698,8 +722,8 @@
               labels: pcLabels,
               datasets: [{
                 data: pcValues,
-                backgroundColor: 'rgba(193,69,52,0.65)',
-                borderColor: '#c14534',
+                backgroundColor: pcValues.map(v => v > 0 ? 'rgba(193,69,52,0.65)' : 'rgba(100,160,100,0.55)'),
+                borderColor: pcValues.map(v => v > 0 ? '#c14534' : '#4a9a5a'),
                 borderWidth: 1,
                 borderRadius: 3,
               }],
@@ -712,6 +736,9 @@
                   callbacks: {
                     title: items => `Sample ${items[0].label}`,
                     label: ctx => {
+                      if (isClassification) {
+                        return ctx.parsed.y === 1 ? 'Attack succeeded' : 'Prediction unchanged';
+                      }
                       const lines = [`Max shift: ${ctx.parsed.y.toFixed(2)}%`];
                       const wo = pcWorstOutput[ctx.dataIndex];
                       if (wo) lines.push(`Worst output: ${wo}`);
@@ -727,12 +754,14 @@
                   title: { display: true, text: 'Sample index (original dataset row)', color: textCol },
                 },
                 y: {
-                  type: 'logarithmic',
+                  type: isClassification ? 'linear' : 'logarithmic',
+                  min: isClassification ? 0 : undefined,
+                  max: isClassification ? 1.1 : undefined,
                   grid: { color: gridCol },
                   title: { display: true, text: pcYLabel, color: textCol },
                   ticks: {
                     font: { size: 11 },
-                    callback: v => v + '%',
+                    callback: isClassification ? v => v : v => v + '%',
                   },
                 },
               },
@@ -740,11 +769,7 @@
           });
         }
 
-        // ── Attack Profile table ──────────────────────────────────────────────
-        document.getElementById('attack-profile-tbody').innerHTML =
-          (ap.metrics || []).map(m =>
-            `<tr><td>${m.label || m.key}</td><td>${fmt(m.value)}</td></tr>`
-          ).join('');
+        // Attack Profile table removed from UI (frontend)
 
         // ── Footer ────────────────────────────────────────────────────────────
         document.getElementById('footer-meta').textContent =
