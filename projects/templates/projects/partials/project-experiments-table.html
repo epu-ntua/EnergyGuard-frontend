@@ -36,8 +36,11 @@
                 <span class="fas fa-ellipsis-h fs-10"></span>
               </button>
               <div class="dropdown-menu dropdown-menu-end py-2">
+                {% if can_manage_experiments %}
                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editExperimentModal-{{ experiment.id }}">Edit experiment</a>
+                {% endif %}
                 <a class="dropdown-item" href="{% url 'eval_results' project_details.id experiment.id %}" target="_blank">Eval results</a>
+                {% if can_manage_experiments %}
                 <button type="button" class="dropdown-item text-danger"
                   data-bs-toggle="modal"
                   data-bs-target="#confirmActionModal"
@@ -46,6 +49,7 @@
                   data-confirm-text="Delete"
                   data-confirm-class="btn-danger"
                   data-action-url="{% url 'delete_experiment' project_details.id experiment.id %}">Delete experiment</button>
+                {% endif %}
               </div>
             </div>
           </td>
@@ -55,6 +59,8 @@
   </table>
 </div>
 
-{% for experiment in experiments %}
-  {% include "projects/partials/edit-experiment-modal.html" %}
-{% endfor %}
+{% if can_manage_experiments %}
+  {% for experiment in experiments %}
+    {% include "projects/partials/edit-experiment-modal.html" %}
+  {% endfor %}
+{% endif %}

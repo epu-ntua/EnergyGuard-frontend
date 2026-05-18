@@ -73,7 +73,17 @@ def project_details(request, project_id):
         return render(request, "core/error-does-not-exist.html", {"error": "You don't have permission to access this project."}, status=403)
 
     edit_project_form = EditProjectForm(instance=project)
-    is_creator = project.creator == request.user
+    user = request.user
+    is_creator = project.creator == user
+
+    is_team_member = False
+    if project.team_id is not None:
+        try:
+            is_team_member = user.profile.team_id == project.team_id
+        except Exception:
+            pass
+    is_collaborator = project.collaborators.filter(pk=user.pk).exists()
+    can_manage_experiments = is_creator or is_team_member or is_collaborator
 
     if request.method == "POST" and request.POST.get("action") == "edit_project":
         edit_project_form = EditProjectForm(request.POST, instance=project)
@@ -108,6 +118,7 @@ def project_details(request, project_id):
             "active_navbar_page": "projects",
             "show_sidebar": True,
             "is_creator": is_creator,
+            "can_manage_experiments": can_manage_experiments,
         },
     )
 
