@@ -10,6 +10,21 @@ from ..models import Project
 from ..services import MlflowClientError, list_experiment_runs
 
 
+def _can_access_project(user, project: Project) -> bool:
+    if project.visibility:
+        return True
+    if project.creator_id == user.id:
+        return True
+    if project.collaborators.filter(pk=user.pk).exists():
+        return True
+    if project.team_id is not None:
+        try:
+            return user.profile.team_id == project.team_id
+        except Exception:
+            pass
+    return False
+
+
 def _latest_project_run_datetime(project: Project, user):
     latest_start_time_ms: int | None = None
 
@@ -52,8 +67,10 @@ def project_details(request, project_id):
             .get(pk=project_id)
         )
     except Project.DoesNotExist:
-        messages.error(request, "Project not found")
-        return redirect("home")
+        return render(request, "core/error-does-not-exist.html", {"error": "This project does not exist."}, status=404)
+
+    if not _can_access_project(request.user, project):
+        return render(request, "core/error-does-not-exist.html", {"error": "You don't have permission to access this project."}, status=403)
 
     edit_project_form = EditProjectForm(instance=project)
     is_creator = project.creator == request.user

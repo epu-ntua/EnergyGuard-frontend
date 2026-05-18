@@ -434,8 +434,17 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
 @login_required
 @require_GET
 def eval_results(request, project_id: int, experiment_id: int):
-    project = _get_accessible_project_or_404(request.user, project_id)
-    experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
+    try:
+        project = _get_accessible_project_or_404(request.user, project_id)
+    except Http404:
+        messages.error(request, "The requested project could not be found.")
+        return redirect("projects_list")
+
+    try:
+        experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
+    except Http404:
+        messages.error(request, "The requested experiment could not be found.")
+        return redirect("project_details", project_id=project_id)
 
     payload: dict[str, Any] = {
         "experiment": {
