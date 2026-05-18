@@ -47,9 +47,18 @@ EXPERIMENT_STEP_METADATA = {
 '''
 
 def _user_can_access_project(user, project: Project) -> bool:
+    if project.visibility:
+        return True
     if project.creator_id == user.id:
         return True
-    return project.collaborators.filter(pk=user.pk).exists()
+    if project.collaborators.filter(pk=user.pk).exists():
+        return True
+    if project.team_id is not None:
+        try:
+            return user.profile.team_id == project.team_id
+        except Exception:
+            pass
+    return False
 
 
 def _get_accessible_project_or_404(user, project_id: int) -> Project:
