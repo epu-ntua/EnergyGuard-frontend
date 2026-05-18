@@ -81,11 +81,12 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                         default_experiment_name += "-"
                         continue
                     raise
-        except MlflowClientError as exc:
+        except MlflowClientError:
             # Clean up the MLflow experiment if it was partially created
             if mlflow_experiment_id:
                 _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
-            messages.error(self.request, f"Project creation failed: MLflow sync failed: {exc}")
+            logger.exception("Project creation MLflow sync failed for user %s", self.request.user.id)
+            messages.error(self.request, "Project could not be created. Please try again or contact support if the issue persists.")
             return redirect("project_creation")
 
         # --- 2. Persist to DB; if this fails, clean up MLflow ---
@@ -103,9 +104,10 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
                     name=default_experiment_name,
                     mlflow_experiment_id=mlflow_experiment_id,
                 )
-        except Exception as exc:
+        except Exception:
             _cleanup_mlflow_experiment(mlflow_experiment_id, self.request.user)
-            messages.error(self.request, f"Project creation failed: {exc}")
+            logger.exception("Project creation failed at database step for user %s", self.request.user.id)
+            messages.error(self.request, "Project could not be created. Please try again or contact support if the issue persists.")
             return redirect("project_creation")
 
         self.request.session["project_creation_success"] = True

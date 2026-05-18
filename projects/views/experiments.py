@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from django.contrib import messages
+
+logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError, transaction
@@ -176,8 +179,9 @@ def create_experiment_modal(request, project_id: int):
             )
             mlflow_delete_experiment(mlflow_experiment_id, user=request.user)
             raise
-    except MlflowClientError as exc:
-        messages.error(request, f"Experiment creation failed because MLflow sync failed: {exc}")
+    except MlflowClientError:
+        logger.exception("Experiment creation MLflow sync failed for project %s", project.id)
+        messages.error(request, "Experiment could not be created. Please try again or contact support if the issue persists.")
         return redirect("project_details", project_id=project.id)
 
     with transaction.atomic():
@@ -214,11 +218,13 @@ def delete_project(request, project_id: int):
     except DatabaseError:
         messages.error(request, "Project deletion is already in progress. Please try again in a moment.")
         return redirect("project_details", project_id=project.id)
-    except ExperimentDeletionError as exc:
-        messages.error(request, f'Project "{project.name}" deletion stopped: {exc}')
+    except ExperimentDeletionError:
+        logger.exception("Project %s deletion stopped", project.id)
+        messages.error(request, f'Project "{project.name}" could not be deleted. Please try again or contact support if the issue persists.')
         return redirect("project_details", project_id=project.id)
-    except Exception as exc:
-        messages.error(request, f'Project "{project_name}" deletion stopped: database delete failed: {exc}')
+    except Exception:
+        logger.exception("Project %s deletion failed at database step", project.id)
+        messages.error(request, f'Project "{project_name}" could not be deleted. Please try again or contact support if the issue persists.')
         return redirect("project_details", project_id=project.id)
 
     messages.success(request, f'Project "{project_name}" deleted successfully.')
@@ -246,11 +252,13 @@ def delete_experiment(request, project_id: int, experiment_id: int):
     except DatabaseError:
         messages.error(request, "Experiment deletion is already in progress. Please try again in a moment.")
         return redirect("project_details", project_id=project.id)
-    except ExperimentDeletionError as exc:
-        messages.error(request, f"Experiment deletion stopped: {exc}")
+    except ExperimentDeletionError:
+        logger.exception("Experiment %s deletion stopped", experiment.id)
+        messages.error(request, "Experiment could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("project_details", project_id=project.id)
-    except Exception as exc:
-        messages.error(request, f"Experiment deletion stopped: database delete failed: {exc}")
+    except Exception:
+        logger.exception("Experiment %s deletion failed at database step", experiment.id)
+        messages.error(request, "Experiment could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("project_details", project_id=project.id)
 
     messages.success(request, "Experiment deleted successfully.")
@@ -288,8 +296,9 @@ def edit_experiment(request, project_id: int, experiment_id: int):
                     user=request.user,
                     use_service_credentials=True,
                 )
-            except MlflowClientError as exc:
-                messages.error(request, f"Experiment update failed because MLflow sync failed: {exc}")
+            except MlflowClientError:
+                logger.exception("Experiment %s update MLflow sync failed", experiment.id)
+                messages.error(request, "Experiment could not be updated. Please try again or contact support if the issue persists.")
                 return redirect("project_details", project_id=project.id)
 
             experiment.name = new_name

@@ -68,8 +68,9 @@ def dataset_delete(request, dataset_id):
     # Step 1: delete from JupyterHub cache — no compensation needed if this fails
     try:
         delete_dataset_cache(username, dataset_name)
-    except Exception as e:
-        messages.error(request, f'Failed to delete dataset from JupyterHub: {e}')
+    except Exception:
+        logger.exception("Failed to delete dataset '%s' (id=%s) from JupyterHub cache", dataset_name, dataset_id)
+        messages.error(request, "Dataset could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("dataset_details", dataset_id=dataset_id)
 
     # Step 2: delete from MinIO — compensate by re-provisioning JupyterHub if this fails
@@ -81,7 +82,8 @@ def dataset_delete(request, dataset_id):
             timeout=10,
         )
         response.raise_for_status()
-    except requests.RequestException as e:
+    except requests.RequestException:
+        logger.exception("Failed to delete dataset '%s' (id=%s) from MinIO storage", dataset_name, dataset_id)
         if minio_prefix:
             try:
                 provision_user_datasets(username, {minio_prefix: dataset_name})
@@ -91,7 +93,7 @@ def dataset_delete(request, dataset_id):
                     "(user %s) after MinIO delete failure — manual intervention required.",
                     dataset_name, username,
                 )
-        messages.error(request, f'Failed to delete dataset from storage: {e}')
+        messages.error(request, "Dataset could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("dataset_details", dataset_id=dataset_id)
 
     # Step 3: delete from DB — log critical if this fails since MinIO + JupyterHub are already gone
@@ -103,7 +105,7 @@ def dataset_delete(request, dataset_id):
             "deletion succeeded — orphaned DB record requires manual cleanup: %s",
             dataset_name, dataset_id, username, e,
         )
-        messages.error(request, f'Failed to remove dataset record: {e}')
+        messages.error(request, "Dataset could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("dataset_details", dataset_id=dataset_id)
 
     messages.success(request, f'Dataset "{dataset_name}" has been deleted.')
