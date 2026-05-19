@@ -1,7 +1,64 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 {% load custom_filters %}
 
-{% block content %}
+{% block head %}
+{{ block.super }}
+<style>
+.container {
+    max-width: 1400px !important;
+}
+
+.card {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body {
+    padding: 4rem !important;
+}
+
+.help-note p {
+    font-style: italic;
+    color: #718096 !important;
+}
+.custom-option-label {
+    border: 2px solid #edf2f7 !important;
+    border-radius: 20px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: white;
+    cursor: pointer;
+}
+.custom-option-label:hover {
+    transform: translateY(-4px);
+    border-color: #cbd5e0 !important;
+}
+.btn-check:checked + label {
+    border-color: #1a202c !important;
+    background-color: #f7fafc !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+.custom-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #cbd5e0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
+}
+.btn-check:checked + label .custom-checkbox {
+    background-color: #1a202c;
+    border-color: #1a202c;
+    color: white;
+}
+</style>
+{% endblock head %}
+
+{% block questionnaire_content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-12 col-lg-12">
@@ -215,85 +272,10 @@
     </div>
 </div>
 
-<style>
-.container {
-    max-width: 1400px !important;
-}
+{% endblock questionnaire_content %}
 
-.card {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.card-body {
-    padding: 4rem !important;
-}
-
-.help-note p {
-    font-style: italic;
-    color: #718096 !important;
-}
-.custom-option-label {
-    border: 2px solid #edf2f7 !important;
-    border-radius: 20px !important;
-    transition: all 0.2s;
-}
-.btn-check:checked + label {
-    border-color: #4fd1ed !important;
-    background-color: #ffffff !important;
-}
-.custom-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #cbd5e0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    transition: all 0.2s;
-}
-.btn-check:checked + label .custom-checkbox {
-    background-color: #4fd1ed;
-    border-color: #4fd1ed;
-    color: white;
-}
-.custom-option-label {
-    border: 2px solid #edf2f7 !important;
-    border-radius: 20px !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
-    background-color: white;
-    cursor: pointer;
-}
-.custom-option-label:hover {
-    transform: translateY(-4px);
-    border-color: #cbd5e0 !important;
-}
-.btn-check:checked + label {
-    border-color: #1a202c !important;
-    background-color: #f7fafc !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
-}
-.custom-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #cbd5e0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    transition: all 0.2s;
-}
-.btn-check:checked + label .custom-checkbox {
-    background-color: #1a202c;
-    border-color: #1a202c;
-    color: white;
-}
-</style>
-
+{% block scripts %}
+{{ block.super }}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('survey-form');
@@ -301,11 +283,6 @@
         const isResult = "{{ question.id }}".includes(".result");
         const isChecklist = form.querySelector('input[type="checkbox"]');
 
-        /**
-         * Simple Form Validation
-         * Disables submit button for radio-type questions if no option is selected.
-         * Skips validation for result pages.
-         */
         function validate() {
             if (isResult) {
                 submitBtn.disabled = false;
@@ -320,4 +297,4 @@
         validate();
     });
 </script>
-{% endblock %}
+{% endblock scripts %}

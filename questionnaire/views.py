@@ -1,10 +1,12 @@
 import json
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Questionnaire, SubQuestionnaire, Question, Choice, UserAnswer, Assessment
 
+@login_required
 def start_questionnaire(request, questionnaire_id):
     questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id)
 
@@ -18,9 +20,11 @@ def start_questionnaire(request, questionnaire_id):
 
     return render(request, 'questionnaire/intro.html', {
         'questionnaire': questionnaire,
-        'first_question': first_question
+        'first_question': first_question,
+        'show_sidebar': True,
     })
 
+@login_required
 def question_detail(request, question_id):
     question = get_object_or_404(Question.objects.select_related('sub_questionnaire'), id=question_id)
 
@@ -70,9 +74,11 @@ def question_detail(request, question_id):
         'result_text': request.session.pop('flash_result_text', None),
         'user_roles': user_roles,
         'logic_conditions': logic_conditions,
+        'show_sidebar': True,
     }
     return render(request, 'questionnaire/question.html', context)
 
+@login_required
 def submit_answer(request, question_id):
     current_question = get_object_or_404(Question, id=question_id)
 
@@ -238,12 +244,15 @@ def submit_answer(request, question_id):
     parent_id = current_question.sub_questionnaire.parent_questionnaire.id
     return redirect('questionnaire:start', questionnaire_id=parent_id)
 
+@login_required
 def out_of_scope_view(request):
-    return render(request, 'questionnaire/out_of_scope.html')
+    return render(request, 'questionnaire/out_of_scope.html', {'show_sidebar': True})
 
+@login_required
 def assessment_completed_view(request):
-    return render(request, 'questionnaire/assessment_completed.html')
+    return render(request, 'questionnaire/assessment_completed.html', {'show_sidebar': True})
 
+@login_required
 def download_assessment_json(request):
     session_key = request.session.session_key
     # Get the latest assessment for this session

@@ -1,21 +1,37 @@
-<div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: sans-serif;">
-    <div style="background-color: #f8f9fa; border-left: 6px solid #007bff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h2 style="color: #343a40; margin-bottom: 20px;">Assessment Result</h2>
+{% extends "questionnaire/base_questionnaire.html" %}
 
-        <p style="font-size: 1.2rem; line-height: 1.6; color: #495057;">
-            Your assessment is now completed. From the answers provided, it is likely that you do not fall within the roles mentioned above mentioned for the AI system that is being submitted to the Energy Guard Platform to be tested.
-        </p>
+{% block questionnaire_content %}
+<div class="container mt-5" style="max-width: 800px;">
+    <div class="card border-0 shadow-lg" style="border-radius: 24px;">
+        <div class="card-body p-5">
 
-        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #dee2e6;">
+            <div class="text-center mb-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+            </div>
 
-        <p style="font-size: 0.9rem; color: #6c757d; font-style: italic;">
-            Kindly note that this does not consist legal advice and can be used only for informational purposes.
-        </p>
+            <h2 class="fw-bold text-center mb-4" style="color: #1a202c;">Assessment Completed</h2>
 
-        <div style="margin-top: 30px;">
-            <a href="{% url 'questionnaire:start' questionnaire_id=1 %}" style="text-decoration: none; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-                Return to Home
-            </a>
+            <div class="p-4 mb-4" style="background-color: #f0fff4; border-left: 6px solid #38a169; border-radius: 12px;">
+                <p class="fs-5 mb-0" style="line-height: 1.6; color: #276749;">
+                    Your assessment is now completed. From the answers provided, it is likely that you do not fall within
+                    the roles mentioned above for the AI system that is being submitted to the EnergyGuard Platform to be tested.
+                </p>
+            </div>
+
+            <p class="text-muted small fst-italic">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Kindly note that this does not consist legal advice and can be used only for informational purposes.
+            </p>
+
+            <div class="mt-4 text-center">
+                <a href="{% url 'questionnaire:start' questionnaire_id=1 %}"
+                   class="btn btn-dark btn-lg px-5 shadow"
+                   style="border-radius: 12px; font-weight: 600;">
+                    <i class="bi bi-arrow-left-circle me-2"></i> Return to Home
+                </a>
+            </div>
+
         </div>
     </div>
 </div>
+{% endblock questionnaire_content %}
