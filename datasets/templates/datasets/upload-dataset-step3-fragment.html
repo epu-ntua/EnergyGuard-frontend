@@ -1,0 +1,82 @@
+{% load static %}
+  <!-- Step 3 fragment — rendered without the base-wizard.html wrapper and injected
+  into the DOM via AJAX after step 2. All JS is in upload-dataset-step2.html;
+  initStep3() is called by the step 2 script after injection. -->
+<div class="tab-content">
+    <div class="tab-pane active" role="tabpanel">
+        <form id="step3-form" class="needs-validation" action="" method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ wizard.management_form }}
+            <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
+            {{ wizard.form.metadata_rows }}
+
+            {% if wizard.form.non_field_errors or wizard.form.errors.metadata_file %}
+            <div class="px-2 py-1 alert alert-danger fs-9" role="alert">
+                {% if wizard.form.errors.metadata_file %}{{ wizard.form.errors.metadata_file }}{% endif %}
+                {% if wizard.form.non_field_errors %}{{ wizard.form.non_field_errors }}{% endif %}
+            </div>
+            {% endif %}
+            <div id="manual-error" class="px-2 py-1 alert alert-danger fs-9 mt-2" style="display:none;">
+                Please fill all fields to proceed.
+            </div>
+            <div id="step3-upload-error" class="px-2 py-1 alert alert-danger fs-9 mt-2" style="display:none;"></div>
+            <div id="upload-wait-notice" class="px-2 py-1 alert alert-info fs-9 mt-2" style="display:none;">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Finishing upload&hellip; please wait before submitting.
+            </div>
+
+            <div id="section-upload" class="mb-5">
+                <label class="form-label text-body mb-3">
+                    Upload Metadata File
+                    <span
+                        class="ms-1 text-body-tertiary"
+                        style="cursor:pointer;"
+                        data-bs-toggle="popover"
+                        data-bs-trigger="hover focus"
+                        data-bs-placement="right"
+                        data-bs-html="true"
+                        data-bs-sanitize="false"
+                        data-bs-custom-class="fs-9"
+                        data-bs-content='Upload a <strong>.json</strong> file with the following structure:<br><br><span style="font-family:monospace;">&#123;<br>&nbsp;&nbsp;&quot;feature_name&quot;: [&quot;unit&quot;, &quot;description&quot;],<br>&nbsp;&nbsp;&quot;temperature&quot;: [&quot;&deg;C&quot;, &quot;Ambient temperature&quot;],<br>&nbsp;&nbsp;&quot;humidity&quot;: [&quot;%&quot;, &quot;Relative humidity&quot;]<br>&#125;</span>'
+                    ><span data-feather="info" style="height:14px;width:14px;"></span></span>
+                </label>
+                <div style="display:none;">{{ wizard.form.metadata_file }}</div>
+                <div id="drop-zone-metadata"
+                     class="border rounded-3 p-5 text-center"
+                     style="border-style:dashed !important; cursor:pointer;">
+                    <span data-feather="upload-cloud" style="height:32px;width:32px;" class="text-body-tertiary mb-2"></span>
+                    <p class="mb-1 text-body fs-9">Drag &amp; drop your file here, or <span class="text-primary fw-semibold">browse</span></p>
+                    <p class="mb-0 text-body-tertiary fs-10">Accepted: .json</p>
+                    <p id="drop-zone-metadata-filename" class="mb-0 mt-2 fw-semibold text-success fs-9" style="display:none;"></p>
+                    <button type="button" id="btn-clear-file" class="btn btn-link text-danger fs-10 p-0 mt-1" style="display:none;" onclick="clearFile(event)">Remove file</button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 m-0">
+                <span class="mx-3 fs-9 text-body-tertiary">or insert metadata manually</span>
+                <hr class="flex-grow-1 m-0">
+            </div>
+
+            <div id="section-manual" class="mb-3">
+                {{ wizard.form.metadata }}
+                <div id="boxes">
+                    <div class="row gx-2 mb-1 px-1">
+                        <div class="col-3"><span class="fs-10 fw-semibold text-body-quaternary">FEATURE NAME</span></div>
+                        <div class="col-2"><span class="fs-10 fw-semibold text-body-quaternary">UNIT</span></div>
+                        <div class="col-6"><span class="fs-10 fw-semibold text-body-quaternary">DESCRIPTION</span></div>
+                    </div>
+                </div>
+                <button type="button" id="btn-add-row" class="btn btn-outline-primary py-1 px-3 mt-2" onclick="addRow()">+ Add row</button>
+            </div>
+
+            <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
+                <button type="button" class="btn btn-link"
+                        onclick="document.getElementById('wizard_goto_step').value='upload_files'; this.form.submit();">
+                    <span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back
+                </button>
+                <button type="submit" class="btn btn-primary px-6 px-sm-6">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>

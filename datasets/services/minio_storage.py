@@ -102,6 +102,35 @@ def upload_dataset_objects(
     }
 
 
+def generate_presigned_upload_url(*, object_key: str, content_type: str, expires_in: int = 3600) -> tuple:
+    """Return (presigned_put_url, bucket_name) for a direct browser-to-MinIO upload."""
+    bucket_name = _setting("OBJECT_STORAGE_BUCKET", "MINIO_BUCKET_DATASETS", default="datasets")
+    client = _build_minio_client()
+    try:
+        url = client.generate_presigned_url(
+            "put_object",
+            Params={"Bucket": bucket_name, "Key": object_key, "ContentType": content_type},
+            ExpiresIn=expires_in,
+        )
+        return url, bucket_name
+    except Exception as exc:
+        raise MinioUploadError(str(exc)) from exc
+
+
+def object_exists(*, bucket_name: str, object_key: str) -> bool:
+    """Return True if the object exists in MinIO, False if not found."""
+    from botocore.exceptions import ClientError
+
+    client = _build_minio_client()
+    try:
+        client.head_object(Bucket=bucket_name, Key=object_key)
+        return True
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] in ("404", "NoSuchKey"):
+            return False
+        raise MinioUploadError(str(exc)) from exc
+
+
 def delete_dataset_objects(
     *,
     bucket_name: str,

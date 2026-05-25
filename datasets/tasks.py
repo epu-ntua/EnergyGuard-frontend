@@ -1,174 +1,96 @@
-import json
 import logging
-import os
-import shutil
-from decimal import Decimal
+import time
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db import transaction
 from django.urls import reverse
 
 from .models import Dataset
-from .services import MinioUploadError, delete_dataset_objects, upload_dataset_objects
+from .services import MinioUploadError, object_exists
 
 logger = logging.getLogger(__name__)
 
 
-class _FileFromPath:
-    """Minimal file-like wrapper so upload_dataset_objects can work with saved paths."""
-
-    def __init__(self, path: str, name: str, content_type: str):
-        self.path = path
-        self.name = name
-        self.content_type = content_type
-        self._fh = None
-
-    def _ensure_open(self):
-        if self._fh is None or self._fh.closed:
-            self._fh = open(self.path, "rb")
-
-    def seek(self, pos):
-        self._ensure_open()
-        self._fh.seek(pos)
-
-    def read(self, size=-1):
-        self._ensure_open()
-        return self._fh.read(size)
-
-    def close(self):
-        if self._fh and not self._fh.closed:
-            self._fh.close()
-
-
-def process_dataset_upload(
+def finalize_dataset_upload(
     *,
-    tmp_dir: str,
-    data_file_name: str,
-    data_file_content_type: str,
-    metadata_file_name: str | None,
-    metadata_file_content_type: str | None,
-    metadata_json: dict | None,
+    object_key: str,
+    bucket_name: str,
+    user_id: int,
+    user_email: str,
+    user_display_name: str,
     dataset_name: str,
     dataset_label: str,
     dataset_visibility: bool,
     dataset_description: str,
-    size_gb: str,
-    user_id: int,
-    user_username: str,
-    user_email: str,
-    user_display_name: str,
+    dataset_size_gb,
+    dataset_metadata,
     site_url: str,
+    max_wait_seconds: int = 1800,
+    poll_interval: int = 15,
 ):
     """
-    Async task: uploads dataset files to MinIO, saves the Dataset record,
-    and sends a confirmation email to the user.
+    Polls MinIO until the uploaded file appears, then creates the Dataset record
+    as UNDER_REVIEW and notifies the user by email. If the file never arrives
+    (e.g. the user closed the tab mid-upload), sends a failure email without
+    creating any record.
     """
-    data_file = None
-    metadata_file = None
-
-    try:
-        data_file_path = os.path.join(tmp_dir, data_file_name)
-        data_file = _FileFromPath(data_file_path, data_file_name, data_file_content_type)
-
-        if metadata_file_name:
-            metadata_file_path = os.path.join(tmp_dir, metadata_file_name)
-            metadata_file = _FileFromPath(
-                metadata_file_path, metadata_file_name, metadata_file_content_type or "application/json"
-            )
-
-        if metadata_file:
-            try:
-                metadata_file.seek(0)
-                metadata_json = json.loads(metadata_file.read())
-            except Exception:
-                logger.warning(
-                    "Could not parse metadata file for user '%s', dataset '%s'. Metadata will be empty.",
-                    user_username,
-                    dataset_name,
-                )
-                metadata_json = None
-
+    elapsed = 0
+    while elapsed < max_wait_seconds:
         try:
-            upload_result = upload_dataset_objects(
-                user_name=user_username,
-                dataset_name=dataset_name,
-                data_file=data_file,
-            )
+            if object_exists(bucket_name=bucket_name, object_key=object_key):
+                try:
+                    Dataset.objects.create(
+                        name=dataset_name,
+                        data_file=object_key,
+                        bucket_name=bucket_name,
+                        label=dataset_label,
+                        source=Dataset.Source.OWN_DS,
+                        status=Dataset.Status.UNDER_REVIEW,
+                        visibility=dataset_visibility,
+                        size_gb=dataset_size_gb,
+                        publisher_id=user_id,
+                        description=dataset_description,
+                        metadata=dataset_metadata,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to create Dataset record for object '%s'.", object_key
+                    )
+                    _send_notification_email(
+                        user_email=user_email,
+                        user_display_name=user_display_name,
+                        dataset_name=dataset_name,
+                        success=False,
+                        site_url=site_url,
+                    )
+                    return
+
+                _send_notification_email(
+                    user_email=user_email,
+                    user_display_name=user_display_name,
+                    dataset_name=dataset_name,
+                    success=True,
+                    site_url=site_url,
+                )
+                return
         except MinioUploadError:
             logger.exception(
-                "Async dataset upload to MinIO failed for user '%s', dataset '%s'.",
-                user_username,
-                dataset_name,
+                "MinIO error while checking object '%s'.", object_key
             )
-            _send_notification_email(
-                user_email=user_email,
-                user_display_name=user_display_name,
-                dataset_name=dataset_name,
-                success=False,
-                site_url=site_url,
-            )
-            return
 
-        try:
-            with transaction.atomic():
-                Dataset.objects.create(
-                    name=dataset_name,
-                    data_file=upload_result["data_file_key"],
-                    bucket_name=upload_result["bucket_name"],
-                    label=dataset_label,
-                    source=Dataset.Source.OWN_DS,
-                    status=Dataset.Status.UNDER_REVIEW,
-                    visibility=dataset_visibility,
-                    size_gb=Decimal(size_gb),
-                    publisher_id=user_id,
-                    description=dataset_description,
-                    metadata=metadata_json,
-                )
-        except Exception:
-            logger.exception(
-                "Async DB save failed for user '%s', dataset '%s'. Rolling back MinIO objects.",
-                user_username,
-                dataset_name,
-            )
-            try:
-                delete_dataset_objects(
-                    bucket_name=upload_result["bucket_name"],
-                    data_file_key=upload_result["data_file_key"],
-                )
-            except MinioUploadError:
-                logger.exception(
-                    "Failed to rollback MinIO objects after async DB save failure. "
-                    "bucket='%s', data_key='%s'",
-                    upload_result.get("bucket_name", ""),
-                    upload_result.get("data_file_key", ""),
-                )
-            _send_notification_email(
-                user_email=user_email,
-                user_display_name=user_display_name,
-                dataset_name=dataset_name,
-                success=False,
-                site_url=site_url,
-            )
-            return
+        time.sleep(poll_interval)
+        elapsed += poll_interval
 
-        _send_notification_email(
-            user_email=user_email,
-            user_display_name=user_display_name,
-            dataset_name=dataset_name,
-            success=True,
-            site_url=site_url,
-        )
-
-    finally:
-        if data_file:
-            data_file.close()
-        if metadata_file:
-            metadata_file.close()
-        try:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-        except Exception:
-            logger.warning("Failed to clean up tmp upload dir '%s'.", tmp_dir)
+    logger.error(
+        "Upload timed out for object '%s'. No Dataset record created.", object_key
+    )
+    _send_notification_email(
+        user_email=user_email,
+        user_display_name=user_display_name,
+        dataset_name=dataset_name,
+        success=False,
+        site_url=site_url,
+    )
 
 
 def _send_notification_email(
@@ -199,7 +121,7 @@ def _send_notification_email(
         message = (
             f"Hi {user_display_name},\n\n"
             f"Unfortunately, your dataset \"{dataset_name}\" could not be uploaded to EnergyGuard "
-            f"due to an error.\n\n"
+            f"because the upload was interrupted before it completed.\n\n"
             f"Please try again:\n{site_url.rstrip('/')}{upload_path}\n\n"
             f"If the problem persists, contact our support team.\n\n"
             f"Best regards,\nThe EnergyGuard Team"

@@ -10,6 +10,7 @@ from .upload import (
     DATASET_STEP_METADATA,
     DATASET_TEMPLATE_NAMES,
     dataset_upload_success,
+    generate_upload_url,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "dataset_run",
     "dataset_upload_success",
     "datasets_list",
+    "generate_upload_url",
 ]

@@ -1,5 +1,4 @@
 import json
-import zipfile
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -27,61 +26,31 @@ class GeneralDatasetForm(forms.ModelForm):
         self.fields['label'].initial = ''
 
 
-class FileUploadDatasetForm(forms.Form):
-    data_file = forms.FileField(
-        validators=[FileExtensionValidator(allowed_extensions=['zip', 'csv'])],
-        widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
-    )
+class FileUploadPlaceholderForm(forms.Form):
+    """
+    Step 2 form — no file field. The browser uploads directly to MinIO via a
+    presigned URL; we only store the resulting object key and metadata here.
+    """
+    upload_key = forms.CharField(widget=forms.HiddenInput())
+    bucket_name = forms.CharField(widget=forms.HiddenInput())
+    file_size_bytes = forms.IntegerField(widget=forms.HiddenInput(), min_value=1)
+    original_filename = forms.CharField(widget=forms.HiddenInput())
+    content_type = forms.CharField(widget=forms.HiddenInput())
 
-    def clean_data_file(self):
-        uploaded = self.cleaned_data.get('data_file')
-        if not uploaded:
-            raise ValidationError("Please upload a data file.")
+    def clean_upload_key(self):
+        key = self.cleaned_data.get("upload_key", "").strip()
+        if not key:
+            raise ValidationError("No file upload was initiated. Please select a file.")
+        return key
 
+    def clean_file_size_bytes(self):
+        size = self.cleaned_data.get("file_size_bytes")
+        if not size or size <= 0:
+            raise ValidationError("Invalid file size.")
         max_bytes = _MAX_DATA_FILE_SIZE_MB * 1024 * 1024
-        if uploaded.size > max_bytes:
+        if size > max_bytes:
             raise ValidationError(f"File size must not exceed {_MAX_DATA_FILE_SIZE_MB} MB.")
-
-        filename = (uploaded.name or "").lower()
-        extension = filename.rsplit(".", 1)[-1] if "." in filename else ""
-        content_type = (uploaded.content_type or "").lower()
-
-        # Browsers/OSes often report CSV as application/vnd.ms-excel or text/plain.
-        allowed_types_by_extension = {
-            "zip": {
-                "application/zip",
-                "application/x-zip-compressed",
-                "multipart/x-zip",
-                "application/octet-stream",
-            },
-            "csv": {
-                "text/csv",
-                "application/csv",
-                "application/vnd.ms-excel",
-                "text/plain",
-                "application/octet-stream",
-            },
-        }
-
-        allowed_types = allowed_types_by_extension.get(extension, set())
-        if content_type and content_type not in allowed_types:
-            raise ValidationError("Only .zip or .csv files are allowed.")
-
-        if extension == "zip":
-            try:
-                uploaded.seek(0)
-                with zipfile.ZipFile(uploaded) as zf:
-                    non_csv = [
-                        name for name in zf.namelist()
-                        if not name.lower().endswith(".csv") and not name.endswith("/")
-                    ]
-                    if non_csv:
-                        raise ValidationError("ZIP file must contain only CSV files.")
-                uploaded.seek(0)
-            except zipfile.BadZipFile:
-                raise ValidationError("The uploaded ZIP file is invalid or corrupted.")
-
-        return uploaded
+        return size
 
 
 class MetadataDatasetForm(forms.ModelForm):

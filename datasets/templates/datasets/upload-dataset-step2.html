@@ -7,11 +7,18 @@
 {% block content %}
 <div class="tab-content">
     <div class="tab-pane active" role="tabpanel">
-        <form class="needs-validation" action="" method="post" enctype="multipart/form-data" novalidate>
+        <form id="step2-form" class="needs-validation" action="" method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             {{ wizard.management_form }}
             <input type="hidden" name="wizard_goto_step" id="wizard_goto_step" value="">
-            
+
+            {# Placeholder hidden fields — filled by JS before AJAX submission #}
+            {{ wizard.form.upload_key }}
+            {{ wizard.form.bucket_name }}
+            {{ wizard.form.file_size_bytes }}
+            {{ wizard.form.original_filename }}
+            {{ wizard.form.content_type }}
+
             {% if wizard.form.errors %}
               <div class="px-2 py-1 alert alert-danger fs-9" role="alert">
                 {% for errors in wizard.form.errors.values %}{{ errors }}{% endfor %}
@@ -20,7 +27,7 @@
 
             <div class="mb-5">
                 <label class="form-label text-body mb-3">
-                    Upload Data Files
+                    Upload Data File
                     <span
                         class="ms-1 text-body-tertiary"
                         style="cursor:pointer;"
@@ -33,21 +40,48 @@
                         data-bs-content='Accepted formats:<br><br><strong>.csv</strong> — a single CSV file<br><strong>.zip</strong> — a ZIP archive containing only CSV files'
                     ><span data-feather="info" style="height:14px;width:14px;"></span></span>
                 </label>
-                <div style="display:none;">{{ wizard.form.data_file }}</div>
+
                 <div id="drop-zone-data"
                      class="border rounded-3 p-5 text-center"
                      style="border-style:dashed !important; cursor:pointer;">
                     <span data-feather="upload-cloud" style="height:32px;width:32px;" class="text-body-tertiary mb-2"></span>
                     <p class="mb-1 text-body fs-9">Drag &amp; drop your file here, or <span class="text-primary fw-semibold">browse</span></p>
                     <p class="mb-0 text-body-tertiary fs-10">Accepted: .csv, .zip</p>
-                    <p id="drop-zone-data-filename" class="mb-0 mt-2 fw-semibold text-success fs-9" style="display:none;"></p>
+                    <p id="drop-zone-filename" class="mb-0 mt-2 fw-semibold text-success fs-9" style="display:none;"></p>
                 </div>
-                
+                <input type="file" id="data-file-input" accept=".csv,.zip" style="display:none;">
+
+                <div id="upload-progress-wrapper" class="mt-3" style="display:none;">
+                    <div class="d-flex justify-content-between fs-9-5 text-body-tertiary mb-1">
+                        <span id="upload-progress-label">Uploading to storage...</span>
+                        <span id="upload-progress-pct">0%</span>
+                    </div>
+                    <div class="progress" style="height:6px;">
+                        <div id="upload-progress-bar" class="progress-bar" role="progressbar" style="width:0%;"></div>
+                    </div>
+                </div>
+
+                <div id="upload-bg-notice" class="mt-2 align-items-start gap-2 fs-9 text-body-tertiary" style="display:none;">
+                    <span class="fas fa-info-circle text-primary flex-shrink-0" style="margin-top:2px;"></span>
+                    <span>Upload running in the background — you don't need to wait. Click <strong class="text-body">Next</strong> to continue.</span>
+                </div>
+
+                <p id="upload-done-msg" class="mt-2 text-success fs-9" style="display:none;">
+                    <span class="fas fa-check-circle me-1"></span>File received — finalising in background.
+                </p>
+
+                <div id="upload-error-msg" class="mt-2 alert alert-danger fs-9" style="display:none;"></div>
             </div>
 
             <div class="d-flex justify-content-between gap-2 mt-5 mb-3">
-                <button type="button" class="btn btn-link" onclick="document.getElementById('wizard_goto_step').value='{{ wizard.steps.prev }}'; this.form.submit();"><span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back</button>
-                <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
+                <button type="button" class="btn btn-link"
+                        onclick="document.getElementById('wizard_goto_step').value='{{ wizard.steps.prev }}'; document.getElementById('step2-form').submit();">
+                    <span class="fas fa-chevron-left me-1" data-fa-transform="shrink-3"></span>Back
+                </button>
+                <button type="button" id="next-btn" class="btn btn-primary px-6 px-sm-6" disabled>
+                    Next
+                    <span id="next-spinner" class="spinner-border spinner-border-sm ms-1" style="display:none;" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </form>
     </div>
@@ -57,49 +91,487 @@
 {% block scripts %}
 <style>
   .alert .errorlist { list-style: none; margin: 0; }
+  [data-field] { background-image: none !important; }
+  @keyframes eg-btn-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(var(--phoenix-primary-rgb, 13,110,253), 0.55); }
+    70%  { box-shadow: 0 0 0 9px rgba(var(--phoenix-primary-rgb, 13,110,253), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--phoenix-primary-rgb, 13,110,253), 0); }
+  }
+  .btn-pulse { animation: eg-btn-pulse 0.75s ease-out 2; }
 </style>
 <script>
-  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
-    new bootstrap.Popover(el);
-  });
+(function () {
+    // ── Upload state ──────────────────────────────────────────────────────────────
+    var uploadXhr = null;
+    var uploadDone = false;
+    var selectedFile = null;
+    var uploadKey = null;
+    var uploadBucket = null;
 
-  (function () {
-    var zone = document.getElementById('drop-zone-data');
-    var filenameEl = document.getElementById('drop-zone-data-filename');
-    var input = zone.closest('form').querySelector('input[type="file"]');
+    // ── DOM refs (step 2) ─────────────────────────────────────────────────────────
+    var dropZone       = document.getElementById('drop-zone-data');
+    var fileInput      = document.getElementById('data-file-input');
+    var filenameEl     = document.getElementById('drop-zone-filename');
+    var progressWrap   = document.getElementById('upload-progress-wrapper');
+    var progressBar    = document.getElementById('upload-progress-bar');
+    var progressPct    = document.getElementById('upload-progress-pct');
+    var nextBtn        = document.getElementById('next-btn');
+    var nextSpinner    = document.getElementById('next-spinner');
+    var step2form      = document.getElementById('step2-form');
+    var errorMsg       = document.getElementById('upload-error-msg');
+    var doneMsg        = document.getElementById('upload-done-msg');
 
-    function setFile(file) {
-      var dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-      filenameEl.textContent = file.name;
-      filenameEl.style.display = '';
+    // ── CSRF helper ───────────────────────────────────────────────────────────────
+    function getCsrf() {
+        var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
     }
 
-    zone.addEventListener('click', function () { input.click(); });
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = '';
+    }
 
-    input.addEventListener('change', function () {
-      if (input.files.length) {
-        filenameEl.textContent = input.files[0].name;
+    // ── Popovers ──────────────────────────────────────────────────────────────────
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
+
+    // ── Drop zone ─────────────────────────────────────────────────────────────────
+    dropZone.addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+    dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault(); dropZone.classList.add('border-primary');
+    });
+    dropZone.addEventListener('dragleave', function () {
+        dropZone.classList.remove('border-primary');
+    });
+    dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+        var ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (ext !== 'csv' && ext !== 'zip') {
+            showError('Only .csv or .zip files are allowed.');
+            return;
+        }
+        // Reset state for re-selection
+        uploadDone = false; uploadKey = null; uploadBucket = null;
+        if (uploadXhr) { uploadXhr.abort(); uploadXhr = null; }
+        errorMsg.style.display = 'none';
+        doneMsg.style.display = 'none';
+        nextBtn.disabled = true;
+
+        selectedFile = file;
+        filenameEl.textContent = file.name;
         filenameEl.style.display = '';
-      }
+        var bgNotice = document.getElementById('upload-bg-notice');
+        if (bgNotice) bgNotice.style.display = 'flex';
+        fetchPresignedUrl(file);
+    }
+
+    // ── Step 1: get presigned URL from Django ─────────────────────────────────────
+    function fetchPresignedUrl(file) {
+        var fd = new FormData();
+        fd.append('filename', file.name);
+        fd.append('content_type', file.type || 'application/octet-stream');
+        fd.append('csrfmiddlewaretoken', getCsrf());
+
+        fetch('/datasets/upload-url/', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.error) { showError(data.error); return; }
+                uploadKey    = data.key;
+                uploadBucket = data.bucket;
+                startXhrUpload(file, data.url);
+            })
+            .catch(function () {
+                showError('Could not prepare upload. Please try again.');
+            });
+    }
+
+    // ── Step 2: XHR PUT directly to MinIO ────────────────────────────────────────
+    function startXhrUpload(file, presignedUrl) {
+        progressWrap.style.display = '';
+        progressBar.style.width = '0%';
+        progressPct.textContent = '0%';
+
+        uploadXhr = new XMLHttpRequest();
+        uploadXhr.open('PUT', presignedUrl);
+        uploadXhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+        uploadXhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+                var pct = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = pct + '%';
+                progressPct.textContent = pct + '%';
+            }
+        });
+
+        uploadXhr.addEventListener('load', function () {
+            if (uploadXhr.status >= 200 && uploadXhr.status < 300) {
+                uploadDone = true;
+                progressWrap.style.display = 'none';
+                doneMsg.style.display = '';
+            } else {
+                showError('Upload failed (HTTP ' + uploadXhr.status + '). Please try again.');
+            }
+        });
+
+        uploadXhr.addEventListener('error', function () {
+            showError('Upload failed due to a network error. Please try again.');
+        });
+
+        uploadXhr.send(file);
+
+        // Enable Next immediately — user can proceed while XHR runs in background
+        nextBtn.disabled = false;
+        nextBtn.classList.add('btn-pulse');
+        nextBtn.addEventListener('animationend', function () {
+            nextBtn.classList.remove('btn-pulse');
+        }, { once: true });
+    }
+
+    // ── "Next" — AJAX wizard navigation (no page reload → XHR survives) ──────────
+    nextBtn.addEventListener('click', function () {
+        if (!uploadKey) {
+            showError('Upload is still initialising — please wait a moment.');
+            return;
+        }
+
+        // Fill hidden placeholder fields
+        step2form.querySelector('[name$="-upload_key"]').value      = uploadKey;
+        step2form.querySelector('[name$="-bucket_name"]').value     = uploadBucket;
+        step2form.querySelector('[name$="-file_size_bytes"]').value = selectedFile.size;
+        step2form.querySelector('[name$="-original_filename"]').value = selectedFile.name;
+        step2form.querySelector('[name$="-content_type"]').value    = selectedFile.type || 'application/octet-stream';
+
+        nextBtn.disabled = true;
+        nextSpinner.style.display = '';
+
+        var fd = new FormData(step2form);
+        fetch(window.location.href, {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-Wizard-Ajax': '1' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.redirect) { window.location.href = data.redirect; return; }
+            if (!data.html) {
+                showError('Unexpected server response. Please try again.');
+                nextBtn.disabled = false; nextSpinner.style.display = 'none';
+                return;
+            }
+
+            // Swap wizard content area with step 3 fragment (XHR keeps running)
+            document.querySelector('.card-body .tab-content').innerHTML = data.html;
+
+            // Advance step indicator: mark steps 0 & 1 completed, activate step 2
+            var navLinks = document.querySelectorAll('.nav-wizard .nav-link');
+            navLinks.forEach(function (link, idx) {
+                link.classList.remove('active');
+                if (idx < 2) {
+                    link.classList.add('active');
+                    var circle = link.querySelector('.nav-item-circle');
+                    if (circle) circle.innerHTML = '<span class="fas fa-check"></span>';
+                } else if (idx === 2) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (typeof feather !== 'undefined') feather.replace();
+            initStep3();
+        })
+        .catch(function () {
+            showError('Something went wrong. Please try again.');
+            nextBtn.disabled = false; nextSpinner.style.display = 'none';
+        });
     });
 
-    zone.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      zone.classList.add('border-primary');
-    });
+    // ── Step 3 initialisation (called after HTML injection) ───────────────────────
+    window.initStep3 = function () {
+        var step3form   = document.getElementById('step3-form');
+        if (!step3form) return;
 
-    zone.addEventListener('dragleave', function () {
-      zone.classList.remove('border-primary');
-    });
+        var metaFileInput  = step3form.querySelector('input[type="file"]');
+        var dropZoneMeta   = document.getElementById('drop-zone-metadata');
+        var filenameElMeta = document.getElementById('drop-zone-metadata-filename');
+        var btnClearFile   = document.getElementById('btn-clear-file');
+        var sectionManual  = document.getElementById('section-manual');
+        var btnAddRow      = document.getElementById('btn-add-row');
+        var submitBtn      = step3form.querySelector('[type="submit"]');
+        var waitNotice     = document.getElementById('upload-wait-notice');
 
-    zone.addEventListener('drop', function (e) {
-      e.preventDefault();
-      zone.classList.remove('border-primary');
-      var file = e.dataTransfer.files[0];
-      if (file) setFile(file);
-    });
-  })();
+        step3form.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+            new bootstrap.Popover(el);
+        });
+
+        // ── Mutual exclusion helpers ──────────────────────────────────────────────
+        function disableUploadSection() {
+            if (!dropZoneMeta) return;
+            dropZoneMeta.style.cursor = 'not-allowed';
+            dropZoneMeta.style.opacity = '0.45';
+            dropZoneMeta.style.pointerEvents = 'none';
+            if (metaFileInput) metaFileInput.disabled = true;
+        }
+        function enableUploadSection() {
+            if (!dropZoneMeta) return;
+            dropZoneMeta.style.cursor = 'pointer';
+            dropZoneMeta.style.opacity = '';
+            dropZoneMeta.style.pointerEvents = '';
+            if (metaFileInput) metaFileInput.disabled = false;
+        }
+        function disableManualSection() {
+            if (!sectionManual) return;
+            sectionManual.style.opacity = '0.45';
+            sectionManual.style.pointerEvents = 'none';
+            if (btnAddRow) btnAddRow.disabled = true;
+            sectionManual.querySelectorAll('input[type="text"]').forEach(function (i) { i.disabled = true; });
+            sectionManual.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+        }
+        function enableManualSection() {
+            if (!sectionManual) return;
+            sectionManual.style.opacity = '';
+            sectionManual.style.pointerEvents = '';
+            if (btnAddRow) btnAddRow.disabled = false;
+            sectionManual.querySelectorAll('input[type="text"]').forEach(function (i) { i.disabled = false; });
+            sectionManual.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+        }
+
+        // ── Metadata drop zone ────────────────────────────────────────────────────
+        function showMetaFile(name) {
+            if (filenameElMeta) { filenameElMeta.textContent = name; filenameElMeta.style.display = ''; }
+            if (btnClearFile) btnClearFile.style.display = '';
+            disableManualSection();
+        }
+
+        window.clearFile = function (e) {
+            e.stopPropagation();
+            if (metaFileInput) metaFileInput.value = '';
+            if (filenameElMeta) filenameElMeta.style.display = 'none';
+            if (btnClearFile) btnClearFile.style.display = 'none';
+            enableManualSection();
+        };
+
+        if (dropZoneMeta && metaFileInput) {
+            dropZoneMeta.addEventListener('click', function () { metaFileInput.click(); });
+            metaFileInput.addEventListener('change', function () {
+                if (metaFileInput.files.length) showMetaFile(metaFileInput.files[0].name);
+            });
+            dropZoneMeta.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                if (!metaFileInput.disabled) dropZoneMeta.classList.add('border-primary');
+            });
+            dropZoneMeta.addEventListener('dragleave', function () {
+                dropZoneMeta.classList.remove('border-primary');
+            });
+            dropZoneMeta.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropZoneMeta.classList.remove('border-primary');
+                if (metaFileInput.disabled) return;
+                var file = e.dataTransfer.files[0];
+                if (file) {
+                    var dt = new DataTransfer();
+                    dt.items.add(file);
+                    metaFileInput.files = dt.files;
+                    showMetaFile(file.name);
+                }
+            });
+        }
+
+        // ── Metadata rows ─────────────────────────────────────────────────────────
+        window.addRow = function (featureName, featureUnit, featureDescription) {
+            var container = document.getElementById('boxes');
+            if (!container) return;
+            var row = document.createElement('div');
+            row.setAttribute('data-row-wrapper', 'true');
+            row.innerHTML = [
+                '<div class="row gx-2 mb-2 align-items-center" data-metadata-row="true">',
+                '  <div class="col-3"><div class="border rounded-2 px-2 py-1">',
+                '    <input type="text" data-field="feature_name" placeholder="temperature" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">',
+                '  </div></div>',
+                '  <div class="col-2"><div class="border rounded-2 px-2 py-1">',
+                '    <input type="text" data-field="feature_unit" placeholder="°C" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">',
+                '  </div></div>',
+                '  <div class="col-6"><div class="border rounded-2 px-2 py-1">',
+                '    <input type="text" data-field="feature_description" placeholder="Ambient temperature in Celsius" class="form-control form-control-sm border-0 p-0 shadow-none bg-transparent">',
+                '  </div></div>',
+                '  <div class="col-1 text-end">',
+                '    <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">',
+                '      <span data-feather="x" style="height:16px;width:16px;"></span>',
+                '    </button>',
+                '  </div>',
+                '</div>'
+            ].join('');
+            container.appendChild(row);
+            if (featureName !== undefined) {
+                row.querySelector('[data-field="feature_name"]').value        = featureName || '';
+                row.querySelector('[data-field="feature_unit"]').value        = featureUnit || '';
+                row.querySelector('[data-field="feature_description"]').value = featureDescription || '';
+            }
+            if (typeof feather !== 'undefined') feather.replace();
+            disableUploadSection();
+        };
+
+        window.removeRow = function (button) {
+            var rowEl = button.closest('[data-metadata-row="true"]');
+            if (rowEl) {
+                rowEl.remove();
+                if (!document.querySelector('[data-metadata-row="true"]')) enableUploadSection();
+            }
+        };
+
+        // ── Step 3 submit — always AJAX so the MinIO XHR keeps running ───────────
+        step3form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var manualError = document.getElementById('manual-error');
+            var rowElements = step3form.querySelectorAll('[data-metadata-row="true"]');
+            var hasFile = metaFileInput && metaFileInput.files && metaFileInput.files.length > 0;
+
+            // Client-side row validation
+            if (!hasFile && rowElements.length > 0) {
+                var hasIncomplete = false;
+                rowElements.forEach(function (rowEl) {
+                    ['feature_name', 'feature_unit', 'feature_description'].forEach(function (field) {
+                        var input = rowEl.querySelector('[data-field="' + field + '"]');
+                        if (!input) return;
+                        if (!input.value.trim()) {
+                            input.parentElement.classList.add('border-danger');
+                            hasIncomplete = true;
+                        } else {
+                            input.parentElement.classList.remove('border-danger');
+                        }
+                    });
+                });
+                if (hasIncomplete) {
+                    if (manualError) manualError.style.display = '';
+                    return;
+                }
+            }
+            if (manualError) manualError.style.display = 'none';
+
+            // Serialise metadata rows
+            var metadataRowsInput = step3form.querySelector('input[name$="metadata_rows"]');
+            if (metadataRowsInput) {
+                var rows = [];
+                rowElements.forEach(function (rowEl) {
+                    rows.push({
+                        feature_name:        ((rowEl.querySelector('[data-field="feature_name"]')        || {}).value || '').trim(),
+                        feature_unit:        ((rowEl.querySelector('[data-field="feature_unit"]')        || {}).value || '').trim(),
+                        feature_description: ((rowEl.querySelector('[data-field="feature_description"]') || {}).value || '').trim()
+                    });
+                });
+                metadataRowsInput.value = JSON.stringify(rows);
+            }
+
+            if (submitBtn) { submitBtn.disabled = true; }
+
+            // AJAX submit — no page reload, XHR to MinIO continues in background
+            var fd = new FormData(step3form);
+            fetch(window.location.href, {
+                method: 'POST',
+                body: fd,
+                headers: { 'X-Wizard-Ajax': '1' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.html) {
+                    if (submitBtn) submitBtn.disabled = false;
+                    var errDiv = document.getElementById('step3-upload-error');
+                    if (errDiv) { errDiv.textContent = 'Something went wrong. Please try again.'; errDiv.style.display = ''; }
+                    return;
+                }
+
+                // Inject success fragment — XHR keeps running
+                document.querySelector('.card-body .tab-content').innerHTML = data.html;
+
+                // Mark all wizard steps completed in the header
+                document.querySelectorAll('.nav-wizard .nav-link').forEach(function (link) {
+                    link.classList.add('active');
+                    var circle = link.querySelector('.nav-item-circle');
+                    if (circle) circle.innerHTML = '<span class="fas fa-check"></span>';
+                });
+
+                if (typeof feather !== 'undefined') feather.replace();
+                initSuccessScreen();
+            })
+            .catch(function () {
+                if (submitBtn) submitBtn.disabled = false;
+                var errDiv = document.getElementById('step3-upload-error');
+                if (errDiv) { errDiv.textContent = 'Something went wrong. Please try again.'; errDiv.style.display = ''; }
+            });
+        });
+
+        if (typeof feather !== 'undefined') feather.replace();
+    };
+
+    // ── Success screen — driven by the still-running XHR ─────────────────────────
+    window.initSuccessScreen = function () {
+        var bar     = document.getElementById('success-progress-bar');
+        var pct     = document.getElementById('success-progress-pct');
+        var label   = document.getElementById('success-progress-label');
+        var status  = document.getElementById('success-upload-status');
+        var done    = document.getElementById('success-upload-done');
+        var errDiv  = document.getElementById('success-upload-error');
+        var goBtn   = document.getElementById('go-to-datasets-btn');
+
+        function markDone() {
+            if (status) status.style.display = 'none';
+            if (done)   done.style.display   = '';
+            if (goBtn)  { goBtn.style.pointerEvents = ''; goBtn.style.opacity = '1'; goBtn.removeAttribute('aria-disabled'); }
+            window.onbeforeunload = null;
+        }
+
+        function markError() {
+            if (status) status.style.display = 'none';
+            if (errDiv) errDiv.style.display = '';
+            if (goBtn)  { goBtn.style.pointerEvents = ''; goBtn.style.opacity = '1'; goBtn.removeAttribute('aria-disabled'); }
+            window.onbeforeunload = null;
+        }
+
+        if (!uploadXhr || uploadDone) {
+            // XHR already finished before the success screen appeared
+            if (bar) bar.style.width = '100%';
+            if (pct) pct.textContent = '100%';
+            markDone();
+            return;
+        }
+
+        // Warn if user tries to close the tab while still uploading
+        window.onbeforeunload = function () {
+            return 'Your file is still uploading. Closing this tab will cancel the upload.';
+        };
+
+        // Wire up progress from the running XHR
+        uploadXhr.upload.addEventListener('progress', function (e) {
+            if (!e.lengthComputable) return;
+            var p = Math.round((e.loaded / e.total) * 100);
+            if (bar)   bar.style.width  = p + '%';
+            if (pct)   pct.textContent  = p + '%';
+            if (label) label.textContent = 'Uploading...';
+        });
+
+        uploadXhr.addEventListener('load', function () {
+            if (uploadXhr.status >= 200 && uploadXhr.status < 300) {
+                uploadDone = true;
+                if (bar)   bar.style.width = '100%';
+                if (pct)   pct.textContent = '100%';
+                markDone();
+            } else {
+                markError();
+            }
+        });
+
+        uploadXhr.addEventListener('error', markError);
+        uploadXhr.addEventListener('abort', markError);
+    };
+})();
 </script>
 {% endblock scripts %}

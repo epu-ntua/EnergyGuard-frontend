@@ -1,0 +1,49 @@
+{% load static %}
+  <!-- Success fragment — injected inline after step 3 AJAX submit so the page
+  never reloads and the background MinIO XHR keeps running.
+  JS in upload-dataset-step2.html drives the progress bar and the
+  "Go to My Datasets" button state. -->
+<div class="tab-pane active" role="tabpanel">
+  <div class="row flex-center pb-8 pt-4 gx-3 gy-4">
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <img class="d-dark-none" src="{% static 'assets/img/spot-illustrations/38.webp' %}" alt="" width="220" />
+        <img class="d-light-none" src="{% static 'assets/img/spot-illustrations/dark_38.webp' %}" alt="" width="220" />
+      </div>
+    </div>
+    <div class="col-12 col-sm-auto">
+      <div class="text-center text-sm-start">
+        <h5 class="mb-3">Thank you for submitting<br/>your dataset!</h5>
+
+        <div id="success-upload-status">
+          <p class="text-body-emphasis fs-9 mb-2">Your file is uploading in the background.</p>
+          <div class="d-flex justify-content-between fs-10 text-body-tertiary mb-1">
+            <span id="success-progress-label">Uploading...</span>
+            <span id="success-progress-pct">0%</span>
+          </div>
+          <div class="progress mb-3" style="height:6px; min-width:220px;">
+            <div id="success-progress-bar" class="progress-bar" role="progressbar" style="width:0%;"></div>
+          </div>
+          <p class="text-body-tertiary fs-9 mb-3">You will receive a confirmation email when the upload is complete. Keep this tab open until then.</p>
+        </div>
+
+        <div id="success-upload-done" style="display:none;">
+          <p class="text-success fs-9 mb-1"><span class="fas fa-check-circle me-1"></span>Upload complete — your dataset is now under review.</p>
+          <p class="text-body-tertiary fs-9-5 mb-3">A confirmation email has been sent to your address.</p>
+        </div>
+
+        <div id="success-upload-error" style="display:none;">
+          <p class="text-danger fs-9 mb-3"><span class="fas fa-times-circle me-1"></span>Upload failed. Please <a href="{% url 'dataset_upload' %}">try again</a>.</p>
+        </div>
+
+        <a id="go-to-datasets-btn"
+           class="btn btn-primary px-6"
+           href="{% url 'datasets_list' %}?tab=my"
+           style="pointer-events:none; opacity:0.5;"
+           aria-disabled="true">
+          Go to My Datasets
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
