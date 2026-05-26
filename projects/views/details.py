@@ -17,11 +17,6 @@ def _can_access_project(user, project: Project) -> bool:
         return True
     if project.collaborators.filter(pk=user.pk).exists():
         return True
-    if project.team_id is not None:
-        try:
-            return user.profile.team_id == project.team_id
-        except Exception:
-            pass
     return False
 
 
@@ -76,14 +71,8 @@ def project_details(request, project_id):
     user = request.user
     is_creator = project.creator == user
 
-    is_team_member = False
-    if project.team_id is not None:
-        try:
-            is_team_member = user.profile.team_id == project.team_id
-        except Exception:
-            pass
     is_collaborator = project.collaborators.filter(pk=user.pk).exists()
-    can_manage_experiments = is_creator or is_team_member or is_collaborator
+    can_manage_experiments = is_creator or is_collaborator
 
     if request.method == "POST" and request.POST.get("action") == "edit_project":
         edit_project_form = EditProjectForm(request.POST, instance=project)

@@ -53,11 +53,6 @@ def _user_can_access_project(user, project: Project) -> bool:
         return True
     if project.collaborators.filter(pk=user.pk).exists():
         return True
-    if project.team_id is not None:
-        try:
-            return user.profile.team_id == project.team_id
-        except Exception:
-            pass
     return False
 
 
