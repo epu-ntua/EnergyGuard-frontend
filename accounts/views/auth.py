@@ -1,15 +1,13 @@
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.contrib.auth import login, logout as django_logout
+from django.contrib.auth import logout as django_logout
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
 from allauth.socialaccount.providers.openid_connect.views import OpenIDConnectOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.views import OAuth2LoginView
-
-from ..forms import CustomAuthenticationForm
 
 
 class _KeycloakRegistrationAdapter(OpenIDConnectOAuth2Adapter):
@@ -32,23 +30,6 @@ class _KeycloakRegistrationLoginView(OAuth2LoginView):
 
         provider.get_auth_params_from_request = get_auth_params_without_prompt
         return provider
-
-
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect("home")
-
-    if request.method == "POST":
-        form = CustomAuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            if user:
-                login(request, user)
-                return redirect("dashboard")
-    else:
-        form = CustomAuthenticationForm()
-
-    return render(request, "accounts/login.html", {"form": form})
 
 
 @require_POST

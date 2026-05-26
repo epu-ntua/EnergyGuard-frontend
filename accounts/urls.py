@@ -1,11 +1,10 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.views.generic import RedirectView
 from accounts import views
 
 urlpatterns = [
+    path('login/', RedirectView.as_view(url=reverse_lazy('openid_connect_login', kwargs={'provider_id': 'keycloak'})), name='login'),
     path('pending-approval/', views.pending_approval, name='account_pending_approval'),
-    path('register/', views.RegistrationWizard.as_view(views.REGISTRATION_FORMS), name='register'),
-    path('platform-registration-success/', views.platform_registration_success, name='platform_registration_success'),
-    path('login/', views.login_view, name='login'),
     path('logout/', views.keycloak_logout, name='account_logout'),
     path('front-channel-logout/', views.keycloak_front_channel_logout, name='keycloak_front_channel_logout'),
     path('keycloak-register/', views.keycloak_register, name='keycloak_register'),
