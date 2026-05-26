@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -7,7 +8,7 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 from ..models import Project
 
 
-class ProjectsListJson(BaseDatatableView):
+class ProjectsListJson(LoginRequiredMixin, BaseDatatableView):
     model = Project
     columns = [
         "name",

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
 from django.shortcuts import render
 from django_datatables_view.base_datatable_view import BaseDatatableView
@@ -6,7 +7,7 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 from ..models import Dataset
 
 
-class DatasetsListJson(BaseDatatableView):
+class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
     model = Dataset
     columns = [
         "name",
