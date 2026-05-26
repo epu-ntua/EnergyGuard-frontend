@@ -177,7 +177,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STATICFILES_BACKEND = (
     "django.contrib.staticfiles.storage.StaticFilesStorage"
     if DEBUG
-    else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    else "whitenoise.storage.CompressedStaticFilesStorage"
 )
 
 STORAGES = {
