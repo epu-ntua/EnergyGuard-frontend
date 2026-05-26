@@ -77,6 +77,12 @@ def keycloak_front_channel_logout(request):
 
 def pending_approval(request):
     if request.user.is_authenticated:
+        if not request.user.is_active:
+            # Middleware should catch this, but as defense-in-depth:
+            # log them out and send to login rather than letting them proceed
+            from django.contrib.auth import logout as django_logout
+            django_logout(request)
+            return redirect('account_login')
         return redirect('home')
     if not request.session.get('pending_approval'):
         return redirect('home')

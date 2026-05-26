@@ -108,6 +108,10 @@ class KeycloakTokenExpiryMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
+            if not request.user.is_active:
+                logout(request)
+                return redirect("account_login")
+
             backend = request.session.get('_auth_user_backend', '')
             if 'ModelBackend' in backend:
                 return self.get_response(request)
