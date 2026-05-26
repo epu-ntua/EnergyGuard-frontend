@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from ..forms import TeamEditForm, TeamInviteForm
 from ..models import Notification, Profile, TeamInvite, User
@@ -86,6 +87,7 @@ def team_management(request):
         email=request.user.email,
         accepted_at__isnull=True,
         declined_at__isnull=True,
+        expires_at__gt=timezone.now(),
     ).select_related('team', 'invited_by').prefetch_related('team__members__user')
 
     return render(
@@ -200,6 +202,7 @@ def pending_invites_partial(request):
         email=request.user.email,
         accepted_at__isnull=True,
         declined_at__isnull=True,
+        expires_at__gt=timezone.now(),
     ).select_related('team', 'invited_by').prefetch_related('team__members__user')
 
     html = render_to_string(

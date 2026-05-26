@@ -143,4 +143,23 @@ def accept_team_invite(token, user):
         icon='user-check',
     )
 
+    # Auto-decline any remaining pending invites for this user
+    now = timezone.now()
+    other_invites = TeamInvite.objects.filter(
+        email=user.email,
+        accepted_at__isnull=True,
+        declined_at__isnull=True,
+        expires_at__gt=now,
+    ).exclude(pk=invite.pk).select_related('invited_by', 'team')
+
+    for other in other_invites:
+        other.declined_at = now
+        other.save()
+        Notification.objects.create(
+            recipient=other.invited_by,
+            message=f"{accepter_name} joined another team and cannot accept your invite to {other.team.name}",
+            url=reverse('team_management'),
+            icon='user-times',
+        )
+
     return invite.team, None
