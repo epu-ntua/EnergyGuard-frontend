@@ -51,14 +51,7 @@ class ProjectsListJson(BaseDatatableView):
             if user.is_authenticated:
                 qs = qs.exclude(creator_id=user.id)
         elif user.is_authenticated:
-            try:
-                team = user.profile.team
-            except Exception:
-                team = None
-            if team is not None:
-                qs = qs.filter(team=team)
-            else:
-                qs = qs.filter(creator_id=user.id, team__isnull=True)
+            qs = qs.filter(creator_id=user.id)
         else:
             qs = qs.none()
 
@@ -75,16 +68,7 @@ class ProjectsListJson(BaseDatatableView):
 
 @login_required
 def projects_list(request):
-    try:
-        team = request.user.profile.team
-    except Exception:
-        team = None
-
-    if team is not None:
-        my_qs = Project.objects.filter(team=team)
-    else:
-        my_qs = Project.objects.filter(creator_id=request.user.id, team__isnull=True)
-
+    my_qs = Project.objects.filter(creator_id=request.user.id)
     public_qs = Project.objects.filter(visibility=True).exclude(creator_id=request.user.id)
 
     my_counts = {

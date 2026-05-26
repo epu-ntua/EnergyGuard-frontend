@@ -152,9 +152,6 @@ class TeamManager(models.Manager):
         profile.team_joined_at = timezone.now()
         profile.save()
 
-        from projects.models import Project
-        Project.objects.filter(creator=creator, team__isnull=True).update(team=team)
-
         return team
     
 class Team(TimeStampedModel):
