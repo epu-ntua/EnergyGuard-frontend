@@ -30,3 +30,13 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('inviteMemberModal').addEventListener('hidden.bs.modal', function () {
+    this.querySelector('input[type="email"]').value = '';
+    var alert = this.querySelector('.alert-danger');
+    if (alert) alert.style.display = 'none';
+    var fieldErrors = this.querySelector('.text-danger');
+    if (fieldErrors) fieldErrors.style.display = 'none';
+});
+</script>
