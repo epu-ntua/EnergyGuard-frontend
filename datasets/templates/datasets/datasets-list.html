@@ -50,13 +50,13 @@
                             <table class="table table-sm fs-9 mb-0" id="publicDatasetsList" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:25%;">DATASET NAME</th>
+                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">CREATED</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">LABEL</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:18%;">LABEL</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">SOURCE</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">PUBLISHER</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SIZE</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:11%;">DOWNLOADS</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">DOWNLOADS</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -94,13 +94,13 @@
                             <table class="table table-sm fs-9 mb-0" id="myDatasetsList" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:25%;">DATASET NAME</th>
+                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">CREATED</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">LABEL</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:18%;">LABEL</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">SOURCE</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">PUBLISHER</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SIZE</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:11%;">STATUS</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -132,7 +132,7 @@
                 }
             },
             { data: "created_at", className: "text-end fs-9" },
-            { data: "label", className: "text-end fs-9" },
+            { data: "label", className: "text-end fs-9 ps-4" },
             { data: "source", className: "text-end fs-9" },
             { data: "publisher", className: "text-end fs-9" },
             {
@@ -149,6 +149,7 @@
         const publicTable = $("#publicDatasetsList").DataTable({
             processing: true,
             serverSide: true,
+            autoWidth: false,
             ajax: {
                 url: "{% url 'datasets_list_json' %}",
                 data: function(d) {
@@ -172,6 +173,7 @@
         const myTable = $("#myDatasetsList").DataTable({
             processing: true,
             serverSide: true,
+            autoWidth: false,
             ajax: {
                 url: "{% url 'datasets_list_json' %}",
                 data: function(d) {
@@ -198,6 +200,14 @@
 
         $("#myDatasetSearchInput").on("keyup change", function() {
             myTable.search(this.value).draw();
+        });
+
+        $("#publicDatasets-tab").on("shown.bs.tab", function() {
+            publicTable.columns.adjust().draw();
+        });
+
+        $("#myDatasets-tab").on("shown.bs.tab", function() {
+            myTable.columns.adjust().draw();
         });
     });
 </script>

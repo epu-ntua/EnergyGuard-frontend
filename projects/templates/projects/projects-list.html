@@ -55,11 +55,11 @@
                                 <thead>
                                     <tr>
                                         <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:42%;">DESCRIPTION</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">COLLABORATORS</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">START DATE</th>
-                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">UPDATED</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:35%;">DESCRIPTION</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">COLLABORATORS</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">START DATE</th>
+                                        <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">UPDATED</th>
+                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>   
@@ -100,11 +100,11 @@
                                     <thead>
                                         <tr>
                                             <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
-                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:42%;">DESCRIPTION</th>
-                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">COLLABORATORS</th>
-                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">START DATE</th>
-                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">UPDATED</th>
-                                            <th class="sort align-middle text-end fs-9" scope="col" style="width:8%; min-width: 100px;">TYPE</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:35%;">DESCRIPTION</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">COLLABORATORS</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">START DATE</th>
+                                            <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">UPDATED</th>
+                                            <th class="sort align-middle text-end fs-9" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>   
@@ -137,13 +137,14 @@
             { data: "collaborators", className: "fs-9" },
             { data: "created_at", className: "text-end fs-9" },
             { data: "updated_at", className: "text-end fs-9" },
-            { data: "project_type", className: "text-end fs-9" },
+            { data: "project_type", className: "text-end fs-9 ps-3" },
             { data: "id", visible: false }
         ];
 
         const myTable = $('#myProjectsTable').DataTable({
             processing: true,
             serverSide: true,
+            autoWidth: false,
             ajax: {
                 url: "{% url 'projects_list_json' %}",
                 data: function (d) {
@@ -166,6 +167,7 @@
         const publicTable = $('#publicProjectsTable').DataTable({
             processing: true,
             serverSide: true,
+            autoWidth: false,
             ajax: {
                 url: "{% url 'projects_list_json' %}",
                 data: function (d) {
@@ -191,6 +193,10 @@
 
         $('#publicProjectSearchInput').on('keyup change', function () {
             publicTable.search(this.value).draw();
+        });
+
+        $('#publicProjects-tab').on('shown.bs.tab', function () {
+            publicTable.columns.adjust().draw();
         });
     });
 </script>
