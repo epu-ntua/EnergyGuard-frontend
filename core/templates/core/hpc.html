@@ -93,6 +93,8 @@
   (function () {
     var gpuSlider = document.getElementById('gpuCountSlider');
     var storageSlider = document.getElementById('storageSlider');
+    if (!gpuSlider || !storageSlider) return;
+
     var gpuVal = document.getElementById('gpuCountValue');
     var storageVal = document.getElementById('storageValue');
     var costEl = document.getElementById('estimatedCost');
