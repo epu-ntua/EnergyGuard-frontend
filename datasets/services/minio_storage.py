@@ -131,6 +131,27 @@ def object_exists(*, bucket_name: str, object_key: str) -> bool:
         raise MinioUploadError(str(exc)) from exc
 
 
+def move_dataset_object(
+    *,
+    bucket_name: str,
+    source_key: str,
+    dest_key: str,
+) -> None:
+    """Copy source_key to dest_key within the same bucket, then delete source_key."""
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = _build_minio_client()
+    try:
+        client.copy_object(
+            Bucket=bucket_name,
+            CopySource={"Bucket": bucket_name, "Key": source_key},
+            Key=dest_key,
+        )
+        client.delete_object(Bucket=bucket_name, Key=source_key)
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc
+
+
 def delete_dataset_objects(
     *,
     bucket_name: str,

@@ -2,11 +2,13 @@ import logging
 import time
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.urls import reverse
+from django.utils.text import slugify
 
 from .models import Dataset
-from .services import MinioUploadError, object_exists
+from .services import MinioUploadError, move_dataset_object, object_exists
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +36,36 @@ def finalize_dataset_upload(
     (e.g. the user closed the tab mid-upload), sends a failure email without
     creating any record.
     """
+    User = get_user_model()
+
     elapsed = 0
     while elapsed < max_wait_seconds:
         try:
             if object_exists(bucket_name=bucket_name, object_key=object_key):
+                # Move the file from pending/ to the canonical user_*/dataset_name/ path
+                # so the data management server can provision it correctly in JupyterHub.
+                final_key = object_key
+                try:
+                    user = User.objects.get(pk=user_id)
+                    user_slug = slugify(user.username or str(user_id)) or "user"
+                    dataset_slug = slugify(dataset_name) or "dataset"
+                    filename = object_key.split("/")[-1]
+                    dest_key = f"user_{user_slug}/{dataset_slug}/{filename}"
+                    move_dataset_object(
+                        bucket_name=bucket_name,
+                        source_key=object_key,
+                        dest_key=dest_key,
+                    )
+                    final_key = dest_key
+                except User.DoesNotExist:
+                    logger.error("User %s not found; keeping pending path for dataset '%s'.", user_id, dataset_name)
+                except MinioUploadError:
+                    logger.exception("Failed to move dataset object '%s'; keeping pending path.", object_key)
+
                 try:
                     Dataset.objects.create(
                         name=dataset_name,
-                        data_file=object_key,
+                        data_file=final_key,
                         bucket_name=bucket_name,
                         label=dataset_label,
                         source=Dataset.Source.OWN_DS,

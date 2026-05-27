@@ -2,6 +2,7 @@ from .minio_storage import (
     MinioUploadError,
     delete_dataset_objects,
     generate_presigned_upload_url,
+    move_dataset_object,
     object_exists,
     upload_dataset_objects,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "upload_dataset_objects",
     "delete_dataset_objects",
     "generate_presigned_upload_url",
+    "move_dataset_object",
     "object_exists",
     "delete_dataset_cache",
     "provision_user_datasets",
