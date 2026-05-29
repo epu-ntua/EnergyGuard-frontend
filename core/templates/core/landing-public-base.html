@@ -70,10 +70,10 @@
                     </div>
                     <!-- Left Side of header -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" aria-current="page" href="{% url 'home' %}">Home</a></li>
-                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Services</a></li>
-                        <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Join now</a></li>
-                        <li class="nav-item"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="">About the project</a></li>
+                        <!-- <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" aria-current="page" href="{% url 'home' %}">Home</a></li> -->
+                        <!-- <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Services</a></li> -->
+                        <!-- <li class="nav-item border-bottom border-translucent border-bottom-lg-0"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="#">Join now</a></li> -->
+                        <li class="nav-item"><a class="nav-link lh-1 py-0 fs-8-5 fw-bold py-3" href="https://energy-guard.eu/">About the project</a></li>
                     </ul>
                     <!-- Right Side of header -->
                     <div class="d-grid d-lg-flex align-items-center">
@@ -86,9 +86,9 @@
                             </div>
                         </div>
                         <!-- Search icon -->
-                        <a class="text-body-quaternary text-body-tertiary-hover px-2 d-none d-lg-inline lh-sm" href="#" data-bs-toggle="modal" data-bs-target="#searchBoxModal">
+                        <!-- <a class="text-body-quaternary text-body-tertiary-hover px-2 d-none d-lg-inline lh-sm" href="#" data-bs-toggle="modal" data-bs-target="#searchBoxModal">
                             <span data-feather="search" style="height: 20px; width: 20px;"></span>
-                        </a>
+                        </a> -->
                         <!-- Sign in -->
                         {% if not user.is_authenticated %}
                             <form method="post" action="{% provider_login_url 'openid_connect' uid='keycloak' %}">
