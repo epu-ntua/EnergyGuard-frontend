@@ -41,7 +41,7 @@
     </div>
 </section>
 
-<section class="py-5 pt-xl-13 bg-body-emphasis">
+<section class="py-5 pt-xl-13 bg-body-emphasis" id="partners">
     <div class="container-small px-lg-7 px-xxl-3">
         <div class="row g-0">
             <div class="col-6 col-md-3">
@@ -299,7 +299,7 @@
         </div>
     </section>
 </div> -->
-<div class="position-relative">
+<!-- <div class="position-relative">
     {% static 'assets/img/bg/bg-13.png' as bg_world_map %}
     <div class="bg-holder world-map-bg" style="background-image:url('{{ bg_world_map }}');"></div>
 
@@ -313,7 +313,7 @@
         <path class="fill-emphasis-bg" d="M1920 0.44L0 367.74V0H1920V0.44Z"></path>
     </svg>
 
-    <!-- <section class="overflow-hidden z-2">
+    <section class="overflow-hidden z-2">
         <div class="container-small px-lg-7 px-xxl-3" data-bs-theme="light">
             <div class="position-relative">
                 <div class="row mb-6">
@@ -346,14 +346,12 @@
                 </div>
             </div>
         </div>
-    </section> -->
-
-    
+    </section>
 
     <svg class="w-100 position-relative" viewBox="0 0 1920 368" xmlns="http://www.w3.org/2000/svg">
         <path class="fill-emphasis-bg" d="M0 368L1920 0.730011L1920 368L0 368Z"></path>
     </svg>
-</div>
+</div> -->
 
 <!-- Pricing -->
 <!-- <section class="bg-body-emphasis pt-lg-0 pt-xl-8">
@@ -607,10 +605,10 @@
 </section> -->
 
 <!-- Find us -->
- <section class="bg-body-emphasis">
+ <!-- <section class="bg-body-emphasis">
 
     <div class="container-small px-lg-7 px-xxl-3">
-        <!-- <div class="mb-3 text-center text-sm-start">
+        <div class="mb-3 text-center text-sm-start">
             <h4 class="text-primary fw-bolder mb-3">Address</h4>
             <h2>If you need to find us:</h2>
         </div>
@@ -621,13 +619,13 @@
                     <div id="mapbox" data-mapbox='{"attributionControl":false,"center":[-74.0020158,40.7228022],"zoom":14,"scrollZoom":false}' style="height: 381px"></div>
                 </div>
             </div>
-        </div> -->
+        </div>
         <div class="row g-5 g-lg-5">
             <div class="col-md-6 mb-5 mb-md-0 text-center text-md-start">
                 <h3 class="mb-3">Follow us on social media</h3>
-                <!-- <p class="mb-5">Stay connected with EnergyGuard's Help Center; EnergyGuard is available for your necessities at all times.</p> -->
+                <p class="mb-5">Stay connected with EnergyGuard's Help Center; EnergyGuard is available for your necessities at all times.</p>
                 <div class="d-flex flex-column align-items-center align-items-md-start gap-3 gap-md-0 mb-5">
-                    <!-- <div class="d-md-flex align-items-center">
+                    <div class="d-md-flex align-items-center">
                         <div class="icon-wrapper shadow-info"><span class="uil uil-phone text-primary fs-4 z-1 ms-2" data-bs-theme="light"></span></div>
                         <div class="flex-1 ms-3"><a class="link-900" href="tel:+871406-7509">(871) 406-7509</a></div>
                     </div>
@@ -638,7 +636,7 @@
                     <div class="mb-6 d-md-flex align-items-center">
                         <div class="icon-wrapper shadow-info"><span class="uil uil-map-marker text-primary fs-4 z-1 ms-2" data-bs-theme="light"></span></div>
                         <div class="flex-1 ms-3"><a class="fw-semibold text-body" href="#!">39163 Amir Drive Suite 802</a></div>
-                    </div> -->
+                    </div>
                     <a href="#"><img class="mb-3" src="{% static 'assets/img/logo/EnergyGuard-white.png' %}" height="48" alt="" /></a>
                     <h3 class="text-white">EnergyGuard</h3>
                     <div class="d-flex">
@@ -650,7 +648,7 @@
             </div>
             <div class="col-md-6 text-center text-md-start" id="uniqueMessage">
                 <h3 class="mb-3">Contact Us</h3>
-                <!-- <p class="mb-7">If you have any query or suggestion , we are open to learn from you, Lets talk, reach us anytime.</p> -->
+                <p class="mb-7">If you have any query or suggestion , we are open to learn from you, Lets talk, reach us anytime.</p>
                 <form class="row g-4" method="POST" action="{% url 'contact_form' %}">
                     {% csrf_token %}
                     <div class="col-12">
@@ -670,7 +668,7 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- ============================================-->
 <!-- Footer Section -->
@@ -707,29 +705,25 @@
     <!-- <section> close ============================-->
     <!-- ============================================-->
 
-
 <div class="position-relative">
     {% static 'assets/img/bg/bg-19.png' as bg_19 %}
     <div class="bg-holder footer-bg" style="background-image:url('{{ bg_19 }}');background-size:auto;"></div>
-    <!--/.bg-holder-->
 
     {% static 'assets/img/bg/bg-right-20.png' as bg_right_20 %}
     <div class="bg-holder" style="background-image:url('{{ bg_right_20 }}');background-position:right;background-size:auto;"></div>
-    <!--/.bg-holder-->
 
     {% static 'assets/img/bg/bg-left-20.png' as bg_left_20 %}
     <div class="bg-holder" style="background-image:url('{{ bg_left_20 }}');background-position:left;background-size:auto;"></div>
-    <!--/.bg-holder-->
 
     <div class="position-relative">
         <svg class="w-100 text-white dark__text-gray-1100" preserveAspectRatio="none" viewBox="0 0 1920 368" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M1920 0.44L0 367.74V0H1920V0.44Z" fill="currentColor"></path>
         </svg>
 
-
         <!-- ============================================-->
         <!-- <section> begin ============================-->
-        <section class="footer-default">
+        <!-- Previous footer section -->
+        <!-- <section class="footer-default">
 
             <div class="container-small px-lg-7 px-xxl-3">
                 <div class="row position-relative">
@@ -789,7 +783,87 @@
                     </div>
                 </div>
             </div>
+        </section> -->
+        
+        <section class="footer-default" id="contact">
+
+            <div class="container-small px-lg-7 px-xxl-3">
+                <!-- <div class="mb-3 text-center text-sm-start">
+                    <h4 class="text-primary fw-bolder mb-3">Address</h4>
+                    <h2>If you need to find us:</h2>
+                </div>
+                <p class="column-md-2">Do not lose your potential customers to others. Tell them exactly. No need to take the burden of communicating directly. You can easily tell your customers where to find you with precise location map. Getting closer was never easier!</p>
+                <div class="row">
+                    <div class="col-12 mb-15">
+                        <div class="mapbox-container rounded-3 border overflow-hidden mt-3 mb-6">
+                            <div id="mapbox" data-mapbox='{"attributionControl":false,"center":[-74.0020158,40.7228022],"zoom":14,"scrollZoom":false}' style="height: 381px"></div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="row g-5 g-lg-5">
+                    <div class="col-md-6 mb-5 mb-md-0 text-center text-md-start">
+                        <div class="d-flex flex-column align-items-center align-items-md-start gap-3 gap-md-0 mb-5">
+                            <!-- <div class="d-md-flex align-items-center">
+                                <div class="icon-wrapper shadow-info"><span class="uil uil-phone text-primary fs-4 z-1 ms-2" data-bs-theme="light"></span></div>
+                                <div class="flex-1 ms-3"><a class="link-900" href="tel:+871406-7509">(871) 406-7509</a></div>
+                            </div>
+                            <div class="d-md-flex align-items-center">
+                                <div class="icon-wrapper shadow-info"><span class="uil uil-envelope text-primary fs-4 z-1 ms-2" data-bs-theme="light"></span></div>
+                                <div class="flex-1 ms-3"><a class="fw-semibold text-body" href="mailto:support@energy-guard.eu">support@energy-guard.eu</a></div>
+                            </div>
+                            <div class="mb-6 d-md-flex align-items-center">
+                                <div class="icon-wrapper shadow-info"><span class="uil uil-map-marker text-primary fs-4 z-1 ms-2" data-bs-theme="light"></span></div>
+                                <div class="flex-1 ms-3"><a class="fw-semibold text-body" href="#!">39163 Amir Drive Suite 802</a></div>
+                            </div> -->
+                            <div class="d-inline-flex flex-column align-items-center">
+                                <a href="#"><img class="mb-3" src="{% static 'assets/img/logo/EnergyGuard-white.png' %}" height="48" alt="" /></a>
+                                <h3 class="text-white mb-3">EnergyGuard</h3>
+                            </div>
+                            <p class="mb-6 w-lg-60 text-body-quaternary">Empowering the energy sector with AI testing and experimentation facilities.</p>
+                            <h3 class="mb-3 text-white fs-7">Follow us</h3>
+                            <div class="d-flex mb-5">
+                                <a href="https://github.com/epu-ntua/EnergyGuard-frontend"><span class="fa-brands fa-github fs-6 text-white me-3"></span></a>
+                                <a href="https://www.youtube.com/@EnergyGuardTEF"><span class="fa-brands fa-youtube fs-6 text-white me-3"></span></a>
+                                <a href="https://www.linkedin.com/company/energy-guard-tef/"><span class="fa-brands fa-linkedin-in fs-6 text-white"></span></a>
+                            </div>
+                            <hr class="border-body-quaternary w-70" />
+                            <div class="d-flex gap-5">
+                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="">Privacy Policy</a></p>
+                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="">Terms of Service</a></p>
+                            </div>
+                        </div>
+                        <!-- <p class="mb-5">Stay connected with EnergyGuard's Help Center; EnergyGuard is available for your necessities at all times.</p> -->
+                    </div>
+                    <div class="col-md-6 text-center text-md-start" id="uniqueMessage">
+                        <h3 class="mb-3 text-white">Contact Us</h3>
+                        <!-- <p class="mb-7">If you have any query or suggestion , we are open to learn from you, Lets talk, reach us anytime.</p> -->
+                        <form class="row g-4" method="POST" action="{% url 'contact_form' %}">
+                            {% csrf_token %}
+                            <div class="col-12">
+                                <input class="form-control bg-body-emphasis" type="text" name="name" placeholder="Name" required="required" />
+                            </div>
+                            <div class="col-12">
+                                <input class="form-control bg-body-emphasis" type="email" name="email" placeholder="Email" required="required" />
+                            </div>  
+                            <div class="col-12">
+                                <textarea class="form-control bg-body-emphasis" rows="6" name="message" placeholder="Message" required="required"></textarea>
+                            </div>
+                            <div class="col-12 d-grid">
+                                <button class="btn btn-outline-light" type="submit">Submit</button>
+                            </div>
+                            <div class="feedback"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </section>
+    </div>
+</div>
+
+<div class="bg-dark py-3">
+    <div class="container-small px-lg-7 px-xxl-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+        <p class="text-body-quaternary mb-0 fs-9">&copy; 2026 EnergyGuard. All rights reserved.</p>
+        <p class="text-body-quaternary mb-0 fs-9">Co-funded by the European Union</p>
     </div>
 </div>
 
