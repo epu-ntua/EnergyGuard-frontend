@@ -35,7 +35,7 @@
                 {% if not user.is_authenticated %}
                     <a class="btn btn-lg btn-primary rounded-pill me-3" href="{% url 'keycloak_register' %}" role="button">Sign up</a>
                 {% endif %}
-                <a class="btn btn-link me-2 fs-8 p-0" href="https://energy-guard.eu/" role="button">Learn more<span class="fa-solid fa-angle-right ms-2 fs-9"></span></a>
+                <a class="btn btn-link me-2 fs-8 p-0" href="https://energy-guard.eu/" role="button" target="_blank">Learn more<span class="fa-solid fa-angle-right ms-2 fs-9"></span></a>
             </div>
         </div>
     </div>
@@ -828,8 +828,8 @@
                             </div>
                             <hr class="border-body-quaternary w-70" />
                             <div class="d-flex gap-5">
-                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="">Privacy Policy</a></p>
-                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="">Terms of Service</a></p>
+                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="{% static 'assets/docs/privacy-policy.pdf' %}" target="_blank">Privacy Policy</a></p>
+                                <p><a class="text-body-quaternary fs-8-5 text-decoration-none" href="{% static 'assets/docs/terms.pdf' %}" target="_blank">Terms of Service</a></p>
                             </div>
                         </div>
                         <!-- <p class="mb-5">Stay connected with EnergyGuard's Help Center; EnergyGuard is available for your necessities at all times.</p> -->
@@ -855,16 +855,33 @@
                         </form>
                     </div>
                 </div>
+                <!-- <div class="d-flex mt-5 text-center mx-auto">
+                    <div class="col-1">
+                        <img class="border border-white border-2" src="{% static 'assets/img/generic/Flag-European-Union.webp' %}" width="60" alt="Flag of the European Union">
+                    </div>
+                    <div class="col-2">
+                        <p class="text-body-quaternary mb-0 fs-8">Co-funded by the European Union</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p class="text-body-quaternary mb-0 fs-9">Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Climate, Infrastructure and Environment Executive Agency (CINEA). Neither the European Union nor the granting authority can be held responsible for them.</p>
+                </div> -->
+                <div class="text-center mt-6">
+                    <img class="border border-white border-2 mb-2" src="{% static 'assets/img/generic/Flag-European-Union.webp' %}" width="60" alt="Flag of the European Union">
+                    <p class="text-body-quaternary mb-2 fs-8">Co-funded by the European Union</p>
+                    
+                    <p class="text-body-quaternary mb-2 fs-9 w-75 mx-auto">Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Climate, Infrastructure and Environment Executive Agency (CINEA). Neither the European Union nor the granting authority can be held responsible for them.</p>
+                </div>
+                
+                
             </div>
         </section>
     </div>
 </div>
 
-<div class="bg-dark py-3">
-    <div class="container-small px-lg-7 px-xxl-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-        <p class="text-body-quaternary mb-0 fs-9">&copy; 2026 EnergyGuard. All rights reserved.</p>
-        <p class="text-body-quaternary mb-0 fs-9">Co-funded by the European Union</p>
-    </div>
+<div class="bg-dark py-3 text-center">
+    <p class="text-body-quaternary mb-0 fs-9">&copy; 2026 EnergyGuard. All rights reserved.</p>
+    
 </div>
 
 <script>
