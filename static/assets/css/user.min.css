@@ -32,3 +32,8 @@
 .navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper .collapsed-nav-item-title {
   display: none !important;
 }
+
+/* Align dropdown-indicator icon with simple nav items in collapsed mode */
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-link.dropdown-indicator.label-1 {
+  padding-left: 1.5rem;
+}
