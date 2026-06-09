@@ -12,7 +12,7 @@ BENCHMARK_TEMPLATES = {
 
 @login_required
 def trustworthiness(request):
-    return render(request, 'core/trustworthiness.html', {
+    return render(request, 'trustworthiness/trustworthiness.html', {
         'show_sidebar': True,
         'active_navbar_page': 'trustworthiness',
     })

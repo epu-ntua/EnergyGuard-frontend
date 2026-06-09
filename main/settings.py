@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'digitaltwins',
     'code_analysis',
     'robustness',
+    'trustworthiness',
 ]
 
 MIDDLEWARE = [

@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('billing/', include('billing.urls')),
     path('digitaltwins/', include('digitaltwins.urls')),
+    path('trustworthiness/', include('trustworthiness.urls', namespace='trustworthiness')),
     path('trustworthiness/code-analysis/', include('code_analysis.urls')),
     path('trustworthiness/robustness/', include('robustness.urls')),
     path('accounts/', include('allauth.urls')),

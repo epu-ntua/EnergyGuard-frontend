@@ -8,13 +8,11 @@ from .public import (
     error_does_not_exist,
     home,
 )
-from .trustworthiness import benchmark_detail, trustworthiness
 from .wizard import BaseWizardView
 
 __all__ = [
     "ai_models",
     "BaseWizardView",
-    "benchmark_detail",
     "collaboration_hub",
     "contact_form",
     "dashboard",
@@ -22,5 +20,4 @@ __all__ = [
     "error_does_not_exist",
     "home",
     "hpc",
-    "trustworthiness",
 ]
