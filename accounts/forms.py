@@ -7,10 +7,15 @@ from datetime import date
 
 
 class ProfileEditForm(forms.ModelForm):
-    full_name = forms.CharField(
-        max_length=150, 
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'full_name', 'name': 'full_name'})
+    first_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_first_name', 'name': 'first_name', 'placeholder': 'First name'})
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_last_name', 'name': 'last_name', 'placeholder': 'Last name'})
     )
     team = forms.CharField(
         required=False,
@@ -59,7 +64,8 @@ class ProfileEditForm(forms.ModelForm):
         existing_team = self.instance.team if self.instance else None
 
         if self.user:
-            self.fields["full_name"].initial = f"{self.user.first_name} {self.user.last_name}".strip()
+            self.fields["first_name"].initial = self.user.first_name
+            self.fields["last_name"].initial = self.user.last_name
         self.fields["team"].initial = existing_team.name if existing_team else ""
 
         if not self.fields["team"].initial:

@@ -36,14 +36,9 @@ def _sync_name_to_keycloak(user):
         )
 
 
-def _update_user_name_from_full_name(user, full_name):
-    if not full_name or not full_name.strip():
-        return
-
-    name_parts = full_name.strip().split(maxsplit=1)
-    user.first_name = name_parts[0]
-    user.last_name = name_parts[1] if len(name_parts) > 1 else ""
-
+def _update_user_name(user, first_name, last_name):
+    user.first_name = first_name.strip()
+    user.last_name = last_name.strip()
     with transaction.atomic():
         user.save(update_fields=["first_name", "last_name"])
         _sync_name_to_keycloak(user)
@@ -73,12 +68,17 @@ def profile(request):
         form = ProfileEditForm(request.POST, instance=user_profile, user=request.user)
         if form.is_valid():
             try:
-                _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
+                _update_user_name(
+                    request.user,
+                    form.cleaned_data["first_name"],
+                    form.cleaned_data["last_name"],
+                )
             except RuntimeError as e:
                 logger.error("Profile name update failed: %s", e)
                 messages.error(request, "Failed to update your name. Please try again later.")
                 return redirect("profile")
             form.save()
+            messages.success(request, "Profile updated successfully.")
             return redirect("profile")
     else:
         form = ProfileEditForm(instance=user_profile, user=request.user)
