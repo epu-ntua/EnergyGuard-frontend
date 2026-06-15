@@ -1,64 +1,138 @@
-<!-- Info + Description -->
-<div class="row gx-5 gx-xl-9 gy-4 mb-8">
-  <!-- Left: meta info + buttons -->
-  <div class="col-12 col-xl-5">
-    <div class="row gx-0 gx-md-4 gy-3 mb-4">
-      <div class="col-12 col-sm-6">
-        <table class="lh-sm mb-4 mb-md-0" id="table1">
-          <tbody>
-            <tr>
-              <td class="py-1" colspan="2">
-                <div class="d-flex align-items-center">
-                  <span class="fa-solid fa-earth-americas me-2 text-body-tertiary fs-9"></span>
-                  <h5 class="text-body mb-0">{% if project_details.visibility %}Public{% else %}Private{% endif %} Project</h5>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="align-top py-1">
-                <div class="d-flex">
-                  <span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
-                  <h5 class="text-body mb-0 text-nowrap">Team :</h5>
-                </div>
-              </td>
-              <td class="ps-1 py-1 fw-semibold lh-sm text-primary">{{ project_details.team|default:"-" }}</td>
-            </tr>
-          </tbody>
-        </table>
+{% load static %}
+<!-- Info + Actions -->
+<div class="d-flex align-items-end gap-5 mb-8">
+  <!-- Left: cards + buttons -->
+  <div class="flex-grow-1">
+    <!-- Info cards row -->
+    <div class="d-flex gap-3 mb-4">
+      <!-- Created -->
+      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm">
+        <div class="d-flex align-items-start gap-2">
+          <span class="fa-regular fa-calendar-days text-body-tertiary  fs-7 mt-2 me-1"></span>
+          <div class="d-flex flex-column">
+            <span class="fw-bold text-body-emphasis">Created</span>
+            <span class="text-body-secondary">{{ project_details.start_date|date:"j M, Y" }}</span>
+          </div>
+        </div>
       </div>
-      <div class="col-12 col-sm-6">
-        <table class="lh-sm" id="table2">
-          <tbody>
-            <tr>
-              <td class="align-top py-1 text-body text-nowrap fw-bold">Created :</td>
-              <td class="text-body-tertiary fw-semibold ps-3">{{ project_details.start_date|date:"jS M, Y" }}</td>
-            </tr>
-            <tr>
-              <td class="align-top py-1 text-body text-nowrap fw-bold">Type :</td>
-              <td class="text-warning fw-semibold ps-3">{{ project_details.type }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Team -->
+      {% if project_details.team %}
+      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm">
+        <div class="d-flex align-items-start gap-2">
+          <span class="fa-solid fa-user-group text-body-tertiary  fs-7 mt-2 me-1"></span>
+          <div class="d-flex flex-column">
+            <span class="fw-bold text-body-emphasis">Team</span>
+            <span class="text-body-secondary">{{ project_details.team|default:"-" }}</span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <!-- Description (inline / collapsed) -->
+      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm" id="descInlineCard">
+        <div class="d-flex align-items-start gap-2">
+          <span class="fa-regular fa-file-lines text-body-tertiary fs-7 mt-2 me-1"></span>
+          <div class="d-flex flex-column">
+            <span class="fw-bold text-body-emphasis">Description</span>
+            <span class="text-body-secondary" id="descInlineText"></span>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Description expanded (below row, hidden initially) -->
+    <div class="p-5 border border-translucent rounded-4 shadow-sm d-none" id="descExpandedCard">
+      <div class="d-flex align-items-start gap-2">
+        <span class="fa-regular fa-file-lines text-body-tertiary fs-7 mt-2 me-1"></span>
+        <div class="d-flex flex-column w-100">
+          <span class="fw-bold text-body-emphasis">Description</span>
+          <span class="text-body-secondary" id="descFullText"></span>
+          <a href="#" class="text-primary fs-9 mt-2" id="seeLessBtn">See less</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
     <div class="d-flex gap-2 flex-wrap mb-2">
-      <a class="flex-grow-1" href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
-        <button class="btn btn-primary w-100" type="button">Open in Jupyter</button>
+      <a class="flex-grow-2" href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
+        <button class="btn btn-primary px-4 w-100" type="button">Open in Jupyter</button>
       </a>
-      <a class="flex-grow-1" href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
-        <button class="btn btn-purple w-100" type="button">Open in MLFlow</button>
+      <a class="flex-grow-2" href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
+        <button class="btn btn-purple px-4 w-100" type="button">Open in MLFlow</button>
       </a>
       {% if not project_details.visibility %}
-      <a class="flex-grow-1">
-        <button class="btn btn-info w-100 " type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">Add Experiment</button>
+      <a class="flex-grow-2">
+        <button class="btn btn-purple-blue w-100" type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">+ Add Experiment</button>
       </a>
       {% endif %}
     </div>
   </div>
 
-  <!-- Right: description -->
-  <div class="col-12 col-xl-5">
-    <h4 class="text-body-emphasis fw-bold mb-3">Project description</h4>
-    <p class="text-body-secondary text-justify mb-0">{% if project_details.description %}{{ project_details.description }}{% else %}No description available{% endif %}</p>
-  </div>
 </div>
+
+<script>
+(function () {
+  const fullText = "{{ project_details.description|default:'No description available.'|escapejs }}";
+  const words = fullText.split(/\s+/);
+  const limit = 12;
+
+  const inlineCard    = document.getElementById('descInlineCard');
+  const inlineText    = document.getElementById('descInlineText');
+  const expandedCard  = document.getElementById('descExpandedCard');
+  const descFullText  = document.getElementById('descFullText');
+  const seeLessBtn    = document.getElementById('seeLessBtn');
+
+  descFullText.textContent = fullText;
+
+  function showExpanded() {
+    inlineCard.classList.add('d-none');
+    expandedCard.classList.add('w-md-50');
+    expandedCard.classList.remove('d-none');
+    expandedCard.style.overflow = 'hidden';
+    expandedCard.style.maxHeight = '0';
+    expandedCard.style.opacity = '0';
+    expandedCard.style.transition = 'max-height 0.4s ease, opacity 0.35s ease, margin-bottom 0.4s ease';
+    expandedCard.style.marginBottom = '0';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        expandedCard.style.maxHeight = expandedCard.scrollHeight + 'px';
+        expandedCard.style.opacity = '1';
+        expandedCard.style.marginBottom = '1.5rem';
+      });
+    });
+  }
+
+  function hideExpanded() {
+    expandedCard.style.maxHeight = '0';
+    expandedCard.style.opacity = '0';
+    expandedCard.style.marginBottom = '0';
+    expandedCard.addEventListener('transitionend', function handler() {
+      expandedCard.classList.add('d-none');
+      expandedCard.classList.remove('w-md-50');
+      expandedCard.style.transition = '';
+      inlineCard.classList.remove('d-none');
+      expandedCard.removeEventListener('transitionend', handler);
+    });
+  }
+
+  if (words.length <= limit) {
+    inlineText.textContent = fullText;
+  } else {
+    const truncated = words.slice(0, limit).join(' ') + '…';
+    const seeMoreLink = document.createElement('a');
+    seeMoreLink.href = '#';
+    seeMoreLink.className = 'text-primary fs-9 ms-1';
+    seeMoreLink.textContent = 'See more';
+    seeMoreLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      showExpanded();
+    });
+    inlineText.textContent = truncated + ' ';
+    inlineText.appendChild(seeMoreLink);
+  }
+
+  seeLessBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    hideExpanded();
+  });
+})();
+</script>

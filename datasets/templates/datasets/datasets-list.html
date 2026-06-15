@@ -50,13 +50,13 @@
                             <table class="table table-sm fs-9 mb-0" id="publicDatasetsList" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
+                                        <th class="sort white-space-nowrap align-middle pe-3 ps-2 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">CREATED</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:18%;">LABEL</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">SOURCE</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">PUBLISHER</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SIZE</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">DOWNLOADS</th>
+                                        <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:10%;">DOWNLOADS</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -94,13 +94,13 @@
                             <table class="table table-sm fs-9 mb-0" id="myDatasetsList" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle pe-3 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
+                                        <th class="sort white-space-nowrap align-middle pe-3 ps-2 fs-9" scope="col" style="width:24%;">DATASET NAME</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">CREATED</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:18%;">LABEL</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:16%;">SOURCE</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">PUBLISHER</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SIZE</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">STATUS</th>
+                                        <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:10%;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -127,6 +127,7 @@
         const columns = [
             {
                 data: "name",
+                className: "ps-2",
                 render: function(data, type, row) {
                     return `<a class="fw-semibold fs-9" href="/datasets/dataset/${row.id}/">${data}</a>`;
                 }
@@ -142,7 +143,7 @@
                 },
                 className: "text-end fs-9"
             },
-            { data: "status", className: "text-end fs-9", orderable: false },
+            { data: "status", className: "text-end fs-9 pe-2", orderable: false },
             { data: "id", visible: false }
         ];
 
@@ -211,4 +212,17 @@
         });
     });
 </script>
+<script>
+const savedDatasetsTab = localStorage.getItem('datasets_active_tab');
+if (savedDatasetsTab) {
+    const tabEl = document.querySelector('#datasetsTab a[href="' + savedDatasetsTab + '"]');
+    if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+}
+document.querySelectorAll('#datasetsTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    tabEl.addEventListener('shown.bs.tab', e => {
+        localStorage.setItem('datasets_active_tab', e.target.getAttribute('href'));
+    });
+});
+</script>
+
 {% endblock scripts %}

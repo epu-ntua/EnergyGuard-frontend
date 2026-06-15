@@ -6,184 +6,262 @@
 {% block content %}
 <div class="content px-0 pt-navbar">
   <div class="row g-0">
-    <div class="col-12 col-xxl-8 px-0 bg-body mx-auto">
+    <div class="col-12 col-xxl-10 px-0 bg-body mx-auto">
       <div class="px-4 px-lg-6 pt-6 pb-9">
-        <div class="mb-6">
-          <!-- Header -->
-          <div class="row">
-            <div class="col-12 col-md-9 mb-3 mb-xl-0">
-              <div class="d-flex justify-content-start mb-2">
-                <h2 class="text-body-emphasis fw-bolder me-5">{{ dt.name }}</h2>
-                <!-- TODO: Add functionality to 3 dots -->
-                <div class="btn-reveal-trigger">
-                  <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-                    data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-dtanded="false"
-                    data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-                  <div class="dropdown-menu dropdown-menu-end py-2">{% if request.user == dataset.publisher %}<a class="dropdown-item" href="#!" data-bs-toggle="modal" data-bs-target="#datasetEditModal">Edit</a><a class="dropdown-item text-danger" href="#!"
-                  data-bs-toggle="modal"
-                  data-bs-target="#confirmActionModal"
-                  data-action-title="Delete Dataset"
-                  data-action-message="Are you sure you want to delete &lt;strong&gt;{{ dataset.name }}&lt;/strong&gt;? This action cannot be undone."
-                  data-confirm-text="Delete"
-                  data-confirm-class="btn-danger"
-                  data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>{% endif %}<a class="dropdown-item"
-                      href="{% url 'dataset_download' dataset_id=dataset.id %}">Download</a><a class="dropdown-item" href="#!">Report</a></div>
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'datasets_list' %}">Datasets</a></li>
+            <li class="breadcrumb-item active">{{ dt.name }}</li>
+          </ol>
+        </nav>
+        <!-- Header -->
+        <div class="d-flex align-items-start justify-content-between mb-5 flex-wrap gap-3">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center mb-2 gap-2">
+              <h2 class="text-body-emphasis fw-bolder mb-0">{{ dt.name }}</h2>
+              <div class="btn-reveal-trigger">
+                <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                  data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
+                  data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
+                <div class="dropdown-menu dropdown-menu-end py-2">
+                  {% if request.user == dataset.publisher %}
+                  <a class="dropdown-item" href="#!" data-bs-toggle="modal" data-bs-target="#datasetEditModal">Edit</a>
+                  <a class="dropdown-item text-danger" href="#!"
+                    data-bs-toggle="modal"
+                    data-bs-target="#confirmActionModal"
+                    data-action-title="Delete Dataset"
+                    data-action-message="Are you sure you want to delete &lt;strong&gt;{{ dataset.name }}&lt;/strong&gt;? This action cannot be undone."
+                    data-confirm-text="Delete"
+                    data-confirm-class="btn-danger"
+                    data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>
+                  {% endif %}
+                  <a class="dropdown-item" href="{% url 'dataset_download' dataset_id=dataset.id %}">Download</a>
+                  <a class="dropdown-item" href="#!">Report</a>
                 </div>
               </div>
-              
-              <div>
-                {% if dt.status == 'approved' %}
-                  <span class="badge badge-phoenix badge-phoenix-success"><span class="badge-label">APPROVED</span><span class="ms-1" data-feather="check-circle" style="height:14px;width:14px;"></span></span>
-                {% elif dt.status == 'rejected' %}
-                  <span class="badge badge-phoenix badge-phoenix-danger"><span class="badge-label">REJECTED</span><span class="ms-1" data-feather="x-circle" style="height:14px;width:14px;"></span></span>
-                {% elif dt.status == 'under_review' %}
-                  <span class="badge badge-phoenix badge-phoenix-primary"><span class="badge-label">UNDER REVIEW</span><span class="ms-1" data-feather="clock" style="height:14px;width:14px;"></span></span>
-                {% endif %}
-              </div>
             </div>
-            
-            <div class="col-8 col-md-3">
-               <button class="btn btn-subtle-info px-2" style="width:80%;" data-bs-toggle="modal" data-bs-target="#runProjectModal"><i class="fa-solid fa-gears me-2"></i>Run project with this dataset</button>
+            <div>
+              {% if dt.status == 'approved' %}
+                <span class="badge badge-phoenix badge-phoenix-success rounded-3 fs-10"><span class="badge-label">APPROVED</span><span class="ms-1 fs-10" data-feather="check-circle"></span></span>
+              {% elif dt.status == 'rejected' %}
+                <span class="badge badge-phoenix badge-phoenix-danger rounded-3 fs-10"><span class="badge-label">REJECTED</span><span class="ms-1" data-feather="x-circle"></span></span>
+              {% elif dt.status == 'under_review' %}
+                <span class="badge badge-phoenix badge-phoenix-warning rounded-3 fs-10"><span class="badge-label">UNDER REVIEW</span><span class="ms-1 fs-10" data-feather="clock"></span></span>
+              {% endif %}
             </div>
           </div>
         </div>
-        <!-- Details -->
-        <div class="row gx-0 gx-sm-5 gy-3 mb-4">
-          <div class="col-12 col-xl-3 col-xxl-4 pe-xl-0">
-            <div class="mb-4 mb-xl-7">
-              <div class="row gx-0 gx-sm-7">
-                <!-- First table -->
-                <div class="col-12 col-sm-auto mb-3 mb-lg-0">
-                  <table class="lh-sm mb-4 mb-sm-0 mb-xl-4">
-                    <tbody>
-                      <tr>
-                        <td class="py-1" colspan="2">
-                          {% if dt.visibility %}
-                          <div class="d-flex"><span class="fa-solid fa-earth-europe me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body">Public Dataset</h5>
-                          </div>
-                          {% else %}
-                          <div class="d-flex"><span class="fa-solid fa-lock me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body">Private Dataset</h5>
-                          </div>
-                          {% endif %}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="align-top py-1">
-                          <div class="d-flex"><span class="fa-solid fa-user me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Publisher :</h5>
-                          </div>
-                        </td>
-                        <td class="ps-2 py-1 fw-semibold" >{{ dt.publisher }}</td>
-                      </tr>
 
-                      <!-- <tr>
-                        <td class="align-top py-1">
-                          <div class="d-flex"><span
-                              class="fa-regular fa-credit-card me-2 text-body-tertiary fs-9"></span>
-                            <h5 class="text-body mb-0 text-nowrap">Cost : </h5>
-                          </div>
-                        </td>
-                        <td class="fw-bold ps-2 py-1 text-body-highlight"> 100 credits </td>
-                      </tr> -->
-                    </tbody>
-                  </table>
+        <!-- Dataset Information + Quick Actions -->
+        <div class="row g-4 mb-4">
+          <!-- Dataset Information Card -->
+          <div class="col-12 col-lg-7">
+            <div class="card shadow-sm h-100">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                  <i class="fa-solid fa-database me-2 fs-7 text-primary"></i>
+                  <h5 class="mb-0 fw-bold">Dataset Information</h5>
                 </div>
-                <!-- Second Table -->
-                <div class="col-12 col-sm-auto">
-                  <table class="lh-sm">
-                    <tbody>
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Size :</td>
-                        <!-- TODO: Add dynamic value -->
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.size }} GB</td>
-                      </tr>
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Label :</td>
-                        <td class="text-warning fw-semibold ps-3">{{ dt.label }}</td>
-                      </tr>
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Source :</td>
-                        <td class="text-warning fw-semibold ps-3">{{ dt.source }}</td>
-                      </tr>
-                      <!-- <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Url :</td>
-                        TODO: Add dynamic link
-                        <td class="text-warning fw-semibold ps-3">Open in browser</td>
-                      </tr> -->
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Uploaded : </td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.created_at|date:"M j, Y" }}</td>
-                      </tr>
-                      <tr>
-                        <td class="align-top py-1 text-body text-nowrap fw-bold">Updated :</td>
-                        <td class="text-body-tertiary text-opacity-85 fw-semibold ps-3">{{ dt.updated_at|date:"M j, Y" }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Buttons -->
-                <div class="col-12 col-sm-auto mt-4">
-                  <!-- Preview -->
-                  <div>
-                    <button class="btn btn-warning py-2 px-9 container" type="button"
-                      data-bs-toggle="modal" data-bs-target="#datasetPreviewModal">
-                      <i class="fa-solid fa-eye me-2"></i>Preview
-                    </button>
-                  </div>
-                  <!-- Download -->
-                  <div class="mt-2" >
-                    <a href="{% url 'dataset_download' dataset_id=dataset.id %}"><button class="btn btn-danger py-2 px-9 container" type="button"><i class="fa-solid fa-download me-2"></i>Download</button></a>
-                  </div>
-                  
-                  <!-- <div class="mt-2" style="width:70%;">
-                    <a href=""><button class="btn btn-subtle-info py-1 px-4 container"><img src="{% static 'assets/img/general/data-space.png' %}" class="me-2" width="5%"></img>Get access through Data Space</button></a>
-                    <a href="">
-                      <button class="btn btn-primary py-1 px-2"><i class="fa-solid fa-database me-2"></i>Get access through Data Space</button></a>
-                  </div> -->
-                </div>
-
+                <table class="w-100">
+                  <tbody>
+                    <tr>
+                      <td class="py-2" style="width:40%;">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-regular fa-user fs-9"></i>
+                          <span>Publisher</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.publisher }}</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-solid fa-box-archive fs-9"></i>
+                          <span>Size</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.size }} GB</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-solid fa-tag fs-9"></i>
+                          <span>Label / Category</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.label }}</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-solid fa-link fs-9"></i>
+                          <span>Source</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.source }}</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-solid fa-cloud-arrow-up fs-9"></i>
+                          <span>Uploaded</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.created_at|date:"M j, Y" }}</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-regular fa-clock fs-9"></i>
+                          <span>Last Updated</span>
+                        </div>
+                      </td>
+                      <td class="py-2 fw-semibold">{{ dt.updated_at|date:"M j, Y" }}</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2">
+                        <div class="d-flex align-items-center text-body-tertiary gap-2">
+                          <i class="fa-regular fa-eye fs-9"></i>
+                          <span>Visibility</span>
+                        </div>
+                      </td>
+                      <td class="py-2">
+                        {% if dt.visibility %}
+                          <span class="badge rounded-pill fw-semibold badge-phoenix badge-phoenix-success fs-9-5">
+                            <i class="fa-solid fa-earth-europe me-1"></i>Public
+                          </span>
+                        {% else %}
+                          <span class="badge rounded-pill fw-semibold badge-phoenix badge-phoenix-dark fs-9-5">
+                            <i class="fa-solid fa-lock me-1"></i>Private
+                          </span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-            
           </div>
-          <!-- Metadata Table -->
-          <div class="col-12 col-xl-9 col-xxl-8">
-            <div class="row flex-between-center mb-3 g-3">
-              <h4 class="text-body-emphasis col-auto">Metadata Table</h4>
+
+          <!-- Quick Actions Card -->
+          <div class="col-12 col-lg-5">
+            <div class="card shadow-sm h-100">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex align-items-center mb-1">
+                  <i class="fa-solid fa-bolt me-2 text-primary"></i>
+                  <h5 class="mb-0 fw-bold">Quick Actions</h5>
+                </div>
+                <p class="text-body-tertiary fs-9 mb-6">Preview, download or run this dataset</p>
+                <div class="d-flex flex-column gap-3 flex-grow-1">
+                  <!-- Top row: Preview + Download -->
+                  <div class="row g-3 mb-2">
+                    <div class="col-6">
+                      <button class="btn w-100 h-100 px-3 py-4 d-flex align-items-center gap-3 border rounded-3 text-start"
+                        data-bs-toggle="modal" data-bs-target="#datasetPreviewModal">
+                        <i class="fa-regular fa-eye fs-5 text-primary flex-shrink-0"></i>
+                        <div>
+                          <div class="fw-bold fs-9 mb-1">Preview Data</div>
+                          <div class="text-body-tertiary fs-9-5">View sample records</div>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-6">
+                      <a href="{% url 'dataset_download' dataset_id=dataset.id %}" class="text-decoration-none d-block h-100">
+                        <button class="btn w-100 h-100 px-3 py-4 d-flex align-items-center gap-3 border rounded-3 text-start">
+                          <i class="fa-solid fa-download fs-5 text-primary flex-shrink-0"></i>
+                          <div>
+                            <div class="fw-bold fs-9 text-body mb-1">Download</div>
+                            <div class="text-body-tertiary fs-9-5">Get dataset files</div>
+                          </div>
+                        </button>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Run Dataset - full width gradient -->
+                  <button class="btn w-100 p-5 d-flex align-items-center gap-3 text-white border-0 rounded-3"
+                    style="background: linear-gradient(135deg, #2DD4F0 0%, #1B78D4 100%);"
+                    data-bs-toggle="modal" data-bs-target="#runProjectModal">
+                    <i class="fa-solid fa-play fs-5 flex-shrink-0"></i>
+                    <div class="text-start">
+                      <div class="fw-bold fs-8 mb-1">Run Dataset</div>
+                      <div class="fs-9-5" style="opacity:0.9;">Connect dataset to a project and start exploring</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
-            <div style="max-height: calc(9 * 2.4rem); overflow-y: auto;">
-              <table>
-                <thead style="position: sticky; top: 0; background-color: var(--phoenix-body-bg, #fff); z-index: 1;">
-                  <tr class="fs-9">
-                    <th class="pe-6">FEATURE NAME</th>
-                    <th class="pe-6">UNIT</th>
-                    <th class="pe-6">DESCRIPTION</th>
+          </div>
+        </div>
+
+        <!-- Metadata Table Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-4">
+              <i class="fa-solid fa-table-cells me-2 fs-7 text-primary"></i>
+              <h5 class="mb-0 fw-bold">Metadata Table</h5>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr style="text-transform:uppercase;letter-spacing:0.06em;" class="text-body-tertiary fs-9-5">
+                    <th class="border-0 pb-2 ps-0 fw-semibold">Feature Name</th>
+                    <th class="border-0 pb-2 fw-semibold">Unit</th>
+                    <th class="border-0 pb-2 fw-semibold">Description</th>
                   </tr>
                 </thead>
-                <tbody>
-                {% for key, value in dt.metadata.items %}
-                  <tr class="fs-9">
-                    <td class="fw-bold pe-3">{{ key }}</td>
-                    <td class="pe-3">{{ value.0 }}</td>
-                    <td>{{ value.1 }}</td>
+                <tbody id="metadataTableBody">
+                  {% for key, value in dt.metadata.items %}
+                  <tr class="fs-9{% if forloop.counter > 5 %} metadata-extra d-none{% endif %}">
+                    <td class="fw-semibold py-2 border-0">{{ key }}</td>
+                    <td class="py-2 border-0 text-body-secondary">{{ value.0 }}</td>
+                    <td class="py-2 border-0 text-body-secondary">{{ value.1 }}</td>
                   </tr>
-                {% endfor %}
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
+
+            {% with extra=dt.metadata|length|add:"-5" %}
+            {% if extra > 0 %}
+            <div class="text-center mt-2 pt-2 border-top">
+              <button class="btn btn-link text-primary fs-9 text-decoration-none p-0"
+                id="showMoreMetaBtn" onclick="toggleMetadataRows(this)" data-showing="false">
+                Show more features ({{ extra }}) <i class="fa-solid fa-chevron-down ms-1"></i>
+              </button>
+            </div>
+            {% endif %}
+            {% endwith %}
           </div>
         </div>
-        <h3 class="text-body-emphasis mb-4">Dataset Description</h3>
-        <p class="text-body-secondary mb-4 text-justify">
-          {% if dt.description %}
-            {{ dt.description }}
-          {% else %}
-            <em>No description available.</em>
-          {% endif %}
-        </p>
+
+        <!-- Dataset Description Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fa-regular fa-file-lines me-2 fs-7 text-primary"></i>
+              <h5 class="mb-0 fw-bold">Dataset Description</h5>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-12 col-md-9">
+                <p class="text-body-secondary mb-0 text-justify">
+                  {% if dt.description %}
+                    {{ dt.description }}
+                  {% else %}
+                    <em>No description available.</em>
+                  {% endif %}
+                </p>
+              </div>
+              <div class="col-12 col-md-3 text-center mt-3 mt-md-0">
+                <img src="{% static 'assets/img/spot-illustrations/46.png' %}" alt=""
+                     style="max-height:130px;opacity:0.8;"
+                     onerror="this.style.display='none'">
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -231,6 +309,7 @@
 
 <!-- Run Project Modal -->
 <div class="modal fade" id="runProjectModal" tabindex="-1" aria-labelledby="runProjectModalLabel" aria-hidden="true">
+  {% if user_projects %}
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
 
@@ -259,35 +338,24 @@
 
       <!-- Body -->
       <div class="modal-body pt-3 pb-2" style="max-height:360px;overflow-y:auto;">
-        {% if user_projects %}
-          <div class="d-flex flex-column gap-2" id="runProjectList">
-            {% for project in user_projects %}
-            <div class="run-project-card border rounded-3 px-3 py-3 d-flex align-items-center gap-3"
-                 style="cursor:pointer;transition:border-color 0.15s;"
-                 data-project-id="{{ project.id }}"
-                 data-project-url="{% url 'project_details' project_id=project.id %}">
-              <!-- Name + date -->
-              <div class="flex-grow-1" style="min-width:0;">
-                <div class="fw-semibold text-truncate">{{ project.name }}</div>
-                <small class="text-body-tertiary">Updated {{ project.updated_at|date:"M j, Y" }}</small>
-              </div>
-              <!-- Type badge -->
-              <span class="badge rounded-pill run-project-type-badge fw-medium me-2"
-                    data-type="{{ project.project_type }}"
-                    style="font-size:0.75rem;">{{ project.get_project_type_display }}</span>
-              <!-- Radio circle -->
-              <div class="run-project-radio rounded-circle border d-flex align-items-center justify-content-center flex-shrink-0"
-                   style="width:24px;height:24px;border-width:2px!important;transition:all 0.15s;"></div>
+        <div class="d-flex flex-column gap-2" id="runProjectList">
+          {% for project in user_projects %}
+          <div class="run-project-card border rounded-3 px-3 py-3 d-flex align-items-center gap-3"
+               style="cursor:pointer;transition:border-color 0.15s;"
+               data-project-id="{{ project.id }}"
+               data-project-url="{% url 'project_details' project_id=project.id %}">
+            <div class="flex-grow-1" style="min-width:0;">
+              <div class="fw-semibold text-truncate">{{ project.name }}</div>
+              <small class="text-body-tertiary">Updated {{ project.updated_at|date:"M j, Y" }}</small>
             </div>
-            {% endfor %}
+            <span class="badge rounded-pill run-project-type-badge fw-medium me-2"
+                  data-type="{{ project.project_type }}"
+                  style="font-size:0.75rem;">{{ project.get_project_type_display }}</span>
+            <div class="run-project-radio rounded-circle border d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:24px;height:24px;border-width:2px!important;transition:all 0.15s;"></div>
           </div>
-        {% else %}
-          <div class="text-center py-6 text-body-secondary">
-            <i class="fa-solid fa-folder-open fa-2x mb-3 d-block"></i>
-            <p class="mb-3">You don't have any projects yet.</p>
-            <a href="{% url 'project_creation' %}" class="btn btn-primary btn-sm">Create a project</a>
-          </div>
-        {% endif %}
+          {% endfor %}
+        </div>
       </div>
 
       <!-- Error banner -->
@@ -298,12 +366,25 @@
         <a href="{% url 'project_creation' %}" class="btn btn-outline-primary btn-sm me-auto">
           <i class="fa-solid fa-plus me-1"></i>New project
         </a>
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary btn-sm" id="runProjectBtn" disabled>Run</button>
+        <button type="button" class="btn btn-dark btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm text-white" id="runProjectBtn" disabled>Run</button>
       </div>
 
     </div>
   </div>
+  {% else %}
+  <div class="modal-dialog modal-dialog-centered" style="max-width:560px;">
+    <div class="modal-content border-0 rounded-4 p-5 text-center position-relative">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+      <img src="{% static 'assets/img/spot-illustrations/no_projects.png' %}" alt="No projects" style="max-height:300px;" class="mb-0 mx-auto d-block">
+      <h4 class="fw-bold mb-2">You don't have any projects yet</h4>
+      <p class="text-body-secondary mb-4 fs-9">Projects define the environment where you work with your <br/> datasets, run experiments, and build AI models.</p>
+      <a href="{% url 'project_creation' %}" class="btn btn-primary mx-auto mb-3 px-5">
+        <i class="fa-solid fa-plus me-2"></i>Create your first project
+      </a>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
 <!-- Dataset Preview Modal -->
@@ -349,8 +430,21 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- TODO: Remove when real data graphs are added -->
-<script src="{% static 'assets/js/pages/project-details.js' %}"></script>
+<script>
+function toggleMetadataRows(btn) {
+  var rows = document.querySelectorAll('.metadata-extra');
+  var showing = btn.dataset.showing === 'true';
+  rows.forEach(function (r) {
+    r.classList.toggle('d-none', showing);
+  });
+  btn.dataset.showing = showing ? 'false' : 'true';
+  if (showing) {
+    btn.innerHTML = 'Show more features (' + rows.length + ') <i class="fa-solid fa-chevron-down ms-1"></i>';
+  } else {
+    btn.innerHTML = 'Show less <i class="fa-solid fa-chevron-up ms-1"></i>';
+  }
+}
+</script>
 <script>
 (function () {
   var modal = document.getElementById('runProjectModal');
@@ -366,14 +460,12 @@
   };
   var DEFAULT_CFG = { bg: '#f3f4f6', color: '#6b7280', icon: 'fa-folder', badgeBg: '#f3f4f6', badgeColor: '#6b7280' };
 
-  // Render badge colours
   modal.querySelectorAll('.run-project-type-badge').forEach(function (el) {
     var cfg = TYPE_CONFIG[el.dataset.type] || DEFAULT_CFG;
     el.style.backgroundColor = cfg.badgeBg;
     el.style.color = cfg.badgeColor;
   });
 
-  // Selection logic
   var selectedCard = null;
   var runBtn = document.getElementById('runProjectBtn');
 
@@ -462,7 +554,7 @@
   var loaded = false;
 
   modal.addEventListener('show.bs.modal', function () {
-    if (loaded) return;  // only fetch once per page load
+    if (loaded) return;
 
     var loading = document.getElementById('preview-loading');
     var errorDiv = document.getElementById('preview-error');
@@ -511,8 +603,8 @@
           tbody.appendChild(tr);
         });
 
-        var info = data.rows.length + ' rows \u00D7 ' + data.headers.length + ' columns';
-        if (data.source_file) info += ' \u2014 ' + data.source_file;
+        var info = data.rows.length + ' rows × ' + data.headers.length + ' columns';
+        if (data.source_file) info += ' — ' + data.source_file;
         rowCount.textContent = info;
         tableWrapper.classList.remove('d-none');
         loaded = true;

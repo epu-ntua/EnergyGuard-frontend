@@ -15,21 +15,27 @@
   </div>
 
   {% if not team %}
-  <div class="row mb-9 gy-6">
-    <div class="col-12">
-      <div class="d-inline-flex flex-column flex-md-row align-items-md-center gap-3 border border-2 border-dashed rounded-3 p-5">
-        <!-- WELCOME CARD -->
-        <div class="me-3">
-          <h3 class="mb-3">Welcome to EnergyGuard</h3>
-          <h4 class="fw-normal mb-0">Create your first Team to collaborate on projects, datasets and AI models</h4>
-        </div>
-        <div>
-          <!-- TODO: Add link functionality -->
-          <a href="{% url 'team_management' %}"><button class="btn btn-primary btn-lg">Create Team</button></a>
+    <div class="card mb-5 border-0 overflow-hidden bg-turquoise" >
+      <div class="card-body p-5 position-relative">
+        <div class="row align-items-center">
+          <div class="col-md-7">
+            <p class="mb-1 fs-8 text-light">Hello, {{ request.user.first_name|default:request.user.username }}! 👋</p>
+            <h2 class="fw-bold mb-3 text-light">Energy innovation starts here.</h2>
+            <p class="mb-4 text-light">You don't have a team yet. Create your first<br> Team to collaborate on projects, datasets and AI models.</p>
+            <a href="{% url 'projects_list' %}" class="btn btn-primary fw-semibold" id="dashboard-create-project-btn">
+              + Create Team
+            </a>
+            <style>
+              #dashboard-create-project-btn:hover { color: #fff !important; border-color: #fff !important; }
+            </style>
+          </div>
+          <div class="col-md-5 text-end d-none d-md-block">
+            {% static 'assets/img/spot-illustrations/36.png' as ill_36 %}
+            <img src="{{ ill_36 }}" alt="" style="height:155px;opacity:0.7;" onerror="this.style.display='none'">
+          </div>
         </div>
       </div>
     </div>
-  </div>
   {% endif %}
 
   <!-- 1ST LEVEL CARDS -->
@@ -138,7 +144,7 @@
           </ul>
           <div class="py-0 z-1 mt-6">
             <!-- TODO: Add functionality to button -->
-            <a class="btn btn-outline-primary p-2" href="{% url 'trustworthiness' %}">Learn how trustworthiness works<i class="fa-solid fa-angle-right ms-2"></i></a>
+            <a class="btn btn-outline-primary p-2" href="{% url 'trustworthiness:trustworthiness' %}">Learn how trustworthiness works<i class="fa-solid fa-angle-right ms-2"></i></a>
           </div>
         </div>
         

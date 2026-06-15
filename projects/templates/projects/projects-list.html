@@ -54,12 +54,12 @@
                             <table class="table table-sm fs-9 mb-0" id="myProjectsTable" style="width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
+                                        <th class="sort white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:35%;">DESCRIPTION</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">COLLABORATORS</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">START DATE</th>
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">UPDATED</th>
-                                        <th class="sort align-middle text-end fs-9" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
+                                        <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>   
@@ -99,12 +99,12 @@
                                 <table class="table table-sm fs-9 mb-0" id="publicProjectsTable" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th class="sort white-space-nowrap align-middle py-3 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
+                                            <th class="sort white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col" style="width:20%;">PROJECT NAME</th>
                                             <th class="sort align-middle text-start fs-9" scope="col" style="width:35%;">DESCRIPTION</th>
                                             <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">COLLABORATORS</th>
                                             <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">START DATE</th>
                                             <th class="sort align-middle text-start fs-9" scope="col" style="width:11%;">UPDATED</th>
-                                            <th class="sort align-middle text-end fs-9" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
+                                            <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:12%; min-width: 100px;">TYPE</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>   
@@ -132,12 +132,12 @@
         // $.fn.DataTable.ext.pager.numbers_length = 4     // Change number of pages shown in the pagination
         const typeParam = new URLSearchParams(window.location.search).get('type') || '';
         const columns = [
-            { data: "name", render: (data, type, row) => `<a class="fw-semibold py-0 fs-9" href="/projects/project/${row.id}/">${data}</a>`},
-            { data: "description", className: "pe-3 fs-9 pe-4" },
-            { data: "collaborators", className: "fs-9" },
+            { data: "name", className: "ps-2", render: (data, type, row) => `<a class="fw-semibold fs-9" href="/projects/project/${row.id}/">${data}</a>`},
+            { data: "description", className: "pe-3 fs-9 pe-4", render: (data) => data && data !== '-' ? data : '<span class="fst-italic text-muted">No description</span>' },
+            { data: "collaborators", className: "fs-9", render: (data) => data && data !== '-' ? data : '<span class="fst-italic text-muted">No collaborators</span>' },
             { data: "created_at", className: "text-end fs-9" },
             { data: "updated_at", className: "text-end fs-9" },
-            { data: "project_type", className: "text-end fs-9 ps-3" },
+            { data: "project_type", className: "text-end fs-9 ps-3 pe-2" },
             { data: "id", visible: false }
         ];
 
@@ -200,4 +200,17 @@
         });
     });
 </script>
+<script>
+const savedProjectsTab = localStorage.getItem('projects_active_tab');
+if (savedProjectsTab) {
+    const tabEl = document.querySelector('#myTab a[href="' + savedProjectsTab + '"]');
+    if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+}
+document.querySelectorAll('#myTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    tabEl.addEventListener('shown.bs.tab', e => {
+        localStorage.setItem('projects_active_tab', e.target.getAttribute('href'));
+    });
+});
+</script>
+
 {% endblock scripts %}

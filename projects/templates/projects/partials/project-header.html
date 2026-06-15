@@ -1,25 +1,44 @@
+<nav class="mb-3" aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'projects_list' %}">Projects</a></li>
+    <li class="breadcrumb-item active">{{ project_details.name }}</li>
+  </ol>
+</nav>
+
 <!-- Header: Title + Actions dropdown + Evaluate button -->
-<div class="d-flex justify-content-between align-items-start mb-8">
-  <div class="d-flex align-items-center gap-2">
-    <h2 class="text-body-emphasis fw-bolder mb-0">{{ project_details.name }}</h2>
-    {% if is_creator %}
-    <div class="btn-reveal-trigger">
-      <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
-        data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
-        data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
-      <div class="dropdown-menu dropdown-menu-end py-2">
-        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProjectModal">Edit project</a>
-        <button class="dropdown-item text-danger" type="button"
-          data-bs-toggle="modal"
-          data-bs-target="#confirmActionModal"
-          data-action-title="Delete Project"
-          data-action-message="Are you sure you want to delete the project &lt;strong&gt;{{ project_details.name }}&lt;/strong&gt;? This action cannot be undone."
-          data-confirm-text="Delete"
-          data-confirm-class="btn-danger"
-          data-action-url="{% url 'delete_project' project_details.id %}">Delete project</button>
+<div class="d-flex align-items-start gap-8 mb-5">
+  <div class="d-flex flex-column gap-2">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <h2 class="text-body-emphasis fw-bolder mb-0">{{ project_details.name }}</h2>
+      {% if is_creator %}
+      <div class="btn-reveal-trigger">
+        <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+          data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
+          data-bs-reference="parent"><span class="fas fa-ellipsis-h"></span></button>
+        <div class="dropdown-menu dropdown-menu-end py-2">
+          <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProjectModal">Edit project</a>
+          <button class="dropdown-item text-danger" type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmActionModal"
+            data-action-title="Delete Project"
+            data-action-message="Are you sure you want to delete the project &lt;strong&gt;{{ project_details.name }}&lt;/strong&gt;? This action cannot be undone."
+            data-confirm-text="Delete"
+            data-confirm-class="btn-danger"
+            data-action-url="{% url 'delete_project' project_details.id %}">Delete project</button>
+        </div>
       </div>
+      {% endif %}
     </div>
-    {% endif %}
+    <div class="d-flex gap-2">
+      <span class="badge border bg-transparent rounded-pill px-3 py-2 fs-10
+        {% if project_details.visibility %}border-success text-success{% else %}border-secondary text-secondary{% endif %}">
+        <i class="fas {% if project_details.visibility %}fa-lock-open{% else %}fa-lock{% endif %} me-1"></i>
+        {% if project_details.visibility %}Public Project{% else %}Private Project{% endif %}
+      </span>
+      <span class="badge border border-warning text-warning bg-transparent rounded-pill px-3 py-2 fs-10">
+        {{ project_details.type }}
+      </span>
+    </div>
   </div>
-  <button class="btn btn-warning text-white fw-semibold" type="button">Evaluate Project</button>
+  <button class="btn btn-turquoise text-white fw-semibold" type="button">Evaluate Project</button>
 </div>

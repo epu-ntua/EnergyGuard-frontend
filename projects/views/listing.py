@@ -38,7 +38,7 @@ class ProjectsListJson(LoginRequiredMixin, BaseDatatableView):
         if column == "updated_at":
             return row.updated_at.strftime("%b %d, %Y")
         if column == "collaborators":
-            return ", ".join(user.first_name for user in row.collaborators.all()) or "No collaborators"
+            return ", ".join(user.first_name for user in row.collaborators.all()) or ""
         if column == "project_type":
             return row.get_project_type_display()
         return super().render_column(row, column)

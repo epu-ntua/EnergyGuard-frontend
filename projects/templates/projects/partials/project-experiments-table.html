@@ -21,7 +21,13 @@
               {{ experiment.name }}
             </a>
           </td>
-          <td class="pe-5 align-middle" style="white-space: normal; word-wrap: break-word;">{{ experiment.description|default:"-" }}</td>
+          {% if experiment.description %}
+            <td class="pe-5 align-middle" style="white-space: normal; word-wrap: break-word;">{{ experiment.description}}</td>
+          {% else %}
+            <td class="align-middle">
+              <span class="exp-no-desc fst-italic fs-8">No description</span>
+            </td>
+          {% endif %}
           <td class="align-middle">{{ experiment.created_at|date:"F j, Y"|default:"—" }}</td>
           <td class="align-middle">
             <div class="dropdown">

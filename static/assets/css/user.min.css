@@ -37,3 +37,13 @@
 .navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-link.dropdown-indicator.label-1 {
   padding-left: 1.5rem;
 }
+
+/* Table row hover */
+#experimentsTable tbody tr:hover,
+#myDatasetsList tbody tr:hover,
+#publicDatasetsList tbody tr:hover,
+#myProjectsTable tbody tr:hover,
+#publicProjectsTable tbody tr:hover,
+#benchmarkRunsTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
