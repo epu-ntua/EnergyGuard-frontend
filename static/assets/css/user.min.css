@@ -44,6 +44,6 @@
 #publicDatasetsList tbody tr:hover,
 #myProjectsTable tbody tr:hover,
 #publicProjectsTable tbody tr:hover,
-#benchmarkRunsTable tbody tr:hover {
+#assessmentRunsTable tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.03);
 }
