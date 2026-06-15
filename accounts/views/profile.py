@@ -19,11 +19,9 @@ logger = logging.getLogger(__name__)
 def _sync_name_to_keycloak(user):
     keycloak_client = KeycloakUserSyncClient()
     if not keycloak_client.token:
-        logger.error(
-            "Keycloak client not initialized for user %s. Sync failed.",
-            user.id,
+        raise RuntimeError(
+            f"Keycloak client not initialized for user {user.id}. Sync failed."
         )
-        return
 
     result = keycloak_client.update_user(
         user,
@@ -33,14 +31,16 @@ def _sync_name_to_keycloak(user):
         },
     )
     if result.get("error"):
-        logger.error("Keycloak sync failed for user %s: %s", user.id, result.get("error"))
+        raise RuntimeError(
+            f"Keycloak sync failed for user {user.id}: {result.get('error')}"
+        )
 
 
 def _update_user_name_from_full_name(user, full_name):
     if not full_name or not full_name.strip():
         return
 
-    name_parts = full_name.strip().split(maxsplit=1)    # Split by first space
+    name_parts = full_name.strip().split(maxsplit=1)
     user.first_name = name_parts[0]
     user.last_name = name_parts[1] if len(name_parts) > 1 else ""
 
@@ -72,7 +72,12 @@ def profile(request):
     if request.method == "POST" and not is_create_team_post:
         form = ProfileEditForm(request.POST, instance=user_profile, user=request.user)
         if form.is_valid():
-            _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
+            try:
+                _update_user_name_from_full_name(request.user, form.cleaned_data.get("full_name"))
+            except RuntimeError as e:
+                logger.error("Profile name update failed: %s", e)
+                messages.error(request, "Failed to update your name. Please try again later.")
+                return redirect("profile")
             form.save()
             return redirect("profile")
     else:
