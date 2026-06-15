@@ -87,7 +87,37 @@
     <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>   <!-- For date and time -->
     <script src="{% static 'vendors/simplebar/simplebar.min.js' %}"></script>   <!-- Custom scrollbars -->
     <script src="{% static 'assets/js/phoenix.js' %}"></script>
+    <script>
+    /* Fix: when navbar is collapsed, phoenix.js sets position:absolute + large minHeight on html,
+       causing the navbar to scroll with the page. We force position:fixed via inline style
+       (which beats any CSS !important) and strip the inflated minHeight.
+       Only applied on lg+ (≥992px) — on mobile the navbar is a full-width overlay. */
+    (function () {
+      var html = document.documentElement;
+      var navbar = document.querySelector('.navbar.navbar-vertical.navbar-expand-lg');
+      if (!navbar) return;
 
+      function applyFix() {
+        if (html.classList.contains('navbar-vertical-collapsed') && window.innerWidth >= 992) {
+          navbar.style.setProperty('position', 'fixed', 'important');
+          navbar.style.setProperty('top', 'var(--phoenix-navbar-top-height)', 'important');
+          navbar.style.setProperty('height', 'calc(100vh - var(--phoenix-navbar-top-height))', 'important');
+          navbar.style.setProperty('padding-top', '0', 'important');
+          html.style.minHeight = '';
+        } else {
+          navbar.style.removeProperty('position');
+          navbar.style.removeProperty('top');
+          navbar.style.removeProperty('height');
+          navbar.style.removeProperty('padding-top');
+        }
+      }
+
+      applyFix();
+      window.addEventListener('resize', applyFix);
+      // navbar.vertical.toggle fires after phoenix.js has already toggled the class + called setDocumentMinHeight
+      navbar.addEventListener('navbar.vertical.toggle', applyFix);
+    })();
+    </script>
 
     {% if request.user.is_authenticated %}
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100; margin-top:70px;"></div>
