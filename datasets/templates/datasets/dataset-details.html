@@ -205,7 +205,7 @@
             <div class="table-responsive">
               <table class="table table-sm mb-0">
                 <thead>
-                  <tr style="text-transform:uppercase;letter-spacing:0.06em;" class="text-body-tertiary fs-9-5">
+                  <tr class="text-body-tertiary fs-9-5 text-uppercase" style="letter-spacing:0.06em;">
                     <th class="border-0 pb-2 ps-0 fw-semibold">Feature Name</th>
                     <th class="border-0 pb-2 fw-semibold">Unit</th>
                     <th class="border-0 pb-2 fw-semibold">Description</th>
@@ -310,7 +310,7 @@
 <!-- Run Project Modal -->
 <div class="modal fade" id="runProjectModal" tabindex="-1" aria-labelledby="runProjectModalLabel" aria-hidden="true">
   {% if user_projects %}
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+  <div class="modal-dialog modal-600 modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
 
       <!-- Header -->
@@ -318,7 +318,7 @@
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-2 d-flex align-items-center justify-content-center bg-primary-subtle flex-shrink-0"
                style="width:48px;height:48px;">
-            <i class="fa-solid fa-database text-primary" style="font-size:1.2rem;"></i>
+            <i class="fa-solid fa-database text-primary fs-7"></i>
           </div>
           <div>
             <div class="text-uppercase fw-semibold text-body-tertiary"
@@ -344,13 +344,13 @@
                style="cursor:pointer;transition:border-color 0.15s;"
                data-project-id="{{ project.id }}"
                data-project-url="{% url 'project_details' project_id=project.id %}">
-            <div class="flex-grow-1" style="min-width:0;">
-              <div class="fw-semibold text-truncate">{{ project.name }}</div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold text-truncate fs-9">{{ project.name }}</div>
               <small class="text-body-tertiary">Updated {{ project.updated_at|date:"M j, Y" }}</small>
             </div>
-            <span class="badge rounded-pill run-project-type-badge fw-medium me-2"
+            <span class="badge rounded-pill run-project-type-badge fw-medium me-2 fs-10"
                   data-type="{{ project.project_type }}"
-                  style="font-size:0.75rem;">{{ project.get_project_type_display }}</span>
+                  >{{ project.get_project_type_display }}</span>
             <div class="run-project-radio rounded-circle border d-flex align-items-center justify-content-center flex-shrink-0"
                  style="width:24px;height:24px;border-width:2px!important;transition:all 0.15s;"></div>
           </div>
@@ -363,7 +363,9 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <a href="{% url 'project_creation' %}" class="btn btn-outline-primary btn-sm me-auto">
+        <a href="{% url 'project_creation' %}" id="newProjectLink"
+           data-creation-url="{% url 'project_creation' %}"
+           class="btn btn-outline-primary btn-sm me-auto">
           <i class="fa-solid fa-plus me-1"></i>New project
         </a>
         <button type="button" class="btn btn-dark btn-sm" data-bs-dismiss="modal">Cancel</button>
@@ -379,7 +381,9 @@
       <img src="{% static 'assets/img/spot-illustrations/no_projects.png' %}" alt="No projects" style="max-height:300px;" class="mb-0 mx-auto d-block">
       <h4 class="fw-bold mb-2">You don't have any projects yet</h4>
       <p class="text-body-secondary mb-4 fs-9">Projects define the environment where you work with your <br/> datasets, run experiments, and build AI models.</p>
-      <a href="{% url 'project_creation' %}" class="btn btn-primary mx-auto mb-3 px-5">
+      <a href="{% url 'project_creation' %}" id="createFirstProjectLink"
+         data-creation-url="{% url 'project_creation' %}"
+         class="btn btn-primary mx-auto mb-3 px-5">
         <i class="fa-solid fa-plus me-2"></i>Create your first project
       </a>
     </div>
@@ -450,20 +454,43 @@ function toggleMetadataRows(btn) {
   var modal = document.getElementById('runProjectModal');
   if (!modal) return;
 
+  var _cs = getComputedStyle(document.documentElement);
+  var _blue       = _cs.getPropertyValue('--phoenix-cyan').trim()       || '#0097eb';
+  var _indigo     = _cs.getPropertyValue('--phoenix-indigo').trim()     || '#6610f2';
+  var _purple     = _cs.getPropertyValue('--phoenix-purple').trim()     || '#9483e8';
+  var _turquoise  = _cs.getPropertyValue('--phoenix-turquoise').trim()  || '#42AED1';
+  var _purpleBlue = _cs.getPropertyValue('--phoenix-purple-blue').trim()|| '#677fd8';
+  var _lavender       = _cs.getPropertyValue('--phoenix-lavender').trim()       || '#AC80EC';
+
+  function hexToRgba(hex, alpha) {
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+alpha+')';
+  }
+
   var TYPE_CONFIG = {
-    ai_model:        { bg: '#ede9fe', color: '#7c3aed', icon: 'fa-brain',        badgeBg: '#ede9fe', badgeColor: '#7c3aed' },
-    ai_service:      { bg: '#dbeafe', color: '#2563eb', icon: 'fa-server',        badgeBg: '#dbeafe', badgeColor: '#2563eb' },
-    web_app:         { bg: '#ccfbf1', color: '#0d9488', icon: 'fa-globe',         badgeBg: '#ccfbf1', badgeColor: '#0d9488' },
-    mobile_app:      { bg: '#ffedd5', color: '#ea580c', icon: 'fa-mobile-screen', badgeBg: '#ffedd5', badgeColor: '#ea580c' },
-    iot_integration: { bg: '#cffafe', color: '#0891b2', icon: 'fa-wifi',          badgeBg: '#cffafe', badgeColor: '#0891b2' },
-    data_pipeline:   { bg: '#dcfce7', color: '#16a34a', icon: 'fa-database',      badgeBg: '#dcfce7', badgeColor: '#16a34a' },
+    ai_model:        { color: _purple,     bg: hexToRgba(_purple,     0.12), icon: 'fa-brain' },
+    ai_service:      { color: _indigo,     bg: hexToRgba(_indigo,     0.12), icon: 'fa-robot' },
+    web_app:         { color: _blue,       bg: hexToRgba(_blue,       0.12), icon: 'fa-globe' },
+    mobile_app:      { color: _purpleBlue, bg: hexToRgba(_purpleBlue, 0.12), icon: 'fa-mobile-alt' },
+    iot_integration: { color: _turquoise,  bg: hexToRgba(_turquoise,  0.12), icon: 'fa-network-wired' },
+    data_pipeline:   { color: _lavender,       bg: hexToRgba(_lavender,       0.12), icon: 'fa-stream' },
   };
-  var DEFAULT_CFG = { bg: '#f3f4f6', color: '#6b7280', icon: 'fa-folder', badgeBg: '#f3f4f6', badgeColor: '#6b7280' };
+  var DEFAULT_CFG = { bg: 'rgba(107,114,128,0.12)', color: '#6b7280', icon: 'fa-folder' };
 
   modal.querySelectorAll('.run-project-type-badge').forEach(function (el) {
     var cfg = TYPE_CONFIG[el.dataset.type] || DEFAULT_CFG;
-    el.style.backgroundColor = cfg.badgeBg;
-    el.style.color = cfg.badgeColor;
+    el.style.backgroundColor = cfg.bg;
+    el.style.color = cfg.color;
+  });
+
+  modal.querySelectorAll('.run-project-card').forEach(function (card) {
+    var badge = card.querySelector('.run-project-type-badge');
+    var cfg = TYPE_CONFIG[badge ? badge.dataset.type : ''] || DEFAULT_CFG;
+    var iconDiv = document.createElement('div');
+    iconDiv.className = 'rounded-3 d-flex align-items-center justify-content-center flex-shrink-0';
+    iconDiv.style.cssText = 'width:40px;height:40px;background:' + cfg.bg + ';';
+    iconDiv.innerHTML = '<i class="fas ' + cfg.icon + '" style="color:' + cfg.color + ';"></i>';
+    card.insertBefore(iconDiv, card.firstChild);
   });
 
   var selectedCard = null;
@@ -541,6 +568,27 @@ function toggleMetadataRows(btn) {
     runBtn.setAttribute('disabled', '');
     runBtn.innerHTML = 'Run';
     document.getElementById('runProjectError').classList.add('d-none');
+  });
+
+  function makeCreationHandler(linkEl) {
+    linkEl.addEventListener('click', function (e) {
+      e.preventDefault();
+      var returnUrl = window.location.pathname + '?open_run_modal=true';
+      window.location.href = linkEl.dataset.creationUrl + '?next=' + encodeURIComponent(returnUrl);
+    });
+  }
+
+  var newProjectLink = document.getElementById('newProjectLink');
+  if (newProjectLink) makeCreationHandler(newProjectLink);
+
+  var createFirstProjectLink = document.getElementById('createFirstProjectLink');
+  if (createFirstProjectLink) makeCreationHandler(createFirstProjectLink);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (new URLSearchParams(window.location.search).get('open_run_modal')) {
+      history.replaceState(null, '', window.location.pathname);
+      bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
   });
 })();
 </script>

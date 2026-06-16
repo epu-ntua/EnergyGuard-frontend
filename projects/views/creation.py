@@ -53,6 +53,12 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
     step_metadata = PROJECT_STEP_METADATA
     cancel_url = "/projects/list/"
 
+    def dispatch(self, request, *args, **kwargs):
+        next_url = request.GET.get('next', '')
+        if next_url and next_url.startswith('/'):
+            request.session['project_creation_next'] = next_url
+        return super().dispatch(request, *args, **kwargs)
+
     def done(self, form_list, **kwargs):
         general_info = form_list[0].cleaned_data
 
@@ -110,7 +116,10 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             messages.error(self.request, "Project could not be created. Please try again or contact support if the issue persists.")
             return redirect("project_creation")
 
+        next_url = self.request.session.pop('project_creation_next', None)
         self.request.session["project_creation_success"] = True
+        if next_url:
+            return redirect(next_url)
         return redirect("project_creation_success")
 
 
