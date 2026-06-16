@@ -9,8 +9,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="content">
-  <div id="map-container">
+<div class="content d-flex flex-column" style="height:calc(100vh - var(--phoenix-navbar-top-height,4rem));overflow:hidden;">
+  <nav class="mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'riga' %}">Riga's Multi-Apartment Residential Buildings</a></li>
+      <li class="breadcrumb-item active">Riga's Multi-Apartment Residential Buildings Map</li>
+    </ol>
+  </nav>
+
+  <h2>Riga's Multi-Apartment Residential Buildings Map</h2>
+  <p>Visualization of building energy classes and efficiency metrics accross Riga.</p>
+  <div id="map-container" class="mb-3">
     <div id="map"></div>
     <div id="minimap-toggle" title="Toggle minimap">▼</div>
     <div id="minimap-wrapper">

@@ -1,7 +1,8 @@
 #map-container {
   position: relative;
   width: 100%;
-  height: calc(89vh - var(--phoenix-navbar-top-height, 4rem));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 

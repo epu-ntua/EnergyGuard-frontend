@@ -5,8 +5,14 @@
 
 {% block content %}
 <div class="content">
-  <div class="mb-9 p-5">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
 
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+        <li class="breadcrumb-item active">Riga's Multi-Apartment Residential Buildings</li>
+      </ol>
+    </nav>
     <!-- HEADER -->
     <div class="mb-4">
       <h2 class="mb-2">{{ digital_twin.name }}</h2>
@@ -27,7 +33,7 @@
     <div class="row g-5 mb-5">
       <div class="col-lg-3">
         <img src="{% static 'assets/img/digital_twins/REA.png' %}" alt="Riga Buildings" class="img-fluid rounded mb-4" >
-        <a href="{% url 'digitaltwins-map' %}" class="btn btn-primary w-100">Open Digital Twin</a>
+        <a href="{% url 'riga-map' %}" class="btn btn-primary w-100">Open Digital Twin</a>
       </div>
       <div class="col-lg-9">
         <h5 class="mb-2">Facility</h5>
