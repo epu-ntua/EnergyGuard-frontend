@@ -301,6 +301,10 @@ LOGGING = {
             'propagate': False,
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
 }
 
 # Email Settings
