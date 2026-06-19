@@ -23,6 +23,13 @@ class Project(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    def is_accessible_by(self, user):
+        if self.visibility:
+            return True
+        if self.creator_id == user.id:
+            return True
+        return self.collaborators.filter(pk=user.pk).exists()
+
     class Meta:
         db_table = 'project'
         verbose_name = 'Project'
