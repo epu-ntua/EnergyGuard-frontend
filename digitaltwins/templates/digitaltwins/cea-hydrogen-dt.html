@@ -1,0 +1,416 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CEA Node Workspace - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">CEA Node Workspace</li>
+          </ol>
+        </nav>
+
+        <div class="row g-4">
+
+            <!-- Main column -->
+            <div class="col-12 col-xl-9">
+
+                <!-- Header -->
+                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="CEA Node" description="Physics-based Digital Twin of a Solid Oxide Electrolysis system." %}
+
+                <!-- Tab cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <div class="card dt-tab-card cursor-pointer active h-100" data-tab-target="scenario-generation" tabindex="0" role="button">
+                            <div class="card-body d-flex align-items-start gap-3">
+                                <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">1</span>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="fas fa-file-circle-plus text-primary"></span>
+                                        <h6 class="fw-bold text-body-emphasis mb-0">AI Scenario Generation</h6>
+                                    </div>
+                                    <p class="text-body-tertiary fs-9 mb-0">Generate a scenario file using simple inputs.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card dt-tab-card cursor-pointer h-100" data-tab-target="digital-twin-simulation" tabindex="0" role="button">
+                            <div class="card-body d-flex align-items-start gap-3">
+                                <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">2</span>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="fas fa-display text-primary"></span>
+                                        <h6 class="fw-bold text-body-emphasis mb-0">Digital Twin Simulation</h6>
+                                    </div>
+                                    <p class="text-body-tertiary fs-9 mb-0">Run the SOEC Digital Twin simulation.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-12 col-xl-3">
+                <div class="alert alert-subtle-info rounded-3 mb-0" role="alert">
+                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-2">
+                        <span class="fas fa-circle-info"></span>About this workspace
+                    </h6>
+                    <p class="fs-9 mb-0">Configure a scenario or run the Digital Twin simulation. Results (.h5 file) will be available once the simulation is complete.</p>
+                </div>
+            </div>
+            <!-- Tab content -->
+            <div class="card">
+                <div class="card-body p-4 tab-content">
+
+                    <!-- AI Scenario Generation -->
+                    <div class="tab-pane active" id="scenario-generation">
+                        <h5 class="fw-bold text-body-emphasis mb-1">AI Scenario Generation</h5>
+                        <p class="text-body-tertiary fs-9 mb-4">Provide simple, high-level inputs and our AI will generate a compatible scenario file for the SOEC Digital Twin.</p>
+
+                        <h6 class="fw-bold text-body-emphasis mb-3">1. Provide inputs</h6>
+
+                        <form id="scenario-form">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="test-duration">
+                                        Duration of the test
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="How long the test should run for."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="1" max="240" class="form-control scenario-required" id="test-duration" name="test_duration" placeholder="24">
+                                        <select class="form-select" name="test_duration_unit" style="max-width:7rem;">
+                                            <option value="hours" selected>hours</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 1 &ndash; 240 hours</span>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="hydrogen-quantity">
+                                        Hydrogen quantity to produce
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Target amount of hydrogen to produce during the test."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="1" max="10000" class="form-control scenario-required" id="hydrogen-quantity" name="hydrogen_quantity" placeholder="150">
+                                        <select class="form-select" name="hydrogen_quantity_unit" style="max-width:7rem;">
+                                            <option value="kg_h2" selected>kg H&#8322;</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 1 &ndash; 10,000 kg H&#8322;</span>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
+                                        Current to apply
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Electrical current applied to the electrolysis stack."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="10" max="2000" class="form-control scenario-required" id="applied-current" name="applied_current" placeholder="320">
+                                        <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
+                                            <option value="amps" selected>A</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3 mt-4">
+                                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="generate-scenario-btn" disabled>
+                                    <span class="fas fa-wand-magic-sparkles"></span>Generate Scenario
+                                </button>
+                                <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in all fields to enable the Generate button.</span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Digital Twin Simulation -->
+                    <div class="tab-pane" id="digital-twin-simulation">
+
+                        <div class="row g-4">
+
+                            <!-- Upload column -->
+                            <div class="col-12 col-lg-5">
+                                <h6 class="fw-bold text-body-emphasis mb-2">Upload Scenario JSON</h6>
+                                <p class="text-body-tertiary fs-9 mb-3">Upload a scenario JSON file that defines the time-series signals and simulation parameters.</p>
+
+                                {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="scenario-json-file" input_name="scenario_json_file" %}
+
+                                <div class="col-12 mb-5">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <span class="fas fa-rocket text-primary"></span>
+                                                <h6 class="fw-bold text-body-emphasis mb-1">Ready to run</h6>
+                                            </div>
+                                            <!-- <p class="text-body-tertiary fs-9 mb-3">Once your file is validated, you can run the simulation.</p> -->
+                                            <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 mb-2" id="run-simulation-btn" disabled>
+                                                <span class="fas fa-play"></span>Run Simulation
+                                            </button>
+                                            <!-- <span class="text-body-tertiary fs-10" id="run-simulation-hint">Run button will be enabled after a valid file is uploaded.</span> -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-subtle-info rounded-3 d-flex align-items-center gap-2 mb-4 fs-9 py-3" role="alert">
+                                    <span class="fas fa-circle-info"></span>
+                                    <span>
+                                        Make sure your JSON file follows the required structure.
+                                        <a href="#json-reference">See required fields and example below &darr;</a>
+                                    </span>
+                                </div>
+
+                                
+
+                                {% include "digitaltwins/partials/dt_sample_json.html" with heading="Sample JSON (excerpt)" subtitle="A minimal example of the expected structure." sample_json=sample_json %}
+                                <!-- Validation + Run -->
+                                <div class="col-12 mt-4">
+                                    {% include "digitaltwins/partials/dt_validation_card.html" with checks=validation_checks %}
+                                </div>
+                            </div>
+
+                            <!-- Reference column -->
+                            <div class="col-12 col-lg-7 ps-6" id="json-reference">
+                                
+
+                                <h6 class="fw-bold text-body-emphasis mb-2">What is in the JSON file?</h6>
+                                <p class="text-body-tertiary fs-9 mb-3">The scenario file contains time-series signals (varying over time) and scalar parameters (constant values) used to run the simulation.</p>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="fas fa-chart-line text-primary"></span>
+                                                    <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Time-series signals</h6>
+                                                </div>
+                                                <p class="text-body-tertiary fs-10 mb-2">Arrays of values associated with the time vector. All signals must have the same length as timeStamp.</p>
+                                                <span class="badge badge-phoenix badge-phoenix-info">9 variables</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="fas fa-sliders text-success"></span>
+                                                    <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Scalar parameters</h6>
+                                                </div>
+                                                <p class="text-body-tertiary fs-10 mb-2">Single values used across the entire simulation.</p>
+                                                <span class="badge badge-phoenix badge-phoenix-success">4 variables</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h6 class="fw-bold text-body-emphasis mb-2">Required Inputs Reference</h6>
+                                <p class="text-body-tertiary fs-9 mb-3">Your JSON file must include the following variables.</p>
+
+                                <div>
+                                    <table class="table table-sm fs-9 mb-0" style="table-layout: fixed; word-break: break-word;">
+                                        <thead>
+                                            <tr class="text-body-tertiary text-uppercase fs-10">
+                                                <th style="width: 28%;">Variable (Tag)</th>
+                                                <th style="width: 42%;">Description</th>
+                                                <th style="width: 12%;">Unit</th>
+                                                <th style="width: 18%;">Valid Range</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">timeStamp</span></td>
+                                                <td class="text-body-tertiary pe-3">Time vector of the scenario.</td>
+                                                <td class="text-body-tertiary ps-1">s</td>
+                                                <td class="text-body-tertiary ps-1">[0 : inf]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">current</span></td>
+                                                <td class="text-body-tertiary pe-3">Electrical current to apply on each stack of the electrolyser.</td>
+                                                <td class="text-body-tertiary ps-1">A</td>
+                                                <td class="text-body-tertiary ps-1">[-100 : 0]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">voltageCell</span></td>
+                                                <td class="text-body-tertiary pe-3">Mean cell voltage of the stacks to maintain (used only when a current is applied).</td>
+                                                <td class="text-body-tertiary ps-1">V</td>
+                                                <td class="text-body-tertiary ps-1">[1.285 : 1.3]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">temperatureHotbox</span></td>
+                                                <td class="text-body-tertiary pe-3">Temperature of the thermal enclosure of the stacks (used only when no current is applied).</td>
+                                                <td class="text-body-tertiary ps-1">&deg;C</td>
+                                                <td class="text-body-tertiary ps-1">[700 : 800]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">steamConversion</span></td>
+                                                <td class="text-body-tertiary pe-3">Percentage of steam inlet flowrate converted into electricity by the system.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0.4 : 1]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">fuelElectrode_ratioH2O</span></td>
+                                                <td class="text-body-tertiary pe-3">Percentage of steam in the gas mix at the inlet of the system.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0 : 1]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">fuelElectrode_flowrate</span></td>
+                                                <td class="text-body-tertiary pe-3">Total flowrate at the inlet of the fuel side.</td>
+                                                <td class="text-body-tertiary ps-1">NL/min</td>
+                                                <td class="text-body-tertiary ps-1">[0 : 200]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">oxygenElectrode_flowrate</span></td>
+                                                <td class="text-body-tertiary pe-3">Total flowrate at the inlet of the air side.</td>
+                                                <td class="text-body-tertiary ps-1">NL/min</td>
+                                                <td class="text-body-tertiary ps-1">[0 : 200]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-info">deltaP</span></td>
+                                                <td class="text-body-tertiary pe-3">Pressure difference between the air and the fuel electrode of the cells inside the stacks.</td>
+                                                <td class="text-body-tertiary ps-1">mBar</td>
+                                                <td class="text-body-tertiary ps-1">[0 : 100]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[1]</span></td>
+                                                <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 1.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[2]</span></td>
+                                                <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 2.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[3]</span></td>
+                                                <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 3.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[4]</span></td>
+                                                <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 4.</td>
+                                                <td class="text-body-tertiary ps-1">&ndash;</td>
+                                                <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var tabCards = document.querySelectorAll('.dt-tab-card');
+    tabCards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            tabCards.forEach(function (c) { c.classList.remove('active'); });
+            document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+            card.classList.add('active');
+            document.getElementById(card.dataset.tabTarget).classList.add('active');
+        });
+    });
+
+    var requiredInputs = document.querySelectorAll('.scenario-required');
+    var generateBtn = document.getElementById('generate-scenario-btn');
+    var generateHint = document.getElementById('generate-scenario-hint');
+
+    function updateGenerateButton() {
+        var allFilled = Array.prototype.every.call(requiredInputs, function (input) {
+            return input.value.trim() !== '';
+        });
+        generateBtn.disabled = !allFilled;
+        generateHint.textContent = allFilled ? '' : 'Fill in all fields to enable the Generate button.';
+    }
+
+    requiredInputs.forEach(function (input) {
+        input.addEventListener('input', updateGenerateButton);
+    });
+
+    document.getElementById('scenario-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+    });
+
+    // JSON scenario dropzone
+    var jsonFileInput = document.getElementById('scenario-json-file');
+    var jsonDropzone = document.getElementById('json-dropzone');
+    var jsonFilePill = document.getElementById('json-file-pill');
+    var runBtn = document.getElementById('run-simulation-btn');
+    var runHint = document.getElementById('run-simulation-hint');
+
+    function updateJsonFileState(file) {
+        if (!file) {
+            jsonFilePill.textContent = 'Accepted format: .json · Max size: 10 MB';
+            runBtn.disabled = true;
+            runHint.textContent = 'Run button will be enabled after a valid file is uploaded.';
+            return;
+        }
+        jsonFilePill.textContent = file.name + ' selected';
+        runBtn.disabled = false;
+        runHint.textContent = file.name + ' uploaded and validated.';
+    }
+
+    if (jsonFileInput) {
+        jsonFileInput.addEventListener('change', function () {
+            updateJsonFileState(jsonFileInput.files && jsonFileInput.files[0]);
+        });
+    }
+
+    if (jsonDropzone && jsonFileInput) {
+        ['dragenter', 'dragover'].forEach(function (evt) {
+            jsonDropzone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                jsonDropzone.classList.add('border-primary');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function (evt) {
+            jsonDropzone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                jsonDropzone.classList.remove('border-primary');
+            });
+        });
+        jsonDropzone.addEventListener('drop', function (e) {
+            var files = e.dataTransfer && e.dataTransfer.files;
+            if (!files || !files.length) return;
+            jsonFileInput.files = files;
+            updateJsonFileState(files[0]);
+        });
+    }
+
+    // Copy sample JSON
+    var copySampleBtn = document.getElementById('copy-sample-json');
+    if (copySampleBtn) {
+        copySampleBtn.addEventListener('click', function () {
+            var text = document.getElementById('sample-json').textContent;
+            navigator.clipboard.writeText(text).then(function () {
+                var original = copySampleBtn.innerHTML;
+                copySampleBtn.innerHTML = '<span class="fas fa-check"></span>Copied';
+                setTimeout(function () { copySampleBtn.innerHTML = original; }, 1500);
+            });
+        });
+    }
+})();
+</script>
+{% endblock scripts %}

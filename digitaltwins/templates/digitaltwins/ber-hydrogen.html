@@ -1,0 +1,230 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}BER Node - Digital Twins{% endblock %}
+
+{% block head %}
+<style>
+    .ber-stepper {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        position: relative;
+    }
+    .ber-stepper::before {
+        content: '';
+        position: absolute;
+        top: 22px;
+        left: 8%;
+        right: 8%;
+        border-top: 2px dotted var(--phoenix-border-color);
+        z-index: 0;
+    }
+    .ber-step-number {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: .5rem auto 0;
+        border-radius: 50%;
+        background-color: var(--phoenix-tertiary-bg);
+        color: var(--phoenix-body-color);
+        font-size: .7rem;
+        font-weight: 700;
+        line-height: 22px;
+        border: 1px solid var(--phoenix-border-color);
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">BER Hydrogen Testing Facility</li>
+          </ol>
+        </nav>
+
+        <!-- Hero -->
+        <div class="card mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <div class="row g-4 align-items-center">
+                    <div class="col-12 col-lg-6">
+                        <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-2 fs-10 fw-semibold text-uppercase mb-3">BER Node</span>
+                        <h1 class="fw-bolder text-body-emphasis mb-2">BER Hydrogen Testing Facility</h1>
+                        <p class="text-body-secondary fs-7 mb-3">Physical PEM Electrolyzer Testing Environment</p>
+                        <p class="text-body-tertiary fs-9 mb-3">The BER node provides a real-world testing environment for PEM electrolyzers, enabling controlled hydrogen production experiments and the generation of high-quality operational data.</p>
+                        <p class="text-body-tertiary fs-9 mb-3">Users can request custom experimental campaigns through the EnergyGuard platform, defining operating conditions such as load profiles and system behavior. The resulting datasets support the development and validation of advanced analytics and AI-based solutions for hydrogen systems, including performance optimization, predictive maintenance, and operational strategy assessment.</p>
+                        <p class="text-body-tertiary fs-9 mb-4">By combining physical assets with structured experimentation, the BER node offers reliable, data-driven insights derived from actual system operation, supporting the transition toward efficient and scalable hydrogen technologies.</p>
+
+                        <div class="row g-3 mt-6">
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-flask"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Physical Asset</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">Real laboratory environment</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-database"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Operational Data</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">High-quality experimental datasets</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-user-group"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Manual Execution</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">Experiments executed by BER laboratory team</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-5 offset-lg-1">
+                        <img src="{% static 'assets/img/digital_twins/ber-dt1.jpg' %}" alt="BER PEM Electrolyzer" class="img-fluid rounded-3 w-100" style="height:400px;object-fit:contain;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Main column -->
+            <div class="col-12 col-lg-8">
+
+                <!-- What can you do here -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                        <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                        <a href="{% url 'ber-hydrogen-dt' %}" class="card dt-tab-card mb-0 text-decoration-none" style="cursor: pointer;">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-flask"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Experiment Request</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Submit a custom PEM electrolyzer experiment configuration for execution in the laboratory.</p>
+                                </div>
+                                <span class="fas fa-chevron-right text-body-tertiary"></span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- How it works -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-1">How it works</h5>
+                        <p class="text-body-tertiary fs-9 mb-4">From request to data.</p>
+
+                        <div class="ber-stepper">
+                            <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:110px;">
+                                <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-arrow-up-from-bracket"></span></div>
+                                <span class="ber-step-number">1</span>
+                                <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Upload</h6>
+                                <p class="text-body-tertiary fs-10 mb-0">Upload your experiment configuration in JSON format.</p>
+                            </div>
+                            <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:110px;">
+                                <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-paper-plane"></span></div>
+                                <span class="ber-step-number">2</span>
+                                <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Submit</h6>
+                                <p class="text-body-tertiary fs-10 mb-0">Submit your request to the BER laboratory team.</p>
+                            </div>
+                            <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:110px;">
+                                <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-flask"></span></div>
+                                <span class="ber-step-number">3</span>
+                                <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Execute</h6>
+                                <p class="text-body-tertiary fs-10 mb-0">The experiment is executed on the PEM system.</p>
+                            </div>
+                            <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:110px;">
+                                <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-database"></span></div>
+                                <span class="ber-step-number">4</span>
+                                <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Results</h6>
+                                <p class="text-body-tertiary fs-10 mb-0">Results are processed and uploaded to the Data Lake.</p>
+                            </div>
+                            <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:110px;">
+                                <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-bell"></span></div>
+                                <span class="ber-step-number">5</span>
+                                <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Notify</h6>
+                                <p class="text-body-tertiary fs-10 mb-0">You receive a notification when your dataset is ready.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-12 col-lg-4">
+
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-flask"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Technology</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">PEM Electrolyzer</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-building"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Facility Type</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Physical Laboratory</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-chart-simple"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Output</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Operational Datasets</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-share-nodes"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Results Delivery</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">EnergyGuard Data Lake</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-clock"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Typical Availability</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Business days</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent px-4 py-3 d-flex align-items-start gap-2">
+                            <span class="text-primary fs-9 flex-shrink-0 mt-1"><span class="fas fa-headset"></span></span>
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Support</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">BER Laboratory Team</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

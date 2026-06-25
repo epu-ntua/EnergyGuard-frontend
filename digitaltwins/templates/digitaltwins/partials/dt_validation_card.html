@@ -1,0 +1,13 @@
+<div class="card h-100">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="fas fa-shield-halved text-success"></span>
+            <h6 class="fw-bold text-body-emphasis mb-0">Validation</h6>
+        </div>
+        <p class="text-body-tertiary fs-9 mb-3">After uploading, we will automatically validate your file.</p>
+        <ul class="list-unstyled mb-0 fs-9">
+            {% for check in checks %}<li class="{% if not forloop.last %}mb-1{% endif %}"><span class="fas fa-check text-success me-2"></span>{{ check }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

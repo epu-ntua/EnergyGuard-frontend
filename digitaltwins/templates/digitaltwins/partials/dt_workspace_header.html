@@ -1,0 +1,12 @@
+{% load static %}
+<div class="d-flex align-items-start gap-3 mb-4">
+    <div class="rounded-3 border d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
+        style="width:56px;height:56px;">
+        <img src="{% static logo_path %}" alt="{{ logo_alt }}" style="width:160%;height:200%;object-fit:cover;">
+    </div>
+    <div>
+        <h2 class="fw-bolder text-body-emphasis mb-1">{{ title }}</h2>
+        <p class="text-body-tertiary fs-9 {% if description_secondary %}mb-1{% else %}mb-0{% endif %}">{{ description }}</p>
+        {% if description_secondary %}<p class="text-body-tertiary fs-9 mb-0">{{ description_secondary }}</p>{% endif %}
+    </div>
+</div>

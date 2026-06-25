@@ -47,3 +47,28 @@
 #assessmentRunsTable tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.03);
 }
+
+/* Shared digital twin tab cards (BER, CEA, etc.) */
+.dt-tab-card {
+  transition: border-color .15s, box-shadow .15s;
+}
+.dt-tab-card:hover {
+  border-color: var(--phoenix-primary);
+}
+.dt-tab-card.active {
+  border-color: var(--phoenix-primary);
+  box-shadow: 0 0 0 1px var(--phoenix-primary);
+}
+.dt-tab-card .dt-tab-number {
+  width: 28px;
+  height: 28px;
+  font-weight: 600;
+  font-size: .8rem;
+  border: 1px solid var(--phoenix-border-color);
+  color: var(--phoenix-body-color);
+}
+.dt-tab-card.active .dt-tab-number {
+  background-color: var(--phoenix-primary);
+  border-color: var(--phoenix-primary);
+  color: #fff;
+}
