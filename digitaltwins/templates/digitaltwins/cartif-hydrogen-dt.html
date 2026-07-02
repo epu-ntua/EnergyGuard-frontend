@@ -1,0 +1,289 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CARTIF Node Workspace - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='cartif-hydrogen' %}">CARTIF Hydrogen</a></li>
+            <li class="breadcrumb-item active">DT Simulation</li>
+          </ol>
+        </nav>
+
+        <div class="row g-4 mb-4 align-items-stretch">
+            <div class="col-12 col-lg-8">
+                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/CARTIF - icon.png" logo_alt="CARTIF" title="CARTIF Node" description="Hybrid Hydrogen-Electric-Thermal energy system." %}
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="alert alert-subtle-info rounded-3 mb-0 h-100" role="alert">
+                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-2">
+                        <span class="fas fa-circle-info"></span>About this workspace
+                    </h6>
+                    <p class="fs-9 mb-0">Configure the energy asset and AI model hyperparameters, then run the simulation. The model will generate time-series predictions and AI performance metrics.</p>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-underline mb-4" id="cartifTab" role="tablist">
+            <li class="nav-item me-3">
+                <a class="nav-link fs-8 active d-inline-flex align-items-center gap-2" id="config-tab" data-bs-toggle="tab" href="#tab-config" role="tab" aria-controls="tab-config" aria-selected="true">
+                    <span class="fas fa-sliders"></span>Configuration
+                </a>
+            </li>
+            <li class="nav-item me-3">
+                <a class="nav-link fs-8 disabled d-inline-flex align-items-center gap-2" id="results-tab" data-bs-toggle="tab" href="#tab-results" role="tab" aria-controls="tab-results" aria-selected="false" tabindex="-1" aria-disabled="true">
+                    <span class="fas fa-chart-line"></span>Results
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fs-8 disabled d-inline-flex align-items-center gap-2" id="history-tab" data-bs-toggle="tab" href="#tab-history" role="tab" aria-controls="tab-history" aria-selected="false" tabindex="-1" aria-disabled="true">
+                    <span class="fas fa-clock-rotate-left"></span>History
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="cartifTabContent">
+
+            <!-- Configuration -->
+            <div class="tab-pane fade show active" id="tab-config" role="tabpanel" aria-labelledby="config-tab">
+
+                <!-- Asset configuration -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">1</span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Asset configuration</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Physical characteristics of the energy system.</p>
+                                </div>
+                            </div>
+                            <span class="badge badge-phoenix badge-phoenix-secondary text-uppercase">Config</span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-semibold mb-0" for="mh_capacity">MH battery capacity</label>
+                                    <span class="text-body-tertiary fs-10">mh_capacity</span>
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="mh_capacity" name="mh_capacity" value="250">
+                                    <span class="input-group-text">kWh</span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-semibold mb-0" for="elec_capacity">Electrical battery capacity</label>
+                                    <span class="text-body-tertiary fs-10">elec_capacity</span>
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="elec_capacity" name="elec_capacity" value="500">
+                                    <span class="input-group-text">kWh</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-semibold mb-0" for="hp_power">Heat pump power <span class="text-body-tertiary fw-normal">· optional</span></label>
+                                    <span class="text-body-tertiary fs-10">hp_power</span>
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="hp_power" name="hp_power" value="50">
+                                    <span class="input-group-text">kW</span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-semibold mb-0" for="power">Electrolyzer power</label>
+                                    <span class="text-body-tertiary fs-10">power</span>
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="power" name="power" value="100">
+                                    <span class="input-group-text">kW</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-body-tertiary opacity-50 rounded-3 p-3">
+                            <span class="fs-10 fw-semibold text-uppercase text-body-tertiary">Location · Fixed for CARTIF</span>
+                            <span class="badge badge-phoenix badge-phoenix-secondary ms-1">Read-only</span>
+                            <div class="row g-3 mt-1">
+                                <div class="col-6 col-md-3">
+                                    <span class="text-body-tertiary fs-10 d-block">Latitude</span>
+                                    <span class="fw-semibold text-body-emphasis">41.6628°N</span>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-body-tertiary fs-10 d-block">Longitude</span>
+                                    <span class="fw-semibold text-body-emphasis">-4.7053°E</span>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-body-tertiary fs-10 d-block">Altitude</span>
+                                    <span class="fw-semibold text-body-emphasis">690 m</span>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-body-tertiary fs-10 d-block">Timezone</span>
+                                    <span class="fw-semibold text-body-emphasis">Europe/Madrid · UTC+1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI model configuration -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">2</span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1">AI model configuration</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Hyperparameters for the machine-learning model.</p>
+                                </div>
+                            </div>
+                            <span class="badge badge-phoenix badge-phoenix-secondary text-uppercase">Config</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="rounded-circle bg-primary flex-shrink-0" style="width:10px;height:10px;"></span>
+                            <h6 class="fw-bold text-body-emphasis mb-0">Random Forest</h6>
+                            <span class="badge badge-phoenix badge-phoenix-success">Active</span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="n_estimators">n_estimators</label>
+                                <select class="form-select" id="n_estimators" name="n_estimators">
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="200">200</option>
+                                    <option value="500">500</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="max_depth">max_depth</label>
+                                <select class="form-select" id="max_depth" name="max_depth">
+                                    <option value="" selected>None</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="min_samples_split">min_samples_split</label>
+                                <select class="form-select" id="min_samples_split" name="min_samples_split">
+                                    <option value="2" selected>2</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="min_samples_leaf">min_samples_leaf</label>
+                                <select class="form-select" id="min_samples_leaf" name="min_samples_leaf">
+                                    <option value="1" selected>1</option>
+                                    <option value="2">2</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="max_features">max_features</label>
+                                <select class="form-select" id="max_features" name="max_features">
+                                    <option value="sqrt" selected>sqrt</option>
+                                    <option value="log2">log2</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="border border-dashed rounded-3 p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fas fa-circle-nodes text-body-tertiary"></span>
+                                <span class="fw-semibold text-body-tertiary">XGBoost</span>
+                                <span class="text-body-tertiary fs-9">Coming in a future release</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" disabled>Configure</button>
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" disabled>Activate</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run + about -->
+                <div class="row g-4">
+                    <div class="col-12 col-lg-6">
+                        <div class="alert alert-subtle-success rounded-3 h-100 mb-0" role="alert">
+                            <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-1">
+                                <span class="fas fa-circle-check"></span>Configuration valid
+                            </h6>
+                            <p class="fs-9 mb-3">All required fields are completed.</p>
+                            <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" id="run-simulation-btn">
+                                <span class="fas fa-play"></span>Run Simulation
+                            </button>
+                            <p class="text-body-tertiary fs-10 text-center mb-0 mt-2">This will call the CARTIF API and start the simulation.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="alert alert-subtle-primary rounded-3 h-100 mb-0" role="alert">
+                            <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-2">
+                                <span class="fas fa-atom"></span>About the model
+                            </h6>
+                            <p class="fs-9 mb-0">The hybrid ML/physics model combines first-principles simulation with machine learning to provide accurate predictions of the hydrogen plant behavior.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Results -->
+            <div class="tab-pane fade" id="tab-results" role="tabpanel" aria-labelledby="results-tab">
+                <div class="card">
+                    <div class="card-body text-center py-6">
+                        <span class="fas fa-chart-line fs-3 text-body-tertiary mb-3 d-block"></span>
+                        <h6 class="fw-bold text-body-emphasis mb-1">No results yet</h6>
+                        <p class="text-body-tertiary fs-9 mb-0">Run a simulation from the Configuration tab to see results here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="tab-pane fade" id="tab-history" role="tabpanel" aria-labelledby="history-tab">
+                <div class="card">
+                    <div class="card-body text-center py-6">
+                        <span class="fas fa-clock-rotate-left fs-3 text-body-tertiary mb-3 d-block"></span>
+                        <h6 class="fw-bold text-body-emphasis mb-1">No previous runs</h6>
+                        <p class="text-body-tertiary fs-9 mb-0">Simulation runs you submit will appear here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var runBtn = document.getElementById('run-simulation-btn');
+    if (runBtn) {
+        runBtn.addEventListener('click', function () {
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Running...';
+        });
+    }
+})();
+</script>
+{% endblock scripts %}

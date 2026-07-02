@@ -1,0 +1,464 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}ENGREEN Node - Digital Twins{% endblock %}
+
+{% block head %}
+<style>
+    .dt-card-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">Antrodoco REC</li>
+          </ol>
+        </nav>
+
+        <!-- Hero -->
+        <div class="card mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <span class="badge bg-success-subtle text-success-emphasis rounded-pill px-3 py-2 fs-10 fw-semibold text-uppercase mb-3">ENGREEN Node</span>
+                <div class="row g-4 align-items-center">
+                    <div class="col-12 col-lg-6">
+                        <h1 class="fw-bolder text-body-emphasis mb-2">Antrodoco Renewable Energy Community</h1>
+                        <p class="text-body-secondary fs-7 mb-3">Real-world Renewable Energy Community Testing Environment</p>
+                        <p class="text-body-tertiary fs-9 mb-3">The ENGREEN node provides a real-world testing and experimentation environment based on the Antrodoco Renewable Energy Community (REC), located in central Italy. It combines operational data from REC users and assets, real-time monitoring infrastructure, historical metering datasets, and a dedicated Digital Twin developed in collaboration with HAL.</p>
+                        <p class="text-body-tertiary fs-9 mb-3">Users can access AI-based services for photovoltaic production forecasting, anomaly detection, shared energy estimation, and REC planning. The Digital Twin enables comparison of baseline REC behaviour with forecasted, simulated, or AI-enhanced scenarios, supporting both technical validation and decision-support activities.</p>
+                        <p class="text-body-tertiary fs-9 mb-4">The node is particularly valuable for AI developers, researchers, energy SMEs, and policy makers seeking to test, validate, and demonstrate AI solutions for renewable energy communities, local energy management, and sustainability planning.</p>
+
+                        <div class="row g-3 mt-6">
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-leaf"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Real REC Environment</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Field-based community data</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-bolt"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">AI-Powered Services</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Forecasting, anomaly detection, planning</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-info-subtle text-info rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-chart-line"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Digital Twin</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Scenario analysis and validation</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SVG illustration: Antrodoco REC -->
+                    <div class="col-12 col-lg-5 offset-lg-1">
+                        <svg viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" class="img-fluid rounded-3 w-100" style="height:400px;" aria-label="Antrodoco REC illustration">
+                            <defs>
+                                <linearGradient id="eg-sky" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#dbeafe"/>
+                                    <stop offset="100%" stop-color="#f0fdf4"/>
+                                </linearGradient>
+                                <linearGradient id="eg-ground" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#dcfce7"/>
+                                    <stop offset="100%" stop-color="#bbf7d0"/>
+                                </linearGradient>
+                                <marker id="eg-arr-g" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L6,3 Z" fill="#16a34a"/>
+                                </marker>
+                                <marker id="eg-arr-b" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L6,3 Z" fill="#2563eb"/>
+                                </marker>
+                            </defs>
+
+                            <rect width="480" height="340" fill="url(#eg-sky)"/>
+                            <rect x="0" y="268" width="480" height="72" fill="url(#eg-ground)"/>
+                            <line x1="0" y1="268" x2="480" y2="268" stroke="#86efac" stroke-width="1.5"/>
+
+                            <!-- Sun -->
+                            <circle cx="418" cy="52" r="26" fill="#fbbf24" opacity="0.95"/>
+                            <circle cx="418" cy="52" r="18" fill="#fde68a"/>
+                            <g stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" opacity="0.8">
+                                <line x1="418" y1="18" x2="418" y2="10"/>
+                                <line x1="442" y1="28" x2="448" y2="22"/>
+                                <line x1="452" y1="52" x2="460" y2="52"/>
+                                <line x1="442" y1="76" x2="448" y2="82"/>
+                                <line x1="394" y1="28" x2="388" y2="22"/>
+                                <line x1="384" y1="52" x2="376" y2="52"/>
+                            </g>
+
+                            <!-- House 1 -->
+                            <polygon points="30,195 75,150 120,195" fill="#64748b"/>
+                            <rect x="30" y="195" width="90" height="73" fill="#f1f5f9" rx="2"/>
+                            <rect x="65" y="230" width="18" height="38" fill="#94a3b8" rx="2"/>
+                            <rect x="36" y="205" width="18" height="16" fill="#bae6fd" rx="1"/>
+                            <rect x="96" y="205" width="18" height="16" fill="#bae6fd" rx="1"/>
+                            <!-- PV panels house 1 -->
+                            <polygon points="38,183 55,162 75,173 58,194" fill="#1e3a8a" opacity="0.9"/>
+                            <line x1="47" y1="172.5" x2="67" y2="183.5" stroke="#60a5fa" stroke-width="0.8"/>
+                            <line x1="38" y1="178" x2="75" y2="173" stroke="#60a5fa" stroke-width="0.8"/>
+                            <polygon points="58,194 75,173 95,184 78,205" fill="#1e3a8a" opacity="0.9"/>
+                            <line x1="67" y1="183.5" x2="87" y2="194.5" stroke="#60a5fa" stroke-width="0.8"/>
+                            <line x1="58" y1="189" x2="95" y2="184" stroke="#60a5fa" stroke-width="0.8"/>
+
+                            <!-- House 2 -->
+                            <polygon points="138,210 178,168 218,210" fill="#475569"/>
+                            <rect x="138" y="210" width="80" height="58" fill="#f8fafc" rx="2"/>
+                            <rect x="170" y="240" width="16" height="28" fill="#94a3b8" rx="2"/>
+                            <rect x="143" y="220" width="17" height="15" fill="#bae6fd" rx="1"/>
+                            <rect x="200" y="220" width="17" height="15" fill="#bae6fd" rx="1"/>
+                            <!-- PV panels house 2 -->
+                            <polygon points="143,197 162,174 182,185 163,208" fill="#1e40af" opacity="0.9"/>
+                            <line x1="153" y1="185.5" x2="173" y2="196.5" stroke="#60a5fa" stroke-width="0.8"/>
+                            <line x1="143" y1="191" x2="182" y2="185" stroke="#60a5fa" stroke-width="0.8"/>
+                            <polygon points="163,208 182,185 202,196 183,219" fill="#1e40af" opacity="0.9"/>
+                            <line x1="173" y1="196.5" x2="193" y2="207.5" stroke="#60a5fa" stroke-width="0.8"/>
+                            <line x1="163" y1="202" x2="202" y2="196" stroke="#60a5fa" stroke-width="0.8"/>
+
+                            <!-- Grid pole -->
+                            <rect x="248" y="190" width="8" height="78" fill="#9ca3af"/>
+                            <rect x="232" y="192" width="40" height="5" fill="#9ca3af"/>
+                            <circle cx="234" cy="194.5" r="4" fill="#6b7280"/>
+                            <circle cx="270" cy="194.5" r="4" fill="#6b7280"/>
+                            <line x1="234" y1="199" x2="234" y2="213" stroke="#9ca3af" stroke-width="1.5"/>
+                            <line x1="270" y1="199" x2="270" y2="213" stroke="#9ca3af" stroke-width="1.5"/>
+                            <rect x="240" y="213" width="24" height="20" fill="#d1d5db" rx="3" stroke="#9ca3af" stroke-width="1"/>
+                            <text x="252" y="227" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#374151">⚡</text>
+
+                            <!-- Municipal building -->
+                            <rect x="308" y="165" width="148" height="103" fill="#eff6ff" rx="3" stroke="#bfdbfe" stroke-width="1"/>
+                            <rect x="313" y="154" width="138" height="13" fill="#1e3a8a" rx="1" opacity="0.88"/>
+                            <line x1="313" y1="160.5" x2="451" y2="160.5" stroke="#60a5fa" stroke-width="0.7"/>
+                            <line x1="336" y1="154" x2="336" y2="167" stroke="#60a5fa" stroke-width="0.7"/>
+                            <line x1="359" y1="154" x2="359" y2="167" stroke="#60a5fa" stroke-width="0.7"/>
+                            <line x1="382" y1="154" x2="382" y2="167" stroke="#60a5fa" stroke-width="0.7"/>
+                            <line x1="405" y1="154" x2="405" y2="167" stroke="#60a5fa" stroke-width="0.7"/>
+                            <line x1="428" y1="154" x2="428" y2="167" stroke="#60a5fa" stroke-width="0.7"/>
+                            <rect x="316" y="174" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="342" y="174" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="368" y="174" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="394" y="174" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="420" y="174" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="316" y="196" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="342" y="196" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="368" y="196" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="394" y="196" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="420" y="196" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="316" y="218" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="342" y="218" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="368" y="218" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="394" y="218" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="420" y="218" width="19" height="14" fill="#bae6fd" rx="1"/>
+                            <rect x="366" y="244" width="32" height="24" fill="#94a3b8" rx="2"/>
+
+                            <!-- Energy flow arrows -->
+                            <path d="M122 232 C155 232 205 220 230 216" stroke="#16a34a" stroke-width="2" fill="none" stroke-dasharray="7,4" opacity="0.85" marker-end="url(#eg-arr-g)"/>
+                            <path d="M218 234 C228 230 232 224 232 219" stroke="#16a34a" stroke-width="2" fill="none" stroke-dasharray="7,4" opacity="0.85" marker-end="url(#eg-arr-g)"/>
+                            <path d="M274 218 C290 218 295 205 306 195" stroke="#2563eb" stroke-width="2" fill="none" stroke-dasharray="7,4" opacity="0.85" marker-end="url(#eg-arr-b)"/>
+
+                            <!-- Labels -->
+                            <rect x="15" y="280" width="158" height="20" rx="10" fill="#dcfce7" opacity="0.95"/>
+                            <text x="94" y="294" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#166534" font-weight="600">PV Prosumers · 11 plants</text>
+
+                            <rect x="220" y="280" width="66" height="20" rx="10" fill="#f1f5f9" opacity="0.95"/>
+                            <text x="253" y="294" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569" font-weight="600">Grid Node</text>
+
+                            <rect x="302" y="280" width="166" height="20" rx="10" fill="#dbeafe" opacity="0.95"/>
+                            <text x="385" y="294" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1d4ed8" font-weight="600">Community · 40 users</text>
+
+                            <rect x="100" y="313" width="280" height="18" rx="9" fill="#166534" opacity="0.88"/>
+                            <text x="240" y="326" text-anchor="middle" font-family="sans-serif" font-size="10" fill="white" font-weight="700" letter-spacing="0.5">ANTRODOCO REC — ENGREEN NODE</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Main column -->
+            <div class="col-12">
+
+                <!-- What can you do here -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                        <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                        <!-- PV Production Simulator wrapper: entire block gets active border -->
+                        <div class="card dt-tab-card mb-3" id="pv-wrapper">
+                            <!-- Clickable header -->
+                            <div class="card-body d-flex align-items-center gap-3" id="pv-simulator-card" style="cursor:pointer;">
+                                <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-sun"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">PV Production Simulator</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Forecast photovoltaic production for REC stations or hypothetical new plants using real and historical weather data.</p>
+                                </div>
+                                <span class="fas fa-chevron-down text-body-tertiary" id="pv-chevron"></span>
+                            </div>
+                            <!-- How it works + Open Workspace (revealed on click) -->
+                            <div id="pv-detail-panel" class="d-none border-top p-3">
+
+                                <div class="row g-3 align-items-stretch">
+                                    <div class="col-12 col-lg-9">
+                                        <div class="card border h-100">
+                                            <div class="card-body p-4">
+                                                <h6 class="fw-bold text-body-emphasis mb-1">How it works</h6>
+                                                <p class="text-body-tertiary fs-9 mb-4">From configuration to results.</p>
+                                                <div class="dt-stepper">
+                                                    <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                        <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-hand-pointer"></span></div>
+                                                        <span class="dt-step-number">1</span>
+                                                        <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Select</h6>
+                                                        <p class="text-body-tertiary fs-9-5 mb-0">Choose a REC station or configure a new PV plant.</p>
+                                                    </div>
+                                                    <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                        <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-sliders"></span></div>
+                                                        <span class="dt-step-number">2</span>
+                                                        <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Configure</h6>
+                                                        <p class="text-body-tertiary fs-9-5 mb-0">Set consumption profile and forecast horizon.</p>
+                                                    </div>
+                                                    <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                        <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-play"></span></div>
+                                                        <span class="dt-step-number">3</span>
+                                                        <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Simulate</h6>
+                                                        <p class="text-body-tertiary fs-9-5 mb-0">The Digital Twin runs the forecast scenario.</p>
+                                                    </div>
+                                                    <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                        <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-chart-line"></span></div>
+                                                        <span class="dt-step-number">4</span>
+                                                        <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Results</h6>
+                                                        <p class="text-body-tertiary fs-9-5 mb-0">View production, feed-in, and self-consumption charts.</p>
+                                                    </div>
+                                                    <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                        <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-download"></span></div>
+                                                        <span class="dt-step-number">5</span>
+                                                        <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Export</h6>
+                                                        <p class="text-body-tertiary fs-9-5 mb-0">Download raw data for further analysis.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-3">
+                                        <div class="card bg-primary-subtle border-0 h-100">
+                                            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                                                <h6 class="fw-bold text-body-emphasis mb-2">Ready to get started?</h6>
+                                                <p class="text-body-tertiary fs-9 mb-3 flex-grow-1">Configure your forecast parameters, then run a simulation.</p>
+                                                <a href="{% url 'engreen-antrodoco-dt' %}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                                                    Open Workspace <span class="fas fa-arrow-right"></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- What this simulator does + How to get started -->
+                                <div class="row g-3 mt-1">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="p-3">
+                                            <h6 class="fw-bold text-body-emphasis mb-2">What this simulator does</h6>
+                                            <p class="text-body-tertiary fs-9 mb-4">Estimate how much electricity a photovoltaic plant can produce and how that production is split between energy fed into the grid and energy self-consumed on-site.</p>
+
+                                            <h6 class="fw-semibold text-body-emphasis mb-3 fs-9">Available simulation modes</h6>
+                                            <div class="d-flex align-items-start gap-3 mb-3">
+                                                <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                                    <span class="fas fa-cloud-sun"></span>
+                                                </span>
+                                                <div>
+                                                    <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Short-term forecast</h6>
+                                                    <p class="text-body-tertiary fs-9-5 mb-0">Predicts daily and hourly production for the next 1–16 days using real weather forecast data.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-3 mb-3">
+                                                <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                                    <span class="fas fa-chart-bar"></span>
+                                                </span>
+                                                <div>
+                                                    <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Historical baseline</h6>
+                                                    <p class="text-body-tertiary fs-9-5 mb-0">Estimates the typical annual yield averaged over the last 5 years of observed weather.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-3 mb-0">
+                                                <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                                    <span class="fas fa-arrow-trend-up"></span>
+                                                </span>
+                                                <div>
+                                                    <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Optimistic scenario</h6>
+                                                    <p class="text-body-tertiary fs-9-5 mb-0">Estimates the theoretical maximum annual yield under ideal clear-sky conditions.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6">
+                                        <div class="p-3 d-flex flex-column h-100">
+                                            <h6 class="fw-bold text-body-emphasis mb-3">How to get started</h6>
+                                            <div class="d-flex align-items-start gap-3 mb-3">
+                                                <span class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-9" style="width:28px;height:28px;min-width:28px;">1</span>
+                                                <p class="text-body-tertiary fs-9 mb-0">Select an existing REC station or define a new hypothetical plant (panels, power, tilt, orientation).</p>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-3 mb-3">
+                                                <span class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-9" style="width:28px;height:28px;min-width:28px;">2</span>
+                                                <p class="text-body-tertiary fs-9 mb-0">Choose a consumption profile that reflects how the household typically uses energy.</p>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-3 mb-4">
+                                                <span class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-9" style="width:28px;height:28px;min-width:28px;">3</span>
+                                                <p class="text-body-tertiary fs-9 mb-0">Select your simulation type and, for short-term forecast, set the number of days ahead.</p>
+                                            </div>
+                                            <div class="rounded-3 p-3 mb-0" style="background:var(--phoenix-gray-100,#f1f5f9);">
+                                                <p class="text-body-tertiary fs-9 mb-0">After the simulation completes, you'll see a summary of total production, energy fed into the grid, and self-consumed energy — broken down by day, hour, or month depending on the scenario.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smart Energy Optimiser (coming soon) -->
+                        <div class="card dt-card-disabled mb-3">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-chart-line"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Smart Energy Optimiser <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Full REC energy balance forecasting including consumption, shared energy, and grid exchanges.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Predictive Maintenance (coming soon) -->
+                        <div class="card dt-card-disabled mb-0">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-wrench"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Predictive Maintenance Monitoring <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Detect anomalous operating patterns in monitored photovoltaic plants.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Bottom bar + CTA -->
+        <div class="row g-4 mt-0">
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-4">At a glance</h5>
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-bolt"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Technology</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Photovoltaic &amp; Battery Storage</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-puzzle-piece"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Components</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">11 PV Plants, 5 BESS, 40 REC Users</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-diagram-project"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Use Cases</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">PV Forecasting, Anomaly Detection, REC Planning</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-database"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Data Output</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Energy KPIs, Anomaly Classifications, Scenario Comparisons</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-user-group"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Who it's for</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Researchers, AI Developers, Energy SMEs, Policy Makers</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var header  = document.getElementById('pv-simulator-card');
+    var wrapper = document.getElementById('pv-wrapper');
+    var panel   = document.getElementById('pv-detail-panel');
+    var chevron = document.getElementById('pv-chevron');
+
+    header.addEventListener('click', function () {
+        var opening = panel.classList.contains('d-none');
+        panel.classList.toggle('d-none', !opening);
+        wrapper.classList.toggle('active', opening);
+        chevron.classList.toggle('fa-chevron-down', !opening);
+        chevron.classList.toggle('fa-chevron-up', opening);
+    });
+}());
+</script>
+{% endblock scripts %}

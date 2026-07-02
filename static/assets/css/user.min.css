@@ -48,6 +48,41 @@
   background-color: rgba(0, 0, 0, 0.03);
 }
 
+/* Gradient backgrounds */
+.bg-gradient-cyan-blue {
+  background: linear-gradient(135deg, #2DD4F0 0%, #1B78D4 100%);
+}
+
+/* Shared digital twin step-flow stepper (BER, ENGREEN, etc.) */
+.dt-stepper {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  position: relative;
+}
+.dt-stepper::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 8%;
+  right: 8%;
+  border-top: 2px dotted var(--phoenix-border-color);
+  z-index: 0;
+}
+.dt-step-number {
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: .5rem auto 0;
+  border-radius: 50%;
+  background-color: var(--phoenix-tertiary-bg);
+  color: var(--phoenix-body-color);
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 22px;
+  border: 1px solid var(--phoenix-border-color);
+}
+
 /* Shared digital twin tab cards (BER, CEA, etc.) */
 .dt-tab-card {
   transition: border-color .15s, box-shadow .15s;

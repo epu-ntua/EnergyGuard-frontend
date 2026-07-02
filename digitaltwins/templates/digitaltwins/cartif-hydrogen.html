@@ -1,0 +1,183 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CARTIF Hydrogen Node - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">CARTIF Hydrogen</li>
+          </ol>
+        </nav>
+
+        <!-- Hero -->
+        <div class="card mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <span class="badge bg-success-subtle text-success-emphasis rounded-pill px-3 py-2 fs-10 fw-semibold text-uppercase mb-3">CARTIF Node</span>
+                <div class="row g-4 align-items-start">
+                    <div class="col-12 col-lg-5">
+                        <h1 class="fw-bolder text-body-emphasis mb-2">CARTIF Hydrogen Node</h1>
+                        <p class="text-body-secondary fs-7 mb-3">Hybrid hydrogen-electric-thermal energy system</p>
+
+                        <p class="text-body-tertiary fs-9 mb-3">The CARTIF Hydrogen Node provides a virtual testing environment for hydrogen and renewable energy systems. It allows users to safely explore, evaluate, and optimize energy management strategies without affecting real equipment.</p>
+                        <p class="text-body-tertiary fs-9 mb-3">The service is based on a real hybrid energy facility that combines hydrogen production, hydrogen storage, batteries, thermal storage, and heat recovery technologies. Through a Digital Twin of the installation, users can simulate different operating conditions, assess system performance, and test AI-driven control strategies before deploying them in real-world environments.</p>
+                        <p class="text-body-tertiary fs-9 mb-3">The platform helps users understand how renewable energy, hydrogen technologies, and energy storage can work together to improve efficiency, flexibility, and sustainability. It supports scenario analysis, performance benchmarking, and the evaluation of advanced AI solutions for forecasting, optimization, and energy management.</p>
+
+                        <h6 class="fw-bold text-body-emphasis mb-2">Key benefits include:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-9">Safe experimentation without risks to physical assets.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-9">Evaluation of energy and hydrogen management strategies before deployment.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-9">Comparison of alternative operating scenarios and control approaches.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-9">Access to performance indicators related to efficiency, renewable energy utilization, flexibility, and hydrogen storage.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-9">Validation of AI-based energy management solutions in a realistic environment.</span>
+                            </li>
+                        </ul>
+
+                        <p class="text-body-tertiary fs-9 mb-0">The CARTIF Hydrogen Node is particularly valuable for researchers, AI developers, energy technology providers, utilities, and industrial users seeking to accelerate innovation and reduce the risks associated with deploying advanced energy solutions.</p>
+                        <div class="row g-3 mt-6">
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-cube"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Digital Twin Simulation</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">Simulate the hybrid energy system under different operating conditions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-brain"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">AI Model Integration</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">Integrate and benchmark AI models for forecasting, optimization, and control</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-desktop"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-0 fs-9">No Physical Access</h6>
+                                        <p class="text-body-tertiary fs-10 mb-0">All experimentation runs on the Digital Twin</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-7">
+                        <img src="{% static 'assets/img/digital_twins/DT_CARTIF updated.png' %}" alt="CARTIF Hydrogen Digital Twin Node" class="img-fluid rounded-3 w-100">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details + CTA -->
+        <div class="row g-4">
+
+            <div class="col-12 col-xl-9">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-4">At a glance</h5>
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-gears"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Technology</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Hybrid Energy System</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-puzzle-piece"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Components</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Electrolyzer, Fuel Cell, H₂ Storage, Batteries, Thermal Storage, Heat Pump</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-diagram-project"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Use Cases</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Scenario Simulation, AI Model Integration, Asset Re-parametrization</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-database"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Data Output</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">KPIs, AI Model Metrics, Calibration Indicators</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-user-group"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Who it's for</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Researchers, AI Developers, Energy SMEs, Utilities</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-3">
+                <div class="card h-100 bg-primary-subtle border-0">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h6 class="fw-bold text-body-emphasis mb-2">Ready to get started?</h6>
+                        <p class="text-body-tertiary fs-9 mb-3 flex-grow-1">Configure your asset and AI model, then run a simulation.</p>
+                        <a href="{% url 'cartif-hydrogen-dt' %}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                            Open Workspace <span class="fas fa-arrow-right"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

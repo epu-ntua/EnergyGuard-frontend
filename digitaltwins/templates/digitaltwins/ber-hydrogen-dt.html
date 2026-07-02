@@ -53,8 +53,8 @@
         <nav class="mb-3" aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">BER Hydrogen Testing Facility</a></li>
-            <li class="breadcrumb-item active">BER DT</li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">BER Hydrogen</a></li>
+            <li class="breadcrumb-item active">Experiment Request</li>
           </ol>
         </nav>
 
@@ -67,7 +67,7 @@
                 {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/BER-icon.png" logo_alt="BER" title="BER Node" description="Physical PEM Electrolyzer Testing Facility." %}
 
                 <!-- Service navigation -->
-                <div class="row g-3 mb-4">
+                <!-- <div class="row g-3 mb-4">
                     <div class="col-12">
                         <div class="card dt-tab-card cursor-pointer active h-100" data-tab-target="experiment-request" tabindex="0" role="button">
                             <div class="card-body d-flex align-items-start gap-3">
@@ -82,12 +82,12 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
             </div>
 
             <!-- Sidebar -->
-            <div class="col-12 col-xl-3">
+            <!-- <div class="col-12 col-xl-3">
                 <div class="alert alert-subtle-info rounded-3 mb-0" role="alert">
                     <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-2">
                         <span class="fas fa-circle-info"></span>About this workspace
@@ -96,7 +96,7 @@
                     <p class="fs-9 mb-2">The laboratory team will review and execute the experiment manually.</p>
                     <p class="fs-9 mb-0">Results are not generated immediately and will become available after execution.</p>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Tab content -->
             <div class="card">
