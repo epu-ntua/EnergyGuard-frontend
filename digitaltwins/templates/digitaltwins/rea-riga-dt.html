@@ -35,7 +35,7 @@
 {% block scripts %}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-  window.BUILDINGS_DATA_URL = "{% static 'digitaltwins/DT_data.json' %}";
+  window.RIGA_BUILDINGS_API_URL = "{% url 'rea-riga-buildings-api' %}";
 </script>
-<script src="{% static 'digitaltwins/app.js' %}"></script>
+<script src="{% static 'digitaltwins/rea-riga-map.js' %}"></script>
 {% endblock %}

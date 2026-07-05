@@ -1,3 +1,6 @@
+(function () {
+'use strict';
+
 /* ═══════════════════════════════════════════════════
    DATA & FILTER STATE
 ═══════════════════════════════════════════════════ */
@@ -461,6 +464,24 @@ function bd(p, key) {
   return p?.building_data?.[0]?.[key] ?? "-";
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sanitizeUrl(url) {
+  try {
+    const parsed = new URL(String(url), window.location.href);
+    return (parsed.protocol === "http:" || parsed.protocol === "https:") ? parsed.href : "";
+  } catch (e) {
+    return "";
+  }
+}
+
 /* ═══════════════════════════════════════════════════
    POPUP
 ═══════════════════════════════════════════════════ */
@@ -487,7 +508,7 @@ function buildPopupContent(feature) {
     pct = ((latestVal - prevVal) / prevVal) * 100;
 
   const cls = getFeatureEnergyClass(feature) || "-";
-  const buildingTitle = p.building_title || p.address || (p.CODE ? `Building ${p.CODE}` : "Building details");
+  const buildingTitle = escapeHtml(p.building_title || p.address || (p.CODE ? `Building ${p.CODE}` : "Building details"));
   const energyColor = getEnergyColor(cls);
 
   const changeText  = pct === null ? "-" : (pct > 0 ? `+${pct.toFixed(1)}%` : `${pct.toFixed(1)}%`);
@@ -495,8 +516,8 @@ function buildPopupContent(feature) {
   const changeClass = pct === null ? "neutral" : (pct > 0 ? "warn" : (pct < 0 ? "good" : "neutral"));
 
   const chartHTML   = vals.length ? lineChartSVG(months, vals) : "";
-  const apiUrl = p.api_url || p.open_api_url || p.api || "";
-  const safeApiUrl = String(apiUrl).replace(/'/g, "%27");
+  const apiUrl = sanitizeUrl(p.api_url || p.open_api_url || p.api || "");
+  const safeApiUrl = escapeHtml(apiUrl);
   const heatIndicator = parseHeatingIndicator(p.heating_indicator);
   const indicatorClass = heatIndicator === null ? "neutral" : (heatIndicator > 0 ? "over" : (heatIndicator < 0 ? "under" : "neutral"));
   const indicatorWidth = heatIndicator === null ? 0 : Math.min(50, Math.abs(heatIndicator) * 0.5);
@@ -515,8 +536,8 @@ function buildPopupContent(feature) {
     ["Construction materials", p.heavy_light || "-"]
   ].map(([label, value]) => `
     <div class="fact-row">
-      <div class="fact-label">${label}</div>
-      <div class="fact-value">${value ?? "-"}</div>
+      <div class="fact-label">${escapeHtml(label)}</div>
+      <div class="fact-value">${escapeHtml(value ?? "-")}</div>
     </div>
   `).join("");
 
@@ -528,7 +549,7 @@ function buildPopupContent(feature) {
           <h3 class="building-title">Building profile</h3>
           <span class="energy-badge" style="background:${energyColor};">Class ${cls}</span>
           </div>
-          <div class="building-subtitle">Cadastral number: ${p.CODE || "-"}</div>
+          <div class="building-subtitle">Cadastral number: ${escapeHtml(p.CODE || "-")}</div>
         </div>
       </div>
 
@@ -795,23 +816,43 @@ legend.addTo(map);
 map.on("moveend zoomend", updateStatsPanel);
 
 /* ═══════════════════════════════════════════════════
-   LOAD GEOJSON
+   LOAD BUILDINGS FOR CURRENT VIEWPORT
 ═══════════════════════════════════════════════════ */
-fetch((window.BUILDINGS_DATA_URL || "DT_data.json") + "?v=" + Date.now())
-  .then(r => r.text())
-  .then(text => {
-    // Replace NaN with null (invalid JSON fix)
-    const cleanedText = text.replace(/:\s*NaN\b/g, ': null');
-    return JSON.parse(cleanedText);
-  })
-  .then(data => {
-    console.log("[map] Loaded GeoJSON features:", Array.isArray(data.features) ? data.features.length : 0);
-    allData = data;
-    renderBuildings(true);
-  })
-  .catch(err => console.error(err));
+var BUILDINGS_FETCH_DEBOUNCE_MS = 400;
+var buildingsFetchTimer = null;
+var buildingsFetchToken = 0;
+
+function fetchBuildingsForViewport() {
+  var bounds = map.getBounds();
+  var token = ++buildingsFetchToken;
+  var url = window.RIGA_BUILDINGS_API_URL
+    + "?min_lon=" + bounds.getWest()
+    + "&min_lat=" + bounds.getSouth()
+    + "&max_lon=" + bounds.getEast()
+    + "&max_lat=" + bounds.getNorth();
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      if (token !== buildingsFetchToken) return; // a newer viewport request is already in flight
+      console.log("[map] Loaded GeoJSON features:", Array.isArray(data.features) ? data.features.length : 0);
+      allData = data;
+      renderBuildings();
+    })
+    .catch(err => console.error(err));
+}
+
+function scheduleBuildingsFetch() {
+  clearTimeout(buildingsFetchTimer);
+  buildingsFetchTimer = setTimeout(fetchBuildingsForViewport, BUILDINGS_FETCH_DEBOUNCE_MS);
+}
+
+map.on("moveend zoomend", scheduleBuildingsFetch);
+fetchBuildingsForViewport();
 
 /* Initial sync after map is ready */
 map.whenReady(function () {
   setTimeout(syncMiniMap, 100);
 });
+
+}());
