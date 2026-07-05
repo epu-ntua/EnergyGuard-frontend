@@ -1,4 +1,5 @@
 import json
+import logging
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils import timezone
@@ -6,12 +7,19 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Questionnaire, SubQuestionnaire, Question, Choice, UserAnswer, Assessment
 
+logger = logging.getLogger(__name__)
+
 @login_required
 def start_questionnaire(request, questionnaire_id):
     questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id)
 
     # Clear user roles from session when the test starts
     request.session['user_roles'] = []
+    request.session.pop('ai_act_assessment_id', None)
+    request.session.pop('ai_act_project_id', None)
+    project_id = request.GET.get('project_id', '')
+    if project_id:
+        request.session['ai_act_project_id'] = project_id
     request.session.modified = True
 
     first_question = Question.objects.filter(
@@ -203,6 +211,45 @@ def submit_answer(request, question_id):
                     "full_responses_dump": responses_data
                 }
             )
+
+            # Link to trustworthiness.Assessment for the selected project
+            tw_id = request.session.get('ai_act_assessment_id')
+            project_id = request.session.get('ai_act_project_id', '')
+            if tw_id or project_id:
+                tw_result = {
+                    "final_classification": request.session.get('ai_risk_level', "Minimal Risk"),
+                    "responses": responses_data,
+                }
+                if tw_id:
+                    from trustworthiness.models import Assessment as TWAssessment
+                    TWAssessment.objects.filter(id=tw_id).update(results=tw_result)
+                else:
+                    # project_id is single-use: it only seeds the first Assessment of this
+                    # attempt, so drop it now rather than letting it leak into a later
+                    # attempt that doesn't specify its own project.
+                    request.session.pop('ai_act_project_id', None)
+                    request.session.modified = True
+                    try:
+                        from projects.models import Project
+                        from trustworthiness.models import Assessment as TWAssessment
+                        project = Project.objects.get(id=int(project_id))
+                        if not project.is_accessible_by(request.user):
+                            logger.warning(
+                                "User %s denied access to project_id=%s for Assessment creation",
+                                request.user.id, project_id,
+                            )
+                        else:
+                            tw = TWAssessment.objects.create(
+                                project=project,
+                                assessment_type=TWAssessment.AssessmentType.AI_ACT,
+                                status=TWAssessment.Status.COMPLETED,
+                                input_data={"questionnaire_id": current_question.sub_questionnaire.parent_questionnaire_id if current_question.sub_questionnaire else None},
+                                results=tw_result,
+                            )
+                            request.session['ai_act_assessment_id'] = tw.id
+                            request.session.modified = True
+                    except Exception:
+                        logger.exception("Failed to create trustworthiness Assessment for project_id=%s", project_id)
 
         # 5. Redirect Handling & Role Identification
         if next_q:

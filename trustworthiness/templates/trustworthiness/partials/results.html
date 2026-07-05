@@ -1,3 +1,9 @@
+{% url 'robustness:view_assessment' assessment_id=0 as robustness_view_url_template %}
+{% url 'robustness:edit_assessment' assessment_id=0 as robustness_edit_url_template %}
+{% url 'code_analysis:view_assessment' assessment_id=0 as code_analysis_view_url_template %}
+{% url 'code_analysis:edit_assessment' assessment_id=0 as code_analysis_edit_url_template %}
+
+{{ assessment_runs_data|json_script:"assessment-runs-data" }}
 
 <!-- Filters -->
 <div class="d-flex align-items-center gap-5 mb-4">
@@ -26,7 +32,7 @@
         <table class="table table-sm fs-9 mb-0" id="assessmentRunsTable" style="width: 100%;">
             <thead>
                 <tr>
-                    <th class="sort align-middle py-3 ps-2 fs-9 fw-bolder" scope="col" style="width:20%;">AI SYSTEM</th>
+                    <th class="sort align-middle py-3 ps-2 fs-9 fw-bolder" scope="col" style="width:20%;">PROJECT</th>
                     <th class="sort align-middle text-start fs-9" scope="col" style="width:18%;">ASSESSMENT</th>
                     <th class="sort align-middle text-start fs-9" scope="col" style="width:10%;">STATUS</th>
                     <th class="sort align-middle text-start fs-9" scope="col" style="width:7%;">SCORE</th>
@@ -45,113 +51,46 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-const MOCK_RUNS = [
-    {
-        ai_system: "Smart Grid Anomaly Detector",
-        assessment_type: "AI Act Questionnaire",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "8.4",
-        accessed_at: "Jun 02, 2026",
-        findings_summary: "Minor transparency gaps in decision logging",
-    },
-    {
-        ai_system: "LSTM (PyTorch)",
-        assessment_type: "Adversarial Robustness",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "7.1",
-        accessed_at: "Jun 01, 2026",
-        findings_summary: "Sensitive to Gaussian noise on input sequences",
-    },
-    {
-        ai_system: "Random Forest",
-        assessment_type: "Code Analysis",
-        status: '<span class="badge badge-phoenix badge-phoenix-danger fs-10-5">Failed</span>',
-        score: "—",
-        accessed_at: "May 29, 2026",
-        findings_summary: "3 critical vulnerabilities in preprocessing pipeline",
-    },
-    {
-        ai_system: "EV Fleet Load Balancer",
-        assessment_type: "AI Act Questionnaire",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "9.2",
-        accessed_at: "May 27, 2026",
-        findings_summary: "Fully compliant — no high-risk flags raised",
-    },
-    {
-        ai_system: "CNN-LSTM Hybrid",
-        assessment_type: "Adversarial Robustness",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "6.8",
-        accessed_at: "May 22, 2026",
-        findings_summary: "Low robustness under PGD attack on vibration features",
-    },
-    {
-        ai_system: "Gradient Boosting (sklearn)",
-        assessment_type: "Code Analysis",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "8.9",
-        accessed_at: "May 20, 2026",
-        findings_summary: "2 medium-severity issues in feature encoding logic",
-    },
-    {
-        ai_system: "Demand Response Controller",
-        assessment_type: "AI Act Questionnaire",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "7.6",
-        accessed_at: "May 15, 2026",
-        findings_summary: "Explainability requirements partially unmet",
-    },
-    {
-        ai_system: "XGBoost v1.7",
-        assessment_type: "Code Analysis",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "9.5",
-        accessed_at: "May 10, 2026",
-        findings_summary: "No critical issues found",
-    },
-    {
-        ai_system: "Transformer (BERT-based)",
-        assessment_type: "Adversarial Robustness",
-        status: '<span class="badge badge-phoenix badge-phoenix-danger fs-10-5">Failed</span>',
-        score: "—",
-        accessed_at: "May 07, 2026",
-        findings_summary: "Evaluation timeout — model too large for sandbox",
-    },
-    {
-        ai_system: "Energy Consumption Forecaster",
-        assessment_type: "AI Act Questionnaire",
-        status: '<span class="badge badge-phoenix badge-phoenix-success fs-10-5">Completed</span>',
-        score: "8.0",
-        accessed_at: "Apr 30, 2026",
-        findings_summary: "Data governance documentation incomplete",
-    },
-];
+const ASSESSMENT_RUNS = JSON.parse(document.getElementById('assessment-runs-data').textContent);
+const ROBUSTNESS_VIEW_URL_TEMPLATE = "{{ robustness_view_url_template }}";
+const ROBUSTNESS_EDIT_URL_TEMPLATE = "{{ robustness_edit_url_template }}";
+const CODE_ANALYSIS_VIEW_URL_TEMPLATE = "{{ code_analysis_view_url_template }}";
+const CODE_ANALYSIS_EDIT_URL_TEMPLATE = "{{ code_analysis_edit_url_template }}";
 
-const ACTIONS_HTML =
-    '<div class="dropdown">' +
+const ASSESSMENT_URL_TEMPLATES = {
+    robustness: { view: ROBUSTNESS_VIEW_URL_TEMPLATE, edit: ROBUSTNESS_EDIT_URL_TEMPLATE },
+    code_analysis: { view: CODE_ANALYSIS_VIEW_URL_TEMPLATE, edit: CODE_ANALYSIS_EDIT_URL_TEMPLATE },
+};
+
+function actionsHtmlFor(row) {
+    // AI Act questionnaire assessments don't have a View/Edit Assessment flow wired up yet.
+    const templates = ASSESSMENT_URL_TEMPLATES[row.type_raw];
+    const viewHref = templates && row.id ? templates.view.replace('/0/', '/' + row.id + '/') : '#';
+    const editHref = templates && row.id ? templates.edit.replace('/0/', '/' + row.id + '/') : '#';
+    return '<div class="dropdown">' +
         '<button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false">' +
             '<span class="fas fa-ellipsis-h fs-10"></span>' +
         '</button>' +
         '<div class="dropdown-menu dropdown-menu-end py-2">' +
-            '<a class="dropdown-item" href="#">View results</a>' +
-            '<a class="dropdown-item" href="#">Re-run</a>' +
+            '<a class="dropdown-item" href="' + viewHref + '">View Assessment</a>' +
+            '<a class="dropdown-item" href="' + editHref + '">Edit Assessment</a>' +
             '<a class="dropdown-item text-danger" href="#">Delete</a>' +
         '</div>' +
     '</div>';
+}
 
 $(document).ready(function () {
     const table = $('#assessmentRunsTable').DataTable({
-        data: MOCK_RUNS,
+        data: ASSESSMENT_RUNS,
         autoWidth: false,
         columns: [
-            { data: "ai_system", className: "ps-2 fw-semibold" },
+            { data: "project", className: "ps-2 fw-semibold" },
             { data: "assessment_type" },
             { data: "status", render: data => data },
             { data: "score", className: "text-start" },
             { data: "accessed_at", className: "text-start" },
             { data: "findings_summary", className: "text-start" },
-            { data: null, className: "text-start", orderable: false, defaultContent: ACTIONS_HTML },
+            { data: null, className: "text-start", orderable: false, render: (data, type, row) => actionsHtmlFor(row) },
         ],
         dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
         language: {

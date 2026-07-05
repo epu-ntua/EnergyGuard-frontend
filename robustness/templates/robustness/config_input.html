@@ -83,8 +83,16 @@
                         <div class="rounded-3 overflow-hidden shadow-sm flex-shrink-0" style="width:56px;height:56px;">
                             <img src="{% static 'assets/img/spot-illustrations/shield.png' %}" alt="" style="width:56px;height:56px;object-fit:contain;">
                         </div>
-                        <h2 class="fw-bolder text-body-emphasis mb-1">Provide Evaluation Config</h2>
-                        <p class="text-body-tertiary fs-8 mb-0">Upload a YAML configuration file that defines the model, dataset, and attack scenarios for the robustness evaluation.</p>
+                        <h2 class="fw-bolder text-body-emphasis mb-1">
+                            {% if mode == "view" %}Assessment Configuration (Read-only)
+                            {% elif mode == "edit" %}Edit Assessment Configuration
+                            {% else %}Provide Evaluation Config{% endif %}
+                        </h2>
+                        <p class="text-body-tertiary fs-8 mb-0">
+                            {% if mode == "view" %}This is the configuration that was used for this assessment. Click the file box to view its contents.
+                            {% elif mode == "edit" %}Editing this configuration and saving will run a new version of this assessment. The original assessment is kept unchanged.
+                            {% else %}Upload a YAML configuration file that defines the model, dataset, and attack scenarios for the robustness evaluation.{% endif %}
+                        </p>
                     </div>
 
                     <!-- Form -->
@@ -96,6 +104,10 @@
 
                         <form action="{% url 'robustness:config_input' %}" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
+                            <input type="hidden" name="project_id" value="{{ project_id }}">
+                            {% if mode == "edit" %}
+                            <input type="hidden" name="parent_assessment_id" value="{{ parent_assessment_id }}">
+                            {% endif %}
 
                             <div class="row g-3">
 
@@ -106,11 +118,19 @@
                                             <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Upload configuration</h6>
 
                                             <label class="yaml-dropzone mb-3" for="config-file" id="yaml-dropzone">
-                                                <input id="config-file" name="config_file" type="file" accept=".yaml,.yml" hidden>
+                                                <input id="config-file" name="config_file" type="file" accept=".yaml,.yml" hidden {% if mode == "view" %}disabled{% endif %}>
                                                 <div class="text-center mb-2"><span class="fas fa-file-code fs-3 text-body-tertiary"></span></div>
+                                                {% if mode == "view" %}
+                                                <span class="fw-semibold text-body-emphasis d-block">Click to view the configuration used</span>
+                                                <span class="text-body-tertiary fs-9 d-block">read-only — no changes can be made here</span>
+                                                {% elif mode == "edit" %}
+                                                <span class="fw-semibold text-body-emphasis d-block">Click to view or edit the configuration</span>
+                                                <span class="text-body-tertiary fs-9 d-block">or drag &amp; drop a new YAML file to replace it</span>
+                                                {% else %}
                                                 <span class="fw-semibold text-body-emphasis d-block">Drag and drop your YAML config here</span>
                                                 <span class="text-body-tertiary fs-9 d-block">or click to browse your local files</span>
-                                                <span class="badge badge-phoenix badge-phoenix-secondary mt-2" id="yaml-file-pill">No file selected</span>
+                                                {% endif %}
+                                                <span class="badge badge-phoenix badge-phoenix-secondary mt-2" id="yaml-file-pill">{{ original_filename|default:"No file selected" }}</span>
                                             </label>
 
                                             <div class="d-flex gap-2 mb-3">
@@ -120,7 +140,7 @@
 
                                             <div class="mb-0">
                                                 <label class="form-label fw-semibold" for="config-name">Evaluation name</label>
-                                                <input id="config-name" name="config_name" class="form-control" type="text" placeholder="blackbox_pytorch_classification">
+                                                <input id="config-name" name="config_name" class="form-control" type="text" placeholder="blackbox_pytorch_classification" value="{{ config_name|default:'' }}" {% if mode == "view" %}disabled{% endif %}>
                                             </div>
                                         </div>
                                     </div>
@@ -147,8 +167,8 @@
                                     <div class="card">
                                         <div class="card-body">
                                             <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Selected config</span>
-                                            <strong class="fw-semibold text-body-emphasis d-block" id="yaml-summary-name">Waiting for file selection</strong>
-                                            <span class="text-body-tertiary fs-9" id="yaml-summary-meta">Choose a YAML file to continue</span>
+                                            <strong class="fw-semibold text-body-emphasis d-block" id="yaml-summary-name">{{ original_filename|default:"Waiting for file selection" }}</strong>
+                                            <span class="text-body-tertiary fs-9" id="yaml-summary-meta">{% if original_filename %}YAML configuration{% else %}Choose a YAML file to continue{% endif %}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -159,9 +179,19 @@
                                 <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="#">
                                     <span class="fas fa-chevron-left"></span>Back
                                 </a>
+                                {% if mode == "view" %}
+                                {% if has_results %}
+                                <a class="btn btn-primary d-inline-flex align-items-center gap-2" href="{% url 'robustness:view_assessment_results' assessment_id=assessment_id %}">
+                                    View Results<span class="fas fa-chevron-right"></span>
+                                </a>
+                                {% else %}
+                                <span class="btn btn-secondary disabled d-inline-flex align-items-center gap-2">No results available</span>
+                                {% endif %}
+                                {% else %}
                                 <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
-                                    Next<span class="fas fa-chevron-right"></span>
+                                    {% if mode == "edit" %}Save &amp; Run New Version{% else %}Next{% endif %}<span class="fas fa-chevron-right"></span>
                                 </button>
+                                {% endif %}
                             </div>
                         </form>
 
@@ -171,6 +201,33 @@
             </div>
         </div>
     </div>
+
+    {% if mode == "view" or mode == "edit" %}
+    {{ ui_state|json_script:"robustness-ui-state" }}
+    <div class="modal fade" id="yamlConfigModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configuration file</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-body-tertiary fs-9 mb-2">
+                        Reconstructed from the saved configuration values — formatting and comments from the
+                        original upload are not preserved.
+                    </p>
+                    <pre id="yaml-config-pre" class="bg-body-tertiary p-3 rounded-3" style="white-space:pre-wrap; max-height:55vh; overflow:auto; font-size:0.82rem;"></pre>
+                    <textarea id="yaml-config-textarea" class="form-control d-none" style="min-height:55vh; font-family:monospace; font-size:0.82rem;" spellcheck="false"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-phoenix-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary d-none" id="yaml-config-save-btn">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% include "core/footer.html" %}
 </div>
 {% endblock content %}
@@ -183,6 +240,11 @@
     var pill        = document.getElementById('yaml-file-pill');
     var summaryName = document.getElementById('yaml-summary-name');
     var summaryMeta = document.getElementById('yaml-summary-meta');
+
+    var uiStateEl = document.getElementById('robustness-ui-state');
+    var STATE = uiStateEl ? JSON.parse(uiStateEl.textContent) : null;
+    var MODE = STATE ? STATE.mode : 'create';
+    var currentYamlText = STATE ? STATE.yaml_text : '';
 
     function formatSize(bytes) {
         if (!bytes && bytes !== 0) return '';
@@ -202,13 +264,67 @@
         summaryMeta.textContent = formatSize(file.size) + ' • YAML configuration';
     }
 
+    function makeYamlFile(text, filename) {
+        return new File([text], filename || 'config.yaml', { type: 'application/x-yaml' });
+    }
+
+    function attachVirtualFile(text, filename) {
+        var dt = new DataTransfer();
+        dt.items.add(makeYamlFile(text, filename));
+        fileInput.files = dt.files;
+        updateFileState(fileInput.files[0]);
+    }
+
     if (fileInput) {
         fileInput.addEventListener('change', function () {
             updateFileState(fileInput.files && fileInput.files[0]);
         });
     }
 
-    if (dropzone && fileInput) {
+    // ── View/Edit mode: pre-load the saved config so the page reflects what
+    // was actually run, and route dropzone clicks to the preview/edit modal
+    // instead of the native file picker.
+    if (STATE && (MODE === 'view' || MODE === 'edit')) {
+        var modalEl  = document.getElementById('yamlConfigModal');
+        var pre      = document.getElementById('yaml-config-pre');
+        var textarea = document.getElementById('yaml-config-textarea');
+        var saveBtn  = document.getElementById('yaml-config-save-btn');
+        var modal    = modalEl ? bootstrap.Modal.getOrCreateInstance(modalEl) : null;
+
+        if (MODE === 'edit' && fileInput) {
+            attachVirtualFile(currentYamlText, STATE.original_filename);
+        }
+
+        if (dropzone) {
+            dropzone.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (!modal) return;
+                if (MODE === 'view') {
+                    pre.textContent = currentYamlText;
+                    pre.classList.remove('d-none');
+                    textarea.classList.add('d-none');
+                    saveBtn.classList.add('d-none');
+                } else {
+                    textarea.value = currentYamlText;
+                    textarea.classList.remove('d-none');
+                    pre.classList.add('d-none');
+                    saveBtn.classList.remove('d-none');
+                }
+                modal.show();
+            });
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function () {
+                currentYamlText = textarea.value;
+                var filename = (fileInput.files && fileInput.files[0] && fileInput.files[0].name) || STATE.original_filename;
+                attachVirtualFile(currentYamlText, filename);
+                modal.hide();
+            });
+        }
+    }
+
+    if (dropzone && fileInput && MODE !== 'view') {
         ['dragenter', 'dragover'].forEach(function (evt) {
             dropzone.addEventListener(evt, function (e) {
                 e.preventDefault();
@@ -226,6 +342,21 @@
             if (!files || !files.length) return;
             fileInput.files = files;
             updateFileState(files[0]);
+        });
+    }
+
+    var form = document.querySelector('form');
+    var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    var submitted = false;
+    if (form && submitBtn) {
+        form.addEventListener('submit', function (e) {
+            if (submitted) {
+                e.preventDefault();
+                return;
+            }
+            submitted = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
         });
     }
 })();

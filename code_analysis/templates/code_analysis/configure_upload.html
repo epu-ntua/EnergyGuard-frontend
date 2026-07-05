@@ -66,16 +66,28 @@
                         style="width:120px;height:120px;">
                             <i class="fa-solid fa-cloud-arrow-up fs-3"></i> 
                         </div>
-                        <h2 class="fw-bolder text-body-emphasis mb-1">Configure Local ZIP Source</h2>
-                        <p class="text-body-tertiary fs-8 mb-0">Upload a compressed archive from your machine and choose how the analysis should interpret its contents.</p>
+                        <h2 class="fw-bolder text-body-emphasis mb-1">
+                            {% if mode == "view" %}Assessment Configuration (Read-only)
+                            {% elif mode == "edit" %}Edit Assessment Configuration
+                            {% else %}Configure Local ZIP Source{% endif %}
+                        </h2>
+                        <p class="text-body-tertiary fs-8 mb-0">
+                            {% if mode == "view" %}This is the configuration that was used for this assessment. The original archive is not stored and cannot be re-downloaded from here.
+                            {% elif mode == "edit" %}Editing and saving will run a new version of this assessment. The original archive is not stored, so you must upload it again.
+                            {% else %}Upload a compressed archive from your machine and choose how the analysis should interpret its contents.{% endif %}
+                        </p>
                     </div>
-    
+
                     <!-- Form -->
                     <div class="card-body pt-2 pb-5 px-4">
                         <form action="{% url 'code_analysis:processing' %}" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <input type="hidden" name="source_type" value="Local ZIP File">
-    
+                            <input type="hidden" name="project_id" value="{{ project_id }}">
+                            {% if mode == "edit" %}
+                            <input type="hidden" name="parent_assessment_id" value="{{ parent_assessment_id }}">
+                            {% endif %}
+
                             <div class="row g-3">
     
                                 <!-- Primary panel -->
@@ -88,15 +100,23 @@
                                             <label class="d-flex flex-column align-items-center justify-content-center gap-2 rounded-3 border p-4 text-center w-100 mb-0"
                                                 for="archive-file" id="zip-dropzone"
                                                 style="min-height:220px;border-style:dashed !important;cursor:pointer;">
-                                                <input id="archive-file" name="archive_file" type="file" accept=".zip,.tar.gz,.tgz,.gz" hidden>
+                                                <input id="archive-file" name="archive_file" type="file" accept=".zip,.tar.gz,.tgz,.gz" hidden {% if mode == "view" %}disabled{% endif %}>
                                                 <div class="rounded-3 border bg-white d-flex align-items-center justify-content-center shadow-sm mb-1"
                                                     style="width:64px;height:64px;">
-                                                    <i class="fa-solid fa-cloud-arrow-up fs-4"></i> 
-    
+                                                    <i class="fa-solid fa-cloud-arrow-up fs-4"></i>
+
                                                 </div>
+                                                {% if mode == "view" %}
+                                                <span class="fw-bold text-body-emphasis">Original archive not available</span>
+                                                <span class="text-body-tertiary fs-9">{% if archive_filename %}only the filename was kept — the archive itself was not stored{% else %}it was not stored after the scan completed{% endif %}</span>
+                                                {% elif mode == "edit" %}
+                                                <span class="fw-bold text-body-emphasis">Upload the archive to re-run</span>
+                                                <span class="text-body-tertiary fs-9">the original file is not stored — drag and drop or click to browse</span>
+                                                {% else %}
                                                 <span class="fw-bold text-body-emphasis">Drag and drop your archive here</span>
                                                 <span class="text-body-tertiary fs-9">or click to browse your local files</span>
-                                                <span class="badge badge-phoenix badge-phoenix-primary mt-1" id="zip-file-pill">No file selected</span>
+                                                {% endif %}
+                                                <span class="badge badge-phoenix badge-phoenix-primary mt-1" id="zip-file-pill">{% if mode == "view" %}{{ archive_filename|default:"No file stored" }}{% else %}No file selected{% endif %}</span>
                                             </label>
     
                                             <!-- Format chips -->
@@ -112,19 +132,24 @@
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-semibold" for="analysis-name">Analysis name</label>
                                                     <input id="analysis-name" name="analysis_name" class="form-control" type="text"
-                                                        placeholder="Local repo intake - March 2026">
+                                                        placeholder="Local repo intake - March 2026"
+                                                        value="{{ analysis_name|default:'' }}"
+                                                        {% if mode == "view" %}disabled{% endif %}>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-semibold" for="root-folder">Root folder inside archive</label>
                                                     <input id="root-folder" name="root_folder" class="form-control" type="text"
-                                                        placeholder="project/src">
+                                                        placeholder="project/src"
+                                                        value="{{ root_folder|default:'' }}"
+                                                        {% if mode == "view" %}disabled{% endif %}>
                                                 </div>
                                             </div>
     
                                             <div class="mt-3">
                                                 <label class="form-label fw-semibold" for="notes">Notes</label>
                                                 <textarea id="notes" name="notes" class="form-control" rows="4"
-                                                    placeholder="Optional context such as repository snapshot, internal build number, or expected entry point."></textarea>
+                                                    placeholder="Optional context such as repository snapshot, internal build number, or expected entry point."
+                                                    {% if mode == "view" %}disabled{% endif %}></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -145,8 +170,8 @@
                                             <div class="card mt-4">
                                                 <div class="card-body py-3">
                                                     <span class="small text-uppercase fw-bold text-body-tertiary d-block mb-1">Selected archive</span>
-                                                    <strong class="text-body-emphasis d-block" id="zip-summary-name">Waiting for file selection</strong>
-                                                    <span class="text-body-tertiary fs-9 d-block mt-1" id="zip-summary-meta">Choose a local archive to continue</span>
+                                                    <strong class="text-body-emphasis d-block" id="zip-summary-name">{% if mode == "view" %}{{ archive_filename|default:"Not stored" }}{% else %}Waiting for file selection{% endif %}</strong>
+                                                    <span class="text-body-tertiary fs-9 d-block mt-1" id="zip-summary-meta">{% if mode == "view" %}{% if archive_filename %}Filename only — the archive itself was not kept{% else %}Original archive was not kept after scanning{% endif %}{% else %}Choose a local archive to continue{% endif %}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -157,13 +182,29 @@
     
                             <!-- Actions -->
                             <div class="d-flex justify-content-end gap-3 pt-4">
-                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
-                                    href="{% url 'code_analysis:select_source' %}">
+                                {% if mode == "view" or mode == "edit" %}
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="{% url 'trustworthiness:trustworthiness' %}">
                                     <span class="fas fa-chevron-left"></span>Back
                                 </a>
+                                {% else %}
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                                    href="{% url 'code_analysis:select_source' %}{% if project_id %}?project_id={{ project_id }}{% endif %}">
+                                    <span class="fas fa-chevron-left"></span>Back
+                                </a>
+                                {% endif %}
+                                {% if mode == "view" %}
+                                {% if has_results %}
+                                <a class="btn btn-primary d-inline-flex align-items-center gap-2" href="{% url 'code_analysis:view_assessment_results' assessment_id=assessment_id %}">
+                                    View Results<span class="fas fa-chevron-right"></span>
+                                </a>
+                                {% else %}
+                                <span class="btn btn-secondary disabled d-inline-flex align-items-center gap-2">No results available</span>
+                                {% endif %}
+                                {% else %}
                                 <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
-                                    Upload and Continue<span class="fas fa-chevron-right"></span>
+                                    {% if mode == "edit" %}Save &amp; Run New Version{% else %}Upload and Continue{% endif %}<span class="fas fa-chevron-right"></span>
                                 </button>
+                                {% endif %}
                             </div>
                         </form>
                     </div>
@@ -229,6 +270,21 @@
             if (!files || !files.length) { return; }
             fileInput.files = files;
             updateFileState(files[0]);
+        });
+    }
+
+    var form = document.querySelector('form');
+    var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    var submitted = false;
+    if (form && submitBtn) {
+        form.addEventListener('submit', function (e) {
+            if (submitted) {
+                e.preventDefault();
+                return;
+            }
+            submitted = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
         });
     }
 })();

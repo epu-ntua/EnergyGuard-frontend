@@ -1,8 +1,12 @@
 
 # --- Report from JSON or API ---
+import logging
 import os
 import requests
 from django.views.decorators.csrf import csrf_exempt
+
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_metrics_json():
@@ -105,8 +109,8 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
@@ -159,14 +163,14 @@ def _report_paths(job_id):
     }
 
 
-def _persist_result(job_id, config_name, result, backend_job_id=None):
+def _persist_result(job_id, config_name, result, backend_job_id=None, assessment_id=None):
     paths = _report_paths(job_id)
     paths["job_dir"].mkdir(parents=True, exist_ok=True)
     paths["report"].write_text(json.dumps(result, indent=2), encoding="utf-8")
-    paths["meta"].write_text(
-        json.dumps({"job_id": job_id, "config_name": config_name, "backend_job_id": backend_job_id}, indent=2),
-        encoding="utf-8",
-    )
+    meta = {"job_id": job_id, "config_name": config_name, "backend_job_id": backend_job_id}
+    if assessment_id is not None:
+        meta["assessment_id"] = assessment_id
+    paths["meta"].write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
 
 def _load_persisted(job_id):
@@ -180,6 +184,7 @@ def _load_persisted(job_id):
 
     config_name = "Stored report"
     backend_job_id = None
+    assessment_id = None
     if paths["meta"].exists():
         try:
             meta = json.loads(paths["meta"].read_text(encoding="utf-8"))
@@ -187,17 +192,30 @@ def _load_persisted(job_id):
                 if meta.get("config_name"):
                     config_name = str(meta["config_name"])
                 backend_job_id = meta.get("backend_job_id")
+                assessment_id = meta.get("assessment_id")
         except (OSError, ValueError):
             pass
 
-    return {"status": "completed", "result": result, "config_name": config_name, "error": None, "backend_job_id": backend_job_id}
+    return {"status": "completed", "result": result, "config_name": config_name, "error": None, "backend_job_id": backend_job_id, "assessment_id": assessment_id}
 
 
 # ---------------------------------------------------------------------------
 # Job ID helpers
 # ---------------------------------------------------------------------------
 
-def _job_id_from_config(temp_path):
+def _parse_yaml_config(temp_path):
+    """Parse the uploaded YAML config file. Returns {} if parsing fails."""
+    try:
+        import yaml
+        with open(temp_path, "r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        return cfg if isinstance(cfg, dict) else {}
+    except Exception:
+        logger.exception("Failed to parse uploaded YAML config at %s", temp_path)
+        return {}
+
+
+def _job_id_from_config(cfg):
     """Derive a stable job_id from the YAML config's MLflow identifiers.
 
     Priority:
@@ -206,9 +224,6 @@ def _job_id_from_config(temp_path):
     3. Fallback: random UUID hex
     """
     try:
-        import yaml
-        with open(temp_path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
         model = cfg.get("model", {}) if isinstance(cfg, dict) else {}
 
         run_id = model.get("mlflow_run_id")
@@ -309,17 +324,35 @@ def _call_backend_api(config_name, temp_path):
         raise RuntimeError(f"Backend API request failed: {exc}") from exc
 
 
-def _run_eval_job(job_id, config_name, temp_path):
+def _run_eval_job(job_id, config_name, temp_path, assessment_id=None):
     try:
         result, backend_job_id = _call_backend_api(config_name, temp_path)
 
         # Persist under the backend's job_id so all run files share one folder.
         persist_id = backend_job_id or job_id
-        _persist_result(persist_id, config_name, result, backend_job_id=backend_job_id)
+        _persist_result(persist_id, config_name, result, backend_job_id=backend_job_id, assessment_id=assessment_id)
         _set_job(job_id, status="completed", result=result, error=None, backend_job_id=backend_job_id)
 
+        if assessment_id:
+            try:
+                from trustworthiness.models import Assessment
+                Assessment.objects.filter(id=assessment_id).update(
+                    results=result, status=Assessment.Status.COMPLETED,
+                )
+            except Exception:
+                logger.exception("Failed to save results for assessment_id=%s", assessment_id)
+
     except Exception as exc:
-        _set_job(job_id, status="failed", result=None, error=str(exc))
+        error_message = str(exc)
+        _set_job(job_id, status="failed", result=None, error=error_message)
+        if assessment_id:
+            try:
+                from trustworthiness.models import Assessment
+                Assessment.objects.filter(id=assessment_id).update(
+                    status=Assessment.Status.FAILED, error_message=error_message,
+                )
+            except Exception:
+                logger.exception("Failed to mark assessment_id=%s as failed", assessment_id)
 
     finally:
         if os.path.exists(temp_path):
@@ -387,6 +420,51 @@ def _fmt_pct(value):
         return str(value)
 
 
+def _create_assessment(user, project_id, input_data, parent_assessment=None):
+    if not project_id:
+        return None
+    try:
+        from projects.models import Project
+        from trustworthiness.models import Assessment
+        project = Project.objects.get(id=int(project_id))
+        if not project.is_accessible_by(user):
+            logger.warning("User %s denied access to project_id=%s for Assessment creation", user.id, project_id)
+            return None
+        return Assessment.objects.create(
+            project=project,
+            assessment_type=Assessment.AssessmentType.ROBUSTNESS,
+            input_data=input_data,
+            parent_assessment=parent_assessment,
+            version=(parent_assessment.version + 1) if parent_assessment else 1,
+        ).id
+    except Exception:
+        logger.exception("Failed to create Assessment for project_id=%s", project_id)
+        return None
+
+
+def _config_to_yaml_text(input_data):
+    """Reconstruct a YAML document from the parsed config stored in input_data.
+
+    This is not the original uploaded file byte-for-byte (comments and key
+    order are not preserved), only an equivalent re-serialization of the
+    parsed config dict already stored on the Assessment.
+    """
+    import yaml
+    config = (input_data or {}).get("config") or {}
+    return yaml.dump(config, sort_keys=False, default_flow_style=False)
+
+
+def _get_owned_assessment(user, assessment_id):
+    from trustworthiness.models import Assessment
+    assessment = get_object_or_404(
+        Assessment, id=assessment_id, assessment_type=Assessment.AssessmentType.ROBUSTNESS,
+    )
+    if not assessment.project.is_accessible_by(user):
+        logger.warning("User %s denied access to assessment_id=%s", user.id, assessment_id)
+        raise Http404
+    return assessment
+
+
 @login_required
 def config_input_view(request):
     if request.method == "POST":
@@ -405,18 +483,40 @@ def config_input_view(request):
             for chunk in config_file.chunks():
                 tmp.write(chunk)
 
-        job_id = _job_id_from_config(tmp.name)
-        _set_job(job_id, status="running", config_name=config_name, result=None, error=None)
+        parsed_config = _parse_yaml_config(tmp.name)
+        job_id = _job_id_from_config(parsed_config)
+        project_id = request.POST.get("project_id", "")
+
+        parent_assessment = None
+        parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
+        if parent_assessment_id:
+            try:
+                parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id))
+            except (ValueError, Http404):
+                logger.warning(
+                    "Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
+                    parent_assessment_id, request.user.id,
+                )
+
+        assessment_id = _create_assessment(request.user, project_id, {
+            "config_name": config_name,
+            "config_file": config_file.name,
+            "config": parsed_config,
+        }, parent_assessment=parent_assessment)
+        _set_job(job_id, status="running", config_name=config_name, result=None, error=None, assessment_id=assessment_id)
 
         threading.Thread(
             target=_run_eval_job,
             args=(job_id, config_name, tmp.name),
+            kwargs={"assessment_id": assessment_id},
             daemon=True,
         ).start()
 
         return redirect(f"{reverse('robustness:processing')}?job={job_id}")
 
-    return _robustness_render(request, "robustness/config_input.html", {})
+    return _robustness_render(request, "robustness/config_input.html", {
+        "project_id": request.GET.get("project_id", ""),
+    })
 
 
 @login_required
@@ -446,6 +546,15 @@ def processing_view(request):
         return redirect("robustness:results", job_id=job_id)
 
     if job_status == "failed":
+        assessment_id = job.get("assessment_id")
+        if assessment_id:
+            try:
+                from trustworthiness.models import Assessment
+                Assessment.objects.filter(id=assessment_id, status=Assessment.Status.RUNNING).update(
+                    status=Assessment.Status.FAILED, error_message=job.get("error") or "Unknown evaluation error.",
+                )
+            except Exception:
+                logger.exception("Failed to sync failed status for assessment_id=%s", assessment_id)
         return _robustness_render(
             request,
             "robustness/processing.html",
@@ -487,20 +596,7 @@ def job_status_api(request):
     })
 
 
-@login_required
-def results_view(request, job_id):
-    job = _get_job(job_id) or _load_persisted(job_id)
-    if not job:
-        return _robustness_render(
-            request,
-            "robustness/results_report.html",
-            {"job_id": job_id, "error": "Job not found. The server may have restarted since the evaluation ran."},
-        )
-
-    if job.get("status") != "completed":
-        return redirect(f"{reverse('robustness:processing')}?job={job_id}")
-
-    data = job.get("result") or {}
+def _report_context_from_result(data):
     attack_profile = data.get("attack_profile", {})
     ap_metrics = attack_profile.get("metrics", [])
     total_queries = next(
@@ -513,12 +609,7 @@ def results_view(request, job_id):
     )
     attack_profile = dict(attack_profile, metrics=_fmt_metrics_list(ap_metrics))
 
-    backend_job_id = job.get("backend_job_id")
-
-    context = {
-        "job_id": job_id,
-        "backend_job_id": backend_job_id,
-        "error": None,
+    return {
         "report_meta": data.get("report_meta", {}),
         "attack_setup": data.get("attack_setup", {}),
         "performance_summary": perf_summary,
@@ -536,6 +627,90 @@ def results_view(request, job_id):
         "charts_json": json.dumps(data.get("charts", {})),
         "attack_profile_json": json.dumps(attack_profile),
         "warnings_json": json.dumps(data.get("warnings", [])),
+    }
+
+
+@login_required
+def results_view(request, job_id):
+    job = _get_job(job_id) or _load_persisted(job_id)
+    if not job:
+        return _robustness_render(
+            request,
+            "robustness/results_report.html",
+            {"job_id": job_id, "error": "Job not found. The server may have restarted since the evaluation ran."},
+        )
+
+    if job.get("status") != "completed":
+        return redirect(f"{reverse('robustness:processing')}?job={job_id}")
+
+    data = job.get("result") or {}
+    assessment_id = job.get("assessment_id")
+    if assessment_id:
+        try:
+            from trustworthiness.models import Assessment
+            a = Assessment.objects.get(id=assessment_id)
+            if a.results is None or a.status != Assessment.Status.COMPLETED:
+                a.results = data
+                a.status = Assessment.Status.COMPLETED
+                a.save()
+        except Exception:
+            logger.exception("Failed to sync results for assessment_id=%s", assessment_id)
+
+    context = {
+        "job_id": job_id,
+        "backend_job_id": job.get("backend_job_id"),
+        "error": None,
+        **_report_context_from_result(data),
+    }
+    return _robustness_render(request, "robustness/results_report.html", context)
+
+
+@login_required
+def view_assessment(request, assessment_id):
+    assessment = _get_owned_assessment(request.user, assessment_id)
+    input_data = assessment.input_data or {}
+    original_filename = input_data.get("config_file", "")
+    yaml_text = _config_to_yaml_text(input_data)
+    return _robustness_render(request, "robustness/config_input.html", {
+        "mode": "view",
+        "assessment_id": assessment.id,
+        "project_id": assessment.project_id,
+        "config_name": input_data.get("config_name", ""),
+        "original_filename": original_filename,
+        "has_results": assessment.status == assessment.Status.COMPLETED and bool(assessment.results),
+        "ui_state": {"mode": "view", "original_filename": original_filename, "yaml_text": yaml_text},
+    })
+
+
+@login_required
+def edit_assessment(request, assessment_id):
+    assessment = _get_owned_assessment(request.user, assessment_id)
+    input_data = assessment.input_data or {}
+    original_filename = input_data.get("config_file") or "config.yaml"
+    yaml_text = _config_to_yaml_text(input_data)
+    return _robustness_render(request, "robustness/config_input.html", {
+        "mode": "edit",
+        "parent_assessment_id": assessment.id,
+        "project_id": assessment.project_id,
+        "config_name": input_data.get("config_name", ""),
+        "original_filename": original_filename,
+        "ui_state": {"mode": "edit", "original_filename": original_filename, "yaml_text": yaml_text},
+    })
+
+
+@login_required
+def view_assessment_results(request, assessment_id):
+    assessment = _get_owned_assessment(request.user, assessment_id)
+    if assessment.status != assessment.Status.COMPLETED or not assessment.results:
+        return _robustness_render(request, "robustness/results_report.html", {
+            "assessment_id": assessment.id,
+            "error": "This assessment has no completed results to display.",
+        })
+
+    context = {
+        "assessment_id": assessment.id,
+        "error": None,
+        **_report_context_from_result(assessment.results),
     }
     return _robustness_render(request, "robustness/results_report.html", context)
 

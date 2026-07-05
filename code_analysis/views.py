@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 import re
 import time
 from pathlib import Path
@@ -11,11 +12,13 @@ from urllib.parse import urlencode
 import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+
+logger = logging.getLogger(__name__)
 
 SCAN_JOBS = {}
 SCAN_JOBS_LOCK = threading.Lock()
@@ -55,11 +58,14 @@ def _report_paths(job_id):
 	}
 
 
-def _persist_scan_result(job_id, source_label, result):
+def _persist_scan_result(job_id, source_label, result, assessment_id=None):
 	paths = _report_paths(job_id)
 	paths["job_dir"].mkdir(parents=True, exist_ok=True)
 	paths["report"].write_text(json.dumps(result, indent=2), encoding="utf-8")
-	paths["meta"].write_text(json.dumps({"job_id": job_id, "source_label": source_label}, indent=2), encoding="utf-8")
+	meta = {"job_id": job_id, "source_label": source_label}
+	if assessment_id is not None:
+		meta["assessment_id"] = assessment_id
+	paths["meta"].write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
 
 def _load_persisted_scan(job_id):
@@ -72,11 +78,14 @@ def _load_persisted_scan(job_id):
 		return None
 
 	source_label = "Stored report"
+	assessment_id = None
 	if paths["meta"].exists():
 		try:
 			meta = json.loads(paths["meta"].read_text(encoding="utf-8"))
-			if isinstance(meta, dict) and meta.get("source_label"):
-				source_label = str(meta.get("source_label"))
+			if isinstance(meta, dict):
+				if meta.get("source_label"):
+					source_label = str(meta.get("source_label"))
+				assessment_id = meta.get("assessment_id")
 		except (OSError, ValueError):
 			pass
 
@@ -85,6 +94,7 @@ def _load_persisted_scan(job_id):
 		"result": result,
 		"source_label": source_label,
 		"error": None,
+		"assessment_id": assessment_id,
 	}
 
 
@@ -96,11 +106,45 @@ def _add_stepper_context(context, source_label=None, job_id=None):
 	return context
 
 
+def _create_assessment(user, project_id, input_data, parent_assessment=None):
+	if not project_id:
+		return None
+	try:
+		from projects.models import Project
+		from trustworthiness.models import Assessment
+		project = Project.objects.get(id=int(project_id))
+		if not project.is_accessible_by(user):
+			logger.warning("User %s denied access to project_id=%s for Assessment creation", user.id, project_id)
+			return None
+		return Assessment.objects.create(
+			project=project,
+			assessment_type=Assessment.AssessmentType.CODE_ANALYSIS,
+			input_data=input_data,
+			parent_assessment=parent_assessment,
+			version=(parent_assessment.version + 1) if parent_assessment else 1,
+		).id
+	except Exception:
+		logger.exception("Failed to create Assessment for project_id=%s", project_id)
+		return None
+
+
+def _get_owned_assessment(user, assessment_id):
+	from trustworthiness.models import Assessment
+	assessment = get_object_or_404(
+		Assessment, id=assessment_id, assessment_type=Assessment.AssessmentType.CODE_ANALYSIS,
+	)
+	if not assessment.project.is_accessible_by(user):
+		logger.warning("User %s denied access to assessment_id=%s", user.id, assessment_id)
+		raise Http404
+	return assessment
+
+
 @login_required
 def select_source(request):
 	return render(request, "code_analysis/mockup1.html", {
 		"show_sidebar": True,
 		"active_navbar_page": "trustworthiness",
+		"project_id": request.GET.get("project_id", ""),
 	})
 
 
@@ -552,7 +596,7 @@ def _build_results_context(analysis_result, source_label, job_id):
 	}
 
 
-def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None):
+def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None, assessment_id=None):
 	if not getattr(settings, "SCAN_API_URL", ""):
 		_set_scan_job(job_id, status="failed", result=None, error="SCAN_API_URL is not configured")
 		return
@@ -582,10 +626,28 @@ def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None):
 			)
 
 		result_payload = response.json()
-		_persist_scan_result(job_id, source_label, result_payload)
+		_persist_scan_result(job_id, source_label, result_payload, assessment_id=assessment_id)
 		_set_scan_job(job_id, status="completed", result=result_payload, error=None)
-	except requests.RequestException as exc:
-		_set_scan_job(job_id, status="failed", result=None, error=_format_backend_error(exc))
+		if assessment_id:
+			try:
+				from trustworthiness.models import Assessment
+				Assessment.objects.filter(id=assessment_id).update(
+					results=result_payload, status=Assessment.Status.COMPLETED,
+				)
+			except Exception:
+				logger.exception("Failed to save results for assessment_id=%s", assessment_id)
+	except Exception as exc:
+		logger.exception("Scan job %s failed", job_id)
+		error_message = _format_backend_error(exc)
+		_set_scan_job(job_id, status="failed", result=None, error=error_message)
+		if assessment_id:
+			try:
+				from trustworthiness.models import Assessment
+				Assessment.objects.filter(id=assessment_id).update(
+					status=Assessment.Status.FAILED, error_message=error_message,
+				)
+			except Exception:
+				logger.exception("Failed to mark assessment_id=%s as failed", assessment_id)
 	finally:
 		if upload_meta and os.path.exists(upload_meta["temp_path"]):
 			os.remove(upload_meta["temp_path"])
@@ -620,6 +682,7 @@ def configure_github(request):
 		_add_stepper_context({
 			"show_sidebar": True,
 			"active_navbar_page": "trustworthiness",
+			"project_id": request.GET.get("project_id", ""),
 		}, source_label="GitHub Repository"),
 	)
 
@@ -632,6 +695,7 @@ def configure_upload(request):
 		_add_stepper_context({
 			"show_sidebar": True,
 			"active_navbar_page": "trustworthiness",
+			"project_id": request.GET.get("project_id", ""),
 		}, source_label="Local ZIP File"),
 	)
 
@@ -643,6 +707,19 @@ def processing(request):
 	job_status = None
 
 	if request.method == "POST":
+		project_id = request.POST.get("project_id", "")
+
+		parent_assessment = None
+		parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
+		if parent_assessment_id:
+			try:
+				parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id))
+			except (ValueError, Http404):
+				logger.warning(
+					"Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
+					parent_assessment_id, request.user.id,
+				)
+
 		if source_label == "Local ZIP File" and request.FILES.get("archive_file"):
 			upload = request.FILES["archive_file"]
 			project_name = _derive_project_name(source_label, request.POST, request.FILES)
@@ -654,7 +731,13 @@ def processing(request):
 			temp_path = tmp_file.name
 
 			job_id = uuid.uuid4().hex
-			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None)
+			assessment_id = _create_assessment(request.user, project_id, {
+				"source": source_label,
+				"analysis_name": project_name,
+				"root_folder": request.POST.get("root_folder", "").strip(),
+				"archive_filename": upload.name,
+			}, parent_assessment=parent_assessment)
+			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 
 			threading.Thread(
 				target=_run_scan_job,
@@ -669,6 +752,7 @@ def processing(request):
 						"content_type": upload.content_type or "application/octet-stream",
 					},
 				),
+				kwargs={"assessment_id": assessment_id},
 				daemon=True,
 			).start()
 
@@ -687,10 +771,17 @@ def processing(request):
 			payload = {key: value for key, value in payload.items() if value}
 
 			job_id = uuid.uuid4().hex
-			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None)
+			assessment_id = _create_assessment(request.user, project_id, {
+				"source": source_label,
+				"repo_url": request.POST.get("repo_url", "").strip(),
+				"branch": request.POST.get("branch", "").strip(),
+				"subdirectory": request.POST.get("subdirectory", "").strip(),
+			}, parent_assessment=parent_assessment)
+			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 			threading.Thread(
 				target=_run_scan_job,
 				args=(job_id, source_label, "github", payload),
+				kwargs={"assessment_id": assessment_id},
 				daemon=True,
 			).start()
 			query = urlencode({"job": job_id, "source": source_label})
@@ -709,6 +800,15 @@ def processing(request):
 		if job_status == "completed":
 			return redirect("code_analysis:results", job_id=job_id)
 		elif job_status == "failed":
+			assessment_id = job.get("assessment_id")
+			if assessment_id:
+				try:
+					from trustworthiness.models import Assessment
+					Assessment.objects.filter(id=assessment_id, status=Assessment.Status.RUNNING).update(
+						status=Assessment.Status.FAILED, error_message=job.get("error") or "Unknown scan error.",
+					)
+				except Exception:
+					logger.exception("Failed to sync failed status for assessment_id=%s", assessment_id)
 			context = _build_processing_context(source_label, analysis_error=job.get("error") or "Unknown scan error.")
 			return render(
 				request,
@@ -771,6 +871,17 @@ def results(request, job_id):
 		query = urlencode({"job": job_id, "source": job.get("source_label", "")})
 		return redirect(reverse("code_analysis:processing") + f"?{query}")
 	source_label = job.get("source_label")
+	assessment_id = job.get("assessment_id")
+	if assessment_id:
+		try:
+			from trustworthiness.models import Assessment
+			a = Assessment.objects.get(id=assessment_id)
+			if a.results is None or a.status != Assessment.Status.COMPLETED:
+				a.results = job.get("result") or {}
+				a.status = Assessment.Status.COMPLETED
+				a.save()
+		except Exception:
+			logger.exception("Failed to sync results for assessment_id=%s", assessment_id)
 	return render(
 		request,
 		"code_analysis/results.html",
@@ -783,5 +894,77 @@ def results(request, job_id):
 			},
 			source_label=source_label,
 			job_id=job_id,
+		),
+	)
+
+
+def _template_for_source(source_label):
+	return "code_analysis/configure_upload.html" if source_label == "Local ZIP File" else "code_analysis/configure_github.html"
+
+
+@login_required
+def view_assessment(request, assessment_id):
+	assessment = _get_owned_assessment(request.user, assessment_id)
+	input_data = assessment.input_data or {}
+	source_label = input_data.get("source", "")
+	context = _add_stepper_context({
+		"mode": "view",
+		"assessment_id": assessment.id,
+		"project_id": assessment.project_id,
+		"has_results": assessment.status == assessment.Status.COMPLETED and bool(assessment.results),
+		"repo_url": input_data.get("repo_url", ""),
+		"branch": input_data.get("branch", ""),
+		"subdirectory": input_data.get("subdirectory", ""),
+		"analysis_name": input_data.get("analysis_name", ""),
+		"root_folder": input_data.get("root_folder", ""),
+		"archive_filename": input_data.get("archive_filename", ""),
+	}, source_label=source_label)
+	return render(request, _template_for_source(source_label), context)
+
+
+@login_required
+def edit_assessment(request, assessment_id):
+	assessment = _get_owned_assessment(request.user, assessment_id)
+	input_data = assessment.input_data or {}
+	source_label = input_data.get("source", "")
+	context = _add_stepper_context({
+		"mode": "edit",
+		"parent_assessment_id": assessment.id,
+		"project_id": assessment.project_id,
+		"repo_url": input_data.get("repo_url", ""),
+		"branch": input_data.get("branch", ""),
+		"subdirectory": input_data.get("subdirectory", ""),
+		"analysis_name": input_data.get("analysis_name", ""),
+		"root_folder": input_data.get("root_folder", ""),
+		"archive_filename": input_data.get("archive_filename", ""),
+	}, source_label=source_label)
+	return render(request, _template_for_source(source_label), context)
+
+
+@login_required
+def view_assessment_results(request, assessment_id):
+	assessment = _get_owned_assessment(request.user, assessment_id)
+	if assessment.status != assessment.Status.COMPLETED or not assessment.results:
+		return render(request, "code_analysis/results.html", {
+			"assessment_id": assessment.id,
+			"error": "This assessment has no completed results to display.",
+			"result_json": None,
+			"show_sidebar": True,
+			"active_navbar_page": "trustworthiness",
+		})
+	input_data = assessment.input_data or {}
+	source_label = input_data.get("source", "")
+	return render(
+		request,
+		"code_analysis/results.html",
+		_add_stepper_context(
+			{
+				**_build_results_context(assessment.results, source_label, None),
+				"assessment_id": assessment.id,
+				"error": None,
+				"show_sidebar": True,
+				"active_navbar_page": "trustworthiness",
+			},
+			source_label=source_label,
 		),
 	)

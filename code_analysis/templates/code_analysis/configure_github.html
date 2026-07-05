@@ -69,16 +69,28 @@
                                     fill="#ffffff"/>
                             </svg>
                         </div>
-                        <h2 class="fw-bolder text-body-emphasis mb-1">Configure GitHub Repository</h2>
-                        <p class="text-body-tertiary fs-8 mb-0">Connect a public or private GitHub repository to analyze its code quality and trustworthiness.</p>
+                        <h2 class="fw-bolder text-body-emphasis mb-1">
+                            {% if mode == "view" %}Assessment Configuration (Read-only)
+                            {% elif mode == "edit" %}Edit Assessment Configuration
+                            {% else %}Configure GitHub Repository{% endif %}
+                        </h2>
+                        <p class="text-body-tertiary fs-8 mb-0">
+                            {% if mode == "view" %}This is the repository configuration that was used for this assessment.
+                            {% elif mode == "edit" %}Editing and saving will run a new version of this assessment. The original assessment is kept unchanged.
+                            {% else %}Connect a public or private GitHub repository to analyze its code quality and trustworthiness.{% endif %}
+                        </p>
                     </div>
-    
+
                     <!-- Form -->
                     <div class="card-body pt-2 pb-5 px-4">
                         <form action="{% url 'code_analysis:processing' %}" method="post" novalidate>
                             {% csrf_token %}
                             <input type="hidden" name="source_type" value="GitHub Repository">
-    
+                            <input type="hidden" name="project_id" value="{{ project_id }}">
+                            {% if mode == "edit" %}
+                            <input type="hidden" name="parent_assessment_id" value="{{ parent_assessment_id }}">
+                            {% endif %}
+
                             <!-- Repository section -->
                             <div class="card mb-3">
                                 <div class="card-body">
@@ -98,7 +110,8 @@
                                                 class="form-control"
                                                 placeholder="https://github.com/organisation/repository"
                                                 autocomplete="url"
-                                                required>
+                                                value="{{ repo_url|default:'' }}"
+                                                {% if mode == "view" %}disabled{% else %}required{% endif %}>
                                         </div>
                                     </div>
     
@@ -112,7 +125,9 @@
                                                     name="branch"
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="main (leave blank for default branch)">
+                                                    placeholder="main (leave blank for default branch)"
+                                                    value="{{ branch|default:'' }}"
+                                                    {% if mode == "view" %}disabled{% endif %}>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -127,18 +142,24 @@
                                                     name="subdirectory"
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="src/models">
+                                                    placeholder="src/models"
+                                                    value="{{ subdirectory|default:'' }}"
+                                                    {% if mode == "view" %}disabled{% endif %}>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
     
+                            {% if mode != "view" %}
                             <!-- Authentication section -->
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Authentication</h6>
-    
+                                    {% if mode == "edit" %}
+                                    <p class="text-body-tertiary fs-9">Tokens are never stored, so this is always blank when editing — provide one again if the repository is private.</p>
+                                    {% endif %}
+
                                     <div class="d-flex align-items-center justify-content-between gap-3 py-1">
                                         <div>
                                             <div class="fw-semibold text-body-emphasis">Private repository</div>
@@ -176,15 +197,32 @@
                                     </div>
                                 </div>
                             </div>
-    
+                            {% endif %}
+
                             <!-- Actions -->
                             <div class="d-flex justify-content-end gap-3 pt-2">
-                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="{% url 'code_analysis:select_source' %}">
+                                {% if mode == "view" or mode == "edit" %}
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="{% url 'trustworthiness:trustworthiness' %}">
                                     <span class="fas fa-chevron-left"></span>Back
                                 </a>
+                                {% else %}
+                                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="{% url 'code_analysis:select_source' %}{% if project_id %}?project_id={{ project_id }}{% endif %}">
+                                    <span class="fas fa-chevron-left"></span>Back
+                                </a>
+                                {% endif %}
+                                {% if mode == "view" %}
+                                {% if has_results %}
+                                <a class="btn btn-primary d-inline-flex align-items-center gap-2" href="{% url 'code_analysis:view_assessment_results' assessment_id=assessment_id %}">
+                                    View Results<span class="fas fa-chevron-right"></span>
+                                </a>
+                                {% else %}
+                                <span class="btn btn-secondary disabled d-inline-flex align-items-center gap-2">No results available</span>
+                                {% endif %}
+                                {% else %}
                                 <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
-                                    Analyze Repository<span class="fas fa-chevron-right"></span>
+                                    {% if mode == "edit" %}Save &amp; Run New Version{% else %}Analyze Repository{% endif %}<span class="fas fa-chevron-right"></span>
                                 </button>
+                                {% endif %}
                             </div>
     
                         </form>
@@ -227,6 +265,21 @@
             }
         });
     });
+
+    const form = document.querySelector('form');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    let submitted = false;
+    if (form && submitBtn) {
+        form.addEventListener('submit', function (e) {
+            if (submitted) {
+                e.preventDefault();
+                return;
+            }
+            submitted = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+        });
+    }
 })();
 </script>
 {% endblock scripts %}
