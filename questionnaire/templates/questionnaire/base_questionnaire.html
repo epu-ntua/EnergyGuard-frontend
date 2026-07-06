@@ -9,12 +9,64 @@
 
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .survey-container { max-width: 800px; margin: 50px auto; padding: 20px; }
+        /* Desktop-first: this wraps every page's own (narrower) container below,
+           so it must stay at least as wide as the widest of those or it silently
+           clips them back down to phone-width regardless of their own max-width. */
+        .survey-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
         .card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .btn-primary { background-color: #2c3e50; border: none; }
         .btn-primary:hover { background-color: #1a252f; }
         .popover { max-width: 400px; border-radius: 10px; border: none; shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .popover-header { background-color: #2c3e50; color: white; border-radius: 10px 10px 0 0; }
+
+        /* Shared across the EU AI Act questionnaire templates */
+        .ai-act-info-btn { width: 28px; height: 28px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+        .ai-act-link-badge { font-size: 0.75rem; font-weight: 500; padding: 0.4em 0.7em; }
+        .ai-act-info-wrap { position: relative; display: inline-flex; }
+        .ai-act-popover-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            z-index: 1060;
+            width: max-content;
+            max-width: 340px;
+            background-color: #fff;
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+            white-space: normal;
+        }
+        .ai-act-info-wrap:hover .ai-act-popover-content,
+        .ai-act-info-wrap:focus-within .ai-act-popover-content {
+            display: block;
+        }
+        .ai-act-example { border-left: 3px solid #4fd1ed; padding-left: 12px; }
+        .custom-option-label {
+            border: 2px solid #edf2f7 !important;
+            border-radius: 16px !important;
+            transition: all 0.2s;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .custom-option-label:hover { border-color: #cbd5e0 !important; }
+        .btn-check:checked + .custom-option-label {
+            border-color: #1a202c !important;
+            background-color: #f7fafc !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        }
+        .custom-checkbox {
+            width: 22px; height: 22px; border: 2px solid #cbd5e0; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.2s;
+        }
+        .btn-check:checked + .custom-option-label .custom-checkbox { background-color: #1a202c; border-color: #1a202c; color: #fff; }
+        .ai-act-progress { height: 6px; border-radius: 4px; }
+        .ai-act-progress .progress-bar { background-color: #4fd1ed; }
     </style>
 </head>
 <body>

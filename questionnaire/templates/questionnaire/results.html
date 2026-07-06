@@ -1,0 +1,109 @@
+{% extends "questionnaire/base_questionnaire.html" %}
+{% load ai_act_extras %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 1100px;">
+    <div class="card border-0 shadow-lg mb-4" style="border-radius: 24px;">
+        <div class="card-body p-4 p-lg-5">
+            <div class="text-center mb-4">
+                <div class="display-6 text-success mb-2"><i class="bi bi-check-circle-fill"></i></div>
+                <h3 class="fw-bold">Your Assessment Results</h3>
+            </div>
+
+            {% if roles %}
+                <div class="text-center mb-4">
+                    <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Your Role(s)</span>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        {% for role in roles %}
+                            <span class="badge rounded-pill px-4 py-2 shadow-sm" style="background-color: #1a202c; color:#fff; font-size: 1rem;">
+                                <i class="bi bi-person-badge me-2"></i>{{ role|humanize_label }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% for track_name, data in tracks_data.items %}
+                <div class="p-4 mb-4 border rounded-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-signpost-split me-2"></i>{{ data.label }}</h5>
+
+                    <div class="mb-3">
+                        <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
+                        <span class="d-inline-block px-4 py-2 shadow-sm" style="background:#1a202c; color:#fff; border-radius: 12px;">
+                            <i class="bi bi-shield-check me-2"></i>{{ data.risk_category|humanize_label|default:"Not yet determined" }}
+                        </span>
+                    </div>
+
+                    {% if not data.completed %}
+                        <div class="alert alert-secondary border-0 mb-0">
+                            <i class="bi bi-hourglass-split me-2"></i>This track is still in progress.
+                            <a href="{% url 'questionnaire:step' track=track_name step_id=data.current_step %}">Resume it</a>.
+                        </div>
+                    {% elif data.is_terminal %}
+                        <div class="alert border-0 mb-0
+                            {% if data.risk_category == 'prohibited' %}alert-danger{% else %}alert-warning{% endif %}">
+                            <h6 class="fw-bold">
+                                {% if data.risk_category == 'prohibited' %}
+                                    <i class="bi bi-x-octagon-fill me-2"></i>Prohibited
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|humanize_label }}
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0">{{ data.terminal_note|default:"No further obligations checklist applies to this outcome." }}</p>
+                        </div>
+                    {% else %}
+                        {% if data.terminal_note %}
+                            <p class="text-muted small fst-italic mb-3">{{ data.terminal_note }}</p>
+                        {% endif %}
+                        {% if data.obligations %}
+                            {% for group in data.obligations %}
+                                <div class="mb-3">
+                                    <h6 class="fw-bold small text-uppercase text-muted">{{ group.step_label }}</h6>
+                                    {% if group.fulfilled %}
+                                        <div class="mb-2">
+                                            <span class="badge bg-success-subtle text-success mb-1"><i class="bi bi-check-circle me-1"></i>Fulfilled</span>
+                                            <ul class="list-unstyled mb-0 small">
+                                                {% for item in group.fulfilled %}
+                                                    <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    {% if group.outstanding %}
+                                        <div>
+                                            <span class="badge bg-danger-subtle text-danger mb-1"><i class="bi bi-exclamation-circle me-1"></i>Outstanding</span>
+                                            <ul class="list-unstyled mb-0 small">
+                                                {% for item in group.outstanding %}
+                                                    <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small mb-0">No specific obligations checklist applies for this outcome.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <p class="text-muted small fst-italic text-center mt-4">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Kindly note that this does not constitute legal advice and can be used only for informational purposes.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                {% if has_snapshot %}
+                    <a href="{% url 'questionnaire:download_json' %}" class="btn btn-outline-dark px-4 py-2" style="border-radius: 12px;">
+                        <i class="bi bi-download me-2"></i>Download Assessment JSON
+                    </a>
+                {% endif %}
+                <a href="{% url 'questionnaire:restart' %}" class="btn btn-dark px-4 py-2" style="border-radius: 12px;">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Restart Assessment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

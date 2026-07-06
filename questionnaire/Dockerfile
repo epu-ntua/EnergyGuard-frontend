@@ -8,7 +8,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt .
+COPY questionnaire/requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . .
 

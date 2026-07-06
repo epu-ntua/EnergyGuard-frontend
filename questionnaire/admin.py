@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Questionnaire, SubQuestionnaire, Question, Choice
+from .models import Questionnaire, SubQuestionnaire, Question, Choice, AIActAssessment
 
 # 1. Inline management for Choices within a Question
 class ChoiceInline(admin.TabularInline):
@@ -47,3 +47,9 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Choice)
 class ChoiceAdmin(admin.ModelAdmin):
     list_display = ('text', 'question', 'next_question')
+
+
+@admin.register(AIActAssessment)
+class AIActAssessmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'session_key', 'roles', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at')

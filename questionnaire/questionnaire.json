@@ -1,0 +1,2371 @@
+{
+  "metadata": {
+    "title": "EU AI Act Compliance Questionnaire (adapted for the Energy Sector)",
+    "source_file": "Questionnaire_Flowchart__to_be_checked_AF_Comments_25_6_2026.xlsx",
+    "source_sheet": "Updated",
+    "description": "Structured questionnaire data extracted from the source spreadsheet's 'Updated' sheet. There are two independent tracks: 'ai_system' and 'gpai_model'. A single organisation may need to complete both tracks if it has both an AI system and an underlying AI model that separately qualifies as a General Purpose AI (GPAI) model (see AI-1.2).",
+    "design_notes": [
+      "Questions with lettered sub-items (a), (b), (c)... are modelled as ONE question with a single answer (answer_options), where sub_items are shown as explanatory/contextual list items only (each may include its own more_info/example/links for a popup).",
+      "Checklist-type steps (obligation lists such as AI-5, AI-6, AI-7, AI-8, GP-4b, GP-5) are modelled as an independent list of 'items', each tracked with one of 4 uniform status_options: COMPLETE, IN_PROGRESS, NOT_APPLICABLE, NOT_STARTED. 'completion_outcomes' preserves the source spreadsheet's example next-step guidance text for reference (e.g. what happens if 'ALL COMPLETE').",
+      "'derived_hints' on branching answer_options are heuristically parsed from the 'next_step_raw' text (role assignment, risk category, track switch, next step reference). They are a convenience layer for backend logic and should be spot-checked against next_step_raw, which remains the source of truth.",
+      "A small number of checklist items in the source have duplicate numbering (e.g. two items labelled '5.10' in Step 5 / AI-5). These are preserved with a 'data_note' flag and a unique item_id (suffixed '-dup2') rather than silently overwritten.",
+      "'article_link'/'guideline_link' text fields were parsed into 'article_links'/'guideline_links' arrays of {label, url} objects. 'label' is the human-readable text that appeared before the URL in the source cell (e.g. 'Article 9 of the AI Act') and is intended as the tooltip/hover text for the link button; 'url' is the bare link. Guideline links additionally carry a 'type' tag derived from the label wording: commission_guidelines, draft_commission_guidelines, draft_guidelines, code_of_practice, explanatory_notice_template, incident_reporting_guidance, or other_guidance. This lets the frontend style/icon each guidance link differently (e.g. a 'Code of Practice' badge vs a 'Draft Guidelines' badge). Some cells contain more than one link (e.g. an Article + an Annex, or a guidance document plus a reporting template) — these produce multiple entries in the array, all with the same underlying more_info context."
+    ]
+  },
+  "roles": [
+    "provider",
+    "deployer"
+  ],
+  "risk_categories": [
+    "prohibited",
+    "high_risk",
+    "limited_or_minimal_risk",
+    "minimal_risk",
+    "excluded",
+    "out_of_scope"
+  ],
+  "tracks": {
+    "ai_system": {
+      "id": "ai_system",
+      "label": "AI System",
+      "steps": [
+        {
+          "step_id": "AI-1.1",
+          "step_label": "Step 1.1 · Scope",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does your solution qualify as an AI system according to the definition of AI Act?",
+          "more_info": "AI Act kicks in for a system that include all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infer from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems",
+          "example": "e.g. AI system forecasting energy demand, detecting electricity theft, optimising grid loads, scheduling EV charging that meet the provided criteria of the AI system definition.",
+          "more_info_example": "AI system that balances supply and demand on the grid may be considered as AI system if it complies with the provided criteria, while traditional software systems that are based on rules solely defined by natural persons to execute operations are not considered AI systems. For Transmission System Operators (TSOs) special attention should be paid to identify AI within existing systems as well as intergate AI within existing systems",
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "Step 2.1 · Your Role",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.1"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 1.2 · AI Model check",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.2"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Seek technical clarification from your development team, then return to Step 1.1",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.1"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 3 par. 1 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the definition of an artificial intelligence system established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-guidelines-ai-system-definition-facilitate-first-ai-acts-rules-application",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "AI-1.2",
+          "step_label": "Step 1.2 · AI Model check",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does your solution qualify as an AI model?",
+          "more_info": "AI model is not defined in AI Act. For clarification purposes, it can be understood as \"physical, mathematical or otherwise logical representation of a system, entity, phenomenon, process or data\" that is an essential component of an AI system but not an AI system on itself. AI models require the addition of further components (e.g user interface) to become AI systems. If you are a provider of a GPAI model that integrates your own model in your own system that is made available on the market or put into service, complete the Questionnaire once for the model and once for the system. Obligations for GPAI models apply in addition to those applicable in AI systems",
+          "example": "e.g. large generative AI model that can be used also for energy sector use cases",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "Switch to GPAI Model Track (right column) The AI Act does not impose obligations for providers of AI models that do not qualify as General Purpose AI models",
+              "derived_hints": {
+                "switches_track": "gpai_model"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "OUT OF SCOPE — Likely that no EU AI Act obligations apply. The AI Act does not impose obligations for providers of AI models that do not qualify as General Purpose AI models",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your technical team and return to Step 1.1.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.1"
+              }
+            }
+          ],
+          "article_links": [],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-2.1",
+          "step_label": "Step 2.1 · Your Role",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Did your organisation develop and place this AI system on the market or put it into service under your organisation's name or trademark - even if you used a third-party vendor to build it?",
+          "more_info": "Place on the market means the first making available of an AI system on the Union market, meaning the supply of an AI system for distribution or use on the Union market in the course of a commercial activity and can take place in return or payment or for free.\nPut into service means the supply of an AI system for first use directlty to the deployer or for own use in the Union for its intended purpose.",
+          "example": "e.g. you contracted a software house to build a demand forecasting system that you then marketed in the Union market under your own brand",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "You are a PROVIDER → Step 3.1 · Territorial Scope and flag as provider",
+              "derived_hints": {
+                "sets_role": "provider",
+                "goes_to_step_hint": "Step 3.1"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 2.2 · Deployer?",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.2"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 3 par. 3 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-2.2",
+          "step_label": "Step 2.2 · Deployer?",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Do you use this AI system in a professional non - personal context?",
+          "more_info": "Deployer is an entity (natural or legal person) that uses an AI system under its authority, unless the use is for personal non -professional activity. The deployer's authority means that he/she bears the responsibility for both the decision to use the system and the manner of its use. Professional activity results in regularly gaining economic benefit or is related otherwise to professional or business activity. Depending on the actual involvement with the AI system, your entity can bear simultaneously more than one roles activating additional obligations e.g a DSO developing and using the AI system can be both a provider and a deployer triggering compliance obligations of both.",
+          "example": "e.g. You are using an AI tool that has been purchased by another entity to approve meter installations, flag fraud, manage workforce shifts, or adjust energy tariffs while you are providing your business services",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "You are a DEPLOYER → step 2.3 Becoming the Provider and flag as deployer",
+              "derived_hints": {
+                "sets_role": "deployer",
+                "goes_to_step_hint": "Step 2.3"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 2.3 · Becoming a Provider?",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.3"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 3 par. 4 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-2.3",
+          "step_label": "Step 2.3 · Becoming a Provider?",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does any of the following apply to AI systems already marketed or put into service (narrowed down only to the most likely to energy sector) ? \n(a)Have you put your company's name/brand on a third-party high-risk AI system,\n(b) Have you substantially changed how it works so that it remains high-risk,\n(c) Have you changed its intended purpose so it now falls into high-risk category?",
+          "more_info": "Distributors, importers, deployers or other third parties may be considered providers under certain circumstances. Already marketed means that this high-risk AI system is already placed on the market.Substantial modification means a change to an AI system after its placing on the market or putting into service, not foreseen or planned in the initial conformity assessment of the provider, resulting the compliance of the system being affected or modification of the intended purpose for which the AI system was assessed.",
+          "example": "e.g. repurposing a Al system that has not been classified as high-risk to make automated hiring decisions.",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "You are treated as a PROVIDER → Step 3.1 · Territorial Scope and flag as provider (previous flag deployer changes)",
+              "derived_hints": {
+                "sets_role": "provider",
+                "goes_to_step_hint": "Step 3.1"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "flag deployer, You are a DEPLOYER → Step 3.1 · Territorial Scope\n\nNo flag → No provider's obligations apply. Check with your legal team whether you may have other roles and obligations under AI Act (not examined in this Questionnaire). Check with your legal team in case of high risk AI systems that are safety components of products covered by the Union legislation listed in Annex A of Annex I of AI Act to define your role.",
+              "derived_hints": {
+                "sets_role": "deployer",
+                "goes_to_step_hint": "Step 3.1"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 25 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-25"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-3.1",
+          "step_label": "Step 3.1 · Territorial Scope",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does any of the following apply according to your role?",
+          "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+          "example": null,
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "Is this AI system being placed on the EU market or put into service in the EU (only for providers)",
+              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "example": "e.g. development and provision via an application programming interface in Germany and France of an AI system that turns on and off devices or systems based on grid signals to balance supply loads→ YES.",
+              "more_info_example": null,
+              "applicable_role": "provider",
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "b",
+              "text": "Is the AI system's output being used in the EU (both for providers and deployers)",
+              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "example": "e.g a system used by an entity with no establishment in the EU, only outside the EU with no EU impact (output is not used in the Union)→ likely NO. A participant of the electricity market located within EU that procures an AI system from a developer outside the EU, but uses it within EU market → YES",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "c",
+              "text": "Do you have your place of establishment or are you located within the EU (only for deployers)",
+              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "example": null,
+              "more_info_example": null,
+              "applicable_role": "deployer",
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "EU AI Act applies → Step 3.2 · Exclusions",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 3.2"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Likely that EU AI Act does NOT apply to this entity — Likely no obligations",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Check with your legal team. If uncertain, assume YES and continue to Step 3.2",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 3.2"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 2 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-3.2",
+          "step_label": "Step 3.2 · Exclusions",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does any of the following apply to the AI system to be tested (narrowed down only to the most likely to the enrgy sector)?",
+          "more_info": null,
+          "example": null,
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "Placed on the market, put into service or used exclusively for military, national security or defence purposes",
+              "more_info": "Exclusively for military, national security or defence purposes means that if the system is used temporarily or permantly for other purposes, it will fall within the scope of AI Act. The exception applies regardless of the type of entity.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "b",
+              "text": "Specifically developped and put into service purely for scientific research and development",
+              "more_info": null,
+              "example": "e.g. a system specifically developed for the exclusive purpose of research in a university lab → likely excluded.",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "c",
+              "text": "Still a pre-market prototype, not yet released to users/market used in research, testing or development activity",
+              "more_info": "Research, testing or development activities regarding AI systems or AI models prior to their placement on the market or putting into service are outside of the scope of the AI Act. Once an AI system is placed on the market or put into service as a result of such research and testing activities, it should comply with the relevant obligations such as for example transparency obligations under Article 50 AI Act.Testing in real world conditions is not covered by this exclusion.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "d",
+              "text": "Released under a free and open-source licence (not applicable in all cases- exceptions for high risk AI systems, prohibited practices or systems with trasnparency obligations apply)",
+              "more_info": "A release of software and data under a free and open source licence permits their open sharing and users can freely access, use, alter, redistribute them or their modified versions.",
+              "example": "e.g an open-source system running to protect the physical integrity of a critical energy infrastructure (if classified as high risk) → NOT excluded.",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "YES — exclusion applies",
+              "next_step_raw": "Likely FALLS OUT OF THE SCOPE of the AI Act — Confirm the specific exclusion with legal team. The assessment is completed due to high probability of non applicability of the AI Act",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NO — no exclusion applies",
+              "next_step_raw": "Step 4.1 · Prohibited Practices",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4.1"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your legal team. While you clarify, assume NO exclusion and continue to Step 4.1",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4.1"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 2 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-4.1",
+          "step_label": "Step 4.1 · Prohibited Practices",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Is this AI system used for any of these purposes/ adopt any of the practices below (narrowed down only to the most likely to energy sector)?",
+          "more_info": null,
+          "example": "Each case should be assessed individually. Examples are provided for illustrative purposes",
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "harmful manipulation and deception",
+              "more_info": "Harmful manipulation and deception: use of subliminal or purposefully manipulative or deceptive techniques aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
+              "example": "e.g AI system for the management of customers’ energy consumption data and offering of personalized recommendations for reduced energy use when this system uses practices that can manipulate of user's behaviour such as pressuring users to adopt certain consumption habits through highly persuasive messages based on individual's personal data → PROHIBITED",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "b",
+              "text": "harmful exploitation of vulnerabilities",
+              "more_info": "Harmful exploitation of vulnerabilities: exploit vulnerabilities of a person or group of persons (due to age, disability,or specific social or economic situation) aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "c",
+              "text": "Social scoring of persons or groups of persons",
+              "more_info": "Social scoring of persons or groups of persons: evaluation (involving assessment, judgement or profiling) or classification, spanning over a certain period of time, based on social behaviour or known or inferred or predicted personal or personality characteristics leading to either or both detrimental treatment of the person or group in social contexts unrelated to the contents where the data was collected or leading to detrimental or unfavourable treatment of the person or group that is unjustified to their social behaviour or its gravity.",
+              "example": "e.g a system that scores customers' trustworthiness based on data from social media to decide on denial of energy access → PROHIBITED",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "d",
+              "text": "Inferring emotions of natural persons in workplaces or education institutions (except for medical or safety reasons)",
+              "more_info": "AI systems identifying or inferring emotions or intentions based on biometric data",
+              "example": "e.g AI system inferring emotions of an energy utility employee in its workplace for a written text to define the style of the article is not based on biometric data → NOT PROHIBITED",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "label": "e",
+              "text": "Biometric categorisation revealing sensitive characteristics (exceptions apply)",
+              "more_info": "Biometric categorisation revealing sensitive characteristics: Biometric categorization systems for individual categorization of natural persons based on their biometric data to deduce or infer their race, political opinions, trade union membership, religious or philosophical beliefs, sex life or sexual orientation. Exception applies for labelling or filtering lawfully acquired biometrci datasets.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "YES — use of a prohibited practice",
+              "next_step_raw": "PROHIBITED — This system cannot be deployed. Marketing or use is illegal under the EU AI Act.",
+              "derived_hints": {
+                "risk_category": "prohibited"
+              }
+            },
+            {
+              "value": "NO — none apply",
+              "next_step_raw": "Step 4.2 · High-Risk Category",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4.2"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Stop and consult your legal team before proceeding. Do not deploy until confirmed.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4.1"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 5 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-5"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on prohibited artificial intelligence practices established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-guidelines-prohibited-artificial-intelligence-ai-practices-defined-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "AI-4.2",
+          "step_label": "Step 4.2 · High-Risk Category",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does this system fall into one of the high-risk categories (narrowed down only to the most likely to energy sector)?",
+          "more_info": null,
+          "example": "Each case should be assessed individually. Examples are provided for illustrative purposes",
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "Critical Infrastructure: AI systems intended to be used as safety component used by an entity identified as critical entity by a Member State under Critical Entities Resilience Directive, in the management and operation of one of the following critical infrastructure areas: supply of gas, heating or electricity (as well as less relevant to energy sector critical digital infrastructure, road traffic and supply of water)",
+              "more_info": "Critical Infrastructure: Two conditions must apply cumulatively:\n1) AI systems intended to be used as safety component, used by an entity identified as critical entity by a Member State under Critical Entities Resilience Directive (CER Directive). To qualify as safety component the system should have a protective/safety function towards the physical integrity of the infrastructure through preventing or mitigating risk that if materialised would lead to physical harm of people or damage to property. It is intrisically linked to the preservation of physical integrity of the infrastructure. Visit Commission Draft Guidelines to consult safety function cases qualifying as safety component.\n2) The intended use should concern the management and operation of critical infrastructure: Critical digital infrastructure, supply of gas, heating, electricity, water, or road traffic. These refer to AI systems intended to be used in an asset, a facility, equipment, a network, or a system or part of those which is necessary for the provision of essential services in those sectors as established in CER Delegated Regulation.",
+              "example": "e.g. AI system used for the detection of abnormalities emerging at data patterns when operating in electricity grids for the purpose of monitoring and supporting decisions in power load distribution, grid stability of shutdown procedures → HIGH-RISK. AI system used for electricity grid optimization by providing energy demands forecasts→ when no safety function included likely NOT high risk",
+              "more_info_example": "AI system used in autonomously moving robots that perform regular predefined patrols in heating plants → detection purposes with no safety function→ likely NOT high risk, AI that schedules EV charging with no direct safety impact → likely NOT high-risk. AI system used for providing recommendations predicting energy consumption at transmission, regional or local level with assistance purpose and with no safety impact→ likely NOT high risk.",
+              "article_links": [
+                {
+                  "label": "Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                },
+                {
+                  "label": "Annex III of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                },
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "b",
+              "text": "Employment, AI enabled management of workers and access to self- employment of energy sector stakeholders: \nAI systems intended to be used for recruitment and selection of persons impacting hiring process, or \nAI system intended to be used to make decisions that affect terms of working relationships, promotion or termination of contracts, task allocation based on individual behaviour, performance and behaviour monitoring and evaluation",
+              "more_info": "Employment, AI enabled management of workers and access to self- employment: \na)AI system intended to be used in recruitment and selection such as CV screening (or other activity having effect in the recruitment process including preparatory and selection process), candidates' assessment influencing decision making process, hiring, or\nb) AI system used to make decisions that affect terms of work related relationships such as conditions that define the balance of rights and duties of employer and employee (including working conditions), promotion, dismissal/redundancy and non renewal, task allocation taking into consideration individual behavior or characteristics, performance and behaviour monitoring or evaluation.",
+              "example": "AI system used as an automated job matching and ranking tool →likely HIGH RISK",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                },
+                {
+                  "label": "Annex III of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                },
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "c",
+              "text": "Access to essential services and benefits for cases applicable in the energy sector:\nAI systems intended to be used for evaluation of eligibility by (or on behalf of) public authority for essential public assistance benefits and services and their denial, or\nAI systems intended to be used for evaluation of creditworhiness or establishment of credit score",
+              "more_info": "Access to and enjoyment of essential (private and public) services and public benefits: \na) AI systems intended to be used for evaluation of eligibility by (or on behalf of) public authority for essential public assistance benefits and services such as benefits to access energy services and their reduction/denial. Evaluation of eligibility means assessing and deciding whether a peson is entitled to recieve the benefit or service and its level or its denial (grant, reduce, revoke or reclaim) or,\nb) AI systems intended to be used for the evaluation of a person's ability to abide by contractual obligations related to payment of provided services or credit granted (evaluation of creditworthness) or creation of a credit score.",
+              "example": "AI system to be used to establish a credit score to determine the access to electricity →likely HIGH RISK",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                },
+                {
+                  "label": "Annex III of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                },
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "d",
+              "text": "Biometrics when their use is permitted under law:\nremote biometric identification systems (excluding when use for the sole purpose of confirming that a person is who he/she claims), or\nAI systems intended to be used for biometric categorisation according to sensitive characteristics based on the inference of those characteristics, or\nemotion recognition",
+              "more_info": "A prior check of whether use case consists prohibited practices should take place.\nRemote biometric identification system should fulfil three conditions to be classified as such: \n(a) it aims at biometric identification (can be used for verification and identification purposes by relying on biometric data)\n(b) identification must occur without the active involvement of the person concerned (usually remotely)\n(c) the system must compare between a person's biometric data and biometric data included in a reference database (data records including biometric references)\nAI systems intended to be used for biometric categorisation according to sensitive characteristics based on the inference of those characteristics: when establishing a categorisation of whether an individual's biometric data belongs to a group with predefined charactristics, according to sensitive characteristics such as racial or ethnic origin, political opinions etc, where the system uses biometric data to infer a sensitive characteristic and then classify the person according to that characteristic (exception apply for systems ancilliary to another commercial service and technically necessary).\nEmotion recognition: identification and inference of emotions or intentions",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                },
+                {
+                  "label": "Annex III of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                },
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "e",
+              "text": "AI systems intended to be used as safety components of products or the system itself is a product covered by EU product safety legislation listed in Annex I of AI Act and the product is subject to third party conformity assessment",
+              "more_info": "Annex I list of Union harmonisation legislation (indicative list narrowed down to use cases most likely to energy sector- see full list of Annex I): \nmachinery, equipment and protective systems inteded for use in potentially explosive atmospheres, radio equipment, pressure equipment, appliance burning gaseous fuels etc. For full list visit Annex I of the AI Act",
+              "example": "AI system in a smart thermostat covered by the Radio Equipment Directive, if constitutes a safety component (fulfil safety function where a failure could endager health and safety) and is required to undergo a thrid party conformity assessment →likely HIGH RISK.",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                },
+                {
+                  "label": "Annex I of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-1"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                },
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex I of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "YES — falls into a high-risk category",
+              "next_step_raw": "HIGH-RISK category identified → proceed to Step 4.3 · Derogations Check for cases a-d not for case e",
+              "derived_hints": {
+                "risk_category": "high_risk",
+                "goes_to_step_hint": "Step 4.3"
+              }
+            },
+            {
+              "value": "NO — not high-risk",
+              "next_step_raw": "LIMITED or MINIMAL RISK → Skip to Step 7 · Transparency",
+              "derived_hints": {
+                "risk_category": "limited_or_minimal_risk",
+                "goes_to_step_hint": "Step 7"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your legal team. While clarifying, treat the system as HIGH-RISK and continue to Step 5 / Step 6",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 5"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 6 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+            },
+            {
+              "label": "Annex I of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-1"
+            },
+            {
+              "label": "Annex III of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: General Principles",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+              "type": "draft_commission_guidelines"
+            },
+            {
+              "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex I of AI Act",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+              "type": "draft_commission_guidelines"
+            },
+            {
+              "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+              "type": "draft_commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "AI-4.3",
+          "step_label": "Step 4.3 · Derogations Check",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Does your high risk AI system included in Annex III of the AI Act (cases a-d above) fall into any of these exhaustive cases and the system neither materially influence the outcome of the decision nor perform profiling?",
+          "more_info": "AI systems included in Annex III of AI Act may exempt from high-risk classification if specific conditions are fulfilled.",
+          "example": null,
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "It only carries out a narrow procedural task (e.g. turning unstructured data into structured data)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "b",
+              "text": "It only improves the result of work a human has already completed (e.g. indicating errors in a work a human has previously completed)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "c",
+              "text": "It only spots decision- making patterns or flags deviations from existing decisions making patterns",
+              "more_info": "Decision making patterns should be understood as patterns stemming from past data that provide predictions on the decision making way on an issue over time. It conducts a comparative assessment of whether a decisions is in conformity with past patterns, for human assessments already completed and the system should not be used to substitute the human assessment already completed, without meaningful human review.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "d",
+              "text": "It only does prep work ahead of one of the assessments relevant to the purposes of use cases listed in Step 4.2 a-d(e.g. indexing documents)",
+              "more_info": "Preparatory work means work taking place before the assessment",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+                  "type": "draft_commission_guidelines"
+                }
+              ]
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "Yes (any of (a)–(d) apply) — the system is not high-risk",
+              "next_step_raw": "Check with your legal team for your entity's obligations. Skip to Step 7 · Transparency",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 7"
+              }
+            },
+            {
+              "value": "NO (none of (a)–(d) apply) — the system remains high-risk",
+              "next_step_raw": "Skip to Step 5 · Provider Compliance (if you're a Provider) and/or Step 6 · Deployer Compliance (if you're a Deployer)",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 5"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your legal team first",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4.3"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Draft Commission guidelines on the classification of high-risk AI systems under Article 6 of Regulation (EU) 2024/1689 (AI Act) for stakeholder consultation: Annex III of AI Act",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/draft-commission-guidelines-classification-high-risk-ai-systems",
+              "type": "draft_commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "AI-5",
+          "step_label": "Step 5 · Provider Compliance (High-Risk)",
+          "track": "ai_system",
+          "type": "checklist",
+          "question": "Have you put in place ALL of the following?",
+          "more_info": "Information provided is subject to review and updates so to be aligned with regulatory developments and issuance of guidance, harmonised standards etc. \nEuropean Commission has requested that CEN (European Committee for Standardisation) and CENELEC (European Committee for Electrotechnical Standardisation) develop standards for high-risk AI systems which will offer legal certainty and translate legal requirements into technical language while according to art. 40 of the AI Act, high-risk AI systems which are in conformity with harmonized standards or parts thereof, the references of which have been published in the Official Journal of European Union are to be presumed to be in conformity with the Requirements of Section 2 of Chapter III of the AI Act. Information regarding standardization of the AI Act is available:https://digital-strategy.ec.europa.eu/en/policies/ai-act-standardisation. Based on Digital Omnibus on AI the application dates for the provisions of classification of AI systems as high-risk, the requirements for high risk AI systems and for the obligations of providers and deployers of high-risk AI systems and other parties, for high risk AI systems of article 6 par. 2 and Annex III (among which critical infrastructure) will be 2 December 2027 and for high-risk systems of article 6 par. 1 and Annex I , 2 August 2028. In case of high-risk AI system related to a product covered by Annex I of AI Act, examine application of more specific provisions. Be vigilant of regulatory developments, issuance of Guidance, standards, templates etc",
+          "example": null,
+          "more_info_example": null,
+          "status_options": [
+            "COMPLETE",
+            "IN_PROGRESS",
+            "NOT_APPLICABLE",
+            "NOT_STARTED"
+          ],
+          "items": [
+            {
+              "item_id": "AI-5.1",
+              "number": "5.1",
+              "text": "Risk management system (ongoing, documented)",
+              "more_info": "Risk management system should be associated with each high-risk AI system. It can be understood as a system which aims at identifying and analysing the risk and implementing mitigation measures. It consists a continuous process that covers all stages of lifecycle of the system, subject to regular review and updates and is documented throughout the lifecycle. It shall comprise the steps referred in article 9 par. 2 (a)-(d) of the AI Act.Testing procedures for high-risk AI systems should be adopted to identify appropriate risk management measures, to ensure system’s consistent performance with its intended purpose and its compliance with the requirements of Chapter III Section 2 of AI Act, prior to system being placed on the market or put into service, against prior defined metrics, and probalistic thresholds and effectiveness indicators e.g through testing in real-world conditions.",
+              "example": "For an AI system to be used for demand forecasts and automatic control of the supply of renewable energy to grid if classified as high risk, a risk management system should be implemented containing continuous monitoring of the performance of the AI system, simulations of failure scenarios and activation of a manual back up process that can be activated in case of emergency to address the risk of blackout in case of failure in demand forecasting.",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 9 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-9"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.2",
+              "number": "5.2",
+              "text": "Data governance practices and application of data quality criteria for the training,validation and testing data sets",
+              "more_info": "Data governance and management practices shall concern the elements included in article 10 par. 2 (a)- (h) of the AI Act. Training, validation and testing datasets e.g grid measurements, historical consumption data, IoT sensor inputs etc should be relevant, representative, bias-checked, error-free to the extent possible, complete, having appropriate statistical properties of data sets. Additionally, they should take into consideration to the level necessary for the intended purpose, characteristics specific to geographical, contextual, behavioural or functional setting within which the AI system is intended to be used.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 10 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-10"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.3",
+              "number": "5.3",
+              "text": "Technical documentation (before market placement) including the necessary information requirements",
+              "more_info": "Technical documentation should be kept up- to date enable demonstration of the system’s compliance with essential regulatory requirements and the assessment of this compliance by the competent authorities through provision of information in a clear and comprehensive way. Necessary information include general description of AI system, detailed description of AI system elements and development process, monitoring, functioning and control information of the AI system, description of the appropriateness of the performance metrics, risk management system, lifecycle changes, applicable harmonized standards or alternative detailed compliance solutions, EU declaration of conformity, post marketing monitoring of performance evaluation (each one broken down in additional sub requirements- Visit Annex IV of the AI Act). For SMEs there is the option to provide equivalent simplified documentation through the use of a simplified form to be established by the Commission.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 11 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-11"
+                },
+                {
+                  "label": "Annex IV of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-4"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.4",
+              "number": "5.4",
+              "text": "Automatic event logs / audit trail over the duration of AI system's lifetime",
+              "more_info": "Automatic event logs / audit trail being integrated in system's architecture should allow the recording of events related to identification of possible risk to health, safety or to fundamental rights or resulting in a substantial modification, information needed for post market monitoring and information relevant for the identification of serious incidents in the AI system, information of provider and interruption of system's operation. Check specific provisions for logging for biometrics high-risk AI systems",
+              "example": "eg In case of an AI enabled grid load balancing system used by an electricity Transmission operator, that automatically balances loads and flags relevant risks, when the system flags a risk overload that poses a safety risk, it is likely that an automatic log should be recorded and maintained",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 12 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-12"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.5",
+              "number": "5.5",
+              "text": "Design of the system enabling transparency and provision of instructions for use to deployers in appropriate format",
+              "more_info": "Appropriate development of the system so as to allow deployers to understand its operation and appropriately use the output produced. System should be accompanied with instructions for use with minimum content including at least: provider's identity, system's characteristics and limitations (with subrequirements such as accuracy), predetermined changes to the system and its performance, human oversight measures, necessary computation and hardware resources, expected lifetime and maintenance measures, mechanisms that allow collection and interpretation of logs.Visit article 13 of the AI Act for full list.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 13 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-13"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.6",
+              "number": "5.6",
+              "text": "Human oversight enabling measures designed in.",
+              "more_info": "Human oversight can be achived through one of the following approaches or by their combination: a) incorporation of the measures, when technically feasible in the system by the provider, b)identification of the measures that are appropriate to be implemented by the deployer. The high-risk AI system should be provided to the deployer so as the person to whom oversight is assigned to be able to monitor system's operation, correctly interpret the output, acknowledge automation bias, avoid the use of the system or disregard the output and interrupt the system.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 14 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-14"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.7",
+              "number": "5.7",
+              "text": "Accuracy, robustness & cybersecurity appropriate levels met",
+              "more_info": "The levels levels of accuracy and relevant accuracy metrics should be referred in the instructions of use of the AI system. Robustness means that the system should be resilient in relation to harmful or otherwise undesirable behaviour that may result from limitations within the system or the environment in which the system operates (e.g. errors, faults, inconsistencies, unexpected situations).Cybersecurity means that the system should be resilient against attempts by unauthorized third parties to change its use, outputs or performance, through the adoption of technical solutions (for example technical solutions for AI specific vulnerabilities mitigation may include measures for the prevention, detection, response and control of data poisoning, model poisoning, adversial examples or models invasion).",
+              "example": "e.g increased risk in cybersecurity issues (non authorised access, false data injenction) due to vulnerability of two way communication requirement of AI programs connected to the grid (e.g collection of consumption data and sending commands to en EV to charge).",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 15 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-15"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.8",
+              "number": "5.8",
+              "text": "Quality management system (documented, systematic, with minimum aspects included)",
+              "more_info": "Quality management system shall include at least the aspects below: strategy/regulatory compliance approach, procedures applicable for the design, design control and design verification, procedures applicable for development and quality control, testing and validation procedures and frequency, technical specifications/standards or other means applicable, data management systems and procedures,risk management system, establishment of a post market monitoring system, serious incident reporting procedures, management of communication with national competent authorties, record keeping systems and procedures,resource management and accountability framework for management and staff. Visit article 17 of the AI Act for the full list.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par. c of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 17 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-17"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.9",
+              "number": "5.9",
+              "text": "Conformity assessment completed",
+              "more_info": "The system should undergo the relevant conformity assessment procedure prior to being placed on the market or put into service according to its type.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par. f of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 43 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-43"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.10",
+              "number": "5.10",
+              "text": "EU Declaration of Conformity signed",
+              "more_info": "The EU declaration of conformity should state that necessary requirements are met and should also contain:system's name and type and reference allowing identification and traceability, provider's contact details, a statement regarding the issuance of the EU declaration of conformity, a statement that the AI system is in conformity with AI Act and any other relevant applicable law that provides the issuance of an EU declaration of conformity, a statement for the compliance with applicable data protection legislation when processing of personal data is involved, reference to any relevant harmonised standards or the common specification, details of notified body, conformity assessment performed and identification of the certificate issued, place and data of issue and details of the person that signed it. For the full list of information included visit Annex V of the AI Act.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par. g of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 47 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-47"
+                },
+                {
+                  "label": "Annex V of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-5"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.11",
+              "number": "5.11",
+              "text": "CE marking applied visibly, legibly and indelibly",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par. h of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 48 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-48"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.12",
+              "number": "5.12",
+              "text": "System and entity registered in the appropriate AI database",
+              "more_info": "In case of high-risk AI systems of Annex III point 2 (management and operation of critical infrastructure which is expected to be mostly related in the energy sector) registration is at national level",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par i of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 49 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-49"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.13",
+              "number": "5.13",
+              "text": "Post-market monitoring system based on a post- market monitoring plan",
+              "more_info": "Post-market monitoring system is an active and systematic collection, analysis and documentation of data on the performance of the AI system for the evaluation of its compliance by the provider. The post- market monitoring system should be implemented after the placing on the market or putting into service and should be proportionate a) to the nature of AI technologies and b) the risk of the system. The mechanism related to the - market monitoring system is designed to ensure that when necessary, corrective measures are taken by the providers.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 72 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-72"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.14",
+              "number": "5.14",
+              "text": "Serious incident reporting process (including obligation to timely report, investigate and cooperate)",
+              "more_info": "Providers of high-risk AI systems placed on the market, should report any serious incident to the market surveillance authorities where the incident has occurred, thus art. 73 can be interpreted as imposing an obligation for an incident reporting framework.Τhe report should be provided immediately after the provider has established a causal link between the AI system and the serious incident or reasonable likelihood of such link and not later than 15 days the provider, or where applicable the deployer becomes aware of the serious incident . An immediate report is required in two circumstances: a) when there is a widespread infringement or serious incident or there is a serious and irreversible disruption of the management or operation of critical infrastructure, where report should be provided immediately and not later than two days after the provider or the deployer becomes aware of the incident without the necessity of the establishment of a causal link. \nAdditionally, in case of a death of a person, the report should be provided immediately after the provider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and the serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer becomes aware of the serious incident.\nIn addition to the abovementioned obligations, after the submission of the report, the provider should conduct the necessary investigations without delay and cooperate with the competent authorities and where relevant with the notified body concerned during the investigations. An incident report for serious incidents under the AI Act is also available to be completed in case such an incident takes place.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 73 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-73"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Guidance article 73 AI Act- Incident reporting (High-risk AI systems)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/consultations/ai-act-commission-issues-draft-guidance-and-reporting-template-serious-ai-incidents-and-seeks",
+                  "type": "draft_guidelines"
+                },
+                {
+                  "label": "Incident report for serious incidents under the AI Act",
+                  "url": "https://digital-strategy.ec.europa.eu/en/consultations/ai-act-commission-issues-draft-guidance-and-reporting-template-serious-ai-incidents-and-seeks",
+                  "type": "incident_reporting_guidance"
+                }
+              ]
+            },
+            {
+              "item_id": "AI-5.15",
+              "number": "5.15",
+              "text": "Indication of the provider's required elements",
+              "more_info": "The provider’s required elements (name, registered trade name or registered trade mark, address for contact purposes) should appear on the AI system or where this is not possible, on its packaging or accompanying documentation",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par. b of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.16",
+              "number": "5.16",
+              "text": "Maintenance of the necessary documentation for 10 years after the AI system has been marketed",
+              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.17",
+              "number": "5.17",
+              "text": "Maintenance of automatically generated logs (at least six months)",
+              "more_info": "Automatically generated logs should be kept for a period appropriate to the intended purpose, and at least six months unless otherwise regulated by law.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 16 par e of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                },
+                {
+                  "label": "Article 19 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-19"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.18",
+              "number": "5.18",
+              "text": "Corrective actions for AI systems already marketed",
+              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.19",
+              "number": "5.19",
+              "text": "Demonstration of conformity upon request",
+              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.10-dup1",
+              "number": "5.10",
+              "text": "Accessibility requirements",
+              "more_info": "The provider of the high-risk AI system should comply with national accessibility requirements in accordance with Directives on the accessibility of the websites and mobile applications of public sector bodies (EU) 2016/2102 and on the accessibility requirements for products and services to the extent applicable to energy sector (EU) 2019/882 (e.g expected to be included smart meters and other devices used by consumers), and self-service terminals for payment)",
+              "example": null,
+              "more_info_example": null,
+              "data_note": "Duplicate item number '5.10' in source spreadsheet (row 60)",
+              "article_links": [
+                {
+                  "label": "Article 16 par. l of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-16"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-5.11-dup1",
+              "number": "5.11",
+              "text": "Appointment of an authorised represenative (if your entity is established in third countries)",
+              "more_info": "The provider of the high-risk AI system, established in third countries, should appoint an authorized representative established in the Union, by written mandate, prior to making the AI system available on the Union Market. The mandate should be drafted in accordance with the provisions of article 22 par. 3 of the AI Act",
+              "example": null,
+              "more_info_example": null,
+              "data_note": "Duplicate item number '5.11' in source spreadsheet (row 61)",
+              "article_links": [
+                {
+                  "label": "Article 22 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-22"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "completion_outcomes": [
+            {
+              "condition_raw": "ALL COMPLETE",
+              "next_step_raw": "Step 7 · Transparency (for providers 7.1 and 7.2)"
+            },
+            {
+              "condition_raw": "IN PROGRESS — some items missing",
+              "next_step_raw": "Do not release to market until all items are complete. Track outstanding items with your legal team. In case you have already marketed or put into service your system, or upon request by the competent authorities, check for addittional obligations with your legal team."
+            },
+            {
+              "condition_raw": "NOT APPLICABLE — I am a Deployer, not a Provider",
+              "next_step_raw": "Skip to Step 6 · Deployer Compliance"
+            }
+          ],
+          "article_links": [],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-6",
+          "step_label": "Step 6 · Deployer Compliance (High-Risk)",
+          "track": "ai_system",
+          "type": "checklist",
+          "question": "Have you put in place ALL of the following?",
+          "more_info": null,
+          "example": null,
+          "more_info_example": null,
+          "status_options": [
+            "COMPLETE",
+            "IN_PROGRESS",
+            "NOT_APPLICABLE",
+            "NOT_STARTED"
+          ],
+          "items": [
+            {
+              "item_id": "AI-6.1",
+              "number": "6.1",
+              "text": "Using the system according to its instructions for use",
+              "more_info": "Deployers should implement appropriate technical and organizational measures to ensure that the usage of the AI system takes place in accordance with the instructions of use provided by the provider.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 1 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.2",
+              "number": "6.2",
+              "text": "Designated human oversight — named competent person(s) with necessary technical capacity, domain expertise, training, authority to interrupt operation as well as necessary support",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.3",
+              "number": "6.3",
+              "text": "Input data is relevant and representative for your use case",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 4 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.4",
+              "number": "6.4",
+              "text": "Performance monitoring, reporting to provider and other necessary stakeholders and suspension of use when considering that the use of the system may result in a system posing a risk and information to the provider and other necessary stakeholders in case a serious incident is identified.",
+              "more_info": "Operation monitoring is taking place on the basis of instructions for use.",
+              "example": "If a grid operator uses an AI enabled system classified as high risk and while monitoring its performance, it understands that the tools poses a risk to safety, it should immediately inform the provider and the relevant market surveillance authority and stop using it.",
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.5",
+              "number": "6.5",
+              "text": "Logging and record-keeping for the appropriate retention period according to the intended purpose",
+              "more_info": "The minimum retention period is six months unless otherwise provided by national or Union law, especially EU data protection law",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 6 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.6",
+              "number": "6.6",
+              "text": "Workers informed when AI is used to monitor/assess them",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 7 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.7",
+              "number": "6.7",
+              "text": "When Data Protection Impact Assessment (DPIA) is necessary, use of information provided in instructions of use of the system",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 9 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.8",
+              "number": "6.8",
+              "text": "Registration in the appropriate database (where required for deployers)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 8 and 49 par. 3 and 5 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.9",
+              "number": "6.9",
+              "text": "Provision of information to natural persons affected by the use of the high-risk AI system of Annex III of AI Act, when they make decisions or assist in decision making related to natural persons (applicable to critical indrastructure AI systems).",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 26 par. 11 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-26"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "AI-6.10",
+              "number": "6.10",
+              "text": "Conduct of a Fundamental rights impact assessment (when necessary) having the necessary content and notification of the results and the template questionnaire to the market surveillance authority",
+              "more_info": "This obligation does not apply to critical infrastructure",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 27 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-27"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "completion_outcomes": [
+            {
+              "condition_raw": "ALL COMPLETE",
+              "next_step_raw": "Step 7 · Transparency (for deployers 7.3 and 7.4)"
+            },
+            {
+              "condition_raw": "IN PROGRESS — some items missing",
+              "next_step_raw": "Do not use until all items are complete. Track outstanding items with your legal team."
+            },
+            {
+              "condition_raw": "NOT APPLICABLE — I am a Provider, not a Deployer",
+              "next_step_raw": "Skip to Step 7 · Transparency (for providers 7.1 and 7.2)"
+            }
+          ],
+          "article_links": [],
+          "guideline_links": []
+        },
+        {
+          "step_id": "AI-7",
+          "step_label": "Step 7 · Transparency",
+          "track": "ai_system",
+          "type": "checklist",
+          "question": "Have you addressed all transparency obligations according to your role for certain AI systems mentioned below?",
+          "more_info": null,
+          "example": null,
+          "more_info_example": null,
+          "status_options": [
+            "COMPLETE",
+            "IN_PROGRESS",
+            "NOT_APPLICABLE",
+            "NOT_STARTED"
+          ],
+          "items": [
+            {
+              "item_id": "AI-7.1",
+              "number": "7.1",
+              "text": "Provider of AI system directly interacting with natural persons such as chatbots, virtual agents: AI system is designed and developed in a way that users are informed they are interacting with an AI system and not a human. ΑΙ systems operating in closed physical environments are likely excluded.",
+              "more_info": "This obligation applies for systems intended to have direct bidirectional exchange of information with natural person. A predictive maintenance and optimisation system in industrial applications not interacting with a natural person is likely to be excluded from transparency obligations.",
+              "example": "e.g. A customer support chatbot provided by an energy supplier must say it is an AI when initiating a conversation through the use of appropriate to the context techniques such as textual disclosure, auditory disclosure, visual cues and multimodal combinations.A smart home energy management AI system interacting with consumers must inform them that they are interacting with an AI system.",
+              "more_info_example": null,
+              "applicable_role": "provider",
+              "article_links": [
+                {
+                  "label": "Article 50 par. 1 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Guidelines on the implementation of the transparency obligations for certain AI systems under Article 50 of Regulation (EU) 2024/1689 (the ‘AI Act’)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-guidelines-implementation-transparency-obligations-certain-ai-systems-under-article-50-ai-act",
+                  "type": "draft_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "AI-7.2",
+              "number": "7.2",
+              "text": "Provider of an AI system generating syntetic audio, image, video or text content: AI system implements technical solutions so as AI-generated output is clearly labelled in a machine readable format and detectable as AI generated. (Compliance can be demonstrated by adhering to code of practice that is deemed adequate by the AI Office)",
+              "more_info": "When the output of the AI system is composed by recordings of data from physical environment and/or data transmission by AI systems without modification it may fall outside of the scope. Exceptions to the obligation apply e.g assistive function for standard editing aiming at grammar correction. Consumption recorded by AI enabled- smart meters may fall out of the scope transparency obligation when it is the output of the system that records data and/or transmit them without changing them. Check whether positive assessment of the Code has been completed.",
+              "example": "Automated energy reports written by AI and presented as human-authored must be labelled as AI-generated and they are detectable as artificially generated",
+              "more_info_example": "GENERAL Show attention to exceptions to the obligations. Obligations apply regardless of whether an AI system qualifies as high-risk.",
+              "applicable_role": "provider",
+              "article_links": [
+                {
+                  "label": "Article 50 par. 2 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Guidelines on the implementation of the transparency obligations for certain AI systems under Article 50 of Regulation (EU) 2024/1689 (the ‘AI Act’)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-guidelines-implementation-transparency-obligations-certain-ai-systems-under-article-50-ai-act",
+                  "type": "draft_guidelines"
+                },
+                {
+                  "label": "Code of Practice on Transparency of AI- generated Content",
+                  "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
+                  "type": "code_of_practice"
+                }
+              ]
+            },
+            {
+              "item_id": "AI-7.3",
+              "number": "7.3",
+              "text": "Deployer of emotion recognition or biometric categorisation system: disclose their use to individuals",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "applicable_role": "deployer",
+              "article_links": [
+                {
+                  "label": "Article 50 par. 3 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Guidelines on the implementation of the transparency obligations for certain AI systems under Article 50 of Regulation (EU) 2024/1689 (the ‘AI Act’)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-guidelines-implementation-transparency-obligations-certain-ai-systems-under-article-50-ai-act",
+                  "type": "draft_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "AI-7.4",
+              "number": "7.4",
+              "text": "Deployer of AI system generating image, audio or video content that constitutes Deepfake/ generating text, published to inform the public on public interest matters: disclose content/text as AI-generated (Compliance can be demonstrate by adhering to code of practice that is deemed adequate by the AI Office)",
+              "more_info": "For AI generated text published for informational purposes on public interest matters, exception apply when the AI generated content has undergone human review and a person (natural or legal) holds editorial responsibility. Check whether positive assessment of the Code has been completed.",
+              "example": "e.g a publication of a text, generated by an AI system, warning the the public about a malfunction of a DSO system and related precautionary measures is likely to fall under the obligation for the deployer of the system that generated the content",
+              "more_info_example": null,
+              "applicable_role": "deployer",
+              "article_links": [
+                {
+                  "label": "Article 50 par. 4 of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Draft Guidelines on the implementation of the transparency obligations for certain AI systems under Article 50 of Regulation (EU) 2024/1689 (the ‘AI Act’)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/draft-guidelines-implementation-transparency-obligations-certain-ai-systems-under-article-50-ai-act",
+                  "type": "draft_guidelines"
+                },
+                {
+                  "label": "Code of Practice on Transparency of AI- generated Content",
+                  "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
+                  "type": "code_of_practice"
+                }
+              ]
+            }
+          ],
+          "completion_outcomes": [
+            {
+              "condition_raw": "ALL COMPLETE",
+              "next_step_raw": "Step 8 · AI Literacy"
+            },
+            {
+              "condition_raw": "IN PROGRESS — some items missing",
+              "next_step_raw": "Address all missing items before completion of the development/use of the system"
+            },
+            {
+              "condition_raw": "NOT APPLICABLE — system does not fall in any provided category",
+              "next_step_raw": "Step 8 · AI Literacy"
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 50 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Draft Guidelines on the implementation of the transparency obligations for certain AI systems under Article 50 of Regulation (EU) 2024/1689 (the ‘AI Act’)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/draft-guidelines-implementation-transparency-obligations-certain-ai-systems-under-article-50-ai-act",
+              "type": "draft_guidelines"
+            },
+            {
+              "label": "Code of Practice on Transparency of AI- generated Content",
+              "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
+              "type": "code_of_practice"
+            }
+          ]
+        },
+        {
+          "step_id": "AI-8",
+          "step_label": "Step 8 · AI Literacy",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Do all staff who operate, oversee, or make decisions based on this AI system have sufficient AI literacy to use it responsibly?",
+          "more_info": "Literacy means knowledge and understanding that allows making an informed use of AI systems, the opportunities and dangers of AI as well as possible harm. Providers and deployes should understand AI used in the organisation, what is the role of their organisation, risks of the AI systems provided or used, based on their difference in technical knowledge and experience and the context and the persons on whom AI systems are to be used.",
+          "example": "e.g. a grid operator staff who follows AI-generated load forecasts must know among others the role of its orgnanisation as a deployer as well as the model's limitations and when to trust their own judgement.",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "ASSESSMENT COMPLETE"
+            },
+            {
+              "value": "NO — training not yet done",
+              "next_step_raw": "Provide AI literacy training, then return to confirm this step"
+            },
+            {
+              "value": "IN PROGRESS — training planned",
+              "next_step_raw": "Schedule and complete training. Return to confirm this step once done."
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 4 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-4"
+            }
+          ],
+          "guideline_links": []
+        }
+      ]
+    },
+    "gpai_model": {
+      "id": "gpai_model",
+      "label": "GPAI Model",
+      "steps": [
+        {
+          "step_id": "GP-1",
+          "step_label": "Step 1 ·GPAI Check/ Is it a GPAI Model?",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Does your solution (model) meet ALL of the following?",
+          "more_info": null,
+          "example": "General e.g. GPT-4, Claude, Mistral, LLaMA, DALL-E → YES. A specialised electricity theft detection model → NO (it can only perform a narrow set of tasks). A model that is specifically trained for modelling weather patterns or physical systems, using 10²⁴ FLOP → NO (if it cannot generate text, speeech, text-to-image and text-to video and if it can only perform a narrow set of tasks)",
+          "more_info_example": null,
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "Trained on massive datasets (internet-scale text, images, code)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "b",
+              "text": "shows significant generality",
+              "more_info": "The provision of a specific list of capabilities that a model should dispose and tasks to accomplish to qualify as a General purpose AI (GPAI) model is not feasible, due to the variety of its capabilities and use cases. Thus, the amount of computational resources used for the training of the model \"training compute\" threshold (measured in FLOP) and the modalities of the model is currently considered by the Comission as the most suitable apporach for the definition of model as GPAI model. This is sublect to future amendments based on technology and market developments. GPAI models are not classified according to risk level.If a general -purpose AI model meets criterion (f) but exceptionally does not show significant generality or is not capable of performing a wide range of distinct tasks, it is not considered a GPAI model. If a general purpose AI model does not meet the criteria of necessary compute training and language generation, still it can be assessed as GPAI model if it displays significant generality and is capable of performing a wide range of distinct tasks",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "c",
+              "text": "Competent across a wide range of different tasks",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "d",
+              "text": "Can be integrated into many different downstream applications",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "e",
+              "text": "Placed on the market or put into service (not just internal R&D)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "label": "f",
+              "text": "Meets the following: training compute > 10²³ FLOP, and can generate language (whether in the form of text or audio), text to image or text to video",
+              "more_info": "For the analysis of training compute see Commission Guidelines on the scope of the obligations for providers of general-purpose\nAI models established by Regulation (EU) 2024/1689 (AI Act) available at https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 3 par. 63",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            }
+          ],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "Step 1.3a · Systemic Risk Classidication Compute Threshold",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.3a"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Likely NOT a GPAI model → The AI Act does not impose obligations to providers of AI models that do not qualify as General Purpose AI models. Reconsider checking the AI System Track instead if AI system",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your technical team. If still unclear, complete both the AI System Track and the GPAI Track to be safe.",
+              "derived_hints": {
+                "switches_track": "both"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 3 par. 63",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-1.3a",
+          "step_label": "Step 1.3a ·Systemic risk classification due to high impact capabilities",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Does the model have high impact capabilities evaluated on the basis of appropriate technical tools and methodologies, including indicators and benchmarks?",
+          "more_info": "High impact capabilities is when the cumulative amount of computation used for its training measured in floating point operations is greater than 10^25.",
+          "example": "A GPAI model (fulfilling the criteria of GPAI Model) that meets the compute threshold of 10²⁵ floating-point operations and can be intergated in various downstream energy applications such as e.g for technical support analysis",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "SYSTEMIC RISK confirmed → Continue to Step 2.1i · Original Provider? Steps 4 AND 5 apply.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.1i"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 1.3b · Systemic Risk Classification Commission Decision. Observe actual and expected compute usage during training and throughout the model's lifecycle.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.3b"
+              }
+            },
+            {
+              "value": "NOT SURE — need to calculate",
+              "next_step_raw": "Ask your engineering team to calculate training compute. Return to this step once you have the figure.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 1.3a"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 51 par. 1 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-51"
+            },
+            {
+              "label": "Article 51 par. 2 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-51"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-1.3b",
+          "step_label": "Step 1.3b · Systemic risk classification due to Commission Decision",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Has the European Commission formally defined your model as having systemic risk?(subject to amendment in the light of technological developments)",
+          "more_info": "The European Commission can classify a GPAI model as having systemic risk, if it has capabilities or impact equivalent to or exceeding those recorded in the most advanced models, having regard to the criteria included in Annex XIII of AI Act. This designation can take place by the Commission, either on its own initiative or after a qualified alert from the scientific panel. When the GPAI model fulfils the criterion and is classified with systemic risk, its provider should abide by the respective obligations",
+          "example": "A GPAI model is designated by the European Commission as having a systemic risk, based on a case by case assessment, although it may not reach compute threashold",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "SYSTEMIC RISK confirmed → Continue to Step 2.1i · Original Provider?Steps 4 AND 5 apply.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.1i"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "No systemic risk → Continue to Step 2.1i · Original Provider?",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.1i"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 51 par. 1",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-51"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-2.1i",
+          "step_label": "Step 2.1i · Original Provider?",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Did your organisation develop a GPAI model and place it on the Union market — under your organisation's name or trademark, with or without charge, even if you used a third-party vendor to build it?",
+          "more_info": "Placing on the market means the first making available of the GPAI model on the Union market. Examples of GPAI models being placed on the market is through libraries, APIs, direct downloads or physical copies. Your organisation may be become the provider regardlless of whether it is established within or outside EU.The rules of general-purpose AI systems and general-purpose AI models that pose systemic risks should apply also when those models are integrated or from part of an AI system .When the provider of a general-purpose AI system integrates an own model into its own AI system that is made available on the market or put into service, that model should be considered to be placed on the market and therefore the obligations for general purpose AI models apply in addition to those applicable for the AI systems. More examples on placing on the market are available in Commission Guidelines on the scope of the obligations for providers of general-purpose\nAI models established by Regulation (EU) 2024/1689 (AI Act) available at https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act\nConsult your legal team when you integrate a GPAI model developed by another organisation in your AI system to investigate your role and obligations",
+          "example": "e.g. you built and make available for the first time on the Union Market via an API a language model that can be used also for forecasting or operational support in the energy sector.",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "You are a PROVIDER → Step 3 · Exceptions - Notify the Commission within 2 weeks in case the high impact capabilities requirement has been met",
+              "derived_hints": {
+                "sets_role": "provider",
+                "goes_to_step_hint": "Step 3"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 2.1ii · Downstream Modifier?",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 2.1ii"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 3 par. 3 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-3"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-2.1ii",
+          "step_label": "Step 2.1ii · Downstream Modifier?",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Did you make substantial modifications to another organisation's GPAI model and then place that modified model on the market (indicative criterion for substantial modifications is when the training compute used for the modification is more than a third of the training compute of the original model/subject to amendments depending on technology developments )?",
+          "more_info": "Downstream modifier is a downstream actor, that is different from the original provider and is not acting on his/her behalf. He/she can modify the GPAI model with or without integrating it in an AI system. Only in some cases, the downstream modifier can be considered as a provider of the modified GPAI model. This is the case when the modification leads to a significant change in the model's generality, capabilities or systemic risk.Check Commission's Guidelines if the value of the training compute of the original GPAI is not available",
+          "example": "e.g. you built a new foundational model on top of an existing base model and the training compute used for the modification is greater that a third of the training compute of the original model",
+          "more_info_example": ".",
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "You are treated as a PROVIDER of the modified GPAI model and obligations of providers are limited to the modification or fine tuning, Check with your legal team→ Step 3 · Exceptions",
+              "derived_hints": {
+                "sets_role": "provider",
+                "goes_to_step_hint": "Step 3"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Likely NOT a GPAI provider — Likely No GPAI model providers' obligations apply to your organisation. Check with your legal team whether you may have another role under AI Act not included in this Questionnaire",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NOT SURE",
+              "next_step_raw": "Consult your legal team on whether your modifications count as 'substantial'. Treat as YES while clarifying.",
+              "derived_hints": {
+                "sets_role": "provider",
+                "goes_to_step_hint": "Step 3"
+              }
+            }
+          ],
+          "article_links": [],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-3",
+          "step_label": "Step 3 · Exceptions",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Is your AI model released under a free and open-source licence and parametres (including weights etc) are freely available AND is not a GPAI with systemic risk?",
+          "more_info": "For an AI model to qualify for this exception, it should be released under a free and open source license allowing the model’s:\naccess (free acquisition without payment restrictions or other restrictions), \nusage (use of the model will not be restricted by original provider’s intellectual property rights), \nmodification (alteration without payment or other restrictions) and distribution (free onwards distribution based on limited conditions). All of these rights should be provided and no monetary compensation should be required, and\nits parameters (including the weights, the information on the model architecture and the information on model usage) are made publicly available with a degree of clarity. In case the exception applies, obligations of article 53 par. 1 (a) and (b) and article 54 of the AI Act do not aply to providers of GPAI models. Open-source models without systemic risk still need a public training data summary and a copyright policy. Open-source models WITH systemic risk get no exception.",
+          "example": "If the licence of the GPAI model allows only non- commercial or research use, it does not qualify for the free and open source licence exception. If users must pay for support or maintenance to access the model, this does not qualify for the free and open source exception",
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES — the exception fully applies",
+              "next_step_raw": "Reduced obligations — confirm the exact scope and remaining duties with legal team- Step 4- Code of Practice",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            },
+            {
+              "value": "NO — exception does not apply",
+              "next_step_raw": "Step 4 · Code of Practice",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            },
+            {
+              "value": "PARTIALLY — only some criteria met",
+              "next_step_raw": "Continue to step 4 Code of Practice",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 53 par. 2",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-53"
+            }
+          ],
+          "guideline_links": [
+            {
+              "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+              "type": "commission_guidelines"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-4a",
+          "step_label": "Step 4 · Code of Practice",
+          "track": "gpai_model",
+          "type": "branching",
+          "question": "Do you fully adhere to the EU GPAI Code of Practice — covering transparency obligations, copyright compliance, and (if systemic risk applies) safety and security requirements?",
+          "more_info": "Three compliance mechanisms with the obligations of GPAI models providers are laid down in the AI Act: reliance on code of practice, compliance with harmonised standards or alternative adequate means of compliance for assessment by the Commission.",
+          "example": null,
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES — fully adhering",
+              "next_step_raw": "Step 4 obligations are partially fulfilled → go to 4.4 and 4.5 and then Step 5 if systemic risk applies.",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            },
+            {
+              "value": "NO — not following the Code",
+              "next_step_raw": "Step 4 · Standard Obligations — you must demonstrate compliance through other adequate means",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            },
+            {
+              "value": "IN PROGRESS — working towards it",
+              "next_step_raw": "Continue working towards full adherence. In the meantime, complete Step 4 · Standard Obligations through other adequate means",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 4"
+              }
+            }
+          ],
+          "article_links": [],
+          "guideline_links": [
+            {
+              "label": "Code of Practice for General- Purpose AI models",
+              "url": "https://digital-strategy.ec.europa.eu/en/policies/contents-code-gpai",
+              "type": "code_of_practice"
+            },
+            {
+              "label": "Report for serious incidents under the AI Act (General-Purpose AI Models with systemic risk)",
+              "url": "https://digital-strategy.ec.europa.eu/en/library/ai-act-commission-publishes-reporting-template-serious-incidents-involving-general-purpose-ai",
+              "type": "other_guidance"
+            }
+          ]
+        },
+        {
+          "step_id": "GP-4b",
+          "step_label": "Step 4 · Standard Obligations",
+          "track": "gpai_model",
+          "type": "checklist",
+          "question": "Have you completed ALL of the following?",
+          "more_info": "Three compliance mechanisms for the obligations of providers of GPIA models are laid down in the AI Act :reliance on code of practice, compliance with harmonised standards or alternative adequate means of compliance for assessment by the Commission.",
+          "example": null,
+          "more_info_example": null,
+          "status_options": [
+            "COMPLETE",
+            "IN_PROGRESS",
+            "NOT_APPLICABLE",
+            "NOT_STARTED"
+          ],
+          "items": [
+            {
+              "item_id": "GP-4b.1",
+              "number": "4.1",
+              "text": "Technical documentation of the model covering its training and testing process and its evaluation results with minimum provided content (a general description of the model, a detailed description of the elements included in the general description and information of the process for development, both alnalysed in further subelements). Additional information should be provided for providers of GPAI models with systemic risk.",
+              "more_info": "Providers should provide the technical documentation of the model covering its training and testing process and the results of evaluation. The minimum necessary elements in Annex XI of the AI Act should be included [including - not exhaustive list, a general description of the GPAI model (tasks intended to perform, date of release, methods of distribution etc), a detailed description of the elements of the model and relevant information of the process of development (technical means required for the GPAI to be integrated in AI systems, design specifications of the model and training process, known or estimated energy consumption of the model etc)]. Addittional information should be provided for providers of GPAI models with systemic risk. For the full list visit Annex XI of the AI Act.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 53 par. 1 (a) of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-53"
+                },
+                {
+                  "label": "Annex XI of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-11"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "GP-4b.2",
+              "number": "4.2",
+              "text": "Downstream AI systems providers' documentation and information — everything downstream AI systems providers need to comply with their own AI Act obligations including also the minimum provided elements.",
+              "more_info": "Documentation and information should be provided so that downstream AI systems providers are enabled to understand the capabilities and limitations of the model and to comply with their own AI Act obligations. It should also include the minimum elements of Annex XII of AI Act [including among others the general description of the GPAI (containing non exclusively tasks intended to perform, date of release, methods of distribution etc), a description of elements of the model and relevant information of the process of development (technical means required for the GPAI to be integrated in AI systems, the modality and format of the inputs and outputs and their maximum size etc)]. For the full list visit Annex XII of the AI Act.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 53 par. 1 (b) of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-53"
+                },
+                {
+                  "label": "Annex XII of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-12"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "GP-4b.3",
+              "number": "4.3",
+              "text": "Copyright compliance policy — written policy to respect opt-outs for text and data mining",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 53 par. 1 (c) of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-53"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "GP-4b.4",
+              "number": "4.4",
+              "text": "Training data summary — publicly available summary of content used for training (using the EU mandatory template)",
+              "more_info": "Information included in the Summary should extend to all stages of the model training, from pre-training to post training, covering all data sources and data categories. To achive transparency and enable parties to exercise their rights, information should be comprehensive and detailed. The tempate provides a minimum baseline for the information to be provided. \nThe EU template for the public summary of the training content for General- Purpose AI models that should be filledprior to their placing on the Union Market is available at https://digital-strategy.ec.europa.eu. https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models. This summary is required for all providers, including those following the Code of Practice.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 53 par. 1 (d) of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-53"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                },
+                {
+                  "label": "Explanatory Notice and Template for the Public Summary of Training Content for general-purpose AI models required by Article 53 (1)(d) of Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models",
+                  "type": "explanatory_notice_template"
+                }
+              ]
+            },
+            {
+              "item_id": "GP-4b.5",
+              "number": "4.5",
+              "text": "EU authorised representative appointment — if your organisation is based outside the EU, have you appointed an EU-based representative?",
+              "more_info": "The appointment should take place by a written mandate that empowers the authorised representative to materialize the tasks listed in article 54 of the AI Act. The obligation does not apply to providers of GPAI models released under a free and open-source licence whose parameters are made publicly available and are not GPAI models withn systemic risk.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 54 of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-54"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "completion_outcomes": [
+            {
+              "condition_raw": "ALL COMPLETE",
+              "next_step_raw": "ASSESSMENT COMPLETE (unless systemic risk applies → then also complete Step 5)"
+            },
+            {
+              "condition_raw": "IN PROGRESS — some items missing",
+              "next_step_raw": "Do not release the model until all items are complete. Track outstanding items with your legal team."
+            }
+          ],
+          "article_links": [],
+          "guideline_links": []
+        },
+        {
+          "step_id": "GP-5",
+          "step_label": "Step 5 · Systemic Risk Obligations",
+          "track": "gpai_model",
+          "type": "checklist",
+          "question": "In addition to ALL Step 4 items, have you completed these?",
+          "more_info": "The obligations of articles 53 and 54 of the AI Act apply in addition to those mentioned below.",
+          "example": "Red-teaming means deliberately trying to make your model behave dangerously — to find and fix problems before real users encounter them. Your security team should also run penetration tests on the infrastructure.",
+          "more_info_example": null,
+          "status_options": [
+            "COMPLETE",
+            "IN_PROGRESS",
+            "NOT_APPLICABLE",
+            "NOT_STARTED"
+          ],
+          "items": [
+            {
+              "item_id": "GP-5.1",
+              "number": "5.1",
+              "text": "European Commission notified within 2 weeks of meeting the 10²⁵ FLOP threshold",
+              "more_info": "The threshold of cumulative training compute is considered as a a relevant metric for classification of high impact capabilities. Still evaluation of high impact capabilities takes places using appropriate technical tools and methodologies further specified by the Commission, thus provider should be vigilant and observe regulatory developments for possible amendment and addittion of benchmarks due to technological amendments. Provider's obligation to notify Commission applies when the GPAI model has met or becomes known that it will meet the requirement of having high-impact capabilities. This can take place before the completion of training when the threshold is reasonably likely to be met.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 52 par. 1 of AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-52"
+                }
+              ],
+              "guideline_links": [
+                {
+                  "label": "Commission Guidelines on the scope of the obligations for providers of general-purpose AI models established by Regulation (EU) 2024/1689 (AI Act)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+                  "type": "commission_guidelines"
+                }
+              ]
+            },
+            {
+              "item_id": "GP-5.2",
+              "number": "5.2",
+              "text": "Extended Code of Practice adhered to OR items 5.3–5.7 individually completed:",
+              "more_info": "Compliance can be achieved through adherence to a code of practice until a harmonised standard is published, compliance with harmonised standards or alternative adequate means of compliance for assessment by the Commission.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "item_id": "GP-5.3",
+              "number": "5.3",
+              "text": "All Step 4 obligations confirmed (open-source exception does NOT apply here)",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "item_id": "GP-5.4",
+              "number": "5.4",
+              "text": "Model evaluation including adversarial testing such as red-teaming completed using state-of-the-art standardised protocols prior to first placing on the market",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 55 par. 1 (a) of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-55"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "GP-5.5",
+              "number": "5.5",
+              "text": "Systemic risks at EU level assessed and mitigated continously throughout the model's lifecycle",
+              "more_info": "Risk assessment and mitigation refers to possible systemic risk at EU level which may stem from development, the placing on the market and the use of the GPAI model with systemic risk.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 55 par. 1 (b) of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-55"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "GP-5.6",
+              "number": "5.6",
+              "text": "Serious incident and corrective measures tracking: identify, report (to AI Office and as appropriate to national competent authorities), and document.",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 55 par. 1 (c) of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-55"
+                }
+              ],
+              "guideline_links": []
+            },
+            {
+              "item_id": "GP-5.7",
+              "number": "5.7",
+              "text": "Cybersecurity protections in place for the model AND its physical infrastructure",
+              "more_info": "Cybersecurity protection related to malicious use or attacks should take under consideration accidental model leakage, unauthorised releases, circumvention of safety measures and defence against cyberattacks, unauthorised access or model theft.",
+              "example": null,
+              "more_info_example": null,
+              "article_links": [
+                {
+                  "label": "Article 55 par. 1 (d) of the AI Act",
+                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-55"
+                }
+              ],
+              "guideline_links": []
+            }
+          ],
+          "completion_outcomes": [
+            {
+              "condition_raw": "ALL COMPLETE",
+              "next_step_raw": "ASSESSMENT COMPLETE"
+            },
+            {
+              "condition_raw": "IN PROGRESS — some items missing",
+              "next_step_raw": "Do not release the model until all systemic risk obligations are complete"
+            }
+          ],
+          "article_links": [],
+          "guideline_links": []
+        }
+      ]
+    }
+  },
+  "obligations_mapping": {
+    "ai_system": {
+      "high_risk": {
+        "provider": [
+          "AI-5"
+        ],
+        "deployer": [
+          "AI-6"
+        ]
+      },
+      "limited_or_minimal_risk": {
+        "provider": [
+          "AI-7"
+        ],
+        "deployer": [
+          "AI-7"
+        ]
+      },
+      "minimal_risk": {
+        "provider": [],
+        "deployer": []
+      },
+      "always": {
+        "both": [
+          "AI-8"
+        ]
+      },
+      "notes": "For 'limited_or_minimal_risk', only the transparency items relevant to the user's role within step AI-7 apply (items whose 'applicable_role' is 'provider' or has no role tag apply to providers; items tagged 'deployer' apply to deployers). AI-8 (AI literacy) applies to all roles regardless of risk category once the assessment reaches that step."
+    },
+    "gpai_model": {
+      "standard": {
+        "provider": [
+          "GP-4b"
+        ]
+      },
+      "systemic_risk": {
+        "provider": [
+          "GP-4b",
+          "GP-5"
+        ]
+      },
+      "notes": "GP-4a is a single adherence question (Code of Practice), not a checklist; if the user answers 'NO' or 'IN PROGRESS' to GP-4a, GP-4b items must still be demonstrated through other adequate means per the source guidance in that step's answer_options."
+    }
+  }
+}

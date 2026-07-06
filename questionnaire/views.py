@@ -1,283 +1,407 @@
 import json
-from django.urls import reverse
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Questionnaire, SubQuestionnaire, Question, Choice, UserAnswer, Assessment
 
-def start_questionnaire(request, questionnaire_id):
-    questionnaire = get_object_or_404(Questionnaire, id=questionnaire_id)
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render, redirect
 
-    # Clear user roles from session when the test starts
-    request.session['user_roles'] = []
+from . import engine
+from .models import AIActAssessment
+
+SESSION_KEY = 'ai_act'
+
+
+def _empty_track_state():
+    return {
+        'started': False,
+        'completed': False,
+        'current_step': None,
+        'queue': [],
+        'history': [],
+        'role': None,
+        'risk_category': None,
+        'answers': {},
+        'checklist_status': {},
+    }
+
+
+def _push_history(track_state, step_id):
+    if not track_state['history'] or track_state['history'][-1] != step_id:
+        track_state['history'].append(step_id)
+
+
+def _get_state(request):
+    state = request.session.get(SESSION_KEY)
+    if not state:
+        state = {
+            'tracks': {name: _empty_track_state() for name in engine.TRACK_NAMES},
+            'active_track': None,
+        }
+        request.session[SESSION_KEY] = state
+    return state
+
+
+def _save_state(request, state):
+    request.session[SESSION_KEY] = state
     request.session.modified = True
 
-    first_question = Question.objects.filter(
-        sub_questionnaire__parent_questionnaire=questionnaire
-    ).order_by('id').first()
+
+def _combined_role(role_a, role_b):
+    roles = {r for r in (role_a, role_b) if r and r != 'both'}
+    if role_a == 'both' or role_b == 'both' or len(roles) > 1:
+        return 'both'
+    return next(iter(roles), None)
+
+
+def _advance_track(track_state, track_name, landing_step_id):
+    """Move the track onto landing_step_id, expanding checklist landings
+    into their full queue (role-based checklists + always-steps)."""
+    queue = engine.build_landing_queue(
+        track_name, landing_step_id, track_state['risk_category'], track_state['role']
+    )
+    track_state['current_step'] = queue[0]
+    track_state['queue'] = queue[1:]
+
+
+def _finish_current_step(track_state):
+    """After a queued step is answered with nowhere further to go, move to
+    the next queued step, or mark the track complete."""
+    if track_state['queue']:
+        track_state['current_step'] = track_state['queue'].pop(0)
+    else:
+        track_state['completed'] = True
+        track_state['current_step'] = None
+
+
+def _combined_roles_list(state):
+    single = {
+        state['tracks'][name]['role'] for name in engine.TRACK_NAMES
+        if state['tracks'][name]['role'] and state['tracks'][name]['role'] != 'both'
+    }
+    if any(state['tracks'][name]['role'] == 'both' for name in engine.TRACK_NAMES):
+        single |= {'provider', 'deployer'}
+    return sorted(single)
+
+
+def _persist_snapshot(request, state):
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    track_results = {
+        name: {
+            'risk_category': state['tracks'][name]['risk_category'],
+            'role': state['tracks'][name]['role'],
+            'completed': state['tracks'][name]['completed'],
+        }
+        for name in engine.TRACK_NAMES if state['tracks'][name]['started']
+    }
+    answers = {
+        name: state['tracks'][name]['answers']
+        for name in engine.TRACK_NAMES if state['tracks'][name]['started']
+    }
+    checklist_status = {
+        name: state['tracks'][name]['checklist_status']
+        for name in engine.TRACK_NAMES if state['tracks'][name]['started']
+    }
+
+    AIActAssessment.objects.update_or_create(
+        session_key=session_key,
+        defaults={
+            'roles': _combined_roles_list(state),
+            'track_results': track_results,
+            'answers': answers,
+            'checklist_status': checklist_status,
+        },
+    )
+
+
+def intro(request):
+    """
+    The questionnaire always starts on the ai_system track (AI-1.1); the
+    gpai_model track is only ever reached from within that flow (AI-1.2, or
+    a manual opt-in from the results screen) - so there is a single primary
+    entry action here, not a choice between two tracks.
+    """
+    state = _get_state(request)
+    entry_track = state['active_track'] or 'ai_system'
+    entry_state = state['tracks'][entry_track]
+
+    if entry_state['started'] and not entry_state['completed']:
+        entry_action = 'resume'
+    elif any(state['tracks'][name]['completed'] for name in engine.TRACK_NAMES):
+        entry_action = 'results'
+    else:
+        entry_action = 'start'
+        entry_track = 'ai_system'
 
     return render(request, 'questionnaire/intro.html', {
-        'questionnaire': questionnaire,
-        'first_question': first_question
+        'metadata': engine.get_metadata(),
+        'entry_action': entry_action,
+        'entry_track': entry_track,
+        'entry_step': entry_state['current_step'],
+        'has_existing': entry_action != 'start',
     })
 
-def question_detail(request, question_id):
-    question = get_object_or_404(Question.objects.select_related('sub_questionnaire'), id=question_id)
 
-    sub_q = question.sub_questionnaire
-    questionnaire = sub_q.parent_questionnaire if sub_q else Questionnaire.objects.first()
+def start_track(request, track):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
 
-    # AUTOMATIC REDIRECT FOR ACKNOWLEDGMENT TYPES
-    if question.answer_type == 'acknowledgment':
-        first_choice = question.choices.first()
-        if first_choice and first_choice.next_question:
-            if question.result_text:
-                request.session['flash_result_text'] = question.result_text
-            return redirect('questionnaire:detail', question_id=first_choice.next_question.id)
+    state = _get_state(request)
+    track_state = _empty_track_state()
+    track_state['started'] = True
+    track_state['current_step'] = engine.first_step_id(track)
+    state['tracks'][track] = track_state
+    state['active_track'] = track
+    _save_state(request, state)
+    return redirect('questionnaire:step', track=track, step_id=track_state['current_step'])
 
-    # Stepper logic
-    stages_list = [stage[1] for stage in Question.STAGE_CHOICES]
-    stage_links = {}
-    if questionnaire:
-        for stage_num, stage_name in Question.STAGE_CHOICES:
-            first_q_in_stage = Question.objects.filter(
-                sub_questionnaire__parent_questionnaire=questionnaire,
-                stage=stage_num
-            ).order_by('id').first()
-            if first_q_in_stage:
-                stage_links[stage_num] = first_q_in_stage.id
 
-    # Finding the next ID specifically for .result pages (Continue button)
-    next_question_id = None
-    first_choice = question.choices.first()
-    if first_choice and first_choice.next_question:
-        next_question_id = first_choice.next_question.id
+def step_view(request, track, step_id):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
 
-    # Retrieve session data for dynamic content rendering
-    category = request.session.get('final_risk_display', None)
-    user_roles = request.session.get('user_roles', [])
-    logic_conditions = request.session.get('logic_conditions', {})
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    if not track_state['started'] or track_state['current_step'] != step_id:
+        # Session doesn't know about this step (fresh visit / stale bookmark) - restart the track.
+        return redirect('questionnaire:start_track', track=track)
 
+    state['active_track'] = track
+    _save_state(request, state)
+
+    step = engine.get_step(track, step_id)
+    if step is None:
+        return HttpResponseBadRequest('Unknown step')
+
+    total_steps = len(engine.get_steps(track))
+    other_track = 'gpai_model' if track == 'ai_system' else 'ai_system'
     context = {
-        'question': question,
-        'questionnaire': questionnaire,
-        'sub_q': sub_q,
-        'stages': stages_list,
-        'current_stage': question.stage,
-        'stage_links': stage_links,
-        'next_question_id': next_question_id,
-        'category': category,
-        'result_text': request.session.pop('flash_result_text', None),
-        'user_roles': user_roles,
-        'logic_conditions': logic_conditions,
+        'track': track,
+        'track_label': engine.get_track_label(track),
+        'step': step,
+        'track_state': track_state,
+        'progress_index': total_steps - len(track_state['queue']),
+        'progress_total': total_steps,
+        'other_track': other_track,
+        'other_track_label': engine.get_track_label(other_track),
+        'other_track_started': state['tracks'][other_track]['started'],
     }
-    return render(request, 'questionnaire/question.html', context)
 
-def submit_answer(request, question_id):
-    current_question = get_object_or_404(Question, id=question_id)
+    if step['type'] == 'checklist':
+        context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
+        return render(request, 'questionnaire/step_checklist.html', context)
 
-    # Ensure a session exists and retrieve the key
-    if not request.session.session_key:
-        request.session.create()
-    session_key = request.session.session_key
+    context['selected_answer'] = track_state['answers'].get(step_id)
+    return render(request, 'questionnaire/step_branching.html', context)
 
-    if request.method == 'POST':
-        selected_ids = request.POST.getlist('choices')
 
-        # Validation: stay on current page if no answer is selected
-        if not selected_ids:
-            return redirect('questionnaire:detail', question_id=current_question.id)
+def submit_branching(request, track, step_id):
+    if request.method != 'POST':
+        return redirect('questionnaire:step', track=track, step_id=step_id)
 
-        # 1. Save progress to UserAnswer (Intermediate storage for session)
-        user_answer, created = UserAnswer.objects.get_or_create(
-            session_key=session_key,
-            question=current_question
-        )
-        user_answer.selected_choices.set(selected_ids)
-        user_answer.save()
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    if track_state['current_step'] != step_id:
+        return redirect('questionnaire:start_track', track=track)
 
-        choice = get_object_or_404(Choice, id=selected_ids[0])
-        next_q = choice.next_question
+    step = engine.get_step(track, step_id)
+    answer_value = request.POST.get('answer')
+    chosen = next((opt for opt in step['answer_options'] if opt['value'] == answer_value), None)
+    if chosen is None:
+        return redirect('questionnaire:step', track=track, step_id=step_id)
 
-        # --- Dynamic Risk Identification ---
+    track_state['answers'][step_id] = answer_value
+    hints = chosen.get('derived_hints') or {}
 
-        # 1. Control for Prohibited Practices (Unacceptable Risk)
-        if next_q and "4.1.result_prohibited" in next_q.id:
-            request.session['ai_risk_level'] = "Unacceptable Risk (Prohibited)"
-            request.session['is_high_risk'] = False
+    if hints.get('sets_role'):
+        track_state['role'] = _combined_role(track_state['role'], hints['sets_role'])
+    if hints.get('risk_category'):
+        track_state['risk_category'] = hints['risk_category']
 
-        # 2. Temporary Marking of Potential High Risk (Before Exemptions)
-        elif next_q and "4.2.result_highrisk" in next_q.id:
-            request.session['ai_risk_level'] = "Potential High Risk"
-            request.session['is_high_risk'] = False
+    gpai_category = engine.gpai_risk_classification(step_id, answer_value)
+    if gpai_category:
+        track_state['risk_category'] = gpai_category
 
-        # 3. CONFIRMATION of High Risk (After Section 4.3, if there was no exception)
-        elif next_q and "4.result_confirmed_highrisk" in next_q.id:
-            request.session['ai_risk_level'] = "High Risk"
-            request.session['is_high_risk'] = True
+    switches_track = hints.get('switches_track')
+    next_step_id = engine.resolve_next(track, step_id, hints, track_state['risk_category'])
 
-        # 4. APPLICATION OF EXCEPTION (Conversion to Limited Risk)
-        # If the user is led to 4.3.result_exception, the risk is downgraded
-        elif next_q and "4.3.result_exception" in next_q.id:
-            request.session['ai_risk_level'] = "Limited Risk"
-            request.session['is_high_risk'] = False
+    _push_history(track_state, step_id)
 
-        # 5. Check for Non-High Risk from the beginning (Section 4.2 -> No)
-        elif next_q and "4.2.result_not_highrisk" in next_q.id:
-            request.session['ai_risk_level'] = "Limited/Minimal Risk"
-            request.session['is_high_risk'] = False
+    if next_step_id:
+        _advance_track(track_state, track, next_step_id)
+        # "Not sure" answers carry actual guidance (consult someone, assume a
+        # default, etc.), unlike plain YES/NO whose next_step_raw just repeats
+        # the destination's label - so only these are worth flashing.
+        if answer_value.strip().upper().startswith('NOT SURE'):
+            track_state['flash_note'] = chosen.get('next_step_raw')
+    else:
+        track_state['completed'] = True
+        track_state['current_step'] = None
+        # No further step to flash it on - keep it for the results screen instead.
+        track_state['terminal_note'] = chosen.get('next_step_raw')
 
-        # 6. Transparency (Limited Risk - Section 7)
-        elif next_q and "7.result" in next_q.id:
-            if request.session.get('ai_risk_level') != "High Risk":
-                request.session['ai_risk_level'] = "Limited Risk"
-                request.session['is_high_risk'] = False
+    if track_state['completed'] and switches_track in engine.TRACK_NAMES and switches_track != track:
+        # A full hand-off to the other track (as opposed to "do both") means
+        # this track's determination doesn't apply after all - drop it so it
+        # doesn't show up as an empty/void result on the results screen later.
+        state['tracks'][track] = _empty_track_state()
+        other = state['tracks'][switches_track]
+        _save_state(request, state)
+        if not other['started']:
+            return redirect('questionnaire:start_track', track=switches_track)
+        if other['completed']:
+            return redirect('questionnaire:results')
+        return redirect('questionnaire:step', track=switches_track, step_id=other['current_step'])
 
-        # 7. Out of Scope
-        if next_q and ("result_exempt" in next_q.id or next_q.id == "1.3"):
-            request.session['ai_risk_level'] = "Exempt (Out of Scope)"
-            request.session['is_high_risk'] = False
+    _save_state(request, state)
 
-        # 2. Checklist vs Radio logic for navigation
-        if current_question.answer_type == 'checklist':
-            # Exclude technical markers to calculate real selection coverage
-            all_choice_ids = set(current_question.choices.exclude(
-                text__in=['all_checked', 'some_checked', 'none_checked']
-            ).values_list('id', flat=True))
+    if track_state['completed']:
+        _persist_snapshot(request, state)
+        if switches_track == 'both':
+            for name in engine.TRACK_NAMES:
+                if not state['tracks'][name]['started']:
+                    return redirect('questionnaire:start_track', track=name)
+        return redirect('questionnaire:results')
 
-            selected_ids_set = set(map(int, selected_ids))
+    if track_state.get('flash_note'):
+        return redirect('questionnaire:not_sure_notice', track=track)
 
-            if selected_ids_set == all_choice_ids:
-                choice = current_question.choices.filter(text='all_checked').first()
-            elif len(selected_ids_set) > 0:
-                choice = current_question.choices.filter(text='some_checked').first()
-            else:
-                choice = current_question.choices.filter(text='none_checked').first()
+    return redirect('questionnaire:step', track=track, step_id=track_state['current_step'])
 
-            # Fallback to first selected choice if logic above doesn't yield a result
-            if not choice:
-                choice = get_object_or_404(Choice, id=selected_ids[0])
-        else:
-            # Standard single choice logic
-            choice = get_object_or_404(Choice, id=selected_ids[0])
 
-        # 3. Classification Logic (Risk Level & Exemptions)
+def not_sure_notice(request, track):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
 
-        # # High Risk detection based on specific question IDs
-        # high_risk_ids = ['1.1.4', '1.1.5', '2.1.1']
-        # if current_question.id in high_risk_ids and choice.text.lower() == "yes":
-        #     request.session['ai_risk_level'] = "High Risk"
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    message = track_state.pop('flash_note', None)
+    _save_state(request, state)
 
-        # Determine next navigation step
-        next_q = choice.next_question if choice else None
+    if not message or not track_state['current_step']:
+        return redirect('questionnaire:step', track=track, step_id=track_state['current_step']) \
+            if track_state['current_step'] else redirect('questionnaire:start_track', track=track)
 
-        # Specific Logic for Scope & Exemptions Analysis (Section 3)
-        if next_q and next_q.id == "3.1.result_exempt":
-            request.session['ai_risk_level'] = "Exempt (Out of Scope)"
+    first_step_id = engine.first_step_id(track)
+    return render(request, 'questionnaire/not_sure.html', {
+        'track': track,
+        'track_label': engine.get_track_label(track),
+        'message': message,
+        'continue_step_id': track_state['current_step'],
+        'continue_step_label': engine.get_step(track, track_state['current_step'])['step_label'],
+        'restart_step_label': engine.get_step(track, first_step_id)['step_label'],
+    })
 
-        request.session.modified = True
 
-        # 4. Final Assessment Snapshot (Triggered on any .result page)
-        if next_q and ".result" in next_q.id:
-            # Gather all session answers to freeze them in the Assessment record
-            all_user_answers = UserAnswer.objects.filter(session_key=session_key).select_related('question')
-            responses_data = []
-            for ua in all_user_answers:
-                responses_data.append({
-                    "question_id": ua.question.id,
-                    "question_text": ua.question.text,
-                    "answers": [c.text for c in ua.selected_choices.all()]
-                })
+def submit_checklist(request, track, step_id):
+    if request.method != 'POST':
+        return redirect('questionnaire:step', track=track, step_id=step_id)
 
-            # Save the final report data
-            Assessment.objects.update_or_create(
-                session_key=session_key,
-                defaults={
-                    "final_classification": request.session.get('ai_risk_level', "Minimal Risk"),
-                    "full_responses_dump": responses_data
-                }
-            )
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    if track_state['current_step'] != step_id:
+        return redirect('questionnaire:start_track', track=track)
 
-        # 5. Redirect Handling & Role Identification
-        if next_q:
-            user_roles = request.session.get('user_roles', [])
+    step = engine.get_step(track, step_id)
+    valid_statuses = set(step['status_options'])
+    statuses = track_state['checklist_status'].setdefault(step_id, {})
+    for item in step['items']:
+        value = request.POST.get(f"item_{item['item_id']}")
+        if value in valid_statuses:
+            statuses[item['item_id']] = value
 
-            if next_q.id == "2.1.result_provider" or next_q.id == "2.3.result_provider" or next_q.id == "2.4.result_provider":
-                if "provider" not in user_roles:
-                    user_roles.append("provider")
+    _push_history(track_state, step_id)
+    _finish_current_step(track_state)
+    _save_state(request, state)
 
-            if next_q.id == "2.2.result_deployer":
-                if "deployer" not in user_roles:
-                    user_roles.append("deployer")
+    if track_state['completed']:
+        _persist_snapshot(request, state)
+        return redirect('questionnaire:results')
 
-            request.session['user_roles'] = user_roles
-            request.session.modified = True
+    return redirect('questionnaire:step', track=track, step_id=track_state['current_step'])
 
-            is_provider = "provider" in user_roles
-            is_deployer = "deployer" in user_roles
 
-            context_conditions = {
-                'if_provider_role': is_provider and not is_deployer,
-                'if_deployer_role_only': is_deployer and not is_provider,
-                'if_both_roles': is_provider and is_deployer,
-                'if_provider': is_provider,
-                'if_deployer': is_deployer,
-            }
-            request.session['logic_conditions'] = context_conditions
+def back_step(request, track):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
 
-            # Special logic for the very last result page (summary)
-            if next_q.id == "8.result":
-                request.session['final_risk_display'] = request.session.get('ai_risk_level', "Minimal Risk")
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    if not track_state['history']:
+        return redirect('questionnaire:intro')
 
-            if ".result" in next_q.id:
-                request.session['flash_result_text'] = next_q.result_text
+    previous_step_id = track_state['history'].pop()
+    track_state['current_step'] = previous_step_id
+    track_state['completed'] = False
+    _save_state(request, state)
+    return redirect('questionnaire:step', track=track, step_id=previous_step_id)
 
-            return redirect('questionnaire:detail', question_id=next_q.id)
 
-    # Fallback: Redirect to the start of the questionnaire
-    parent_id = current_question.sub_questionnaire.parent_questionnaire.id
-    return redirect('questionnaire:start', questionnaire_id=parent_id)
+def results(request):
+    state = _get_state(request)
+    tracks_data = {}
+    for name in engine.TRACK_NAMES:
+        track_state = state['tracks'][name]
+        if not track_state['started']:
+            continue
+        risk_category = track_state['risk_category']
+        tracks_data[name] = {
+            'label': engine.get_track_label(name),
+            'role': track_state['role'],
+            'risk_category': risk_category,
+            'is_terminal': risk_category in engine.TERMINAL_RISK_CATEGORIES,
+            'completed': track_state['completed'],
+            'current_step': track_state['current_step'],
+            'terminal_note': track_state.get('terminal_note'),
+            'obligations': engine.compute_obligations(
+                name, risk_category, track_state['role'], track_state['checklist_status']
+            ) if track_state['completed'] else [],
+        }
 
-def out_of_scope_view(request):
-    return render(request, 'questionnaire/out_of_scope.html')
+    return render(request, 'questionnaire/results.html', {
+        'tracks_data': tracks_data,
+        'roles': _combined_roles_list(state),
+        'has_snapshot': bool(request.session.session_key and AIActAssessment.objects.filter(
+            session_key=request.session.session_key).exists()),
+    })
 
-def assessment_completed_view(request):
-    return render(request, 'questionnaire/assessment_completed.html')
+
+def restart(request):
+    request.session.pop(SESSION_KEY, None)
+    request.session.modified = True
+    return redirect('questionnaire:start_track', track='ai_system')
+
 
 def download_assessment_json(request):
     session_key = request.session.session_key
-    # Get the latest assessment for this session
-    assessment = Assessment.objects.filter(session_key=session_key).last()
-
+    assessment = AIActAssessment.objects.filter(session_key=session_key).first() if session_key else None
     if not assessment:
-        return HttpResponse("No completed assessment found.", status=404)
+        return HttpResponse('No completed assessment found.', status=404)
+
+    obligations = {
+        track: engine.compute_obligations(
+            track,
+            assessment.track_results.get(track, {}).get('risk_category'),
+            assessment.track_results.get(track, {}).get('role'),
+            assessment.checklist_status.get(track, {}),
+        )
+        for track in assessment.track_results
+    }
 
     export_data = {
-        "report_id": assessment.id,
-        "classification": assessment.final_classification,
-        "completion_date": assessment.created_at.isoformat(),
-        "responses": assessment.full_responses_dump
+        'report_id': assessment.id,
+        'completion_date': assessment.created_at.isoformat(),
+        'roles': assessment.roles,
+        'track_results': assessment.track_results,
+        'answers': assessment.answers,
+        'checklist_status': assessment.checklist_status,
+        'obligations': obligations,
     }
 
     response = HttpResponse(
         json.dumps(export_data, indent=4, ensure_ascii=False),
         content_type='application/json'
     )
-    response['Content-Disposition'] = f'attachment; filename="AI_Report_{assessment.id}.json"'
+    response['Content-Disposition'] = f'attachment; filename="AI_Act_Assessment_{assessment.id}.json"'
     return response
-
-def get_context_data(self, **kwargs):
-    context = super().get_context_data(**kwargs)
-
-    history = self.request.session.get('questionnaire_history', [])
-
-    category = "UNDER ASSESSMENT"
-    if "1.1.result" in history:
-        category = "AI SYSTEM"
-    elif "1.2.result" in history:
-        category = "GENERAL-PURPOSE AI MODEL (GPAI)"
-    elif "1.3.result" in history:
-        category = "OUTSIDE SCOPE"
-
-    context['category'] = category
-    return context
