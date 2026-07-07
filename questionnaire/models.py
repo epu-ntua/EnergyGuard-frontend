@@ -151,3 +151,30 @@ class Assessment(models.Model):
 
     def __str__(self):
         return f"Assessment {self.id} - {self.final_classification}"
+
+
+class AIActAssessment(models.Model):
+    """
+    Final snapshot of a completed EU AI Act questionnaire run (questionnaire.json
+    engine). Live in-progress state lives in the session; a row here is written
+    once a track is completed, so it survives for the JSON download/audit trail.
+    """
+    session_key = models.CharField(max_length=40, db_index=True, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # ["provider", "deployer"] - union of roles identified across tracks
+    roles = models.JSONField(default=list)
+    # {"ai_system": {"risk_category": "high_risk", "role": "provider"}, "gpai_model": {...}}
+    track_results = models.JSONField(default=dict)
+    # {"ai_system": {"AI-1.1": "YES", ...}, "gpai_model": {...}}
+    answers = models.JSONField(default=dict)
+    # {"ai_system": {"AI-5": {"AI-5.1": "COMPLETE", ...}}, "gpai_model": {...}}
+    checklist_status = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name = "AI Act Assessment"
+        verbose_name_plural = "AI Act Assessments"
+
+    def __str__(self):
+        return f"AI Act Assessment {self.id} ({', '.join(self.roles) or 'no role identified'})"
