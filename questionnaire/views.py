@@ -260,8 +260,7 @@ def step_view(request, track, step_id):
 
     if step['type'] == 'checklist':
         context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
-        if step_id == 'GP-4b':
-            context['gp4a_answer'] = track_state['answers'].get('GP-4a')
+        context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id == 'GP-4b' else None
         return render(request, 'questionnaire/step_checklist.html', context)
 
     context['selected_answer'] = track_state['answers'].get(step_id)
