@@ -12,20 +12,6 @@ class ProjectGeneralInfoForm(forms.ModelForm):
             'project_type': forms.Select(attrs={'class': 'form-select'}),
         }
 
-class ProjectFacilitiesForm(forms.Form):
-    facility_name = forms.CharField(
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter facility name'}),
-    )
-
-class ProjectSandboxPackagesForm(forms.Form): 
-    package_name = forms.CharField(
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter sandbox package name'}),
-    )
-
 class EditProjectForm(forms.ModelForm):
     class Meta:
         model = Project

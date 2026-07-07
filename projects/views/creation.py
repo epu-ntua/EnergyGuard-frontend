@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 
 from core.views import BaseWizardView
 
-from ..forms import ProjectFacilitiesForm, ProjectGeneralInfoForm, ProjectSandboxPackagesForm
+from ..forms import ProjectGeneralInfoForm
 from ..models import Experiment, Project
 from ..services import (
     MlflowClientError,
@@ -33,18 +33,12 @@ def _cleanup_mlflow_experiment(experiment_id: str, user) -> None:
 
 PROJECT_TEMPLATE_NAMES = {
     "0": "projects/project-creation-step1.html",
-    "1": "projects/project-creation-step2.html",
-    "2": "projects/project-creation-step3.html",
 }
 PROJECT_FORMS = [
     ("0", ProjectGeneralInfoForm),
-    ("1", ProjectFacilitiesForm),
-    ("2", ProjectSandboxPackagesForm),
 ]
 PROJECT_STEP_METADATA = {
     "0": {"title": "General", "icon": "fa-info-circle"},
-    "1": {"title": "Facilities", "icon": "fa-building"},
-    "2": {"title": "Packages", "icon": "fa-cubes-stacked"},
 }
 
 
