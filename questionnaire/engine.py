@@ -77,6 +77,13 @@ def _step_order_index(track_name, step_id):
     return order.index(step_id) if step_id in order else -1
 
 
+def step_position(track_name, step_id):
+    """1-indexed position of step_id within the track's declared step order,
+    for a "Step X of Y" progress indicator."""
+    index = _step_order_index(track_name, step_id)
+    return index + 1 if index >= 0 else None
+
+
 def _label_number(step):
     m = _STEP_LABEL_NUM_RE.match(step.get('step_label', ''))
     return m.group(1) if m else None

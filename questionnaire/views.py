@@ -261,7 +261,7 @@ def step_view(request, track, step_id):
         'track_label': engine.get_track_label(track),
         'step': step,
         'track_state': track_state,
-        'progress_index': total_steps - len(track_state['queue']),
+        'progress_index': engine.step_position(track, step_id) or total_steps,
         'progress_total': total_steps,
         'other_track': other_track,
         'other_track_label': engine.get_track_label(other_track),

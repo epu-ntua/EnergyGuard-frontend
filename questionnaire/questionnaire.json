@@ -309,7 +309,7 @@
           "step_label": "Step 3.2 · Exclusions",
           "track": "ai_system",
           "type": "branching",
-          "question": "Does any of the following apply to the AI system to be tested (narrowed down only to the most likely to the enrgy sector)?",
+          "question": "Does any of the following apply to the AI system to be tested (narrowed down only to the most likely to the energy sector)?",
           "more_info": null,
           "example": null,
           "more_info_example": null,
@@ -358,7 +358,7 @@
             },
             {
               "label": "d",
-              "text": "Released under a free and open-source licence (not applicable in all cases- exceptions for high risk AI systems, prohibited practices or systems with trasnparency obligations apply)",
+              "text": "Released under a free and open-source licence (not applicable in all cases- exceptions for high risk AI systems, prohibited practices or systems with transparency obligations apply)",
               "more_info": "A release of software and data under a free and open source licence permits their open sharing and users can freely access, use, alter, redistribute them or their modified versions.",
               "example": "e.g an open-source system running to protect the physical integrity of a critical energy infrastructure (if classified as high risk) → NOT excluded.",
               "more_info_example": null,
