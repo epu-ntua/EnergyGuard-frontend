@@ -48,13 +48,6 @@ def _save_state(request, state):
     request.session.modified = True
 
 
-def _combined_role(role_a, role_b):
-    roles = {r for r in (role_a, role_b) if r and r != 'both'}
-    if role_a == 'both' or role_b == 'both' or len(roles) > 1:
-        return 'both'
-    return next(iter(roles), None)
-
-
 def _advance_track(track_state, track_name, landing_step_id):
     """Move the track onto landing_step_id, expanding checklist landings
     into their full queue (role-based checklists + always-steps)."""
@@ -76,13 +69,10 @@ def _finish_current_step(track_state):
 
 
 def _combined_roles_list(state):
-    single = {
+    return sorted({
         state['tracks'][name]['role'] for name in engine.TRACK_NAMES
-        if state['tracks'][name]['role'] and state['tracks'][name]['role'] != 'both'
-    }
-    if any(state['tracks'][name]['role'] == 'both' for name in engine.TRACK_NAMES):
-        single |= {'provider', 'deployer'}
-    return sorted(single)
+        if state['tracks'][name]['role']
+    })
 
 
 def _persist_snapshot(request, state):
@@ -270,6 +260,8 @@ def step_view(request, track, step_id):
 
     if step['type'] == 'checklist':
         context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
+        if step_id == 'GP-4b':
+            context['gp4a_answer'] = track_state['answers'].get('GP-4a')
         return render(request, 'questionnaire/step_checklist.html', context)
 
     context['selected_answer'] = track_state['answers'].get(step_id)
@@ -296,7 +288,7 @@ def submit_branching(request, track, step_id):
     hints = chosen.get('derived_hints') or {}
 
     if hints.get('sets_role'):
-        track_state['role'] = _combined_role(track_state['role'], hints['sets_role'])
+        track_state['role'] = hints['sets_role']
     if hints.get('risk_category'):
         track_state['risk_category'] = hints['risk_category']
 
@@ -442,7 +434,8 @@ def results(request):
             'current_step': track_state['current_step'],
             'terminal_note': track_state.get('terminal_note'),
             'obligations': engine.compute_obligations(
-                name, risk_category, track_state['role'], track_state['checklist_status']
+                name, risk_category, track_state['role'], track_state['checklist_status'],
+                track_state['answers']
             ) if track_state['completed'] else [],
         }
 
@@ -476,6 +469,7 @@ def download_assessment_json(request):
             assessment.track_results.get(track, {}).get('risk_category'),
             assessment.track_results.get(track, {}).get('role'),
             assessment.checklist_status.get(track, {}),
+            assessment.answers.get(track, {}),
         )
         for track in assessment.track_results
     }

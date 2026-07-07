@@ -458,7 +458,7 @@
               "label": "d",
               "text": "Inferring emotions of natural persons in workplaces or education institutions (except for medical or safety reasons)",
               "more_info": "AI systems identifying or inferring emotions or intentions based on biometric data",
-              "example": "e.g AI system inferring emotions of an energy utility employee in its workplace for a written text to define the style of the article is not based on biometric data → NOT PROHIBITED",
+              "example": "e.g AI system inferring emotions of an energy utility employee in its workplace from a written text to define the style of the article is not based on biometric data → NOT PROHIBITED",
               "more_info_example": null,
               "article_links": [
                 {
@@ -1142,18 +1142,8 @@
               "guideline_links": []
             },
             {
-              "item_id": "AI-5.16",
-              "number": "5.16",
-              "text": "Maintenance of the necessary documentation for 10 years after the AI system has been marketed",
-              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
-              "example": null,
-              "more_info_example": null,
-              "article_links": [],
-              "guideline_links": []
-            },
-            {
               "item_id": "AI-5.17",
-              "number": "5.17",
+              "number": "5.16",
               "text": "Maintenance of automatically generated logs (at least six months)",
               "more_info": "Automatically generated logs should be kept for a period appropriate to the intended purpose, and at least six months unless otherwise regulated by law.",
               "example": null,
@@ -1171,28 +1161,8 @@
               "guideline_links": []
             },
             {
-              "item_id": "AI-5.18",
-              "number": "5.18",
-              "text": "Corrective actions for AI systems already marketed",
-              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
-              "example": null,
-              "more_info_example": null,
-              "article_links": [],
-              "guideline_links": []
-            },
-            {
-              "item_id": "AI-5.19",
-              "number": "5.19",
-              "text": "Demonstration of conformity upon request",
-              "more_info": "ΟΧΙ ΤΕΛΙΚΑ ΕΒΑΛΑ DISCLAIMER",
-              "example": null,
-              "more_info_example": null,
-              "article_links": [],
-              "guideline_links": []
-            },
-            {
               "item_id": "AI-5.10-dup1",
-              "number": "5.10",
+              "number": "5.17",
               "text": "Accessibility requirements",
               "more_info": "The provider of the high-risk AI system should comply with national accessibility requirements in accordance with Directives on the accessibility of the websites and mobile applications of public sector bodies (EU) 2016/2102 and on the accessibility requirements for products and services to the extent applicable to energy sector (EU) 2019/882 (e.g expected to be included smart meters and other devices used by consumers), and self-service terminals for payment)",
               "example": null,
@@ -1208,11 +1178,12 @@
             },
             {
               "item_id": "AI-5.11-dup1",
-              "number": "5.11",
+              "number": "5.18",
               "text": "Appointment of an authorised represenative (if your entity is established in third countries)",
               "more_info": "The provider of the high-risk AI system, established in third countries, should appoint an authorized representative established in the Union, by written mandate, prior to making the AI system available on the Union Market. The mandate should be drafted in accordance with the provisions of article 22 par. 3 of the AI Act",
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "data_note": "Duplicate item number '5.11' in source spreadsheet (row 61)",
               "article_links": [
                 {
@@ -2138,6 +2109,7 @@
             {
               "item_id": "GP-4b.4",
               "number": "4.4",
+              "required_even_if_full_adherence": true,
               "text": "Training data summary — publicly available summary of content used for training (using the EU mandatory template)",
               "more_info": "Information included in the Summary should extend to all stages of the model training, from pre-training to post training, covering all data sources and data categories. To achive transparency and enable parties to exercise their rights, information should be comprehensive and detailed. The tempate provides a minimum baseline for the information to be provided. \nThe EU template for the public summary of the training content for General- Purpose AI models that should be filledprior to their placing on the Union Market is available at https://digital-strategy.ec.europa.eu. https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models. This summary is required for all providers, including those following the Code of Practice.",
               "example": null,
@@ -2164,6 +2136,7 @@
             {
               "item_id": "GP-4b.5",
               "number": "4.5",
+              "required_even_if_full_adherence": true,
               "text": "EU authorised representative appointment — if your organisation is based outside the EU, have you appointed an EU-based representative?",
               "more_info": "The appointment should take place by a written mandate that empowers the authorised representative to materialize the tasks listed in article 54 of the AI Act. The obligation does not apply to providers of GPAI models released under a free and open-source licence whose parameters are made publicly available and are not GPAI models withn systemic risk.",
               "example": null,

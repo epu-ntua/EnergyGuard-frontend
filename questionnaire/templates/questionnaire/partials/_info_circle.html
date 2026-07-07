@@ -1,0 +1,12 @@
+{% if show_extras and obj.more_info %}
+    <span class="ai-act-info-wrap">
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle ai-act-info-btn"
+                aria-label="More info">
+            <i class="bi bi-info-lg"></i>
+        </button>
+        <span class="ai-act-popover-content" role="tooltip">
+            <strong class="d-block mb-1"><i class="bi bi-info-circle me-1"></i>More information</strong>
+            {{ obj.more_info|linebreaksbr }}
+        </span>
+    </span>
+{% endif %}

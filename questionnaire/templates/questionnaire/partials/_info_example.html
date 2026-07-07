@@ -1,0 +1,17 @@
+{% if obj.example %}
+    <p class="ai-act-example text-muted small fst-italic mt-2 mb-0">
+        <i class="bi bi-lightbulb me-1"></i>{{ obj.example }}
+        {% if obj.more_info_example %}
+            <span class="ai-act-info-wrap">
+                <button type="button" class="btn btn-sm btn-link p-0 align-baseline ai-act-info-btn"
+                        aria-label="More about this example">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+                <span class="ai-act-popover-content" role="tooltip">
+                    <strong class="d-block mb-1"><i class="bi bi-lightbulb me-1"></i>Might help reading</strong>
+                    {{ obj.more_info_example|linebreaksbr }}
+                </span>
+            </span>
+        {% endif %}
+    </p>
+{% endif %}
