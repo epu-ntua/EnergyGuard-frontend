@@ -22,15 +22,15 @@ services:
 
   questionnaire:
     build:
-      context: ./questionnaire
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./questionnaire/Dockerfile
     command: >
       sh -c "
       python manage.py migrate &&
       python manage.py runserver 0.0.0.0:8000
       "
     volumes:
-      - ./questionnaire:/app
+      - .:/app
     ports:
       - "8001:8000"
     env_file:
