@@ -1,0 +1,51 @@
+<div class="modal fade" id="aiModelModal-{{ model.slug }}" tabindex="-1" aria-labelledby="aiModelModalLabel-{{ model.slug }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <span class="bg-{{ model.color }} text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+            <span class="fas {{ model.icon }}"></span>
+          </span>
+          <h5 class="modal-title mb-0" id="aiModelModalLabel-{{ model.slug }}">{{ model.name }}</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-body-tertiary fs-9 mb-4">{{ model.description }}</p>
+
+        {% if model.details %}
+        <h6 class="fw-semibold text-body-emphasis mb-2 fs-9">What this model does</h6>
+        <p class="text-body-tertiary fs-9 mb-4">{{ model.details }}</p>
+        {% endif %}
+
+        {% if model.steps %}
+        <h6 class="fw-semibold text-body-emphasis mb-3 fs-9">How it works</h6>
+        <div class="dt-stepper mb-2">
+          {% for step in model.steps %}
+          <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+            <div class="icon-item icon-item-lg bg-{{ step.color }}-subtle text-{{ step.color }} mx-auto"><span class="fas {{ step.icon }}"></span></div>
+            <span class="dt-step-number">{{ forloop.counter }}</span>
+            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">{{ step.title }}</h6>
+            <p class="text-body-tertiary fs-9-5 mb-0">{{ step.description }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <span class="fas fa-hourglass-half fs-3 text-body-tertiary mb-2 d-block"></span>
+          <p class="text-body-tertiary fs-9 mb-0">This model is still under development. Check back soon.</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        {% if model.cta_url %}
+        <a href="{{ model.cta_url }}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+          Open Workspace <span class="fas fa-arrow-right"></span>
+        </a>
+        {% else %}
+        <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
