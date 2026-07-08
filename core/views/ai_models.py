@@ -12,7 +12,6 @@ AI_MODELS = [
                    "on-site. It combines real and historical weather data with the plant's physical "
                    "characteristics (panel count, tilt, azimuth) to produce short-term (1-16 day), historical "
                    "baseline, and optimistic clear-sky forecasts.",
-        'icon': 'fa-solar-panel',
         'color': 'primary',
         'image': 'assets/img/ai-models/pv-generation-forecasting.jpg',
         'cta_url_name': 'engreen-antrodoco-dt',
@@ -30,56 +29,24 @@ AI_MODELS = [
         ],
     },
     {
-        'slug': 'load-demand-forecasting',
-        'name': 'Load Demand Forecasting',
-        'description': 'Forecasts electricity consumption for buildings and communities.',
-        'details': 'Learns consumption patterns from historical smart-meter and household profile data to '
-                   'predict how much electricity a building or energy community will need, hour by hour. Used '
-                   'to size PV and battery capacity, plan demand-response actions, and match local generation '
-                   'with expected consumption.',
-        'icon': 'fa-chart-line',
+        'slug': 'fair-dynamic-pricing',
+        'name': 'Fair Dynamic Pricing ',
+        'description': 'Εconomically evaluates different energy consumption and sharing scenarios within the REC.',
+        'details': 'Supports the assessment of the economic effects of different consumption patterns, \
+            shared energy levels and incentive-related scenarios, helping to evaluate how pricing or behavioural strategies may affect REC performance. ',
         'color': 'info',
+        'image': 'assets/img/ai-models/fair-dynamic-pricing.jpg',
     },
     {
-        'slug': 'hydrogen-production-optimization',
-        'name': 'Hydrogen Production Optimization',
-        'description': 'Optimizes electrolyzer operation for efficient hydrogen output.',
-        'details': 'Recommends electrolyzer operating setpoints (current, flow rates, control mode) that '
-                   'balance available renewable power, hydrogen demand, and equipment degradation limits, so '
-                   'hydrogen is produced when it is cheapest and most efficient to do so.',
-        'icon': 'fa-flask',
+        'slug': 'predictive-maintenance-monitoring',
+        'name': 'Predictive Maintenance Monitoring',
+        'description': 'Detects anomalous operating patterns in monitored photovoltaic plants.',
+        'details': 'Identifies abnormal operating hours and supports the interpretation of possible local asset issues, \
+            such as communication losses, abnormal inverter behaviour, shading, degradation or battery-related effects. ',
         'color': 'success',
+        'image': 'assets/img/ai-models/predictive-maintenance-monitoring.jpg',
     },
-    {
-        'slug': 'battery-storage-optimization',
-        'name': 'Battery Storage Optimization',
-        'description': 'Schedules charge/discharge cycles to maximize storage value.',
-        'details': "Decides when a battery should charge or discharge based on forecasted generation, "
-                   "consumption, and electricity prices, aiming to maximize self-consumption and minimize "
-                   "costs while respecting the battery's state-of-charge and cycling limits.",
-        'icon': 'fa-battery-full',
-        'color': 'warning',
-    },
-    {
-        'slug': 'anomaly-detection',
-        'name': 'Anomaly Detection',
-        'description': 'Flags abnormal readings across connected energy assets.',
-        'details': 'Continuously compares live sensor readings from connected assets (inverters, '
-                   'electrolyzers, meters) against expected behaviour, flagging deviations that may indicate '
-                   'faults, degradation, or miscalibration before they cause downtime.',
-        'icon': 'fa-triangle-exclamation',
-        'color': 'danger',
-    },
-    {
-        'slug': 'energy-community-optimization',
-        'name': 'Energy Community Optimization',
-        'description': 'Balances production, storage and consumption across a community.',
-        'details': "Coordinates production, storage, and consumption across all members of a renewable "
-                   "energy community, allocating shared generation to maximize collective self-consumption "
-                   "and reduce the community's net energy costs.",
-        'icon': 'fa-people-group',
-        'color': 'primary',
-    },
+
 ]
 
 
