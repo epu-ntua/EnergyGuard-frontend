@@ -81,7 +81,7 @@
                                         <span class="fas fa-desktop"></span>
                                     </span>
                                     <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">No Physical Access</h6>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Virtual-only experimentation</h6>
                                         <p class="text-body-tertiary fs-9-5 mb-0">All experimentation runs on the Digital Twin</p>
                                     </div>
                                 </div>
@@ -90,6 +90,31 @@
                     </div>
                     <div class="col-12 col-lg-7">
                         <img src="{% static 'assets/img/digital_twins/DT_CARTIF updated.png' %}" alt="CARTIF Hydrogen Digital Twin Node" class="img-fluid rounded-3 w-100">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+
+            <!-- What can you do here -->
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                    <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                    <!-- TODO: Browse DT-Specific datasets -->
+                    <div class="card dt-tab-card mb-3" style="cursor:pointer;">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                <span class="fas fa-database"></span>
+                            </span>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                            </div>
+                            <a href="{% url 'datasets_list' %}" class="stretched-link"></a>
+                        </div>
                     </div>
                 </div>
             </div>

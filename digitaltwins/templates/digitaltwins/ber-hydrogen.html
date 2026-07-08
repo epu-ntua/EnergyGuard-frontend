@@ -80,9 +80,24 @@
                         <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
                         <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
 
-                        <!-- Experiment Request -->
-                        <div class="card dt-tab-card active mb-0">
+                        <!-- TODO: Browse DT-Specific datasets -->
+                        <div class="card dt-tab-card mb-3" style="cursor:pointer;">
                             <div class="card-body d-flex align-items-center gap-3">
+                                <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-database"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                </div>
+                                <a href="{% url 'datasets_list' %}" class="stretched-link"></a>
+                            </div>
+                        </div>
+
+                        <!-- Experiment Request wrapper: entire block gets active border -->
+                        <div class="card dt-tab-card mb-0" id="experiment-wrapper">
+                            <!-- Clickable header -->
+                            <div class="card-body d-flex align-items-center gap-3" id="experiment-request-card" style="cursor:pointer;">
                                 <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
                                     <span class="fas fa-flask"></span>
                                 </span>
@@ -90,9 +105,10 @@
                                     <h6 class="fw-bold text-body-emphasis mb-1">Experiment Request</h6>
                                     <p class="text-body-tertiary fs-9 mb-0">Submit a custom PEM electrolyzer experiment configuration for execution in the laboratory.</p>
                                 </div>
+                                <span class="fas fa-chevron-down text-body-tertiary" id="experiment-chevron"></span>
                             </div>
-                            <!-- How it works + Open Workspace (always visible) -->
-                            <div class="border-top p-3">
+                            <!-- How it works + Open Workspace (revealed on click) -->
+                            <div id="experiment-detail-panel" class="d-none border-top p-3">
                                 <div class="row g-3 align-items-stretch">
                                     <div class="col-12 col-lg-9">
                                         <div class="card border h-100">
@@ -287,3 +303,22 @@
     {% include "core/footer.html" %}
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var header  = document.getElementById('experiment-request-card');
+    var wrapper = document.getElementById('experiment-wrapper');
+    var panel   = document.getElementById('experiment-detail-panel');
+    var chevron = document.getElementById('experiment-chevron');
+
+    header.addEventListener('click', function () {
+        var opening = panel.classList.contains('d-none');
+        panel.classList.toggle('d-none', !opening);
+        wrapper.classList.toggle('active', opening);
+        chevron.classList.toggle('fa-chevron-down', !opening);
+        chevron.classList.toggle('fa-chevron-up', opening);
+    });
+}());
+</script>
+{% endblock scripts %}
