@@ -20,13 +20,12 @@
             {% if model.cta_url %}
             <span class="badge badge-phoenix badge-phoenix-success fs-10" data-bs-theme="light">Available</span>
             {% else %}
-            <span class="badge badge-phoenix fs-10" data-bs-theme="light">Coming soon</span>
+            <span class="badge badge-phoenix badge-phoenix-secondary fs-10" data-bs-theme="light">Coming soon</span>
             {% endif %}
-            <span class="fas {{ model.icon }} fs-4 text-white text-opacity-50"></span>
           </div>
           <div>
             <h4 class="text-white fw-bold mb-1">{{ model.name }}</h4>
-            <p class="text-white text-opacity-75 fs-9 mb-0">{{ model.description }}</p>
+            <p class="text-white text-opacity-75 fs-8-5 mb-0">{{ model.description }}</p>
           </div>
         </div>
       </div>
