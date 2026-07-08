@@ -10,29 +10,45 @@
                 <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #e2e8f0; color: #4a5568;">
                     {{ track_label }} &middot; {{ step.step_label }}
                 </span>
-                <span class="text-muted small">Step {{ progress_index }} of {{ progress_total }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    {% if track_state.role %}
+                        <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #4fd1ed; color: #fff;">
+                            {{ track_state.role|humanize_label }}
+                        </span>
+                    {% endif %}
+                    <span class="text-muted small">Step {{ progress_index }} of {{ progress_total }}</span>
+                </div>
             </div>
             <div class="progress ai-act-progress mb-4">
                 <div class="progress-bar" role="progressbar" style="width: {% widthratio progress_index progress_total 100 %}%"></div>
             </div>
 
-            <h4 class="fw-bold mb-0" style="color: #1a202c;">{{ step.question }}</h4>
-            {% include "questionnaire/partials/_info_extras.html" with obj=step uid=step.step_id show_extras=True %}
+            <h4 class="fw-bold mb-1" style="color: #1a202c;">
+                {{ step.question }}
+                {% include "questionnaire/partials/_info_circle.html" with obj=step show_extras=True %}
+            </h4>
+            {% include "questionnaire/partials/_info_links.html" with obj=step show_extras=True %}
+            {% include "questionnaire/partials/_info_example.html" with obj=step %}
 
             <form method="post" action="{% url 'questionnaire:submit_checklist' track=track step_id=step.step_id %}" class="mt-4">
                 {% csrf_token %}
                 <div class="d-flex flex-column gap-3 mb-4">
-                    {% for item in step.items|filter_by_role:track_state.role %}
+                    {% for item in step.items|filter_by_role:track_state.role|filter_by_gp4a:gp4a_answer %}
                         <div class="p-3 border rounded-4">
                             <div class="d-flex align-items-start gap-2 mb-2">
                                 <span class="fw-semibold text-nowrap">{{ item.number }}</span>
-                                <span>{{ item.text }}</span>
+                                <span>
+                                    {{ item.text }}
+                                    {% include "questionnaire/partials/_info_circle.html" with obj=item show_extras=True %}
+                                </span>
                             </div>
-                            {% include "questionnaire/partials/_info_extras.html" with obj=item uid=item.item_id show_extras=True %}
+                            {% include "questionnaire/partials/_info_links.html" with obj=item show_extras=True %}
+                            {% include "questionnaire/partials/_info_example.html" with obj=item %}
 
                             {% with current_status=checklist_status|dict_key:item.item_id %}
                             <div class="d-flex flex-wrap gap-2 mt-3">
                                 {% for status in step.status_options %}
+                                    {% if status != 'NOT_APPLICABLE' or item.allow_not_applicable %}
                                     <div>
                                         <input type="radio" class="btn-check" name="item_{{ item.item_id }}"
                                                id="status-{{ item.item_id|slugify }}-{{ status }}"
@@ -42,6 +58,7 @@
                                             {{ status|humanize_label }}
                                         </label>
                                     </div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                             {% endwith %}

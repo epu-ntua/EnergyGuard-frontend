@@ -2,12 +2,14 @@
 URL configuration for the EU AI Act questionnaire (questionnaire.json engine).
 Included from main/urls.py under the 'surveys/' prefix.
 """
+from django.contrib import admin
 from django.urls import path
 from questionnaire import views
 
 app_name = 'questionnaire'
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.intro, name='intro'),
     path('restart/', views.restart, name='restart'),
     path('results/', views.results, name='results'),

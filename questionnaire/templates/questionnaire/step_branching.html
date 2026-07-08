@@ -10,23 +10,33 @@
                 <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #e2e8f0; color: #4a5568;">
                     {{ track_label }} &middot; {{ step.step_label }}
                 </span>
-                <span class="text-muted small">Step {{ progress_index }} of {{ progress_total }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    {% if track_state.role %}
+                        <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #4fd1ed; color: #fff;">
+                            {{ track_state.role|humanize_label }}
+                        </span>
+                    {% endif %}
+                    <span class="text-muted small">Step {{ progress_index }} of {{ progress_total }}</span>
+                </div>
             </div>
             <div class="progress ai-act-progress mb-4">
                 <div class="progress-bar" role="progressbar" style="width: {% widthratio progress_index progress_total 100 %}%"></div>
             </div>
 
-            <div class="d-flex align-items-start gap-2 mb-1">
-                <h4 class="fw-bold mb-0" style="color: #1a202c;">{{ step.question }}</h4>
-            </div>
-            {% include "questionnaire/partials/_info_extras.html" with obj=step uid=step.step_id show_extras=True %}
+            <h4 class="fw-bold mb-1" style="color: #1a202c;">
+                {{ step.question }}
+                {% include "questionnaire/partials/_info_circle.html" with obj=step show_extras=True %}
+            </h4>
+            {% include "questionnaire/partials/_info_links.html" with obj=step show_extras=True %}
+            {% include "questionnaire/partials/_info_example.html" with obj=step %}
 
             {% if step.sub_items %}
                 <ul class="list-unstyled mt-3 mb-4">
-                    {% for sub_item in step.sub_items %}
+                    {% for sub_item in step.sub_items|filter_by_role:track_state.role %}
                         <li class="mb-2 ps-1">
                             <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
-                            {% include "questionnaire/partials/_info_extras.html" with obj=sub_item uid=step.step_id|add:"-"|add:sub_item.label show_extras=False %}
+                            {% include "questionnaire/partials/_info_circle.html" with obj=sub_item show_extras=True %}
+                            {% include "questionnaire/partials/_info_example.html" with obj=sub_item %}
                         </li>
                     {% endfor %}
                 </ul>

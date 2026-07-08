@@ -1,0 +1,19 @@
+{% load ai_act_extras %}
+{% if show_extras %}
+{% if obj.article_links or obj.guideline_links %}
+<span class="ai-act-extras d-inline-flex flex-wrap align-items-center gap-2">
+{% for link in obj.article_links|dedupe_by_url %}
+    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" title="{{ link.label }}"
+       class="badge rounded-pill text-decoration-none bg-dark ai-act-link-badge">
+        <i class="bi bi-journal-text me-1"></i>{{ link.label }}
+    </a>
+{% endfor %}
+{% for link in obj.guideline_links|dedupe_by_url %}
+    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" title="{{ link.label }}"
+       class="badge rounded-pill text-decoration-none {{ link.type|guideline_badge_class }} ai-act-link-badge">
+        <i class="bi {{ link.type|guideline_badge_icon }} me-1"></i>{{ link.type|humanize_label }}
+    </a>
+{% endfor %}
+</span>
+{% endif %}
+{% endif %}

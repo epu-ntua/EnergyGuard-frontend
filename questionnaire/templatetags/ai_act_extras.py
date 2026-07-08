@@ -1,5 +1,7 @@
 from django import template
 
+from .. import engine
+
 register = template.Library()
 
 _GUIDELINE_BADGE_META = {
@@ -46,9 +48,18 @@ def filter_by_role(items, role):
     """Checklist items tagged with applicable_role only apply to that role;
     untagged items apply to everyone. Used for steps that mix provider- and
     deployer-only items (e.g. AI-7 Transparency)."""
-    if not items or not role or role == 'both':
+    if not items or not role:
         return items
     return [item for item in items if item.get('applicable_role') in (None, role)]
+
+
+@register.filter
+def filter_by_gp4a(items, gp4a_answer):
+    """GP-4b's visible items depend on the GP-4a Code of Practice answer;
+    see engine.filter_gp4b_items for the rule."""
+    if not items:
+        return items
+    return engine.filter_gp4b_items(items, gp4a_answer)
 
 
 @register.filter

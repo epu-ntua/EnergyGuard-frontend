@@ -77,6 +77,13 @@ def _step_order_index(track_name, step_id):
     return order.index(step_id) if step_id in order else -1
 
 
+def step_position(track_name, step_id):
+    """1-indexed position of step_id within the track's declared step order,
+    for a "Step X of Y" progress indicator."""
+    index = _step_order_index(track_name, step_id)
+    return index + 1 if index >= 0 else None
+
+
 def _label_number(step):
     m = _STEP_LABEL_NUM_RE.match(step.get('step_label', ''))
     return m.group(1) if m else None
@@ -116,19 +123,13 @@ def applicable_checklist_steps(track_name, risk_category, role):
     """
     Ordered, deduped list of checklist step_ids that apply for this
     risk_category/role, per obligations_mapping. role may be 'provider',
-    'deployer', 'both', or None (no role identified -> no obligations).
+    'deployer', or None (no role identified -> no obligations).
     """
     if not risk_category or risk_category in TERMINAL_RISK_CATEGORIES:
         return []
     mapping = get_obligations_mapping(track_name)
     bucket = mapping.get(risk_category, {})
-    roles_to_check = ('provider', 'deployer') if role == 'both' else ((role,) if role else ())
-
-    ids = []
-    for r in roles_to_check:
-        for sid in bucket.get(r, []):
-            if sid not in ids:
-                ids.append(sid)
+    ids = list(bucket.get(role, [])) if role else []
 
     _, order = _steps_index(track_name)
     ids.sort(key=lambda sid: order.index(sid) if sid in order else len(order))
@@ -190,7 +191,20 @@ def gpai_risk_classification(step_id, answer_value):
     return None
 
 
-def compute_obligations(track_name, risk_category, role, checklist_status):
+def filter_gp4b_items(items, gp4a_answer):
+    """
+    GP-4b's item list depends on the GP-4a Code of Practice answer: a
+    provider fully adhering to the Code only owes 4.4 (training data
+    summary) and 4.5 (EU representative), since the Code itself already
+    covers the rest. Any other answer (NO / IN PROGRESS) still needs the
+    full obligations list demonstrated through other adequate means.
+    """
+    if (gp4a_answer or '').strip().upper().startswith('YES'):
+        return [item for item in items if item.get('required_even_if_full_adherence')]
+    return items
+
+
+def compute_obligations(track_name, risk_category, role, checklist_status, answers=None):
     """
     Build the results-screen obligations summary for one track: which
     checklist steps apply (per obligations_mapping) and, for each, which
@@ -214,8 +228,10 @@ def compute_obligations(track_name, risk_category, role, checklist_status):
         if not step or step['type'] != 'checklist':
             continue
         items = step.get('items', [])
-        if role and role != 'both':
+        if role:
             items = [it for it in items if it.get('applicable_role') in (None, role)]
+        if step_id == 'GP-4b':
+            items = filter_gp4b_items(items, (answers or {}).get('GP-4a'))
 
         item_statuses = checklist_status.get(step_id, {})
         fulfilled, outstanding = [], []
