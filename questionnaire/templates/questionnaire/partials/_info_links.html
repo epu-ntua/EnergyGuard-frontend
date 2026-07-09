@@ -1,11 +1,11 @@
-{% load ai_act_extras %}
+{% load ai_act_extras static %}
 {% if show_extras %}
 {% if obj.article_links or obj.guideline_links %}
 <span class="ai-act-extras d-inline-flex flex-wrap align-items-center gap-2">
 {% for link in obj.article_links|dedupe_by_url %}
     <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" title="{{ link.label }}"
-       class="badge rounded-pill text-decoration-none bg-dark ai-act-link-badge">
-        <i class="bi bi-journal-text me-1"></i>{{ link.label }}
+       class="badge rounded-pill text-decoration-none ai-act-link-badge ai-act-eu-badge">
+        <img src="{% static 'assets/img/generic/Flag-European-Union.webp' %}" alt="" class="ai-act-eu-flag me-1">{{ link.label|article_label }}
     </a>
 {% endfor %}
 {% for link in obj.guideline_links|dedupe_by_url %}

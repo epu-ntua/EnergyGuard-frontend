@@ -2,12 +2,13 @@
 {% load ai_act_extras %}
 
 {% block questionnaire_content %}
-<div class="container mt-4" style="max-width: 1100px;">
+<div class="container" style="max-width: 1100px;">
     <div class="card border-0 shadow-lg mb-4" style="border-radius: 24px;">
         <div class="card-body p-4 p-lg-5">
             <div class="text-center mb-4">
                 <div class="display-6 text-success mb-2"><i class="bi bi-check-circle-fill"></i></div>
-                <h3 class="fw-bold">Your Assessment Results</h3>
+                <h3 class="fw-bold mb-1">Your Assessment Results</h3>
+                <p class="text-muted small mb-0">Based on your answers, it is likely that the following applies:</p>
             </div>
 
             {% if roles %}
@@ -30,7 +31,7 @@
                     <div class="mb-3">
                         <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
                         <span class="d-inline-block px-4 py-2 shadow-sm" style="background:#1a202c; color:#fff; border-radius: 12px;">
-                            <i class="bi bi-shield-check me-2"></i>{{ data.risk_category|humanize_label|default:"Not yet determined" }}
+                            <i class="bi bi-shield-check me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
                         </span>
                     </div>
 
@@ -46,7 +47,7 @@
                                 {% if data.risk_category == 'prohibited' %}
                                     <i class="bi bi-x-octagon-fill me-2"></i>Prohibited
                                 {% else %}
-                                    <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|humanize_label }}
+                                    <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|risk_category_label }}
                                 {% endif %}
                             </h6>
                             <p class="mb-0">{{ data.terminal_note|default:"No further obligations checklist applies to this outcome." }}</p>

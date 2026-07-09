@@ -263,7 +263,10 @@ def step_view(request, track, step_id):
         context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id == 'GP-4b' else None
         return render(request, 'questionnaire/step_checklist.html', context)
 
-    context['selected_answer'] = track_state['answers'].get(step_id)
+    answer = track_state['answers'].get(step_id)
+    context['selected_answer'] = answer if not isinstance(answer, list) else None
+    context['selected_sub_items'] = answer if isinstance(answer, list) else []
+    context['combined_warning'] = engine.ai42_combined_warning(track, step_id, track_state['answers'])
     return render(request, 'questionnaire/step_branching.html', context)
 
 
@@ -278,6 +281,33 @@ def submit_branching(request, track, step_id):
         return redirect('questionnaire:start_track', track=track)
 
     step = engine.get_step(track, step_id)
+
+    if step.get('multi_select'):
+        valid_labels = {si['label'] for si in step.get('sub_items', [])}
+        selected_labels = [l for l in request.POST.getlist('sub_items') if l in valid_labels]
+        if selected_labels:
+            track_state['answers'][step_id] = selected_labels
+            track_state['risk_category'] = 'high_risk'
+            hint = engine.ai42_next_step_hint(selected_labels)
+            next_step_id = engine.resolve_hint_step_id(track, step_id, hint) if hint else None
+
+            _push_history(track_state, step_id)
+            if next_step_id:
+                _advance_track(track_state, track, next_step_id)
+            else:
+                track_state['completed'] = True
+                track_state['current_step'] = None
+
+            _save_state(request, state)
+            if track_state['completed']:
+                _persist_snapshot(request, state)
+                _sync_trustworthiness(request, state)
+                return redirect('questionnaire:results')
+            return redirect('questionnaire:step', track=track, step_id=track_state['current_step'])
+
+        # No sub_item checked - fall through to the NO / NOT SURE fallback
+        # answer_options below, same handling as any other branching step.
+
     answer_value = request.POST.get('answer')
     chosen = next((opt for opt in step['answer_options'] if opt['value'] == answer_value), None)
     if chosen is None:
@@ -331,6 +361,8 @@ def submit_branching(request, track, step_id):
     if track_state['completed']:
         _persist_snapshot(request, state)
         _sync_trustworthiness(request, state)
+        if track_state['role'] == 'no_role_detected':
+            return redirect('questionnaire:no_role_notice', track=track)
         if switches_track == 'both':
             for name in engine.TRACK_NAMES:
                 if not state['tracks'][name]['started']:
@@ -358,6 +390,7 @@ def not_sure_notice(request, track):
             if track_state['current_step'] else redirect('questionnaire:start_track', track=track)
 
     first_step_id = engine.first_step_id(track)
+    back_step_id = track_state['history'][-1] if track_state['history'] else None
     return render(request, 'questionnaire/not_sure.html', {
         'track': track,
         'track_label': engine.get_track_label(track),
@@ -365,6 +398,24 @@ def not_sure_notice(request, track):
         'continue_step_id': track_state['current_step'],
         'continue_step_label': engine.get_step(track, track_state['current_step'])['step_label'],
         'restart_step_label': engine.get_step(track, first_step_id)['step_label'],
+        'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+    })
+
+
+@login_required
+def no_role_notice(request, track):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
+
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    if track_state['role'] != 'no_role_detected':
+        return redirect('questionnaire:results')
+
+    return render(request, 'questionnaire/no_role_notice.html', {
+        'track': track,
+        'track_label': engine.get_track_label(track),
+        'message': track_state.get('terminal_note'),
     })
 
 
@@ -387,13 +438,33 @@ def submit_checklist(request, track, step_id):
             statuses[item['item_id']] = value
 
     _push_history(track_state, step_id)
-    _finish_current_step(track_state)
+
+    if step_id == 'AI-5':
+        warning, role_override = engine.ai5_completion_outcome(track, statuses)
+        if role_override:
+            # All items NOT_APPLICABLE means the user isn't actually a
+            # Provider - correct the role and land on Step 6 (Deployer
+            # Compliance), which isn't in the provider queue built so far.
+            track_state['role'] = role_override
+            _advance_track(track_state, track, 'AI-6')
+        else:
+            _finish_current_step(track_state)
+        if warning:
+            track_state['flash_note'] = warning
+    else:
+        if step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
+            track_state['risk_category'] = 'minimal_risk'
+        _finish_current_step(track_state)
+
     _save_state(request, state)
 
     if track_state['completed']:
         _persist_snapshot(request, state)
         _sync_trustworthiness(request, state)
         return redirect('questionnaire:results')
+
+    if track_state.get('flash_note'):
+        return redirect('questionnaire:not_sure_notice', track=track)
 
     return redirect('questionnaire:step', track=track, step_id=track_state['current_step'])
 

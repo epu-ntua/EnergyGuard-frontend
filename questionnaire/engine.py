@@ -204,6 +204,85 @@ def filter_gp4b_items(items, gp4a_answer):
     return items
 
 
+def ai42_next_step_hint(selected_labels):
+    """
+    Step 4.2 lets the user check any combination of its lettered high-risk
+    categories (a)-(e). Categories a-d go through the Article 6(3)
+    derogations check at Step 4.3; category e (Annex I product-safety
+    components) isn't subject to those derogations, so if it's the only
+    thing selected the track skips straight to Step 5.
+    """
+    labels = set(selected_labels or [])
+    if labels & {'a', 'b', 'c', 'd'}:
+        return 'Step 4.3'
+    if 'e' in labels:
+        return 'Step 5'
+    return None
+
+
+def ai42_combined_warning(track_name, current_step_id, answers):
+    """
+    Step 4.3's derogations check doesn't apply to the Annex I product-safety
+    category (e) from Step 4.2. If the user selected e together with any of
+    a-d there, surface that sub_item's own warning again while on Step 4.3.
+    """
+    if current_step_id != 'AI-4.3':
+        return None
+    step = get_step(track_name, 'AI-4.2')
+    if not step:
+        return None
+    stored_answer = (answers or {}).get('AI-4.2')
+    selected = set(stored_answer) if isinstance(stored_answer, list) else set()
+    if 'e' not in selected or not (selected & {'a', 'b', 'c', 'd'}):
+        return None
+    sub_item_e = next((si for si in step.get('sub_items', []) if si['label'] == 'e'), None)
+    return (sub_item_e or {}).get('combined_selection_warning')
+
+
+def ai5_completion_outcome(track_name, item_statuses):
+    """
+    Step 5 (Provider Compliance) branches on how its own checklist was
+    answered, per its completion_outcomes: marking every item NOT_APPLICABLE
+    means the user isn't actually a Provider after all ("I am a Deployer, not
+    a Provider"), so the track reroutes to Step 6 with its role corrected to
+    'deployer'. Any other outcome keeps following the normal queue to Step 7,
+    with a warning surfaced first if any item isn't yet COMPLETE (don't
+    release to market until all items are done).
+
+    Returns (warning_text_or_None, role_override_or_None).
+    """
+    step = get_step(track_name, 'AI-5')
+    outcomes = {
+        (o.get('condition_raw') or '').upper(): o.get('next_step_raw')
+        for o in (step or {}).get('completion_outcomes') or []
+    }
+    statuses = list((item_statuses or {}).values())
+    if not statuses:
+        return None, None
+
+    if all(s == 'NOT_APPLICABLE' for s in statuses):
+        return None, 'deployer'
+
+    if not all(s == 'COMPLETE' for s in statuses):
+        warning = next((text for cond, text in outcomes.items() if cond.startswith('IN PROGRESS')), None)
+        return warning, None
+
+    return None, None
+
+
+def ai7_all_not_applicable(item_statuses):
+    """
+    Step 7's transparency items are each scenario-specific (chatbot
+    disclosure, synthetic content labelling, emotion recognition disclosure,
+    deepfake disclosure). If every item the user actually answered is
+    NOT_APPLICABLE, none of Article 50's transparency triggers apply to
+    their system, so the track is reclassified as minimal risk regardless of
+    how it was classified going into this step.
+    """
+    statuses = list((item_statuses or {}).values())
+    return bool(statuses) and all(s == 'NOT_APPLICABLE' for s in statuses)
+
+
 def compute_obligations(track_name, risk_category, role, checklist_status, answers=None):
     """
     Build the results-screen obligations summary for one track: which

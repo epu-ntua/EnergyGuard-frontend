@@ -2,7 +2,7 @@
 {% load ai_act_extras %}
 
 {% block questionnaire_content %}
-<div class="container mt-4" style="max-width: 1100px;">
+<div class="container" style="max-width: 1100px;">
     <div class="card border-0 shadow-lg" style="border-radius: 24px;">
         <div class="card-body p-4 p-lg-5">
 
@@ -30,43 +30,120 @@
             {% include "questionnaire/partials/_info_links.html" with obj=step show_extras=True %}
             {% include "questionnaire/partials/_info_example.html" with obj=step %}
 
-            {% if step.sub_items %}
-                <ul class="list-unstyled mt-3 mb-4">
-                    {% for sub_item in step.sub_items|filter_by_role:track_state.role %}
-                        <li class="mb-2 ps-1">
-                            <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
-                            {% include "questionnaire/partials/_info_circle.html" with obj=sub_item show_extras=True %}
-                            {% include "questionnaire/partials/_info_example.html" with obj=sub_item %}
-                        </li>
-                    {% endfor %}
-                </ul>
+            {% if combined_warning %}
+                <div class="alert alert-warning d-flex align-items-start gap-2 mt-3 mb-0" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                    <span>{{ combined_warning }}</span>
+                </div>
             {% endif %}
 
-            <form method="post" action="{% url 'questionnaire:submit_branching' track=track step_id=step.step_id %}" class="mt-4">
-                {% csrf_token %}
-                <div class="d-flex flex-column gap-3 mb-4">
-                    {% for opt in step.answer_options %}
-                        <div>
-                            <input type="radio" class="btn-check" name="answer" id="opt-{{ forloop.counter }}"
-                                   value="{{ opt.value }}" required
-                                   {% if selected_answer == opt.value %}checked{% endif %}>
-                            <label class="btn custom-option-label d-flex align-items-center p-3 w-100 text-start" for="opt-{{ forloop.counter }}">
-                                <span class="custom-checkbox me-3 flex-shrink-0"><i class="bi bi-check-lg"></i></span>
-                                <span class="fw-medium text-dark">{{ opt.value }}</span>
-                            </label>
-                        </div>
-                    {% endfor %}
-                </div>
+            {% if step.multi_select %}
+                <form method="post" action="{% url 'questionnaire:submit_branching' track=track step_id=step.step_id %}" class="mt-4" id="ai42-multi-select-form">
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-3 mb-4">
+                        {% for sub_item in step.sub_items|filter_by_role:track_state.role %}
+                            <div>
+                                <input type="checkbox" class="btn-check ai42-sub-item" name="sub_items" id="sub-{{ sub_item.label }}"
+                                       value="{{ sub_item.label }}"
+                                       {% if sub_item.label in selected_sub_items %}checked{% endif %}>
+                                <label class="btn custom-option-label d-flex align-items-start p-3 w-100 text-start" for="sub-{{ sub_item.label }}">
+                                    <span class="custom-checkbox me-3 flex-shrink-0 mt-1"><i class="bi bi-check-lg"></i></span>
+                                    <span class="fw-medium text-dark">
+                                        <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
+                                        {% include "questionnaire/partials/_info_circle.html" with obj=sub_item show_extras=True %}
+                                        {% include "questionnaire/partials/_info_example.html" with obj=sub_item %}
+                                    </span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
-                        <i class="bi bi-arrow-left me-2"></i>Back
-                    </a>
-                    <button type="submit" class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
-                        Continue <i class="bi bi-arrow-right ms-2"></i>
-                    </button>
-                </div>
-            </form>
+                    <p class="text-muted small mb-2">If none of the above apply, or you're not sure:</p>
+                    <div class="d-flex flex-column gap-3 mb-4">
+                        {% for opt in step.answer_options %}
+                            <div>
+                                <input type="radio" class="btn-check ai42-fallback-answer" name="answer" id="opt-{{ forloop.counter }}"
+                                       value="{{ opt.value }}"
+                                       {% if selected_answer == opt.value %}checked{% endif %}>
+                                <label class="btn custom-option-label d-flex align-items-center p-3 w-100 text-start" for="opt-{{ forloop.counter }}">
+                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="bi bi-check-lg"></i></span>
+                                    <span class="fw-medium text-dark">{{ opt.value }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
+                            <i class="bi bi-arrow-left me-2"></i>Back
+                        </a>
+                        <button type="submit" class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
+                            Continue <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+                <script>
+                    (function () {
+                        var form = document.getElementById('ai42-multi-select-form');
+                        if (!form) return;
+                        var subItems = form.querySelectorAll('.ai42-sub-item');
+                        var fallbacks = form.querySelectorAll('.ai42-fallback-answer');
+
+                        subItems.forEach(function (box) {
+                            box.addEventListener('change', function () {
+                                if (box.checked) {
+                                    fallbacks.forEach(function (radio) { radio.checked = false; });
+                                }
+                            });
+                        });
+                        fallbacks.forEach(function (radio) {
+                            radio.addEventListener('change', function () {
+                                if (radio.checked) {
+                                    subItems.forEach(function (box) { box.checked = false; });
+                                }
+                            });
+                        });
+                    })();
+                </script>
+            {% else %}
+                {% if step.sub_items %}
+                    <ul class="list-unstyled mt-3 mb-4">
+                        {% for sub_item in step.sub_items|filter_by_role:track_state.role %}
+                            <li class="mb-2 ps-1">
+                                <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
+                                {% include "questionnaire/partials/_info_circle.html" with obj=sub_item show_extras=True %}
+                                {% include "questionnaire/partials/_info_example.html" with obj=sub_item %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" action="{% url 'questionnaire:submit_branching' track=track step_id=step.step_id %}" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-3 mb-4">
+                        {% for opt in step.answer_options %}
+                            <div>
+                                <input type="radio" class="btn-check" name="answer" id="opt-{{ forloop.counter }}"
+                                       value="{{ opt.value }}" required
+                                       {% if selected_answer == opt.value %}checked{% endif %}>
+                                <label class="btn custom-option-label d-flex align-items-center p-3 w-100 text-start" for="opt-{{ forloop.counter }}">
+                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="bi bi-check-lg"></i></span>
+                                    <span class="fw-medium text-dark">{{ opt.value }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
+                            <i class="bi bi-arrow-left me-2"></i>Back
+                        </a>
+                        <button type="submit" class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
+                            Continue <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
         </div>
     </div>
 </div>
