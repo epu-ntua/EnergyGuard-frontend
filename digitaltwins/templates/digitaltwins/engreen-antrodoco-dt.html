@@ -9,9 +9,6 @@
 <script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
 <style>
-    #azimuth-slider {
-        accent-color: var(--phoenix-primary);
-    }
     .chart-placeholder {
         background: var(--phoenix-body-bg);
         border: 2px dashed var(--phoenix-border-color);
@@ -48,8 +45,36 @@
 
         <!-- Header + About -->
         <div >
-            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="ENGREEN Node" description="PV Production Forecast · Antrodoco Renewable Energy Community" description_secondary="Forecast photovoltaic production for existing or hypothetical REC installations." %}
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="PV Production Simulator" description="Forecast photovoltaic production for existing or hypothetical REC installations" %}
         </div>
+
+        <!-- About this workspace -->
+        <div class="alert bg-turquoise bg-opacity-25 p-5 rounded-3 mb-4" role="alert">
+            <h6 class="fw-bold fs-8-5 text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                <span class="fas fa-circle-info"></span>About this workspace
+            </h6>
+            <p class="fs-8-5 mb-2">The PV Production Simulator estimates how much electricity a photovoltaic plant can produce over a selected time period — and how that production is split between energy you use on-site and energy exported to the grid.</p>
+            <p class="fs-8-5 mb-3">You can use it to analyse an existing station in the Antrodoco REC, or to explore what a hypothetical new plant might produce based on your own specifications.</p>
+
+            <h6 class="fw-semibold text-body-emphasis mb-2 fs-8-5">What you'll need to provide</h6>
+            <ol class="fs-8-5 ps-3 mb-3">
+                <li class="mb-2"><strong>Plant configuration</strong> — Choose whether you want to simulate an existing REC station or define a new hypothetical plant. If you choose an existing station, its technical details (installed power, panel orientation, tilt) are filled in automatically. If you define a new plant, you'll need to enter the number of panels, their power rating, tilt angle, and orientation (azimuth).</li>
+                <li class="mb-2"><strong>Consumption profile</strong> — Select the profile that best describes how energy is typically used at this location — whether most consumption happens during the day, in the evening, or is mixed throughout the day. This determines how much of the solar production is self-consumed versus fed into the grid.</li>
+                <li class="mb-0">
+                    <strong>Forecast type</strong> — Choose what kind of result you want:
+                    <ul class="mt-2 mb-0">
+                        <li><strong>Short-term forecast</strong> — predicts production for the next 1 to 16 days using real weather forecast data.</li>
+                        <li><strong>Historical baseline</strong> — estimates the typical annual yield based on the last 5 years of observed weather at this location.</li>
+                        <li><strong>Optimistic ceiling</strong> — shows the theoretical maximum production under ideal, cloud-free conditions.</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h6 class="fw-semibold text-body-emphasis mb-2 fs-8-5">What you'll get</h6>
+            <p class="fs-8-5 mb-0">Once the simulation runs, you'll see a summary of total energy produced, how much was self-consumed, how much was fed into the grid, and the feed-in ratio. Results are shown as hourly or daily charts and can be exported as JSON or CSV for further analysis.</p>
+        </div>
+        <hr>
+
 
         <!-- ── Section 1: Plant Configuration ─────────────────────────────── -->
         <div class="row g-3">
@@ -185,7 +210,14 @@
                                     </label>
                                     <span class="text-body-tertiary fs-10">degrees · <strong class="text-body-emphasis" id="azimuth-value">0°</strong></span>
                                 </div>
-                                <input type="range" class="form-range" id="azimuth-slider" name="azimuth_deg" min="-90" max="90" value="0" step="5">
+                                <input type="range" class="form-range" id="azimuth-slider" name="azimuth_deg" min="-90" max="90" value="0" step="45" list="azimuth-ticks">
+                                <datalist id="azimuth-ticks">
+                                    <option value="-90"></option>
+                                    <option value="-45"></option>
+                                    <option value="0"></option>
+                                    <option value="45"></option>
+                                    <option value="90"></option>
+                                </datalist>
                                 <div class="d-flex justify-content-between mt-1">
                                     <span class="text-body-tertiary fs-10">−90° East</span>
                                     <span class="text-body-tertiary fs-10">0° South</span>

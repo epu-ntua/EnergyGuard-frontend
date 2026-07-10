@@ -71,14 +71,14 @@ DIGITAL_TWINS = [
         'image': 'assets/img/digital_twins/Ceder-Lubia.jpg',
     },
     {
-        'slug': 'hydrogen-platforms',
-        'name': 'Hydrogen Testing Platforms at CEA, CARTIF, CIEMAT',
-        'description': 'Advanced hydrogen facilities and electrolysis systems for testing hydrogen technologies across four European centers.',
+        'slug': 'cea-hydrogen',
+        'name': 'Solid Oxide Electrolysis Cell System',
+        'description': 'A physics-based Digital Twin of a Solid Oxide Electrolysis Cell (SOEC) system, enabling scenario configuration, simulation execution, and performance analysis.',
         'image': 'assets/img/digital_twins/hydrogenCEA.jpg',
     },
     {
         'slug': 'ber-hydrogen',
-        'name': 'BER Node — PEM Electrolyzer Testing Facility',
+        'name': 'PEM Electrolyzer Testing Facility',
         'description': 'Physical PEM Electrolyzer Testing Facility. Experiments are executed manually by the BER laboratory team.',
         'image': 'assets/img/digital_twins/BER.jpg',
     },
@@ -228,6 +228,17 @@ def digitaltwins_list(request):
 @login_required
 def cea_node_workspace(request):
     return _dt_render(request, 'digitaltwins/cea-hydrogen-dt.html',
+                      validation_checks=CEA_VALIDATION_CHECKS, sample_json=CEA_SAMPLE_JSON)
+
+
+@login_required
+def cea_ai_scenario_generation(request):
+    return _dt_render(request, 'digitaltwins/cea-ai-scenario-generation.html')
+
+
+@login_required
+def cea_dt_simulation(request):
+    return _dt_render(request, 'digitaltwins/cea-dt-simulation.html',
                       validation_checks=CEA_VALIDATION_CHECKS, sample_json=CEA_SAMPLE_JSON)
 
 

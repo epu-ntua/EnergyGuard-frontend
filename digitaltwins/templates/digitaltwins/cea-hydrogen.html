@@ -1,0 +1,331 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CEA Hydrogen Node - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">CEA Hydrogen</li>
+          </ol>
+        </nav>
+
+        <!-- HEADER -->
+        <div class="mb-4">
+          <h2 class="mb-2">SOEC Digital Twin Simulation Platform</h2>
+          <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
+            <span>
+              <strong class="text-body">Organization:</strong>
+              <a href="https://www.cea.fr/" target="_blank" class="ms-1">CEA</a>
+            </span>
+            <span><strong class="text-body">Location:</strong> France</span>
+            <span><strong class="text-body">Domain:</strong> Hydrogen</span>
+          </div>
+        </div>
+
+        <hr class="mb-5">
+
+        <!-- Hero -->
+        <div class="row g-4 align-items-start">
+            
+            <div class="col-12 col-lg-6">
+
+                <p class="text-body-tertiary fs-8-5 mb-3">Access and interact with a comprehensive digital twin of a SOEC system through an intuitive and user-friendly interface. The platform enables users to create, customize, and execute simulation scenarios by adjusting key system parameters and operating conditions.</p>
+
+                
+
+                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Using the simulation workspace, users can:</h6>
+                <ul class="list-unstyled mb-3">
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Configure and compare multiple energy system scenarios.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Modify technical, operational, and environmental parameters.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Launch simulations directly from the platform.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Monitor simulation progress in real time.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Access and download raw simulation outputs for further analysis.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-0">
+                        <span class="fas fa-check text-success mt-1 fs-10"></span>
+                        <span class="text-body-tertiary fs-8-5">Explore detailed performance indicators and system behavior under different assumptions.</span>
+                    </li>
+                </ul>
+                <p class="text-body-tertiary fs-8-5 mb-0">Designed for engineers, analysts, researchers, and decision-makers, the platform provides direct access to the underlying digital twin, enabling data-driven evaluation of energy strategies, operational optimization, and what-if analyses in a secure and scalable environment.</p>
+                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-6">Use cases:</h6>
+                <p class="fs-8-5 text-body-tertiary mb-0 ">Scenario generation with AI tool, Scenario simulation and AI algorithm testing, Experimental validation of selected scenarios, EHT module's state of health diagnostic tool</p>
+
+            </div>
+            <div class="col-12 col-lg-6">
+                <img src="{% static 'assets/img/digital_twins/CEA.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100">
+            </div>
+
+        </div>
+
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y my-4">
+            <div class="row">
+                <div class="col-12 ">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                            <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                            <!-- TODO: Browse DT-Specific datasets -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <a class="accordion-button accordion-button-no-caret collapsed text-decoration-none" href="{% url 'datasets_list' %}">
+                                        <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                            <span class="fas fa-database"></span>
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                            <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                        </div>
+                                    </a>
+                                </h2>
+                            </div>
+
+                            <div class="accordion-button-arrow-icon accordion" id="servicesAccordion">
+
+                              <!-- AI Scenario Generation -->
+                              <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#scenario-generation-panel" aria-expanded="false" aria-controls="scenario-generation-panel">
+                                    <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                        <span class="fas fa-file-circle-plus"></span>
+                                    </span>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold text-body-emphasis mb-1">AI Scenario Generation</h6>
+                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Generate a compatible SOEC scenario file from simple, high-level inputs using AI.</p>
+                                    </div>
+                                  </button>
+                                </h2>
+                                <div id="scenario-generation-panel" class="accordion-collapse collapse" data-bs-parent="#servicesAccordion">
+                                  <div class="accordion-body p-3">
+                                    <div class="row g-3 align-items-stretch">
+                                        <div class="col-12 col-lg-9">
+                                            <div class="card border h-100">
+                                                <div class="card-body p-4">
+                                                    <h6 class="fw-bold text-body-emphasis mb-1">How it works</h6>
+                                                    <p class="text-body-tertiary fs-9 mb-4">From inputs to scenario file.</p>
+                                                    <div class="dt-stepper">
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-sliders"></span></div>
+                                                            <span class="dt-step-number">1</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Configure</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Provide test duration, hydrogen quantity, and applied current.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-wand-magic-sparkles"></span></div>
+                                                            <span class="dt-step-number">2</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Generate</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">AI builds a compatible SOEC scenario file.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-check"></span></div>
+                                                            <span class="dt-step-number">3</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Review</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Check the generated scenario before using it.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-display"></span></div>
+                                                            <span class="dt-step-number">4</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Simulate</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Use the scenario in the Digital Twin Simulation.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-lg-3">
+                                            <div class="card bg-primary-subtle border-0 h-100">
+                                                <div class="card-body p-4 d-flex flex-column justify-content-center">
+                                                    <h6 class="fw-bold text-body-emphasis mb-2">Ready to get started?</h6>
+                                                    <p class="text-body-tertiary fs-9 mb-3 flex-grow-1">Provide your test parameters and generate a scenario file.</p>
+                                                    <a href="{% url 'cea-ai-scenario-generation' %}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                                                        Open Workspace <span class="fas fa-arrow-right"></span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- DT Scenario Simulation -->
+                              <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#dt-simulation-panel" aria-expanded="false" aria-controls="dt-simulation-panel">
+                                    <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                        <span class="fas fa-display"></span>
+                                    </span>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold text-body-emphasis mb-1">DT Scenario Simulation</h6>
+                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Run the SOEC Digital Twin simulation using a generated or uploaded scenario file.</p>
+                                    </div>
+                                  </button>
+                                </h2>
+                                <div id="dt-simulation-panel" class="accordion-collapse collapse" data-bs-parent="#servicesAccordion">
+                                  <div class="accordion-body p-3">
+                                    <div class="row g-3 align-items-stretch">
+                                        <div class="col-12 col-lg-9">
+                                            <div class="card border h-100">
+                                                <div class="card-body p-4">
+                                                    <h6 class="fw-bold text-body-emphasis mb-1">How it works</h6>
+                                                    <p class="text-body-tertiary fs-9 mb-4">From scenario file to results.</p>
+                                                    <div class="dt-stepper">
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-arrow-up-from-bracket"></span></div>
+                                                            <span class="dt-step-number">1</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Upload</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Provide a generated or custom scenario file.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-play"></span></div>
+                                                            <span class="dt-step-number">2</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Run</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Launch the SOEC Digital Twin simulation.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-gauge-high"></span></div>
+                                                            <span class="dt-step-number">3</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Monitor</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Track simulation progress in real time.</p>
+                                                        </div>
+                                                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                                                            <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-download"></span></div>
+                                                            <span class="dt-step-number">4</span>
+                                                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Results</h6>
+                                                            <p class="text-body-tertiary fs-9-5 mb-0">Download the resulting .h5 output file.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-lg-3">
+                                            <div class="card bg-primary-subtle border-0 h-100">
+                                                <div class="card-body p-4 d-flex flex-column justify-content-center">
+                                                    <h6 class="fw-bold text-body-emphasis mb-2">Ready to get started?</h6>
+                                                    <p class="text-body-tertiary fs-9 mb-3 flex-grow-1">Upload a scenario file and run the Digital Twin simulation.</p>
+                                                    <a href="{% url 'cea-dt-simulation' %}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                                                        Open Workspace <span class="fas fa-arrow-right"></span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Details + CTA -->
+        <!-- <div class="row g-4">
+
+            <div class="col-12 col-xl-9">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-4">At a glance</h5>
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-gears"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Technology</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Solid Oxide Electrolysis Cell (SOEC)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-puzzle-piece"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Components</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">SOEC Stack, Physics-Based Digital Twin</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-diagram-project"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Use Cases</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Scenario Simulation, Performance Benchmarking, What-if Analysis</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-database"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Data Output</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Raw Simulation Outputs, Performance Indicators</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column align-items-center text-center gap-2">
+                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                        <span class="fas fa-user-group"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Who it's for</h6>
+                                        <p class="text-body-tertiary fs-9-5 mb-0">Engineers, Analysts, Researchers, Decision-Makers</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-3">
+                <div class="card h-100 bg-primary-subtle border-0">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h6 class="fw-bold text-body-emphasis mb-2">Ready to get started?</h6>
+                        <p class="text-body-tertiary fs-9 mb-3 flex-grow-1">Configure your scenario and run a simulation.</p>
+                        <a href="{% url 'cea-node-workspace' %}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                            Open Workspace <span class="fas fa-arrow-right"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div> -->
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

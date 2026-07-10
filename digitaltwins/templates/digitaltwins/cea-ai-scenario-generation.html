@@ -1,0 +1,118 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}AI Scenario Generation - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'cea-hydrogen' %}">CEA Hydrogen</a></li>
+            <li class="breadcrumb-item active">AI Scenario Generation</li>
+          </ol>
+        </nav>
+
+        <div class="row g-4">
+
+            <!-- Main column -->
+            <div class="col-12">
+
+                <!-- Header -->
+                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="AI Scenario Generation" description="Generate a compatible SOEC scenario file from simple, high-level inputs." %}
+
+                <div class="card">
+                    <div class="card-body p-4">
+
+                        <h6 class="fw-bold text-body-emphasis mb-3">1. Provide inputs</h6>
+
+                        <form id="scenario-form">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="test-duration">
+                                        Duration of the test
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="How long the test should run for."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="1" max="240" class="form-control scenario-required" id="test-duration" name="test_duration" placeholder="24">
+                                        <select class="form-select" name="test_duration_unit" style="max-width:7rem;">
+                                            <option value="hours" selected>hours</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 1 &ndash; 240 hours</span>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="hydrogen-quantity">
+                                        Hydrogen quantity to produce
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Target amount of hydrogen to produce during the test."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="1" max="10000" class="form-control scenario-required" id="hydrogen-quantity" name="hydrogen_quantity" placeholder="150">
+                                        <select class="form-select" name="hydrogen_quantity_unit" style="max-width:7rem;">
+                                            <option value="kg_h2" selected>kg H&#8322;</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 1 &ndash; 10,000 kg H&#8322;</span>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
+                                        Current to apply
+                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Electrical current applied to the electrolysis stack."></span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" min="10" max="2000" class="form-control scenario-required" id="applied-current" name="applied_current" placeholder="320">
+                                        <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
+                                            <option value="amps" selected>A</option>
+                                        </select>
+                                    </div>
+                                    <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3 mt-4">
+                                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="generate-scenario-btn" disabled>
+                                    <span class="fas fa-wand-magic-sparkles"></span>Generate Scenario
+                                </button>
+                                <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in all fields to enable the Generate button.</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    var requiredInputs = document.querySelectorAll('.scenario-required');
+    var generateBtn = document.getElementById('generate-scenario-btn');
+    var generateHint = document.getElementById('generate-scenario-hint');
+
+    function updateGenerateButton() {
+        var allFilled = Array.prototype.every.call(requiredInputs, function (input) {
+            return input.value.trim() !== '';
+        });
+        generateBtn.disabled = !allFilled;
+        generateHint.textContent = allFilled ? '' : 'Fill in all fields to enable the Generate button.';
+    }
+
+    requiredInputs.forEach(function (input) {
+        input.addEventListener('input', updateGenerateButton);
+    });
+
+    document.getElementById('scenario-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+    });
+})();
+</script>
+{% endblock scripts %}
