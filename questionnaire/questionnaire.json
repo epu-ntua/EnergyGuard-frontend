@@ -5,7 +5,7 @@
     "source_sheet": "Updated",
     "description": "Structured questionnaire data extracted from the source spreadsheet's 'Updated' sheet. There are two independent tracks: 'ai_system' and 'gpai_model'. A single organisation may need to complete both tracks if it has both an AI system and an underlying AI model that separately qualifies as a General Purpose AI (GPAI) model (see AI-1.2).",
     "design_notes": [
-      "Questions with lettered sub-items (a), (b), (c)... are modelled as ONE question with a single answer (answer_options), where sub_items are shown as explanatory/contextual list items only (each may include its own more_info/example/links for a popup).",
+      "Questions with lettered sub-items (a), (b), (c)... are modelled as ONE question with a single answer (answer_options), where sub_items are shown as explanatory/contextual list items only (each may include its own more_info/example/links for a popup). The one exception is AI-4.2, flagged 'multi_select': true, whose sub_items (a)-(e) are themselves independently selectable checkboxes (any combination), with 'answer_options' reduced to the non-applicable/not-sure fallbacks (NO / NOT SURE) for when none of the lettered categories fit. A sub_item may carry its own 'combined_selection_warning', shown again on a later step when that sub_item was selected together with others (see engine.ai42_combined_warning).",
       "Checklist-type steps (obligation lists such as AI-5, AI-6, AI-7, AI-8, GP-4b, GP-5) are modelled as an independent list of 'items', each tracked with one of 4 uniform status_options: COMPLETE, IN_PROGRESS, NOT_APPLICABLE, NOT_STARTED. 'completion_outcomes' preserves the source spreadsheet's example next-step guidance text for reference (e.g. what happens if 'ALL COMPLETE').",
       "'derived_hints' on branching answer_options are heuristically parsed from the 'next_step_raw' text (role assignment, risk category, track switch, next step reference). They are a convenience layer for backend logic and should be spot-checked against next_step_raw, which remains the source of truth.",
       "A small number of checklist items in the source have duplicate numbering (e.g. two items labelled '5.10' in Step 5 / AI-5). These are preserved with a 'data_note' flag and a unique item_id (suffixed '-dup2') rather than silently overwritten.",
@@ -14,12 +14,13 @@
   },
   "roles": [
     "provider",
-    "deployer"
+    "deployer",
+    "no_role_detected"
   ],
   "risk_categories": [
     "prohibited",
     "high_risk",
-    "limited_or_minimal_risk",
+    "transparency_risk",
     "minimal_risk",
     "excluded",
     "out_of_scope"
@@ -35,7 +36,7 @@
           "track": "ai_system",
           "type": "branching",
           "question": "Does your solution qualify as an AI system according to the definition of AI Act?",
-          "more_info": "AI Act kicks in for a system that include all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infer from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems",
+          "more_info": "AI Act kicks in for a system that include all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infer from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems.",
           "example": "e.g. AI system forecasting energy demand, detecting electricity theft, optimising grid loads, scheduling EV charging that meet the provided criteria of the AI system definition.",
           "more_info_example": "AI system that balances supply and demand on the grid may be considered as AI system if it complies with the provided criteria, while traditional software systems that are based on rules solely defined by natural persons to execute operations are not considered AI systems. For Transmission System Operators (TSOs) special attention should be paid to identify AI within existing systems as well as intergate AI within existing systems",
           "sub_items": [],
@@ -117,7 +118,7 @@
           "step_label": "Step 2.1 · Your Role",
           "track": "ai_system",
           "type": "branching",
-          "question": "Did your organisation develop and place this AI system on the market or put it into service under your organisation's name or trademark - even if you used a third-party vendor to build it?",
+          "question": "Does your organisation develop and place this AI system on the market or put it into service under your organisation's name or trademark - even if you used a third-party vendor to build it?",
           "more_info": "Place on the market means the first making available of an AI system on the Union market, meaning the supply of an AI system for distribution or use on the Union market in the course of a commercial activity and can take place in return or payment or for free.\nPut into service means the supply of an AI system for first use directlty to the deployer or for own use in the Union for its intended purpose.",
           "example": "e.g. you contracted a software house to build a demand forecasting system that you then marketed in the Union market under your own brand",
           "more_info_example": null,
@@ -203,10 +204,9 @@
             },
             {
               "value": "NO",
-              "next_step_raw": "flag deployer, You are a DEPLOYER → Step 3.1 · Territorial Scope\n\nNo flag → No provider's obligations apply. Check with your legal team whether you may have other roles and obligations under AI Act (not examined in this Questionnaire). Check with your legal team in case of high risk AI systems that are safety components of products covered by the Union legislation listed in Annex A of Annex I of AI Act to define your role.",
+              "next_step_raw": "No provider's obligations apply. Check with your legal team whether you may have other roles and obligations under EU AI Act (not examined in this Questionnaire). Check with your legal team in case of high risk AI systems that are safety components of products covered by the Union legislation listed in Annex A of Annex I of AI Act to define your role.",
               "derived_hints": {
-                "sets_role": "deployer",
-                "goes_to_step_hint": "Step 3.1"
+                "sets_role": "no_role_detected"
               }
             }
           ],
@@ -355,20 +355,6 @@
                 }
               ],
               "guideline_links": []
-            },
-            {
-              "label": "d",
-              "text": "Released under a free and open-source licence (not applicable in all cases- exceptions for high risk AI systems, prohibited practices or systems with transparency obligations apply)",
-              "more_info": "A release of software and data under a free and open source licence permits their open sharing and users can freely access, use, alter, redistribute them or their modified versions.",
-              "example": "e.g an open-source system running to protect the physical integrity of a critical energy infrastructure (if classified as high risk) → NOT excluded.",
-              "more_info_example": null,
-              "article_links": [
-                {
-                  "label": "Article 2 of the AI Act",
-                  "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
-                }
-              ],
-              "guideline_links": []
             }
           ],
           "answer_options": [
@@ -407,7 +393,7 @@
           "step_label": "Step 4.1 · Prohibited Practices",
           "track": "ai_system",
           "type": "branching",
-          "question": "Is this AI system used for any of these purposes/ adopt any of the practices below (narrowed down only to the most likely to energy sector)?",
+          "question": "Does this AI system adopt any of the practices below (narrowed down only to the most likely to energy sector)?",
           "more_info": null,
           "example": "Each case should be assessed individually. Examples are provided for illustrative purposes",
           "more_info_example": null,
@@ -471,7 +457,7 @@
             {
               "label": "e",
               "text": "Biometric categorisation revealing sensitive characteristics (exceptions apply)",
-              "more_info": "Biometric categorisation revealing sensitive characteristics: Biometric categorization systems for individual categorization of natural persons based on their biometric data to deduce or infer their race, political opinions, trade union membership, religious or philosophical beliefs, sex life or sexual orientation. Exception applies for labelling or filtering lawfully acquired biometrci datasets.",
+              "more_info": "Biometric categorisation revealing sensitive characteristics: Biometric categorization systems for individual categorization of natural persons based on their biometric data to deduce or infer their race, political opinions, trade union membership, religious or philosophical beliefs, sex life or sexual orientation. Exception applies for labelling or filtering lawfully acquired biometric datasets.",
               "example": null,
               "more_info_example": null,
               "article_links": [
@@ -525,7 +511,8 @@
           "step_label": "Step 4.2 · High-Risk Category",
           "track": "ai_system",
           "type": "branching",
-          "question": "Does this system fall into one of the high-risk categories (narrowed down only to the most likely to energy sector)?",
+          "multi_select": true,
+          "question": "Does this system fall into one of the high-risk categories (narrowed down only to the most likely to energy sector)? Select all that apply.",
           "more_info": null,
           "example": "Each case should be assessed individually. Examples are provided for illustrative purposes",
           "more_info_example": null,
@@ -649,9 +636,10 @@
             {
               "label": "e",
               "text": "AI systems intended to be used as safety components of products or the system itself is a product covered by EU product safety legislation listed in Annex I of AI Act and the product is subject to third party conformity assessment",
-              "more_info": "Annex I list of Union harmonisation legislation (indicative list narrowed down to use cases most likely to energy sector- see full list of Annex I): \nmachinery, equipment and protective systems inteded for use in potentially explosive atmospheres, radio equipment, pressure equipment, appliance burning gaseous fuels etc. For full list visit Annex I of the AI Act",
+              "more_info": "Annex I list of Union harmonisation legislation (indicative list narrowed down to use cases most likely to energy sector- see full list of Annex I): \nmachinery, equipment and protective systems inteded for use in potentially explosive atmospheres, radio equipment, pressure equipment, appliance burning gaseous fuels etc.",
               "example": "AI system in a smart thermostat covered by the Radio Equipment Directive, if constitutes a safety component (fulfil safety function where a failure could endager health and safety) and is required to undergo a thrid party conformity assessment →likely HIGH RISK.",
               "more_info_example": null,
+              "combined_selection_warning": "This question does not apply to AI systems intended to be used as safety components.",
               "article_links": [
                 {
                   "label": "Article 6 of the AI Act",
@@ -678,24 +666,16 @@
           ],
           "answer_options": [
             {
-              "value": "YES — falls into a high-risk category",
-              "next_step_raw": "HIGH-RISK category identified → proceed to Step 4.3 · Derogations Check for cases a-d not for case e",
-              "derived_hints": {
-                "risk_category": "high_risk",
-                "goes_to_step_hint": "Step 4.3"
-              }
-            },
-            {
               "value": "NO — not high-risk",
               "next_step_raw": "LIMITED or MINIMAL RISK → Skip to Step 7 · Transparency",
               "derived_hints": {
-                "risk_category": "limited_or_minimal_risk",
+                "risk_category": "transparency_risk",
                 "goes_to_step_hint": "Step 7"
               }
             },
             {
               "value": "NOT SURE",
-              "next_step_raw": "Consult your legal team. While clarifying, treat the system as HIGH-RISK and continue to Step 5 / Step 6",
+              "next_step_raw": "Consult your legal team. Try to select a category from the previous question that matches your system.",
               "derived_hints": {
                 "goes_to_step_hint": "Step 5"
               }
@@ -751,7 +731,7 @@
               "more_info_example": null,
               "article_links": [
                 {
-                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "label": "Article 6 par. 3 of the AI Act",
                   "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
                 }
               ],
@@ -771,7 +751,7 @@
               "more_info_example": null,
               "article_links": [
                 {
-                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "label": "Article 6 par. 3 of the AI Act",
                   "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
                 }
               ],
@@ -791,7 +771,7 @@
               "more_info_example": null,
               "article_links": [
                 {
-                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "label": "Article 6 par. 3 of the AI Act",
                   "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
                 }
               ],
@@ -811,7 +791,7 @@
               "more_info_example": null,
               "article_links": [
                 {
-                  "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+                  "label": "Article 6 par. 3 of the AI Act",
                   "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
                 }
               ],
@@ -829,6 +809,7 @@
               "value": "Yes (any of (a)–(d) apply) — the system is not high-risk",
               "next_step_raw": "Check with your legal team for your entity's obligations. Skip to Step 7 · Transparency",
               "derived_hints": {
+                "risk_category": "transparency_risk",
                 "goes_to_step_hint": "Step 7"
               }
             },
@@ -849,7 +830,7 @@
           ],
           "article_links": [
             {
-              "label": "Article 6 par. 3 of the AI Act Article 6 of the AI Act",
+              "label": "Article 6 par. 3 of the AI Act",
               "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-6"
             }
           ],
@@ -976,7 +957,7 @@
               "number": "5.7",
               "text": "Accuracy, robustness & cybersecurity appropriate levels met",
               "more_info": "The levels levels of accuracy and relevant accuracy metrics should be referred in the instructions of use of the AI system. Robustness means that the system should be resilient in relation to harmful or otherwise undesirable behaviour that may result from limitations within the system or the environment in which the system operates (e.g. errors, faults, inconsistencies, unexpected situations).Cybersecurity means that the system should be resilient against attempts by unauthorized third parties to change its use, outputs or performance, through the adoption of technical solutions (for example technical solutions for AI specific vulnerabilities mitigation may include measures for the prevention, detection, response and control of data poisoning, model poisoning, adversial examples or models invasion).",
-              "example": "e.g increased risk in cybersecurity issues (non authorised access, false data injenction) due to vulnerability of two way communication requirement of AI programs connected to the grid (e.g collection of consumption data and sending commands to en EV to charge).",
+              "example": "e.g. increased risk in cybersecurity issues (like non authorised access, false data injenction) due to vulnerability of two way communication requirement of AI programs connected to the grid (e.g collection of consumption data and sending commands to en EV to charge).",
               "more_info_example": null,
               "article_links": [
                 {
@@ -1309,6 +1290,7 @@
               "more_info": null,
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 26 par. 7 of the AI Act",
@@ -1324,6 +1306,7 @@
               "more_info": null,
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 26 par. 9 of the AI Act",
@@ -1339,6 +1322,7 @@
               "more_info": null,
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 26 par. 8 and 49 par. 3 and 5 of the AI Act",
@@ -1350,10 +1334,11 @@
             {
               "item_id": "AI-6.9",
               "number": "6.9",
-              "text": "Provision of information to natural persons affected by the use of the high-risk AI system of Annex III of AI Act, when they make decisions or assist in decision making related to natural persons (applicable to critical indrastructure AI systems).",
-              "more_info": null,
+              "text": "Provision of information to natural persons affected by the use of the high-risk AI system of Annex III of AI Act, when they make decisions or assist in decision making related to natural persons.",
+              "more_info": "Applicable to critical indrastructure AI systems.",
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 26 par. 11 of the AI Act",
@@ -1366,9 +1351,10 @@
               "item_id": "AI-6.10",
               "number": "6.10",
               "text": "Conduct of a Fundamental rights impact assessment (when necessary) having the necessary content and notification of the results and the template questionnaire to the market surveillance authority",
-              "more_info": "This obligation does not apply to critical infrastructure",
+              "more_info": "Check cases for which this obligation applies. This obligation does not apply to critical infrastructure.",
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 27 of the AI Act",
@@ -1419,6 +1405,7 @@
               "example": "e.g. A customer support chatbot provided by an energy supplier must say it is an AI when initiating a conversation through the use of appropriate to the context techniques such as textual disclosure, auditory disclosure, visual cues and multimodal combinations.A smart home energy management AI system interacting with consumers must inform them that they are interacting with an AI system.",
               "more_info_example": null,
               "applicable_role": "provider",
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 50 par. 1 of the AI Act",
@@ -1441,6 +1428,7 @@
               "example": "Automated energy reports written by AI and presented as human-authored must be labelled as AI-generated and they are detectable as artificially generated",
               "more_info_example": "GENERAL Show attention to exceptions to the obligations. Obligations apply regardless of whether an AI system qualifies as high-risk.",
               "applicable_role": "provider",
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 50 par. 2 of the AI Act",
@@ -1468,6 +1456,7 @@
               "example": null,
               "more_info_example": null,
               "applicable_role": "deployer",
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 50 par. 3 of the AI Act",
@@ -1490,6 +1479,7 @@
               "example": "e.g a publication of a text, generated by an AI system, warning the the public about a malfunction of a DSO system and related precautionary measures is likely to fall under the obligation for the deployer of the system that generated the content",
               "more_info_example": null,
               "applicable_role": "deployer",
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 50 par. 4 of the AI Act",
@@ -1847,7 +1837,7 @@
           "type": "branching",
           "question": "Did your organisation develop a GPAI model and place it on the Union market — under your organisation's name or trademark, with or without charge, even if you used a third-party vendor to build it?",
           "more_info": "Placing on the market means the first making available of the GPAI model on the Union market. Examples of GPAI models being placed on the market is through libraries, APIs, direct downloads or physical copies. Your organisation may be become the provider regardlless of whether it is established within or outside EU.The rules of general-purpose AI systems and general-purpose AI models that pose systemic risks should apply also when those models are integrated or from part of an AI system .When the provider of a general-purpose AI system integrates an own model into its own AI system that is made available on the market or put into service, that model should be considered to be placed on the market and therefore the obligations for general purpose AI models apply in addition to those applicable for the AI systems. More examples on placing on the market are available in Commission Guidelines on the scope of the obligations for providers of general-purpose\nAI models established by Regulation (EU) 2024/1689 (AI Act) available at https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act\nConsult your legal team when you integrate a GPAI model developed by another organisation in your AI system to investigate your role and obligations",
-          "example": "e.g. you built and make available for the first time on the Union Market via an API a language model that can be used also for forecasting or operational support in the energy sector.",
+          "example": "e.g. you built and make available for the first time on the Union Market via a GPAI model according to criteria mentioned before.",
           "more_info_example": null,
           "sub_items": [],
           "answer_options": [
@@ -2301,13 +2291,15 @@
     "ai_system": {
       "high_risk": {
         "provider": [
-          "AI-5"
+          "AI-5",
+          "AI-7"
         ],
         "deployer": [
-          "AI-6"
+          "AI-6",
+          "AI-7"
         ]
       },
-      "limited_or_minimal_risk": {
+      "transparency_risk": {
         "provider": [
           "AI-7"
         ],
@@ -2324,7 +2316,7 @@
           "AI-8"
         ]
       },
-      "notes": "For 'limited_or_minimal_risk', only the transparency items relevant to the user's role within step AI-7 apply (items whose 'applicable_role' is 'provider' or has no role tag apply to providers; items tagged 'deployer' apply to deployers). AI-8 (AI literacy) applies to all roles regardless of risk category once the assessment reaches that step."
+      "notes": "AI-7 (Transparency) always follows the risk-category-specific compliance checklist (AI-5/AI-6 for high_risk, or directly for transparency_risk) regardless of how its items are answered, since Article 50 transparency duties apply independently of risk classification. Only the transparency items relevant to the user's role within step AI-7 apply (items whose 'applicable_role' is 'provider' or has no role tag apply to providers; items tagged 'deployer' apply to deployers). AI-8 (AI literacy) applies to all roles regardless of risk category once the assessment reaches that step."
     },
     "gpai_model": {
       "standard": {

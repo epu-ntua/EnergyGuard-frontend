@@ -1,8 +1,13 @@
+import re
+
 from django import template
 
 from .. import engine
 
 register = template.Library()
+
+_OF_THE_AI_ACT_RE = re.compile(r'\s*of(?: the)? AI Act\s*', re.IGNORECASE)
+_PAR_RE = re.compile(r'\bpar\.\s*', re.IGNORECASE)
 
 _GUIDELINE_BADGE_META = {
     'commission_guidelines': ('bg-primary', 'bi-bank2'),
@@ -38,6 +43,20 @@ def humanize_label(value):
     return (value or '').replace('_', ' ').strip().title()
 
 
+_RISK_CATEGORY_LABELS = {
+    'minimal_risk': 'Minimal or No Risk',
+}
+
+
+@register.filter
+def risk_category_label(value):
+    """Most risk_category slugs read fine through humanize_label's generic
+    underscore-to-title conversion; 'minimal_risk' needs its own wording
+    ('Minimal or No Risk') to match how this outcome is actually described
+    to users."""
+    return _RISK_CATEGORY_LABELS.get(value, humanize_label(value))
+
+
 @register.filter
 def status_badge_class(status):
     return _STATUS_BADGE_CLASS.get(status, _STATUS_BADGE_CLASS['NOT_STARTED'])
@@ -60,6 +79,16 @@ def filter_by_gp4a(items, gp4a_answer):
     if not items:
         return items
     return engine.filter_gp4b_items(items, gp4a_answer)
+
+
+@register.filter
+def article_label(label):
+    """article_links labels are sourced as e.g. 'Article 6 par. 3 of the AI
+    Act' - the article buttons only need 'Article 6 paragraph 3', since the
+    AI Act is implied by context."""
+    text = _OF_THE_AI_ACT_RE.sub('', label or '')
+    text = _PAR_RE.sub('paragraph ', text)
+    return text.strip()
 
 
 @register.filter

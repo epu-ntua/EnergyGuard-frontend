@@ -1,7 +1,7 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 
 {% block questionnaire_content %}
-<div class="container mt-5" style="max-width: 700px;">
+<div class="container" style="max-width: 700px;">
     <div class="card border-0 shadow-lg" style="border-radius: 24px;">
         <div class="card-body p-4 p-md-5 text-center">
             <div class="display-6 text-primary mb-3"><i class="bi bi-signpost-2-fill"></i></div>
@@ -11,7 +11,10 @@
                 <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
             </div>
 
-            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+                <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
+                    <i class="bi bi-arrow-left me-2"></i>{% if back_step_label %}Back to {{ back_step_label }}{% else %}Back{% endif %}
+                </a>
                 <a href="{% url 'questionnaire:step' track=track step_id=continue_step_id %}"
                    class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
                     Continue to {{ continue_step_label }} <i class="bi bi-arrow-right ms-2"></i>
