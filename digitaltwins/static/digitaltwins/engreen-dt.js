@@ -76,7 +76,8 @@
     var chartDailyBtn       = document.getElementById('chart-daily-btn');
 
     var exportJsonBtn       = document.getElementById('export-json-btn');
-    var exportCsvBtn        = document.getElementById('export-csv-btn');
+    // var exportCsvBtn        = document.getElementById('export-csv-btn');
+    var saveOpenJupyterBtn  = document.getElementById('save-open-jupyterhub-btn');
 
     // ── State ─────────────────────────────────────────────────────────────────
     var currentMode          = 'existing';
@@ -611,6 +612,7 @@
         setTimeout(function () { exportJsonBtn.innerHTML = '<span class="fas fa-file-code me-2"></span>Download Raw Data (JSON)'; }, 2000);
     });
 
+    /*
     exportCsvBtn.addEventListener('click', function () {
         if (!lastApiResponse) return;
         var header, rows;
@@ -632,6 +634,44 @@
             'pv-forecast-' + (lastForecastType || 'result') + '.csv', 'text/csv');
         exportCsvBtn.innerHTML = '<span class="fas fa-check me-2"></span>Downloaded';
         setTimeout(function () { exportCsvBtn.innerHTML = '<span class="fas fa-file-csv me-2"></span>Export CSV'; }, 2000);
+    });
+    */
+
+    saveOpenJupyterBtn.addEventListener('click', function () {
+        if (!lastApiResponse) return;
+
+        var originalHtml = saveOpenJupyterBtn.innerHTML;
+        saveOpenJupyterBtn.disabled = true;
+        saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
+
+        fetch(window.ENGREEN_CONFIG.saveResultUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ twin_slug: 'engreen-antrodoco', data: lastApiResponse }),
+        })
+        .then(function (resp) {
+            if (!resp.ok) {
+                return resp.text().then(function (body) {
+                    var msg = 'Could not save the result.';
+                    try { msg = JSON.parse(body).error || msg; } catch (_) {}
+                    throw new Error(msg);
+                });
+            }
+            return resp.json();
+        })
+        .then(function (data) {
+            window.open(data.redirect_url, '_blank');
+        })
+        .catch(function (err) {
+            alert(err.message || 'Could not save the result.');
+        })
+        .finally(function () {
+            saveOpenJupyterBtn.disabled = false;
+            saveOpenJupyterBtn.innerHTML = originalHtml;
+        });
     });
 
     // ── Initial state ─────────────────────────────────────────────────────────

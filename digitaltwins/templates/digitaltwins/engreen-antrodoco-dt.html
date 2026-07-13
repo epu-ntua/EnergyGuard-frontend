@@ -592,8 +592,11 @@
                     <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
                         <span class="fas fa-download"></span>Download JSON
                     </button>
-                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="export-csv-btn">
+                    <!-- <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="export-csv-btn">
                         <span class="fas fa-file-csv"></span>Export CSV
+                    </button> -->
+                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
+                        <span class="fas fa-rotate-left"></span>Save and Open in JupyterHub
                     </button>
                 </div>
             </div>
@@ -780,7 +783,8 @@
 <script>
 window.ENGREEN_CONFIG = {
     stationsUrl: "{% url 'engreen-stations-api' %}",
-    simulateUrl: "{% url 'engreen-pv-simulate' %}"
+    simulateUrl: "{% url 'engreen-pv-simulate' %}",
+    saveResultUrl: "{% url 'dt-save-result' %}"
 };
 </script>
 <script src="{% static 'digitaltwins/engreen-dt.js' %}" defer></script>
