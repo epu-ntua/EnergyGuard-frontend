@@ -1,4 +1,13 @@
-﻿from typing import Any
+﻿from core.services.object_storage import MinioUploadError, _setting, build_minio_client, object_exists
+
+__all__ = [
+    "MinioUploadError",
+    "upload_dataset_objects",
+    "generate_presigned_upload_url",
+    "object_exists",
+    "move_dataset_object",
+    "delete_dataset_objects",
+]
 
 try:
     from boto3.s3.transfer import TransferConfig as S3TransferConfig
@@ -11,45 +20,7 @@ try:
 except ImportError:
     _TRANSFER_CONFIG = None
 
-from django.conf import settings
 from django.utils.text import slugify
-
-
-class MinioUploadError(RuntimeError):
-    pass
-
-
-def _setting(primary: str, fallback: str = "", default: Any = None):
-    if hasattr(settings, primary):
-        return getattr(settings, primary)
-    if fallback and hasattr(settings, fallback):
-        return getattr(settings, fallback)
-    return default
-
-
-def _build_minio_client():
-    access_key = _setting("OBJECT_STORAGE_ACCESS_KEY", "MINIO_ACCESS_KEY", default="")
-    secret_key = _setting("OBJECT_STORAGE_SECRET_KEY", "MINIO_SECRET_KEY", default="")
-    endpoint = _setting("OBJECT_STORAGE_ENDPOINT", "MINIO_ENDPOINT")
-    verify_ssl = _setting("OBJECT_STORAGE_VERIFY_SSL", "MINIO_VERIFY_SSL", default=True)
-
-    if not access_key or not secret_key:
-        raise MinioUploadError("MINIO credentials are missing in environment settings.")
-
-    try:
-        import boto3
-        from botocore.config import Config
-    except ImportError as exc:
-        raise MinioUploadError("boto3 is not installed.") from exc
-
-    return boto3.client(
-        "s3",
-        endpoint_url=endpoint,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-        verify=verify_ssl,
-        config=Config(connect_timeout=10, read_timeout=60),
-    )
 
 
 # Utility function to create a safe slug from a string, with a fallback if the result is empty
@@ -73,7 +44,7 @@ def upload_dataset_objects(
     data_filename = data_file.name.split("/")[-1].split("\\")[-1]
     data_key = f"{root_prefix}/{data_filename}"
 
-    client = _build_minio_client()
+    client = build_minio_client()
 
     try:
         from botocore.exceptions import BotoCoreError, ClientError
@@ -105,7 +76,7 @@ def upload_dataset_objects(
 def generate_presigned_upload_url(*, object_key: str, content_type: str, expires_in: int = 3600) -> tuple:
     """Return (presigned_put_url, bucket_name) for a direct browser-to-MinIO upload."""
     bucket_name = _setting("OBJECT_STORAGE_BUCKET", "MINIO_BUCKET_DATASETS", default="datasets")
-    client = _build_minio_client()
+    client = build_minio_client()
     try:
         url = client.generate_presigned_url(
             "put_object",
@@ -114,20 +85,6 @@ def generate_presigned_upload_url(*, object_key: str, content_type: str, expires
         )
         return url, bucket_name
     except Exception as exc:
-        raise MinioUploadError(str(exc)) from exc
-
-
-def object_exists(*, bucket_name: str, object_key: str) -> bool:
-    """Return True if the object exists in MinIO, False if not found."""
-    from botocore.exceptions import ClientError
-
-    client = _build_minio_client()
-    try:
-        client.head_object(Bucket=bucket_name, Key=object_key)
-        return True
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] in ("404", "NoSuchKey"):
-            return False
         raise MinioUploadError(str(exc)) from exc
 
 
@@ -140,7 +97,7 @@ def move_dataset_object(
     """Copy source_key to dest_key within the same bucket, then delete source_key."""
     from botocore.exceptions import BotoCoreError, ClientError
 
-    client = _build_minio_client()
+    client = build_minio_client()
     try:
         client.copy_object(
             Bucket=bucket_name,
@@ -162,7 +119,7 @@ def delete_dataset_objects(
     if not object_keys:
         return
 
-    client = _build_minio_client()
+    client = build_minio_client()
 
     try:
         from botocore.exceptions import BotoCoreError, ClientError

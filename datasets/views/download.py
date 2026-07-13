@@ -5,8 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
+from core.services.object_storage import MinioUploadError, build_minio_client
+
 from ..models import Dataset
-from ..services.minio_storage import MinioUploadError, _build_minio_client
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ def dataset_download(request, dataset_id):
         raise Http404("No data file available for this dataset.")
 
     try:
-        client = _build_minio_client()
+        client = build_minio_client()
         s3_response = client.get_object(Bucket=dataset.bucket_name, Key=dataset.data_file)
     except MinioUploadError as exc:
         from django.http import HttpResponseServerError

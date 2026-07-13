@@ -6,8 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
+from core.services.object_storage import MinioUploadError, build_minio_client
+
 from ..models import Dataset
-from ..services.minio_storage import MinioUploadError, _build_minio_client
 
 PREVIEW_MAX_ROWS = 50
 PREVIEW_CHUNK_BYTES = 256 * 1024  # 256 KB
@@ -113,7 +114,7 @@ def dataset_preview(request, dataset_id):
         return JsonResponse({"error": "No data file available for this dataset."}, status=404)
 
     try:
-        client = _build_minio_client()
+        client = build_minio_client()
 
         # Probe the first 4 bytes to detect format
         probe = client.get_object(
