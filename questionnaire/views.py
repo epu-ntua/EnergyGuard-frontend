@@ -260,7 +260,7 @@ def step_view(request, track, step_id):
 
     if step['type'] == 'checklist':
         context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
-        context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id == 'GP-4b' else None
+        context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id in ('GP-4b', 'GP-5') else None
         return render(request, 'questionnaire/step_checklist.html', context)
 
     answer = track_state['answers'].get(step_id)
@@ -316,7 +316,11 @@ def submit_branching(request, track, step_id):
     track_state['answers'][step_id] = answer_value
     hints = chosen.get('derived_hints') or {}
 
-    if hints.get('sets_role'):
+    if step_id == 'AI-2.3':
+        new_role, hints = engine.ai23_resolve(track_state['role'], hints)
+        if new_role:
+            track_state['role'] = new_role
+    elif hints.get('sets_role'):
         track_state['role'] = hints['sets_role']
     if hints.get('risk_category'):
         track_state['risk_category'] = hints['risk_category']
@@ -329,6 +333,15 @@ def submit_branching(request, track, step_id):
     next_step_id = engine.resolve_next(track, step_id, hints, track_state['risk_category'])
 
     _push_history(track_state, step_id)
+
+    is_not_sure = answer_value.strip().upper().startswith('NOT SURE')
+    if is_not_sure and not next_step_id and switches_track == 'both':
+        # No concrete next step to send them to (e.g. GP-1's "is this a GPAI
+        # model?"): this NOT SURE means they need to consult before
+        # continuing at all, not that the track should silently complete.
+        track_state['flash_note'] = chosen.get('next_step_raw')
+        _save_state(request, state)
+        return redirect('questionnaire:consult_restart_notice', track=track)
 
     if next_step_id:
         _advance_track(track_state, track, next_step_id)
@@ -398,6 +411,29 @@ def not_sure_notice(request, track):
         'continue_step_id': track_state['current_step'],
         'continue_step_label': engine.get_step(track, track_state['current_step'])['step_label'],
         'restart_step_label': engine.get_step(track, first_step_id)['step_label'],
+        'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+    })
+
+
+@login_required
+def consult_restart_notice(request, track):
+    if track not in engine.TRACK_NAMES:
+        return HttpResponseBadRequest('Unknown track')
+
+    state = _get_state(request)
+    track_state = state['tracks'][track]
+    message = track_state.pop('flash_note', None)
+    _save_state(request, state)
+
+    if not message or not track_state['current_step']:
+        return redirect('questionnaire:step', track=track, step_id=track_state['current_step']) \
+            if track_state['current_step'] else redirect('questionnaire:start_track', track=track)
+
+    back_step_id = track_state['history'][-1] if track_state['history'] else None
+    return render(request, 'questionnaire/consult_restart_notice.html', {
+        'track': track,
+        'track_label': engine.get_track_label(track),
+        'message': message,
         'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
     })
 
@@ -509,9 +545,14 @@ def results(request):
             ) if track_state['completed'] else [],
         }
 
+    display_roles = sorted({
+        data['role'] for data in tracks_data.values()
+        if data['role'] and data['risk_category'] != 'out_of_scope'
+    })
+
     return render(request, 'questionnaire/results.html', {
         'tracks_data': tracks_data,
-        'roles': _combined_roles_list(state),
+        'roles': display_roles,
         'has_snapshot': bool(request.session.session_key and AIActAssessment.objects.filter(
             session_key=request.session.session_key).exists()),
     })
