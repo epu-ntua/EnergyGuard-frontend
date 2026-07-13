@@ -49,34 +49,136 @@
         </div>
 
         <!-- About this workspace -->
-        <div class="alert bg-turquoise bg-opacity-25 p-5 rounded-3 mb-4" role="alert">
-            <h6 class="fw-bold fs-8-5 text-body-emphasis d-flex align-items-center gap-2 mb-3">
-                <span class="fas fa-circle-info"></span>About this workspace
-            </h6>
-            <p class="fs-8-5 mb-2">The PV Production Simulator estimates how much electricity a photovoltaic plant can produce over a selected time period — and how that production is split between energy you use on-site and energy exported to the grid.</p>
-            <p class="fs-8-5 mb-3">You can use it to analyse an existing station in the Antrodoco REC, or to explore what a hypothetical new plant might produce based on your own specifications.</p>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-6 pb-3 border-y mb-5">
 
-            <h6 class="fw-semibold text-body-emphasis mb-2 fs-8-5">What you'll need to provide</h6>
-            <ol class="fs-8-5 ps-3 mb-3">
-                <li class="mb-2"><strong>Plant configuration</strong> — Choose whether you want to simulate an existing REC station or define a new hypothetical plant. If you choose an existing station, its technical details (installed power, panel orientation, tilt) are filled in automatically. If you define a new plant, you'll need to enter the number of panels, their power rating, tilt angle, and orientation (azimuth).</li>
-                <li class="mb-2"><strong>Consumption profile</strong> — Select the profile that best describes how energy is typically used at this location — whether most consumption happens during the day, in the evening, or is mixed throughout the day. This determines how much of the solar production is self-consumed versus fed into the grid.</li>
-                <li class="mb-0">
-                    <strong>Forecast type</strong> — Choose what kind of result you want:
-                    <ul class="mt-2 mb-0">
-                        <li><strong>Short-term forecast</strong> — predicts production for the next 1 to 16 days using real weather forecast data.</li>
-                        <li><strong>Historical baseline</strong> — estimates the typical annual yield based on the last 5 years of observed weather at this location.</li>
-                        <li><strong>Optimistic ceiling</strong> — shows the theoretical maximum production under ideal, cloud-free conditions.</li>
-                    </ul>
-                </li>
-            </ol>
+            <div class="mb-5">
+                <h6 class="fw-bold fs-8 text-body-emphasis mb-2">What is this service?</h6>
+                <p class="fs-8-5 text-body-secondary mb-2">The PV Production Simulator estimates how much electricity a photovoltaic plant can produce over a selected time period, and how that production splits between energy consumed on-site and energy exported to the grid.</p>
+                <p class="fs-8-5 text-body-secondary mb-0">Use it to analyse an existing station already registered in the Antrodoco REC, or to explore what a hypothetical new plant might produce based on specifications you define yourself — before any equipment is installed.</p>
+            </div>
 
-            <h6 class="fw-semibold text-body-emphasis mb-2 fs-8-5">What you'll get</h6>
-            <p class="fs-8-5 mb-0">Once the simulation runs, you'll see a summary of total energy produced, how much was self-consumed, how much was fed into the grid, and the feed-in ratio. Results are shown as hourly or daily charts and can be exported as JSON or CSV for further analysis.</p>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-lg-6">
+                    <h6 class="fw-bold fs-8 text-body-emphasis mb-1">What you'll need to provide</h6>
+                    <p class="fs-9 text-body-tertiary mb-0">Three quick configuration steps before running a forecast.</p>
+
+                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold" style="width:32px;height:32px;">1</span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Plant configuration</h6>
+                            <p class="text-body-secondary fs-9 mb-0">Choose whether you want to simulate an existing REC station or define a new hypothetical plant. Existing stations auto-fill installed power, orientation and tilt; new plants require you to enter panel count, power rating, tilt angle and azimuth.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-warning-subtle text-warning fw-bold" style="width:32px;height:32px;">2</span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Consumption profile</h6>
+                            <p class="text-body-secondary fs-9 mb-0">Select the profile that best describes how energy is typically used at this location — day-heavy, evening-heavy, or mixed. This determines how much production is self-consumed versus fed into the grid.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3 pt-3">
+                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-success-subtle text-success fw-bold" style="width:32px;height:32px;">3</span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Forecast type</h6>
+                            <p class="text-body-secondary fs-9 mb-0">Pick the kind of result you need: a short-term weather-based forecast, a historical baseline, or an optimistic clear-sky ceiling.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5 offset-lg-1">
+                    <h6 class="fw-bold fs-8 text-body-emphasis mb-1">Available forecast types</h6>
+                    <p class="fs-9 text-body-tertiary mb-3">Choose the kind of result that fits your question.</p>
+                    <div class="row g-3">
+                        <div class="d-flex align-items-start gap-3 mb-1 border rounded-3 p-3">
+                            <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                <span class="fas fa-cloud-sun"></span>
+                            </span>
+                            <div>
+                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Short-term forecast</h6>
+                                <p class="text-body-tertiary fs-9-5 mb-0">Predicts daily and hourly production for the next 1–16 days using real weather forecast data.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-start gap-3 mb-1 border rounded-3 p-3">
+                            <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                <span class="fas fa-chart-bar"></span>
+                            </span>
+                            <div>
+                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Historical baseline</h6>
+                                <p class="text-body-tertiary fs-9-5 mb-0">Estimates the typical annual yield averaged over the last 5 years of observed weather.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-start gap-3 mb-0 border rounded-3 p-3">
+                            <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                                <span class="fas fa-arrow-trend-up"></span>
+                            </span>
+                            <div>
+                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Optimistic scenario</h6>
+                                <p class="text-body-tertiary fs-9-5 mb-0">Estimates the theoretical maximum annual yield under ideal clear-sky conditions.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-lg-6">
+                    <h6 class="fw-bold fs-8 text-body-emphasis mb-3">How it works</h6>
+                    <div class="dt-stepper mb-2">
+                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                            <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-hand-pointer"></span></div>
+                            <span class="dt-step-number">1</span>
+                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Select</h6>
+                            <p class="text-body-tertiary fs-9-5 mb-0">Choose a REC station or configure a new PV plant.</p>
+                        </div>
+                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-sliders"></span></div>
+                            <span class="dt-step-number">2</span>
+                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Configure</h6>
+                            <p class="text-body-tertiary fs-9-5 mb-0">Set consumption profile and forecast horizon.</p>
+                        </div>
+                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                            <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-play"></span></div>
+                            <span class="dt-step-number">3</span>
+                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Simulate</h6>
+                            <p class="text-body-tertiary fs-9-5 mb-0">The Digital Twin runs the forecast scenario.</p>
+                        </div>
+                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                            <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-chart-line"></span></div>
+                            <span class="dt-step-number">4</span>
+                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Results</h6>
+                            <p class="text-body-tertiary fs-9-5 mb-0">View production, feed-in, and self-consumption charts.</p>
+                        </div>
+                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
+                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-download"></span></div>
+                            <span class="dt-step-number">5</span>
+                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Export</h6>
+                            <p class="text-body-tertiary fs-9-5 mb-0">Download raw data for further analysis.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5 offset-lg-1">
+                    <div class="alert bg-turquoise bg-opacity-25 p-4 rounded-3 mb-0 h-100" role="alert">
+                        <h6 class="fw-bold fs-8-5 text-body-emphasis d-flex align-items-center gap-2 mb-2">
+                            <span class="fas fa-chart-simple"></span>What you'll get
+                        </h6>
+                        <p class="fs-8-5 mb-3">Once the simulation runs, you'll see a summary of total energy produced, how much was self-consumed, how much was fed into the grid, and the feed-in ratio — shown as hourly or daily charts.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Production summary</span>
+                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Self-consumption vs. feed-in</span>
+                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Hourly &amp; daily charts</span>
+                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Export as JSON / CSV</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <hr>
-
 
         <!-- ── Section 1: Plant Configuration ─────────────────────────────── -->
+        
         <div class="row g-3">
             <div class="col-12 col-lg-6 col-xxl-4">
                 <div class="card mb-4 h-100">
@@ -241,224 +343,224 @@
             <!-- ── Section 2: Consumption Profile ─────────────────────────────── -->
             <div class="col-12 col-lg-6 col-xxl-4">
                 <div class="card mb-4 h-100" id="consumption-profile-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">2. Consumption Profile</h6>
-                            <p class="text-body-tertiary fs-9 mb-0">Describe the typical occupancy pattern. This determines the feed-in ratio used in the forecast.</p>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis fs-8 mb-1">2. Consumption Profile</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Describe the typical occupancy pattern. This determines the feed-in ratio used in the forecast.</p>
+                            </div>
                         </div>
+
+                        <div class="row g-3">
+                            <!-- Away During Day -->
+                            <div class="col-12 col-md-4">
+                                <label class="card dt-tab-card cursor-pointer h-100 p-3 d-flex flex-column gap-2 mb-0" data-profile="away" data-feedin="76">
+                                    <input type="radio" name="consumption_profile" value="away" class="visually-hidden">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fas fa-briefcase text-primary"></span>
+                                            <span class="fw-bold text-body-emphasis fs-9">Away During Day</span>
+                                        </div>
+                                        <span class="profile-check d-flex invisible align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
+                                            style="width:1.25rem;height:1.25rem;font-size:.65rem;">
+                                            <span class="fas fa-check"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-body-tertiary fs-10 mb-1">Low daytime consumption. Most production is exported to the grid.</p>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="fs-10 text-body-tertiary">Self-consumed</span>
+                                            <span class="fs-10 text-body-tertiary">Fed into grid</span>
+                                        </div>
+                                        <div class="progress" style="height:8px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width:24%"></div>
+                                            <div class="progress-bar bg-turquoise" role="progressbar" style="width:76%"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span class="fs-10 fw-semibold text-primary">24%</span>
+                                            <span class="fs-10 fw-semibold text-turquoise">76%</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Mixed Use (default) -->
+                            <div class="col-12 col-md-4">
+                                <label class="card dt-tab-card cursor-pointer h-100 active p-3 d-flex flex-column gap-2 mb-0" data-profile="mixed" data-feedin="46">
+                                    <input type="radio" name="consumption_profile" value="mixed" class="visually-hidden" checked>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fas fa-house text-primary"></span>
+                                            <span class="fw-bold text-body-emphasis fs-9">Mixed Use</span>
+                                        </div>
+                                        <span class="profile-check d-flex align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
+                                            style="width:1.25rem;height:1.25rem;font-size:.65rem;">
+                                            <span class="fas fa-check"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-body-tertiary fs-10 mb-1">Balanced daytime presence. Partial self-consumption.</p>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="fs-10 text-body-tertiary">Self-consumed</span>
+                                            <span class="fs-10 text-body-tertiary">Fed into grid</span>
+                                        </div>
+                                        <div class="progress" style="height:8px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width:54%"></div>
+                                            <div class="progress-bar bg-turquoise" role="progressbar" style="width:46%"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span class="fs-10 fw-semibold text-primary">54%</span>
+                                            <span class="fs-10 fw-semibold text-turquoise">46%</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Often Home -->
+                            <div class="col-12 col-md-4">
+                                <label class="card dt-tab-card cursor-pointer h-100 p-3 d-flex flex-column gap-2 mb-0" data-profile="home" data-feedin="26">
+                                    <input type="radio" name="consumption_profile" value="home" class="visually-hidden">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fas fa-person-shelter text-primary"></span>
+                                            <span class="fw-bold text-body-emphasis fs-9">Often Home</span>
+                                        </div>
+                                        <span class="profile-check d-flex invisible align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
+                                            style="width:1.25rem;height:1.25rem;font-size:.65rem;">
+                                            <span class="fas fa-check"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-body-tertiary fs-10 mb-1">High daytime consumption. Most production is self-consumed.</p>
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="fs-10 text-body-tertiary">Self-consumed</span>
+                                            <span class="fs-10 text-body-tertiary">Fed into grid</span>
+                                        </div>
+                                        <div class="progress" style="height:8px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width:74%"></div>
+                                            <div class="progress-bar bg-turquoise" role="progressbar" style="width:26%"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span class="fs-10 fw-semibold text-primary">74%</span>
+                                            <span class="fs-10 fw-semibold text-turquoise">26%</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Shown only in Existing Station mode -->
+                        <div id="profile-locked-notice" class="d-none mt-3 d-flex align-items-center gap-2">
+                            <span class="fas fa-lock text-body-tertiary fs-9"></span>
+                            <span class="text-body-tertiary fs-9">Profile is determined by the selected station and cannot be changed.</span>
+                        </div>
+
                     </div>
-
-                    <div class="row g-3">
-                        <!-- Away During Day -->
-                        <div class="col-12 col-md-4">
-                            <label class="card dt-tab-card cursor-pointer h-100 p-3 d-flex flex-column gap-2 mb-0" data-profile="away" data-feedin="76">
-                                <input type="radio" name="consumption_profile" value="away" class="visually-hidden">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="fas fa-briefcase text-primary"></span>
-                                        <span class="fw-bold text-body-emphasis fs-9">Away During Day</span>
-                                    </div>
-                                    <span class="profile-check d-flex invisible align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
-                                        style="width:1.25rem;height:1.25rem;font-size:.65rem;">
-                                        <span class="fas fa-check"></span>
-                                    </span>
-                                </div>
-                                <p class="text-body-tertiary fs-10 mb-1">Low daytime consumption. Most production is exported to the grid.</p>
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="fs-10 text-body-tertiary">Self-consumed</span>
-                                        <span class="fs-10 text-body-tertiary">Fed into grid</span>
-                                    </div>
-                                    <div class="progress" style="height:8px;">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width:24%"></div>
-                                        <div class="progress-bar bg-turquoise" role="progressbar" style="width:76%"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-1">
-                                        <span class="fs-10 fw-semibold text-primary">24%</span>
-                                        <span class="fs-10 fw-semibold text-turquoise">76%</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Mixed Use (default) -->
-                        <div class="col-12 col-md-4">
-                            <label class="card dt-tab-card cursor-pointer h-100 active p-3 d-flex flex-column gap-2 mb-0" data-profile="mixed" data-feedin="46">
-                                <input type="radio" name="consumption_profile" value="mixed" class="visually-hidden" checked>
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="fas fa-house text-primary"></span>
-                                        <span class="fw-bold text-body-emphasis fs-9">Mixed Use</span>
-                                    </div>
-                                    <span class="profile-check d-flex align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
-                                        style="width:1.25rem;height:1.25rem;font-size:.65rem;">
-                                        <span class="fas fa-check"></span>
-                                    </span>
-                                </div>
-                                <p class="text-body-tertiary fs-10 mb-1">Balanced daytime presence. Partial self-consumption.</p>
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="fs-10 text-body-tertiary">Self-consumed</span>
-                                        <span class="fs-10 text-body-tertiary">Fed into grid</span>
-                                    </div>
-                                    <div class="progress" style="height:8px;">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width:54%"></div>
-                                        <div class="progress-bar bg-turquoise" role="progressbar" style="width:46%"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-1">
-                                        <span class="fs-10 fw-semibold text-primary">54%</span>
-                                        <span class="fs-10 fw-semibold text-turquoise">46%</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Often Home -->
-                        <div class="col-12 col-md-4">
-                            <label class="card dt-tab-card cursor-pointer h-100 p-3 d-flex flex-column gap-2 mb-0" data-profile="home" data-feedin="26">
-                                <input type="radio" name="consumption_profile" value="home" class="visually-hidden">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="fas fa-person-shelter text-primary"></span>
-                                        <span class="fw-bold text-body-emphasis fs-9">Often Home</span>
-                                    </div>
-                                    <span class="profile-check d-flex invisible align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
-                                        style="width:1.25rem;height:1.25rem;font-size:.65rem;">
-                                        <span class="fas fa-check"></span>
-                                    </span>
-                                </div>
-                                <p class="text-body-tertiary fs-10 mb-1">High daytime consumption. Most production is self-consumed.</p>
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="fs-10 text-body-tertiary">Self-consumed</span>
-                                        <span class="fs-10 text-body-tertiary">Fed into grid</span>
-                                    </div>
-                                    <div class="progress" style="height:8px;">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width:74%"></div>
-                                        <div class="progress-bar bg-turquoise" role="progressbar" style="width:26%"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-1">
-                                        <span class="fs-10 fw-semibold text-primary">74%</span>
-                                        <span class="fs-10 fw-semibold text-turquoise">26%</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Shown only in Existing Station mode -->
-                    <div id="profile-locked-notice" class="d-none mt-3 d-flex align-items-center gap-2">
-                        <span class="fas fa-lock text-body-tertiary fs-9"></span>
-                        <span class="text-body-tertiary fs-9">Profile is determined by the selected station and cannot be changed.</span>
-                    </div>
-
-                </div>
                 </div>
             </div>
 
             <!-- ── Section 3: Forecast Type ────────────────────────────────────── -->
             <div class="col-12 col-lg-12 col-xxl-4">
                 <div class="card mb-4 h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">3. Forecast Type</h6>
-                            <p class="text-body-tertiary fs-9 mb-0">Choose the type of production forecast to run.</p>
-                        </div>
-                    </div>
-
-                    <!-- Type selector cards -->
-                    <div class="row g-3 mb-3" id="forecast-type-group">
-                        <div class="col-12 col-md-4">
-                            <div class="card dt-tab-card cursor-pointer h-100 active" data-forecast="short-term" tabindex="0" role="button">
-                                <div class="card-body d-flex align-items-start gap-3">
-                                    <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                                        <span class="fas fa-cloud-sun"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Short-term</h6>
-                                        <p class="text-body-tertiary fs-9 mb-0">Real weather-based forecast for the next N days.</p>
-                                    </div>
-                                </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis fs-8 mb-1">3. Forecast Type</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Choose the type of production forecast to run.</p>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="card dt-tab-card cursor-pointer h-100" data-forecast="historical" tabindex="0" role="button">
-                                <div class="card-body d-flex align-items-start gap-3">
-                                    <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                                        <span class="fas fa-chart-column"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Historical baseline</h6>
-                                        <p class="text-body-tertiary fs-9 mb-0">Average annual yield over the last 5 years of observed weather.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="card dt-tab-card cursor-pointer h-100" data-forecast="optimistic" tabindex="0" role="button">
-                                <div class="card-body d-flex align-items-start gap-3">
-                                    <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                                        <span class="fas fa-sun"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Optimistic ceiling</h6>
-                                        <p class="text-body-tertiary fs-9 mb-0">Theoretical maximum under clear-sky, cloud-free conditions.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Detail + Run panel -->
-                    <div class="bg-body rounded-3 p-4">
-                        <div class="d-flex justify-content-between align-items-end gap-4 flex-wrap">
-
-                            <!-- Left: type-specific content -->
-                            <div class="flex-grow-1">
-
-                                <!-- Short-term detail -->
-                                <div id="detail-short-term" class="forecast-detail-pane">
-                                    <h6 class="fw-bold text-body-emphasis mb-1">Short-term forecast</h6>
-                                    <p class="text-body-tertiary fs-9 mb-3">Real weather-based forecast of PV output for the coming days, using live forecast data.</p>
-                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                        <label class="fw-semibold fs-9 mb-0" for="forecast-days">Forecast horizon</label>
-                                        <div class="input-group" style="width:9rem;">
-                                            <input type="number" class="form-control form-control-sm" id="forecast-days" name="forecast_days" min="1" max="16" value="10">
-                                            <span class="input-group-text">days</span>
+                        <!-- Type selector cards -->
+                        <div class="row g-3 mb-3" id="forecast-type-group">
+                            <div class="col-12 col-md-4">
+                                <div class="card dt-tab-card cursor-pointer h-100 active" data-forecast="short-term" tabindex="0" role="button">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                            <span class="fas fa-cloud-sun"></span>
+                                        </span>
+                                        <div>
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Short-term</h6>
+                                            <p class="text-body-tertiary fs-9 mb-0">Real weather-based forecast for the next N days.</p>
                                         </div>
-                                        <span class="text-body-tertiary fs-10">Capped at 16 days by the free weather forecast API.</span>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="card dt-tab-card cursor-pointer h-100" data-forecast="historical" tabindex="0" role="button">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                            <span class="fas fa-chart-column"></span>
+                                        </span>
+                                        <div>
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Historical baseline</h6>
+                                            <p class="text-body-tertiary fs-9 mb-0">Average annual yield over the last 5 years of observed weather.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="card dt-tab-card cursor-pointer h-100" data-forecast="optimistic" tabindex="0" role="button">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                            <span class="fas fa-sun"></span>
+                                        </span>
+                                        <div>
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Optimistic ceiling</h6>
+                                            <p class="text-body-tertiary fs-9 mb-0">Theoretical maximum under clear-sky, cloud-free conditions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                <!-- Historical baseline detail -->
-                                <div id="detail-historical" class="forecast-detail-pane d-none">
-                                    <h6 class="fw-bold text-body-emphasis mb-1">Historical baseline</h6>
-                                    <p class="text-body-tertiary fs-9 mb-0">Average annual production based on the last five complete calendar years (2021–2025) using historical weather data. No additional inputs required.</p>
+                        <!-- Detail + Run panel -->
+                        <div class="bg-body rounded-3 p-4">
+                            <div class="d-flex justify-content-between align-items-end gap-4 flex-wrap">
+
+                                <!-- Left: type-specific content -->
+                                <div class="flex-grow-1">
+
+                                    <!-- Short-term detail -->
+                                    <div id="detail-short-term" class="forecast-detail-pane">
+                                        <h6 class="fw-bold text-body-emphasis mb-1">Short-term forecast</h6>
+                                        <p class="text-body-tertiary fs-9 mb-3">Real weather-based forecast of PV output for the coming days, using live forecast data.</p>
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <label class="fw-semibold fs-9 mb-0" for="forecast-days">Forecast horizon</label>
+                                            <div class="input-group" style="width:9rem;">
+                                                <input type="number" class="form-control form-control-sm" id="forecast-days" name="forecast_days" min="1" max="16" value="10">
+                                                <span class="input-group-text">days</span>
+                                            </div>
+                                            <span class="text-body-tertiary fs-10">Capped at 16 days by the free weather forecast API.</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Historical baseline detail -->
+                                    <div id="detail-historical" class="forecast-detail-pane d-none">
+                                        <h6 class="fw-bold text-body-emphasis mb-1">Historical baseline</h6>
+                                        <p class="text-body-tertiary fs-9 mb-0">Average annual production based on the last five complete calendar years (2021–2025) using historical weather data. No additional inputs required.</p>
+                                    </div>
+
+                                    <!-- Optimistic ceiling detail -->
+                                    <div id="detail-optimistic" class="forecast-detail-pane d-none">
+                                        <h6 class="fw-bold text-body-emphasis mb-1">Optimistic ceiling</h6>
+                                        <p class="text-body-tertiary fs-9 mb-0">Maximum theoretical annual production under clear-sky conditions. Useful as a benchmark for plant performance evaluation. No additional inputs required.</p>
+                                    </div>
+
                                 </div>
 
-                                <!-- Optimistic ceiling detail -->
-                                <div id="detail-optimistic" class="forecast-detail-pane d-none">
-                                    <h6 class="fw-bold text-body-emphasis mb-1">Optimistic ceiling</h6>
-                                    <p class="text-body-tertiary fs-9 mb-0">Maximum theoretical annual production under clear-sky conditions. Useful as a benchmark for plant performance evaluation. No additional inputs required.</p>
-                                </div>
+                                <!-- Right: run button -->
+                                <button type="button" class="btn btn-primary flex-shrink-0 d-inline-flex align-items-center gap-2 px-4" id="run-forecast-btn" disabled>
+                                    Run forecast &rarr;
+                                </button>
 
                             </div>
-
-                            <!-- Right: run button -->
-                            <button type="button" class="btn btn-primary flex-shrink-0 d-inline-flex align-items-center gap-2 px-4" id="run-forecast-btn" disabled>
-                                Run forecast &rarr;
-                            </button>
-
                         </div>
-                    </div>
 
-                </div>
+                    </div>
                 </div>
             </div>
-        <!-- --------------------------------------------------------------- -->
         </div>
+
 
         <!-- ── Loading state ───────────────────────────────────────────────── -->
         <div id="loading-panel" class="d-none mb-4">
