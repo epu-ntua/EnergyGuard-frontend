@@ -36,11 +36,11 @@
                     data-action-url="{% url 'dataset_delete' dataset_id=dataset.id %}">Delete</a>
                   {% endif %}
                   <a class="dropdown-item" href="{% url 'dataset_download' dataset_id=dataset.id %}">Download</a>
-                  <a class="dropdown-item" href="#!">Report</a>
+                  <!-- <a class="dropdown-item" href="#!">Report</a> -->
                 </div>
               </div>
             </div>
-            <div>
+            <!-- <div>
               {% if dt.status == 'approved' %}
                 <span class="badge badge-phoenix badge-phoenix-success rounded-3 fs-10"><span class="badge-label">APPROVED</span><span class="ms-1 fs-10" data-feather="check-circle"></span></span>
               {% elif dt.status == 'rejected' %}
@@ -48,7 +48,7 @@
               {% elif dt.status == 'under_review' %}
                 <span class="badge badge-phoenix badge-phoenix-warning rounded-3 fs-10"><span class="badge-label">UNDER REVIEW</span><span class="ms-1 fs-10" data-feather="clock"></span></span>
               {% endif %}
-            </div>
+            </div> -->
           </div>
         </div>
 
