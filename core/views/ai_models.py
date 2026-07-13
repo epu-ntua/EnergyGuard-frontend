@@ -15,18 +15,24 @@ AI_MODELS = [
         'color': 'primary',
         'image': 'assets/img/ai-models/pv-generation-forecasting.jpg',
         'cta_url_name': 'engreen-antrodoco-dt',
-        'steps': [
-            {'icon': 'fa-hand-pointer', 'color': 'primary', 'title': 'Select',
-             'description': 'Choose a REC station or configure a new PV plant.'},
-            {'icon': 'fa-sliders', 'color': 'info', 'title': 'Configure',
-             'description': 'Set consumption profile and forecast horizon.'},
-            {'icon': 'fa-play', 'color': 'success', 'title': 'Simulate',
-             'description': 'The Digital Twin runs the forecast scenario.'},
-            {'icon': 'fa-chart-line', 'color': 'warning', 'title': 'Results',
-             'description': 'View production, feed-in, and self-consumption charts.'},
-            {'icon': 'fa-download', 'color': 'info', 'title': 'Export',
-             'description': 'Download raw data for further analysis.'},
+        'getting_started': [
+            'Select an existing REC station or define a new hypothetical plant (panels, power, tilt, orientation).',
+            'Choose a consumption profile that reflects how the household typically uses energy.',
+            'Select your simulation type and, for short-term forecast, set the number of days ahead.',
         ],
+        'modes': [
+            {'title': 'Short-term forecast', 'badge': '1-16 DAYS', 'badge_color': 'info',
+             'description': 'Predicts daily and hourly production for the next 1-16 days using real weather '
+                             'forecast data.'},
+            {'title': 'Historical baseline', 'badge': '5-YEAR AVG', 'badge_color': 'warning',
+             'description': 'Estimates the typical annual yield averaged over the last 5 years of observed '
+                             'weather.'},
+            {'title': 'Optimistic scenario', 'badge': 'CLEAR-SKY', 'badge_color': 'success',
+             'description': 'Estimates the theoretical maximum annual yield under ideal clear-sky conditions.'},
+        ],
+        'after_simulation': "You'll see a summary of total production, energy fed into the grid, and "
+                             "self-consumed energy — broken down by day, hour, or month depending on the "
+                             "scenario.",
     },
     {
         'slug': 'fair-dynamic-pricing',

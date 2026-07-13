@@ -1,24 +1,61 @@
 <div class="modal fade" id="aiModelModal-{{ model.slug }}" tabindex="-1" aria-labelledby="aiModelModalLabel-{{ model.slug }}" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <div class="d-flex align-items-center gap-3">
-          <span class="bg-{{ model.color }} text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
+          <!-- <span class="bg-{{ model.color }} text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;font-size:1.1rem;">
             <span class="fas {{ model.icon }}"></span>
-          </span>
-          <h5 class="modal-title mb-0" id="aiModelModalLabel-{{ model.slug }}">{{ model.name }}</h5>
+          </span> -->
+          <div>
+            <h5 class="modal-title mb-0" id="aiModelModalLabel-{{ model.slug }}">{{ model.name }}</h5>
+            <p class="text-body-tertiary fs-9 mb-0">{{ model.description }}</p>
+          </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="text-body-tertiary fs-9 mb-4">{{ model.description }}</p>
+        {% if model.modes %}
+        <div class="row">
+          <div class="col-12 col-lg-5 border-end-lg pe-lg-4">
+            <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9-5 mb-3" style="letter-spacing:.04em;">What this simulator does</h6>
+            <p class="text-body-emphasis fs-9 mb-4">{{ model.details }}</p>
 
+            <hr class="my-4">
+
+            <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9-5 mb-3" style="letter-spacing:.04em;">How to get started</h6>
+            {% for item in model.getting_started %}
+            <div class="d-flex align-items-start gap-3 {% if not forloop.last %}mb-3{% endif %}">
+              <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:26px;height:26px;">{{ forloop.counter }}</span>
+              <p class="text-body-emphasis fs-9 mb-0">{{ item }}</p>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="col-12 col-lg-7 ps-lg-4 mt-4 mt-lg-0">
+            <h6 class="text-uppercase text-body-tertiary fw-bolder mb-3 fs-9-5">Available simulation modes <span class="text-body-tertiary fw-normal">({{ model.modes|length }})</span></h6>
+            {% for mode in model.modes %}
+            <div class="border rounded-3 p-3 mb-2">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <h6 class="fw-bold text-body-emphasis mb-0 fs-9">{{ mode.title }}</h6>
+                <span class="badge rounded-pill bg-{{ mode.badge_color }}-subtle text-{{ mode.badge_color }} fs-11 fw-semibold">{{ mode.badge }}</span>
+              </div>
+              <p class="text-body-tertiary fs-9 mb-0">{{ mode.description }}</p>
+            </div>
+            {% endfor %}
+
+            {% if model.after_simulation %}
+            <div class="bg-body-tertiary bg-opacity-25 rounded-3 p-3 mt-3">
+              <h6 class="text-uppercase text-body-tertiary fw-bolder mb-1 fs-9-5">After the simulation</h6>
+              <p class="text-body-secondary fs-9 mb-0">{{ model.after_simulation }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% elif model.steps %}
         {% if model.details %}
         <h6 class="fw-semibold text-body-emphasis mb-2 fs-9">What this model does</h6>
         <p class="text-body-tertiary fs-9 mb-4">{{ model.details }}</p>
         {% endif %}
 
-        {% if model.steps %}
         <h6 class="fw-semibold text-body-emphasis mb-3 fs-9">How it works</h6>
         <div class="dt-stepper mb-2">
           {% for step in model.steps %}
@@ -38,6 +75,7 @@
         {% endif %}
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-link text-body-tertiary" data-bs-dismiss="modal">Cancel</button>
         {% if model.cta_url %}
         <a href="{{ model.cta_url }}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
           Open Workspace <span class="fas fa-arrow-right"></span>
