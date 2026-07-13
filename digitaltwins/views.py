@@ -11,6 +11,11 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
+from core.services.object_storage import MinioUploadError
+from datasets.services import provision_user_datasets
+
+from .services import save_simulation_result
+
 logger = logging.getLogger(__name__)
 
 _HAL_BASE = settings.HAL_BASE_URL
@@ -343,6 +348,47 @@ def engreen_pv_simulate(request):
     except requests.RequestException:
         logger.exception('HAL request failed: url=%s', hal_url)
         return JsonResponse({'error': 'Could not reach the forecast service.'}, status=502)
+
+
+@login_required
+@require_POST
+def dt_save_result(request):
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    twin_slug = body.get('twin_slug')
+    if twin_slug not in _DT_BY_SLUG:
+        return JsonResponse({'error': 'Invalid or missing twin_slug.'}, status=400)
+
+    data = body.get('data')
+    if not isinstance(data, dict):
+        return JsonResponse({'error': 'Invalid or missing result data.'}, status=400)
+
+    try:
+        dt_result = save_simulation_result(twin_slug=twin_slug, user=request.user, data=data)
+    except MinioUploadError as exc:
+        logger.error('Failed to save DT result for user %s: %s', request.user.pk, exc)
+        return JsonResponse({'error': 'Could not save the result.'}, status=502)
+
+    minio_prefix = dt_result.result_key.rsplit('/', 1)[0]
+    dataset_local_name = minio_prefix.rsplit('/', 1)[1]
+
+    # JupyterHub identifies users by email (OAuth), so the provision server
+    # must use the email as the username to land files in the right directory.
+    jupyterhub_username = request.user.email
+
+    try:
+        provision_user_datasets(jupyterhub_username, {minio_prefix: dataset_local_name})
+    except requests.RequestException as exc:
+        logger.error('Failed to provision DT result into JupyterHub for user %s: %s', request.user.pk, exc)
+        return JsonResponse({'error': 'The result was saved, but could not be opened in JupyterHub.'}, status=502)
+
+    jupyterhub_url = settings.JUPYTERHUB_URL.rstrip('/')
+    redirect_url = f'{jupyterhub_url}/user/{jupyterhub_username}/lab'
+
+    return JsonResponse({'redirect_url': redirect_url})
 
 
 @login_required

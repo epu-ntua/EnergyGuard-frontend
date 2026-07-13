@@ -13,5 +13,6 @@ urlpatterns = [
     path('antrodoco/engreen-antrodoco-dt/', views.engreen_antrodoco_dt, name='engreen-antrodoco-dt'),
     path('antrodoco/engreen-antrodoco-dt/simulate/', views.engreen_pv_simulate, name='engreen-pv-simulate'),
     path('antrodoco/engreen-antrodoco-dt/stations/', views.engreen_stations_api, name='engreen-stations-api'),
+    path('results/save/', views.dt_save_result, name='dt-save-result'),
     path('<slug:slug>/', views.digitaltwins_detail, name='digitaltwins-detail'),
 ]
