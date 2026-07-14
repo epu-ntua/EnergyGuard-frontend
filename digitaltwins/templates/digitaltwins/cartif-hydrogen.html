@@ -10,13 +10,13 @@
         <nav class="mb-3" aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-            <li class="breadcrumb-item active">CARTIF Hydrogen</li>
+            <li class="breadcrumb-item active">CARTIF Energy System</li>
           </ol>
         </nav>
 
         <!-- HEADER -->
         <div class="mb-4">
-          <h2 class="mb-2">CARTIF Hydrogen Node</h2>
+          <h2 class="mb-2">CARTIF Energy System</h2>
           <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
             <span>
               <strong class="text-body">Organization:</strong>
@@ -64,49 +64,13 @@
                         <span class="text-body-tertiary fs-8-5">Validation of AI-based energy management solutions in a realistic environment.</span>
                     </li>
                 </ul>
-                
-                <!-- <div class="row g-3 mt-6">
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-cube"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Digital Twin Simulation</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Simulate the hybrid energy system under different operating conditions</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-brain"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">AI Model Integration</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Integrate and benchmark AI models for forecasting, optimization, and control</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-desktop"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Virtual-only experimentation</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">All experimentation runs on the Digital Twin</p>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-            </div>
-            <div class="col-12 col-lg-6">
-                <img src="{% static 'assets/img/digital_twins/DT_CARTIF updated.png' %}" alt="CARTIF Hydrogen Digital Twin Node" class="img-fluid rounded-3 w-100">
+
                 <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-6">Use cases:</h6>
                 <p class="fs-8-5 text-body-tertiary mb-0 ">Extract Scenario Performance Indicators, Extract Operational Limits, Customise DT Energy Asset Scenarios, Re-parameterise Energy Assets </p>
             </div>
-            
+            <div class="col-12 col-lg-6">
+                <img src="{% static 'assets/img/digital_twins/DT_CARTIF updated.png' %}" alt="CARTIF Hydrogen Digital Twin Node" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
         </div>
 
 
@@ -119,19 +83,15 @@
                             <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
 
                             <!-- TODO: Browse DT-Specific datasets -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <a class="accordion-button accordion-button-no-caret collapsed text-decoration-none" href="{% url 'datasets_list' %}">
-                                        <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
-                                            <span class="fas fa-database"></span>
-                                        </span>
-                                        <div class="flex-grow-1">
-                                            <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
-                                            <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
-                                        </div>
-                                    </a>
-                                </h2>
-                            </div>
+                            <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-database"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                </div>
+                            </a>
 
                         </div>
                     </div>

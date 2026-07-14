@@ -89,7 +89,7 @@ DIGITAL_TWINS = [
     },
     {
         'slug': 'cartif-hydrogen',
-        'name': 'CARTIF Hydrogen Node',
+        'name': 'CARTIF Hybrid Hydrogen-Electrical-Thermal Energy System',
         'description': 'Hybrid hydrogen-electric-thermal energy system combining hydrogen production, storage, batteries, and thermal storage for Digital Twin-based simulation and AI optimization.',
         'image': 'assets/img/digital_twins/DT_CARTIF updated.png',
     },

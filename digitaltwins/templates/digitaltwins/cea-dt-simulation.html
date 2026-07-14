@@ -15,17 +15,120 @@
           </ol>
         </nav>
 
-        <div class="row g-4">
+        <!-- Header + About -->
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="DT Scenario Simulation" %}
+        </div>
 
-            <!-- Main column -->
-            <div class="col-12">
-
-                <!-- Header -->
-                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="DT Scenario Simulation" description="Run the SOEC Digital Twin simulation using a scenario file." %}
-
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">DT Scenario Simulation</strong> is a CEA node that runs the SOEC (Solid Oxide Electrolysis Cell) Digital Twin on a scenario you provide, returning the raw time-series output of the simulated test.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#scenario-upload" class="btn btn-primary d-inline-flex align-items-center gap-2">Upload a scenario <span class="fas fa-arrow-right"></span></a>
             </div>
 
-            <!-- Content -->
+            <div class="row">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
+                                <!-- TODO: Replace with actual node graph -->
+                                <img src="{% static 'assets/img/digital_twins/engreen graph.png' %}" alt="CEA SOEC hydrogen test bench" class="img-fluid rounded-3 w-100">
+                            </div>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">One scenario file, a full SOEC simulation</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">Provide the operating conditions and degradation coefficients that define your test, either generated with the AI Scenario Generation node or written by hand. The Digital Twin runs the SOEC simulation and returns the raw output as an .h5 file, ready to download or open directly in JupyterHub.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Upload</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Provide a generated or custom scenario file.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Run</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Launch the SOEC Digital Twin simulation.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Monitor</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Track simulation progress in real time.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Results</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Download the resulting .h5 output file.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What you'll need to provide -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-file-code"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Scenario file</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">A single JSON file, up to 10 MB, containing the time-series signals and scalar parameters for the test you want to simulate.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-chart-line"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Time-series signals</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">9 variables &mdash; current, voltage, temperature, steam conversion and gas flowrates &mdash; each an array the same length as the time vector.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-sliders"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Scalar parameters</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">4 degradation coefficients, one per stack, applied as constant values across the whole simulation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Scenario Upload</h3>
+        </div>
+
+        <!-- Content -->
+        <div class="row g-4" id="scenario-upload">
             <div class="col-12">
               <div class="card">
                 <div class="card-body p-4">

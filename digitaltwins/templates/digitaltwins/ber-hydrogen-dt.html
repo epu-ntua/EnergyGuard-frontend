@@ -53,54 +53,188 @@
         <nav class="mb-3" aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">BER Hydrogen</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
             <li class="breadcrumb-item active">Experiment Request</li>
           </ol>
         </nav>
 
-        <div class="row g-4">
+        <!-- Header + About -->
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/BER-icon.png" logo_alt="BER" title="Experiment Request" %}
+        </div>
 
-            <!-- Main column -->
-            <div class="col-12 col-xl-9">
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">Submit a custom experiment to the <strong class="text-body-emphasis">BER laboratory</strong> and receive high-quality operational data from a real PEM electrolyzer. You define the operating conditions; the BER team handles the physical execution and delivers the resulting dataset to the EnergyGuard platform.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
+            </div>
 
-                <!-- Header -->
-                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/BER-icon.png" logo_alt="BER" title="BER Node" description="Physical PEM Electrolyzer Testing Facility." %}
-
-                <!-- Service navigation -->
-                <!-- <div class="row g-3 mb-4">
-                    <div class="col-12">
-                        <div class="card dt-tab-card cursor-pointer active h-100" data-tab-target="experiment-request" tabindex="0" role="button">
-                            <div class="card-body d-flex align-items-start gap-3">
-                                <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">1</span>
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="fas fa-vial text-primary"></span>
-                                        <h6 class="fw-bold text-body-emphasis mb-0">Experiment Request</h6>
-                                    </div>
-                                    <p class="text-body-tertiary fs-9 mb-0">Submit a PEM electrolyzer experiment configuration.</p>
-                                </div>
+            <div class="row">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
+                                <!-- TODO: Replace with actual BER node graph -->
+                                <img src="{% static 'assets/img/digital_twins/engreen graph.png' %}" alt="BER PEM electrolyzer test bench" class="img-fluid rounded-3 w-100">
+                            </div>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">One request, real operational data</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">This node runs experiments on a real physical asset rather than a simulation. It queues your experiment on the PEM electrolyzer at the BER laboratory and provides the measured dataset upon completion of the execution.</p>
                             </div>
                         </div>
                     </div>
-                </div> -->
-
-            </div>
-
-            <!-- Sidebar -->
-            <!-- <div class="col-12 col-xl-3">
-                <div class="alert alert-subtle-info rounded-3 mb-0" role="alert">
-                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-2">
-                        <span class="fas fa-circle-info"></span>About this workspace
-                    </h6>
-                    <p class="fs-9 mb-2">Upload a JSON experiment configuration and submit it to the BER laboratory.</p>
-                    <p class="fs-9 mb-2">The laboratory team will review and execute the experiment manually.</p>
-                    <p class="fs-9 mb-0">Results are not generated immediately and will become available after execution.</p>
                 </div>
-            </div> -->
+            </div>
+        </div>
 
-            <!-- Tab content -->
-            <div class="card">
-                <div class="card-body p-4 tab-content">
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Upload</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Upload your experiment configuration in JSON format.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Submit</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Submit your request to the BER laboratory team.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Execute</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">The experiment runs on the real PEM system.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Results</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">User is notified once data is uploaded to the Data Lake.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What you'll need to provide -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-plug"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Control mode</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Choose between current-based (Ampere) or power-based (Watt) control of the electrolyzer.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-arrows-rotate"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Regeneration mode</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Set when the hydrogen dryer regenerates: immediately when saturated, or at the next startup.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-bolt"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Setpoint schedule</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Define a sequence of operating setpoints over time to simulate load-following behaviour or specific test profiles. Maximum experiment duration: 8 hours.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- What you'll get -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll get</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-bottom border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-gauge-high"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">System state</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Operating state of the electrolyzer over the course of the experiment.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-bottom border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-arrows-rotate"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Dryer columns state &amp; SOC</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">State and state-of-charge of the hydrogen dryer columns.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-bottom p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-bolt"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Stack voltage &amp; current</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Electrical operating point of the stack throughout the run.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 offset-md-2 border-bottom border-bottom-md-0 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-flask"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">H2 production</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Measured hydrogen output of the electrolyzer over the course of the experiment.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-plug"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Power consumption</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Total electrical power drawn by the system during execution.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Configuration</h3>
+        </div>
+
+        <!-- Tab content -->
+        <div class="card">
+            <div class="card-body p-4 tab-content">
 
                     <!-- Experiment Request -->
                     <div class="tab-pane active" id="experiment-request">
@@ -310,9 +444,8 @@
 
                 </div>
             </div>
-
         </div>
-    </div>
+
     {% include "core/footer.html" %}
 </div>
 {% endblock content %}

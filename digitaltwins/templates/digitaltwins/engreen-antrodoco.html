@@ -9,9 +9,6 @@
         opacity: 0.5;
         pointer-events: none;
     }
-    .accordion-button-no-caret::after {
-        display: none;
-    }
 </style>
 {% endblock head %}
 
@@ -42,7 +39,7 @@
         <hr class="mb-5">
 
         <!-- Hero -->
-        <div class="row g-4 align-items-center">
+        <div class="row g-4 align-items-start">
             <div class="col-12 col-lg-6">
                 <p class="text-body-tertiary fs-8-5 mb-3">The Antrodoco REC Node provides access to a real Renewable Energy Community located in the Lazio Region of Italy. It brings together community and technical data, including member and asset profiles, photovoltaic plants, battery storage systems, real-time monitoring data from producers and prosumers, selected consumer-side measurements, historical hourly records of energy withdrawal and injection, and weather data.</p>
                 <p class="text-body-tertiary fs-8-5 mb-4">Within the node, the Antrodoco REC Digital Twin acts as the modelling and simulation layer. It turns these data into an interactive representation of how the community works: how energy is produced, consumed, stored and shared. Users can explore the REC structure, visualise members and assets, monitor key energy indicators, analyse production and consumption trends, estimate shared energy and related benefits, and compare current REC behaviour with forecasted, simulated or AI-enhanced scenarios.</p>
@@ -54,45 +51,10 @@
                     <li class="mb-0"><strong class="text-body-emphasis">Predictive Maintenance Monitoring</strong><br/>Helps detect unusual operating patterns in monitored photovoltaic assets and supports the interpretation of possible technical, communication, shading, degradation or battery-related issues.</li>
                 </ul>
 
-                <!-- <div class="row g-3 mt-6">
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-leaf"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Real REC Environment</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Field-based community data</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-bolt"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">AI-Powered Services</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Forecasting, anomaly detection, planning</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4">
-                        <div class="d-flex align-items-start gap-2">
-                            <span class="bg-info-subtle text-info rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-chart-line"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Digital Twin</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Scenario analysis and validation</p>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
             </div>
 
-            <div class="col-12 col-lg-5 offset-lg-1">
-                <img src="{% static 'assets/img/digital_twins/Antrodoco-map.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100">
+            <div class="col-12 col-lg-5 ">
+                <img src="{% static 'assets/img/digital_twins/Antrodoco-map.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
             </div>
         </div>
 
@@ -104,68 +66,48 @@
                             <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
                             <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
     
-                            <div class="accordion-button-arrow-icon accordion" id="servicesAccordion">
-    
-                              <!-- Datasets -->
-                              <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                  <a class="accordion-button accordion-button-no-caret collapsed text-decoration-none" href="{% url 'datasets_list' %}">
-                                    <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
-                                        <span class="fas fa-database"></span>
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
-                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
-                                    </div>
-                                  </a>
-                                </h2>
-                              </div>
-    
-                              <!-- PV Production Simulator -->
-                              <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                  <a class="accordion-button accordion-button-no-caret collapsed text-decoration-none" href="{% url 'engreen-antrodoco-dt' %}">
-                                    <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
-                                        <span class="fas fa-sun"></span>
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-body-emphasis mb-1">PV Production Simulator</h6>
-                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Forecast photovoltaic production for REC stations or hypothetical new plants using real and historical weather data.</p>
-                                    </div>
-                                  </a>
-                                </h2>
-                              </div>
-    
-                              <!-- Smart Energy Optimiser (coming soon) -->
-                              <div class="accordion-item dt-card-disabled">
-                                <h2 class="accordion-header">
-                                  <button class="accordion-button collapsed py-3" type="button" disabled>
-                                    <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
-                                        <span class="fas fa-chart-line"></span>
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Smart Energy Optimiser <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
-                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Full REC energy balance forecasting including consumption, shared energy, and grid exchanges.</p>
-                                    </div>
-                                  </button>
-                                </h2>
-                              </div>
-    
-                              <!-- Predictive Maintenance (coming soon) -->
-                              <div class="accordion-item dt-card-disabled">
-                                <h2 class="accordion-header">
-                                  <button class="accordion-button collapsed py-3" type="button" disabled>
-                                    <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
-                                        <span class="fas fa-wrench"></span>
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Predictive Maintenance Monitoring <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
-                                        <p class="text-body-tertiary fw-light fs-9 mb-0">Detect anomalous operating patterns in monitored photovoltaic plants.</p>
-                                    </div>
-                                  </button>
-                                </h2>
-                              </div>
-    
+                            <!-- Datasets -->
+                            <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-database"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                </div>
+                            </a>
+
+                            <!-- PV Production Simulator -->
+                            <a href="{% url 'engreen-antrodoco-dt' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-sun"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">PV Production Simulator</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Forecast photovoltaic production for REC stations or hypothetical new plants using real and historical weather data.</p>
+                                </div>
+                            </a>
+
+                            <!-- Smart Energy Optimiser (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-chart-line"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Smart Energy Optimiser <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Full REC energy balance forecasting including consumption, shared energy, and grid exchanges.</p>
+                                </div>
+                            </div>
+
+                            <!-- Predictive Maintenance (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-wrench"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Predictive Maintenance Monitoring <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Detect anomalous operating patterns in monitored photovoltaic plants.</p>
+                                </div>
                             </div>
                         </div>
                     </div>

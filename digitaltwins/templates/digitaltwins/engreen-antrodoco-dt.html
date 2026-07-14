@@ -44,143 +44,165 @@
         </nav>
 
         <!-- Header + About -->
-        <div >
-            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="PV Production Simulator" description="Forecast photovoltaic production for existing or hypothetical REC installations" %}
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="PV Production Simulator"  %}
         </div>
 
-        <!-- About this workspace -->
-        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-6 pb-3 border-y mb-5">
-
-            <div class="mb-5">
-                <h6 class="fw-bold fs-8 text-body-emphasis mb-2">What is this service?</h6>
-                <p class="fs-8-5 text-body-secondary mb-2">The PV Production Simulator estimates how much electricity a photovoltaic plant can produce over a selected time period, and how that production splits between energy consumed on-site and energy exported to the grid.</p>
-                <p class="fs-8-5 text-body-secondary mb-0">Use it to analyse an existing station already registered in the Antrodoco REC, or to explore what a hypothetical new plant might produce based on specifications you define yourself — before any equipment is installed.</p>
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">PV Production Simulator</strong> is an EnGreen node that estimates how much electricity a photovoltaic plant will produce over a chosen period, and how that output splits between energy consumed on-site and energy exported to the grid.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#plant-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a simulation <span class="fas fa-arrow-right"></span></a>
+                <!-- <a href="#about-workspace" class="btn btn-outline-secondary">Read the details</a> -->
             </div>
 
-            
-            <div class="row g-4 mb-5">
-                <div class="col-12 col-lg-6">
-                    <h6 class="fw-bold fs-8 text-body-emphasis mb-1">What you'll need to provide</h6>
-                    <p class="fs-9 text-body-tertiary mb-0">Three quick configuration steps before running a forecast.</p>
-
-                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
-                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold" style="width:32px;height:32px;">1</span>
-                        <div>
-                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Plant configuration</h6>
-                            <p class="text-body-secondary fs-9 mb-0">Choose whether you want to simulate an existing REC station or define a new hypothetical plant. Existing stations auto-fill installed power, orientation and tilt; new plants require you to enter panel count, power rating, tilt angle and azimuth.</p>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
-                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-warning-subtle text-warning fw-bold" style="width:32px;height:32px;">2</span>
-                        <div>
-                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Consumption profile</h6>
-                            <p class="text-body-secondary fs-9 mb-0">Select the profile that best describes how energy is typically used at this location — day-heavy, evening-heavy, or mixed. This determines how much production is self-consumed versus fed into the grid.</p>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-start gap-3 pt-3">
-                        <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-success-subtle text-success fw-bold" style="width:32px;height:32px;">3</span>
-                        <div>
-                            <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Forecast type</h6>
-                            <p class="text-body-secondary fs-9 mb-0">Pick the kind of result you need: a short-term weather-based forecast, a historical baseline, or an optimistic clear-sky ceiling.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-5 offset-lg-1">
-                    <h6 class="fw-bold fs-8 text-body-emphasis mb-1">Available forecast types</h6>
-                    <p class="fs-9 text-body-tertiary mb-3">Choose the kind of result that fits your question.</p>
-                    <div class="row g-3">
-                        <div class="d-flex align-items-start gap-3 mb-1 border rounded-3 p-3">
-                            <span class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-cloud-sun"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Short-term forecast</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Predicts daily and hourly production for the next 1–16 days using real weather forecast data.</p>
+            <div class="row">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
+                                <img src="{% static 'assets/img/digital_twins/ENGREEN graph.png' %}" alt="Sample production breakdown chart" class="img-fluid rounded-3 w-100">
+                                <!-- <p class="text-body-tertiary fs-9 mt-2 mb-0">Hourly production, 10-day window &middot; sample output</p> -->
                             </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3 mb-1 border rounded-3 p-3">
-                            <span class="bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-chart-bar"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Historical baseline</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Estimates the typical annual yield averaged over the last 5 years of observed weather.</p>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">One node, a full production forecast</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">Analyse an existing station already registered in the Antrodoco REC, or explore what a hypothetical new plant might produce based on specifications you define yourself. ENGREEN returns hourly and daily charts, a self-consumption / feed-in split, and raw data you can export.</p>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3 mb-0 border rounded-3 p-3">
-                            <span class="bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                <span class="fas fa-arrow-trend-up"></span>
-                            </span>
-                            <div>
-                                <h6 class="fw-semibold text-body-emphasis mb-1 fs-9">Optimistic scenario</h6>
-                                <p class="text-body-tertiary fs-9-5 mb-0">Estimates the theoretical maximum annual yield under ideal clear-sky conditions.</p>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-12 col-lg-6">
-                    <h6 class="fw-bold fs-8 text-body-emphasis mb-3">How it works</h6>
-                    <div class="dt-stepper mb-2">
-                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
-                            <div class="icon-item icon-item-lg bg-primary-subtle text-primary mx-auto"><span class="fas fa-hand-pointer"></span></div>
-                            <span class="dt-step-number">1</span>
-                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Select</h6>
-                            <p class="text-body-tertiary fs-9-5 mb-0">Choose a REC station or configure a new PV plant.</p>
-                        </div>
-                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
-                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-sliders"></span></div>
-                            <span class="dt-step-number">2</span>
-                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Configure</h6>
-                            <p class="text-body-tertiary fs-9-5 mb-0">Set consumption profile and forecast horizon.</p>
-                        </div>
-                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
-                            <div class="icon-item icon-item-lg bg-success-subtle text-success mx-auto"><span class="fas fa-play"></span></div>
-                            <span class="dt-step-number">3</span>
-                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Simulate</h6>
-                            <p class="text-body-tertiary fs-9-5 mb-0">The Digital Twin runs the forecast scenario.</p>
-                        </div>
-                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
-                            <div class="icon-item icon-item-lg bg-warning-subtle text-warning mx-auto"><span class="fas fa-chart-line"></span></div>
-                            <span class="dt-step-number">4</span>
-                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Results</h6>
-                            <p class="text-body-tertiary fs-9-5 mb-0">View production, feed-in, and self-consumption charts.</p>
-                        </div>
-                        <div class="flex-fill text-center px-2 position-relative z-1" style="min-width:100px;">
-                            <div class="icon-item icon-item-lg bg-info-subtle text-info mx-auto"><span class="fas fa-download"></span></div>
-                            <span class="dt-step-number">5</span>
-                            <h6 class="fw-bold text-body-emphasis mt-2 mb-1 fs-9">Export</h6>
-                            <p class="text-body-tertiary fs-9-5 mb-0">Download raw data for further analysis.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-5 offset-lg-1">
-                    <div class="alert bg-turquoise bg-opacity-25 p-4 rounded-3 mb-0 h-100" role="alert">
-                        <h6 class="fw-bold fs-8-5 text-body-emphasis d-flex align-items-center gap-2 mb-2">
-                            <span class="fas fa-chart-simple"></span>What you'll get
-                        </h6>
-                        <p class="fs-8-5 mb-3">Once the simulation runs, you'll see a summary of total energy produced, how much was self-consumed, how much was fed into the grid, and the feed-in ratio — shown as hourly or daily charts.</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Production summary</span>
-                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Self-consumption vs. feed-in</span>
-                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Hourly &amp; daily charts</span>
-                            <span class="badge rounded-pill bg-body text-body-emphasis border fs-9 fw-semibold px-3 py-2">Export as JSON / CSV</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Select a Plant</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Choose a REC station or configure a new PV plant.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Configure</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Set consumption profile and forecast horizon.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Simulate</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">The Digital Twin runs the forecast scenario.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Results</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Open results on JupyterHub or export them.</p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Configuration & forecast options -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
+
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-solar-panel"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Plant configuration</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Choose whether to simulate an existing REC station or define a new hypothetical plant. Existing stations auto-fill installed power, orientation and tilt; new plants require panel count, power rating, tilt angle and azimuth.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-bolt"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Consumption profile</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Select the profile that best describes whether people are typically home during the day at this location — often away, often home, or a mix of both. This determines the self-consumption / feed-in split. If an existing REC station is chosen, the profile is auto-selected and cannot be changed.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-calendar-days"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Forecast type</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Pick the kind of result you need: a short-term weather-based forecast, a historical baseline, or an optimistic clear-sky ceiling.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">Available forecast types</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-bottom border-bottom-md-0 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-cloud-sun"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Short-term forecast</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Predicts daily and hourly production for the next 1–16 days using real weather forecast data.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-bottom border-bottom-md-0 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-chart-bar"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Historical baseline</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Estimates the typical annual yield averaged over the last 5 years of observed weather.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-arrow-trend-up"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Optimistic scenario</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Estimates the theoretical maximum annual yield under ideal clear-sky conditions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
+            <h3 class=" fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Configuration</h3>
         </div>
 
         <!-- ── Section 1: Plant Configuration ─────────────────────────────── -->
-        
-        <div class="row g-3">
-            <div class="col-12 col-lg-6 col-xxl-4">
+
+        <div class="row g-3" id="plant-configuration">
+            <div class="col-12 col-lg-6">
                 <div class="card mb-4 h-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -329,10 +351,12 @@
                         </div>
 
                         <!-- Calculated pnom -->
-                        <div class="bg-primary bg-opacity-50 p-3 border rounded-4 border-0 mt-1 col-12 col-md-4">
+                        <div class="bg-primary bg-opacity-50 p-3 border rounded-4 border-0 mt-1 col-12 col-md-6">
                             <span class="text-body-tertiary fs-9 d-block mb-1">Estimated Installed Power</span>
-                            <span class="fs-6 fw-bolder text-body-emphasis" id="pnom-value">— kW</span>
-                            <span class="text-body-tertiary fs-10 ms-2">= n_panels × wp_panel ÷ 1000</span>
+                            <div class="d-flex align-items-baseline flex-nowrap">
+                                <span class="fs-6 fw-bolder text-body-emphasis text-nowrap" id="pnom-value">— kW</span>
+                                <span class="text-body-tertiary fs-10 ms-2 text-nowrap">= n_panels × wp_panel ÷ 1000</span>
+                            </div>
                         </div>
                     </div>
 
@@ -341,7 +365,7 @@
             </div>
 
             <!-- ── Section 2: Consumption Profile ─────────────────────────────── -->
-            <div class="col-12 col-lg-6 col-xxl-4">
+            <div class="col-12 col-lg-6">
                 <div class="card mb-4 h-100" id="consumption-profile-card">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -460,7 +484,7 @@
             </div>
 
             <!-- ── Section 3: Forecast Type ────────────────────────────────────── -->
-            <div class="col-12 col-lg-12 col-xxl-4">
+            <div class="col-12 col-lg-12">
                 <div class="card mb-4 h-100">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
