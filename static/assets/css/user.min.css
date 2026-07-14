@@ -4,6 +4,17 @@
   --eg-collapsed-flyout-width: 260px;
 }
 
+/* Cap page content width on ultra-wide monitors so rows/columns/images
+   don't stretch edge-to-edge and break layouts designed around normal
+   viewport widths. Scoped to the page's inner wrapper (.content's first
+   child) rather than .content itself, so the absolutely-positioned
+   full-width .footer inside .content is unaffected. */
+.content > div:first-child {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 > .parent,
 .navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .nav-link-text-wrapper .nav-link-text {
   width: var(--eg-collapsed-flyout-width) !important;
