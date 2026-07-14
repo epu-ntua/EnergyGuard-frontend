@@ -97,7 +97,7 @@
             },
             {
               "value": "NO",
-              "next_step_raw": "OUT OF SCOPE — Likely that no EU AI Act obligations apply. The AI Act does not impose obligations for providers of AI models that do not qualify as General Purpose AI models",
+              "next_step_raw": "The AI Act does not impose obligations for providers of AI models that do not qualify as General Purpose AI models.",
               "derived_hints": {
                 "risk_category": "out_of_scope"
               }
@@ -1719,7 +1719,7 @@
             },
             {
               "value": "NOT SURE",
-              "next_step_raw": "Consult your technical team. If still unclear, complete both the AI System Track and the GPAI Track to be safe.",
+              "next_step_raw": "Consult your technical team and restart the questionnaire once you have the necessary information to answer the question.",
               "derived_hints": {
                 "switches_track": "both"
               }
@@ -2193,7 +2193,7 @@
             {
               "item_id": "GP-5.2",
               "number": "5.2",
-              "text": "Extended Code of Practice adhered to OR items 5.3–5.7 individually completed:",
+              "text": "Extended Code of Practice adhered to OR items 5.3–5.6 individually completed:",
               "more_info": "Compliance can be achieved through adherence to a code of practice until a harmonised standard is published, compliance with harmonised standards or alternative adequate means of compliance for assessment by the Commission.",
               "example": null,
               "more_info_example": null,
@@ -2201,18 +2201,8 @@
               "guideline_links": []
             },
             {
-              "item_id": "GP-5.3",
-              "number": "5.3",
-              "text": "All Step 4 obligations confirmed (open-source exception does NOT apply here)",
-              "more_info": null,
-              "example": null,
-              "more_info_example": null,
-              "article_links": [],
-              "guideline_links": []
-            },
-            {
               "item_id": "GP-5.4",
-              "number": "5.4",
+              "number": "5.3",
               "text": "Model evaluation including adversarial testing such as red-teaming completed using state-of-the-art standardised protocols prior to first placing on the market",
               "more_info": null,
               "example": null,
@@ -2227,7 +2217,7 @@
             },
             {
               "item_id": "GP-5.5",
-              "number": "5.5",
+              "number": "5.4",
               "text": "Systemic risks at EU level assessed and mitigated continously throughout the model's lifecycle",
               "more_info": "Risk assessment and mitigation refers to possible systemic risk at EU level which may stem from development, the placing on the market and the use of the GPAI model with systemic risk.",
               "example": null,
@@ -2242,7 +2232,7 @@
             },
             {
               "item_id": "GP-5.6",
-              "number": "5.6",
+              "number": "5.5",
               "text": "Serious incident and corrective measures tracking: identify, report (to AI Office and as appropriate to national competent authorities), and document.",
               "more_info": null,
               "example": null,
@@ -2257,7 +2247,7 @@
             },
             {
               "item_id": "GP-5.7",
-              "number": "5.7",
+              "number": "5.6",
               "text": "Cybersecurity protections in place for the model AND its physical infrastructure",
               "more_info": "Cybersecurity protection related to malicious use or attacks should take under consideration accidental model leakage, unauthorised releases, circumvention of safety measures and defence against cyberattacks, unauthorised access or model theft.",
               "example": null,

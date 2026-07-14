@@ -26,7 +26,9 @@
 
             {% for track_name, data in tracks_data.items %}
                 <div class="p-4 mb-4 border rounded-4">
+                    {% if data.risk_category != 'out_of_scope' %}
                     <h5 class="fw-bold mb-3"><i class="bi bi-signpost-split me-2"></i>{{ data.label }}</h5>
+
 
                     <div class="mb-3">
                         <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
@@ -34,6 +36,7 @@
                             <i class="bi bi-shield-check me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
                         </span>
                     </div>
+                    {% endif %}
 
                     {% if not data.completed %}
                         <div class="alert alert-secondary border-0 mb-0">
@@ -43,6 +46,7 @@
                     {% elif data.is_terminal %}
                         <div class="alert border-0 mb-0
                             {% if data.risk_category == 'prohibited' %}alert-danger{% else %}alert-warning{% endif %}">
+                            {% if data.risk_category != 'out_of_scope' %}
                             <h6 class="fw-bold">
                                 {% if data.risk_category == 'prohibited' %}
                                     <i class="bi bi-x-octagon-fill me-2"></i>Prohibited
@@ -50,6 +54,7 @@
                                     <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|risk_category_label }}
                                 {% endif %}
                             </h6>
+                            {% endif %}
                             <p class="mb-0">{{ data.terminal_note|default:"No further obligations checklist applies to this outcome." }}</p>
                         </div>
                     {% else %}

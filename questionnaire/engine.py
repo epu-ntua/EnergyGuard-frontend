@@ -150,6 +150,17 @@ def resolve_next(track_name, current_step_id, derived_hints, risk_category):
     if risk_category in TERMINAL_RISK_CATEGORIES:
         return None
     hint = (derived_hints or {}).get('goes_to_step_hint')
+    if (
+        risk_category == 'systemic_risk'
+        and current_step_id in ('GP-2.1i', 'GP-2.1ii')
+        and hint == 'Step 3'
+    ):
+        # Step 3's open-source exception explicitly excludes GPAI models
+        # with systemic risk ("...AND is not a GPAI with systemic risk"), so
+        # once systemic risk was confirmed at Step 1.3a/1.3b, becoming a
+        # provider here skips straight to Step 4 (Code of Practice) instead
+        # of the moot exceptions check.
+        hint = 'Step 4'
     return resolve_hint_step_id(track_name, current_step_id, hint) if hint else None
 
 
@@ -202,6 +213,20 @@ def filter_gp4b_items(items, gp4a_answer):
     if (gp4a_answer or '').strip().upper().startswith('YES'):
         return [item for item in items if item.get('required_even_if_full_adherence')]
     return items
+
+
+def filter_gp5_items(items, gp4a_answer):
+    """
+    GP-5's visible items also depend on the GP-4a Code of Practice answer:
+    full adherence already covers the systemic-risk Code of Practice item
+    (5.2), leaving only the FLOP-threshold notification (5.1) to confirm
+    separately. Any other answer means the Code-of-Practice route (5.2)
+    isn't being taken, so the remaining systemic-risk obligations (5.3-5.6)
+    must be demonstrated individually instead.
+    """
+    if (gp4a_answer or '').strip().upper().startswith('YES'):
+        return [item for item in items if item['item_id'] in ('GP-5.1', 'GP-5.2')]
+    return [item for item in items if item['item_id'] != 'GP-5.2']
 
 
 def ai42_next_step_hint(selected_labels):
@@ -270,6 +295,25 @@ def ai5_completion_outcome(track_name, item_statuses):
     return None, None
 
 
+def ai23_resolve(current_role, hints):
+    """
+    Step 2.3 ("Becoming a Provider?") answering NO means "no additional
+    Provider obligations apply here", not "no role was found at all". If
+    Step 2.2 already established a Deployer role, that determination stands:
+    the role isn't wiped to 'no_role_detected', and - since NO here doesn't
+    carry its own goes_to_step_hint - the track is routed on to Step 3.1 ·
+    Territorial Scope exactly as the Provider (YES) branch does, instead of
+    terminating. That "no role detected" ending is only correct when no role
+    was set going into 2.3 (i.e. 2.2 was also NO).
+
+    Returns (effective_role, effective_hints).
+    """
+    sets_role = hints.get('sets_role')
+    if sets_role == 'no_role_detected' and current_role == 'deployer':
+        return current_role, dict(hints, goes_to_step_hint='Step 3.1')
+    return sets_role, hints
+
+
 def ai7_all_not_applicable(item_statuses):
     """
     Step 7's transparency items are each scenario-specific (chatbot
@@ -311,6 +355,8 @@ def compute_obligations(track_name, risk_category, role, checklist_status, answe
             items = [it for it in items if it.get('applicable_role') in (None, role)]
         if step_id == 'GP-4b':
             items = filter_gp4b_items(items, (answers or {}).get('GP-4a'))
+        if step_id == 'GP-5':
+            items = filter_gp5_items(items, (answers or {}).get('GP-4a'))
 
         item_statuses = checklist_status.get(step_id, {})
         fulfilled, outstanding = [], []
