@@ -1,0 +1,27 @@
+/* Re-maps cookieconsent's CSS custom properties to the Phoenix theme's
+   own variables, so the banner follows the platform's colors, font,
+   radius and light/dark theme automatically. */
+:root {
+  --cc-font-family: var(--phoenix-font-sans-serif);
+  --cc-modal-border-radius: var(--phoenix-border-radius-lg);
+  --cc-btn-border-radius: var(--phoenix-border-radius);
+
+  --cc-bg: var(--phoenix-emphasis-bg);
+  --cc-primary-color: var(--phoenix-emphasis-color);
+  --cc-secondary-color: var(--phoenix-body-color);
+
+  --cc-btn-primary-bg: var(--phoenix-primary);
+  --cc-btn-primary-color: #fff;
+  --cc-btn-primary-border-color: transparent;
+  --cc-btn-primary-hover-bg: color-mix(in srgb, var(--phoenix-primary) 85%, black);
+  --cc-btn-primary-hover-color: #fff;
+
+  --cc-link-color: var(--phoenix-primary);
+
+  --cc-separator-border-color: var(--phoenix-border-color-translucent);
+}
+
+/* Match the elevated box shadow Phoenix uses for floating overlays (.shadow-lg) instead of the library default */
+#cc-main .cm {
+  box-shadow: var(--phoenix-box-shadow-lg);
+}

@@ -25,6 +25,9 @@
     <meta name="theme-color" content="#ffffff">
     <!-- For Unicons ( <i class="...."></i> ) -->
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <!-- Cookie consent banner -->
+    <link rel="stylesheet" href="{% static 'vendors/cookieconsent/cookieconsent.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/cookieconsent-custom.css' %}">
 
     <script src="{% static 'assets/js/config.js' %}"></script>
     {% block head %}
@@ -150,6 +153,8 @@
     <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>   <!-- SVG icons -->
     <script src="{% static 'vendors/dayjs/dayjs.min.js' %}"></script>   <!-- For date and time -->
     <script src="{% static 'assets/js/phoenix.js' %}"></script>
+    <script src="{% static 'vendors/cookieconsent/cookieconsent.umd.js' %}"></script>   <!-- Cookie consent banner -->
+    <script src="{% static 'assets/js/cookieconsent-init.js' %}"></script>
 
 
     {% block scripts %}
