@@ -13,7 +13,7 @@ AI_MODELS = [
                    "characteristics (panel count, tilt, azimuth) to produce short-term (1-16 day), historical "
                    "baseline, and optimistic clear-sky forecasts.",
         'color': 'primary',
-        'image': 'assets/img/ai-models/pv-generation-forecasting.jpg',
+        'image': 'assets/img/ai-models/thumbs/pv-generation-forecasting.webp',
         'cta_url_name': 'engreen-antrodoco-dt',
         'getting_started': [
             'Select an existing REC station or define a new hypothetical plant (panels, power, tilt, orientation).',
@@ -41,7 +41,7 @@ AI_MODELS = [
         'details': 'Supports the assessment of the economic effects of different consumption patterns, \
             shared energy levels and incentive-related scenarios, helping to evaluate how pricing or behavioural strategies may affect REC performance. ',
         'color': 'info',
-        'image': 'assets/img/ai-models/fair-dynamic-pricing.jpg',
+        'image': 'assets/img/ai-models/thumbs/fair-dynamic-pricing.webp',
     },
     {
         'slug': 'predictive-maintenance-monitoring',
@@ -50,7 +50,7 @@ AI_MODELS = [
         'details': 'Identifies abnormal operating hours and supports the interpretation of possible local asset issues, \
             such as communication losses, abnormal inverter behaviour, shading, degradation or battery-related effects. ',
         'color': 'success',
-        'image': 'assets/img/ai-models/predictive-maintenance-monitoring.jpg',
+        'image': 'assets/img/ai-models/thumbs/predictive-maintenance-monitoring.webp',
     },
 
 ]
