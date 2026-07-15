@@ -21,20 +21,6 @@ logger = logging.getLogger(__name__)
 _HAL_BASE = settings.HAL_BASE_URL
 _VALID_PROFILES = {'away_during_day', 'mixed_use', 'often_home'}
 
-# Fallback used when the HAL /stations endpoint is unreachable.
-_ENGREEN_STATIONS_FALLBACK = {
-    'IT001E61366665':  {'pnom_kw': 2.975, 'tilt': 30, 'azimuth': 0, 'profile': 'often_home',      'ratio_feed_in': 0.26},
-    'IT001E61366666':  {'pnom_kw': 2.975, 'tilt': 30, 'azimuth': 0, 'profile': 'mixed_use',       'ratio_feed_in': 0.46},
-    'IT001E61366667':  {'pnom_kw': 2.975, 'tilt': 30, 'azimuth': 0, 'profile': 'often_home',      'ratio_feed_in': 0.26},
-    'IT001E61493931':  {'pnom_kw': 3.4,   'tilt': 30, 'azimuth': 0, 'profile': 'often_home',      'ratio_feed_in': 0.26},
-    'IT001E61493111':  {'pnom_kw': 3.4,   'tilt': 30, 'azimuth': 0, 'profile': 'away_during_day', 'ratio_feed_in': 0.76},
-    'IT001E61493112':  {'pnom_kw': 3.4,   'tilt': 30, 'azimuth': 0, 'profile': 'away_during_day', 'ratio_feed_in': 0.76},
-    'IT001E61493825':  {'pnom_kw': 5.0,   'tilt': 30, 'azimuth': 0, 'profile': 'mixed_use',       'ratio_feed_in': 0.46},
-    'IT001E687790740': {'pnom_kw': 6.0,   'tilt': 30, 'azimuth': 0, 'profile': 'mixed_use',       'ratio_feed_in': 0.46},
-    'IT001E61376264':  {'pnom_kw': 4.0,   'tilt': 30, 'azimuth': 0, 'profile': 'mixed_use',       'ratio_feed_in': 0.46},
-}
-
-
 _SIMULATE_RATE_LIMIT = 20   # max requests per user per window
 _SIMULATE_RATE_WINDOW = 60  # seconds
 
@@ -59,8 +45,8 @@ def _fetch_engreen_stations():
         resp.raise_for_status()
         return resp.json()
     except requests.RequestException as exc:
-        logger.warning('Could not fetch stations from HAL; using fallback registry. Reason: %s', exc)
-        return _ENGREEN_STATIONS_FALLBACK
+        logger.warning('Could not fetch stations from HAL. Reason: %s', exc)
+        return None
 
 DIGITAL_TWINS = [
     {
@@ -265,7 +251,10 @@ def engreen_antrodoco_dt(request):
 
 @login_required
 def engreen_stations_api(request):
-    return JsonResponse(_fetch_engreen_stations())
+    stations = _fetch_engreen_stations()
+    if stations is None:
+        return JsonResponse({'error': 'Could not load stations.'}, status=503)
+    return JsonResponse(stations)
 
 
 @login_required

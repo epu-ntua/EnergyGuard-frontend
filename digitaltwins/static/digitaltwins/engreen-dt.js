@@ -4,6 +4,14 @@
     // ── Station registry (loaded async from /stations API) ───────────────────
     var STATIONS = {};
 
+    function formatStationName(name) {
+        return name.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+
+    function stationLabel(station) {
+        return formatStationName(station.name) + ' - ' + station.pnom_kw.toFixed(2) + 'kW';
+    }
+
     // ── Load stations async so page render is not blocked ─────────────────────
     fetch(window.ENGREEN_CONFIG.stationsUrl)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
@@ -19,7 +27,7 @@
             Object.keys(data).sort().forEach(function (pod) {
                 var opt = document.createElement('option');
                 opt.value = pod;
-                opt.textContent = data[pod].pnom_kw.toFixed(2) + ' kW PV System (POD: ' + pod + ')';
+                opt.textContent = stationLabel(data[pod]);
                 stationSelect.appendChild(opt);
             });
             stationSelect.disabled = false;
@@ -381,7 +389,7 @@
         if (snapshot.mode === 'existing') {
             var st = STATIONS[snapshot.stationId];
             document.getElementById('res-plant-name').textContent = st
-                ? (+s.pnom_kw).toFixed(2) + ' kW PV System – ' + snapshot.stationId
+                ? formatStationName(st.name) + ' - ' + (+s.pnom_kw).toFixed(2) + 'kW'
                 : snapshot.stationId;
         } else {
             document.getElementById('res-plant-name').textContent =
