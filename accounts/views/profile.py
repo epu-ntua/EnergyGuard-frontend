@@ -47,7 +47,6 @@ def _update_user_name(user, first_name, last_name):
 @login_required
 def profile(request):
     joined_display = get_time_since_joined(request.user.date_joined)
-    last_login = get_time_since_joined(request.user.last_login)
 
     user_profile, _ = Profile.objects.get_or_create(user=request.user)
     existing_team = user_profile.team
@@ -89,7 +88,6 @@ def profile(request):
         {
             "show_sidebar": False,
             "joined_display": joined_display,
-            "last_login": last_login,
             "form": form,
             "profile": user_profile,
             "existing_team": existing_team,

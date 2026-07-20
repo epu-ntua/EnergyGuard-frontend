@@ -89,25 +89,18 @@
                                     </div>
                                     <div class="col-12 col-sm-auto flex-1">
                                         <h3>{{ request.user.first_name }} {{ request.user.last_name }}</h3>
-                                        <p class="text-body-secondary">Joined {{ joined_display }}</p>
-                                        <div>
-                                            <!-- TODO: Add social media links -->
-                                            <a class="me-2" href="#!"><span class="fab fa-linkedin-in text-body-quaternary text-opacity-75 text-primary-hover"></span></a>
-                                            <a class="me-2" href="#!"><span class="fab fa-facebook text-body-quaternary text-opacity-75 text-primary-hover"></span></a>
-                                            <a href="#!"><span class="fab fa-twitter text-body-quaternary text-opacity-75 text-primary-hover"></span></a>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex flex-between-center pt-4">
+                                <div class="text-end">
+                                    <h6 class="mb-2 text-body-secondary">Member Since</h6>
+                                    <h4 class="fs-7 text-body-highlight mb-0">{{ joined_display }}</h4>
+                                </div>
                                 <div>
                                     <h6 class="mb-2 text-body-secondary">Total Resources Usage</h6>
                                     <!-- TODO: Add total resources usage -->
                                     <h4 class="fs-7 text-body-highlight mb-0">-</h4>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="mb-2 text-body-secondary">Last Activity</h6>
-                                    <h4 class="fs-7 text-body-highlight mb-0">{{ last_login }}</h4>
                                 </div>
                                 <div class="text-end">
                                     <h6 class="mb-2 text-body-secondary">Total Projects</h6>
@@ -125,7 +118,9 @@
                 <div class="scrollbar">
                     <ul class="nav nav-underline fs-9 flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
                         <li class="nav-item"><a class="nav-link text-nowrap active" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="true"><span class="fas fa-user me-2"></span>Personal info</a></li>
+                        {% comment %}
                         <li class="nav-item me-3"><a class="nav-link text-nowrap" id="billing-tab" data-bs-toggle="tab" href="#tab-billing" role="tab" aria-controls="tab-billing" aria-selected="true"><span class="fas fa-credit-card me-2"></span>Billing</a></li>
+                        {% endcomment %}
                     </ul>
                 </div>
                 <div class="tab-content" id="profileTabContent">
@@ -200,6 +195,7 @@
                     </div>
     
                     <!-- Billing Tab Content -->
+                    {% comment %}
                     <div class="tab-pane fade" id="tab-billing" role="tabpanel" aria-labelledby="billing-tab">
                         <div class="border-top border-bottom border-translucent" id="profileOrdersTable" data-list='{"valueNames":["order","status","delivery","date","total"],"page":6,"pagination":true}'>
                             <div class="table-responsive scrollbar">
@@ -365,9 +361,10 @@
                             </div>
                         </div>
                     </div>
-    
+                    {% endcomment %}
+
                 </div>
-    
+
             </div>
         </div>
     </section>
