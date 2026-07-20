@@ -8,10 +8,11 @@ class Project(TimeStampedModel):
     class ProjectType(models.TextChoices):
         AI_MODEL = 'ai_model', 'AI Model'
         AI_SERVICE = 'ai_service', 'AI Service'
-        WEB_APP = 'web_app', 'Web Application'
-        MOBILE_APP = 'mobile_app', 'Mobile Application'
-        IOT_INTEGRATION = 'iot_integration', 'IoT Integration'
+        APPLICATION = 'application', 'Application'
+        EDGE_EMBEDDED_AI = 'edge_embedded_ai', 'Edge / Embedded AI'
         DATA_PIPELINE = 'data_pipeline', 'Data Pipeline'
+        SIMULATION_MODEL = 'simulation_model', 'Simulation Model'
+        AI_AGENT_SYSTEM = 'ai_agent_system', 'AI Agent System'
 
     name = models.CharField(max_length=255)
     collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL, through='ProjectCollaborator', related_name='collaborator_projects')

@@ -116,10 +116,11 @@
                                 <option value="">All types</option>
                                 <option value="ai_model">AI Model</option>
                                 <option value="ai_service">AI Service</option>
-                                <option value="web_app">Web Application</option>
-                                <option value="mobile_app">Mobile Application</option>
-                                <option value="iot_integration">IoT Integration</option>
+                                <option value="application">Application</option>
+                                <option value="edge_embedded_ai">Edge / Embedded AI</option>
                                 <option value="data_pipeline">Data Pipeline</option>
+                                <option value="simulation_model">Simulation Model</option>
+                                <option value="ai_agent_system">AI Agent System</option>
                             </select>
                         </div>
                         <div id="projectListContainer" style="max-height:340px; overflow-y:auto;"></div>
@@ -168,6 +169,7 @@
     const _turquoise  = _cs.getPropertyValue('--phoenix-turquoise').trim()   || '#42AED1';
     const _purpleBlue = _cs.getPropertyValue('--phoenix-purple-blue').trim() || '#677fd8';
     const _lavender   = _cs.getPropertyValue('--phoenix-lavender').trim()    || '#AC80EC';
+    const _teal       = _cs.getPropertyValue('--phoenix-teal').trim()        || '#20c997';
 
     function hexToRgba(hex, alpha) {
         const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
@@ -175,12 +177,13 @@
     }
 
     const TYPE_CONFIG = {
-        ai_model:        { color: _purple,     bg: hexToRgba(_purple,     0.12), icon: 'fa-brain' },
-        ai_service:      { color: _indigo,     bg: hexToRgba(_indigo,     0.12), icon: 'fa-robot' },
-        web_app:         { color: _blue,       bg: hexToRgba(_blue,       0.12), icon: 'fa-globe' },
-        mobile_app:      { color: _purpleBlue, bg: hexToRgba(_purpleBlue, 0.12), icon: 'fa-mobile-alt' },
-        iot_integration: { color: _turquoise,  bg: hexToRgba(_turquoise,  0.12), icon: 'fa-network-wired' },
-        data_pipeline:   { color: _lavender,   bg: hexToRgba(_lavender,   0.12), icon: 'fa-stream' },
+        ai_model:          { color: _purple,     bg: hexToRgba(_purple,     0.12), icon: 'fa-brain' },
+        ai_service:        { color: _indigo,     bg: hexToRgba(_indigo,     0.12), icon: 'fa-robot' },
+        application:       { color: _blue,       bg: hexToRgba(_blue,       0.12), icon: 'fa-desktop' },
+        edge_embedded_ai:  { color: _turquoise,  bg: hexToRgba(_turquoise,  0.12), icon: 'fa-microchip' },
+        data_pipeline:     { color: _lavender,   bg: hexToRgba(_lavender,   0.12), icon: 'fa-stream' },
+        simulation_model:  { color: _purpleBlue, bg: hexToRgba(_purpleBlue, 0.12), icon: 'fa-flask' },
+        ai_agent_system:   { color: _teal,       bg: hexToRgba(_teal,       0.12), icon: 'fa-diagram-project' },
     };
 
     function esc(str) {
