@@ -1,0 +1,114 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}RDN Node - Digital Twins{% endblock %}
+
+{% block head %}
+<style>
+    .dt-card-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">Portuguese Grid</li>
+          </ol>
+        </nav>
+
+        <!-- HEADER -->
+        <div class="mb-4">
+          <h2 class="mb-2">Portuguese Transmission Grid</h2>
+          <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
+            <span>
+              <strong class="text-body">Organization:</strong>
+              <a href="https://www.rdnester.pt/en-GB" target="_blank" class="ms-1">R&amp;N Nester</a>
+            </span>
+            <span><strong class="text-body">Location:</strong> Portugal</span>
+            <span><strong class="text-body">Domain:</strong> Power Systems &amp; Grid Stability</span>
+          </div>
+        </div>
+
+        <hr class="mb-5">
+
+        <!-- Hero -->
+        <div class="row g-4 align-items-start">
+            <div class="col-12 col-lg-7">
+                <p class="text-body-tertiary fs-8-5 mb-2">This node provides a high-fidelity digital twin of a large scale electricity grid with high shares of renewable energy sources (RES), inspired in the Portuguese electricity transmission grid. The purpose of this digital twin is to allow testing, evaluating and validating AI solutions to support the operation of smart grids. The digital twin represents a network of about 3000 km of lines/cables at 400 kV, 3800 km of lines/cables at 220 kV and 2500 km of lines/cables at 150 kV, including seven interconnectors with a different control area. The full grid in the digital twin contains electricity generation installations of Biomass, Gas, Hydro-pump storage, Hydro with reservoirs and run-of-river, Photovoltaic and Wind power generation. The digital twin is endowed with EMT and RMS simulation capabilities. Its models of synchronous machines, power park modules and load consumption enable the modification of injection/consumption levels across the network, while continuously assessing the impact of such changes on key system variables, namely voltage profiles and frequency behaviour. Furthermore, the digital twin provides the ability to study the interaction with a number of intelligent electronic devices (IEDs) through hardware in the loop simulations. Hence, the digital twin of large scale electricity grid with high-shares of renewable energy sources provides realistic, physics-based operating scenarios that can be used for the training, testing and validation of AI solutions under diverse grid conditions, supporting the development of trustworthy AI applications for power system operation and control. The user can automatically configure the scenarios to run the following use cases: the “Technical Validation of Market Results”, “Voltage Control” and “Governor and load frequency control”. Examples of specific applications are the testing and experimentation of AI-based forecasting of renewable generation and/or load consumption, voltage support coordination process or assessment of the estimation of  model-free voltage profiles, or operational envelopes, as well as tools for dynamic security assessment , or strategies to control  ROCOF, or resilience to events resulting in frequency instability. Other use cases cannot be configured automatically: these include “Short-circuit analysis”, “Stator transient”, “Subsynchronous resonance”, or “Inverter-based control” for which the configuration of the digital twin requires contact with the development team.</p>
+
+            </div>
+
+            <div class="col-12 col-lg-5 ">
+                <img src="{% static 'assets/img/digital_twins/DT-RDN2.png' %}" alt="RDN Grid Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
+        </div>
+
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y my-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                            <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                            <!-- Datasets -->
+                            <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-database"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                </div>
+                            </a>
+
+                            <!-- Grid Simulation -->
+                            <a href="#" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-bolt"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Grid Simulation</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Submit a grid scenario and visualize dynamic simulation results.</p>
+                                </div>
+                            </a>
+
+                            <!-- Automatic Fault Analysis (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-triangle-exclamation"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Automatic Fault Analysis <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Automatically detect and characterise faults from grid simulation data.</p>
+                                </div>
+                            </div>
+
+                            <!-- Model-Free Voltage Profiles (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-chart-line"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Model-Free Voltage Profiles <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Estimate voltage profiles across the grid without a full network model.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
