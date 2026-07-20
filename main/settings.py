@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'code_analysis',
     'robustness',
     'trustworthiness',
+    'dataspace',
 ]
 
 MIDDLEWARE = [
@@ -338,6 +339,10 @@ Q_CLUSTER = {
 DATA_MANAGEMENT_SERVER_URL = env('DATA_MANAGEMENT_SERVER_URL')
 DATA_MANAGEMENT_SERVER_API_KEY = env('DATA_MANAGEMENT_SERVER_API_KEY')
 JUPYTERHUB_URL = env('JUPYTERHUB_URL')
+
+# EnergyGuard Data Space gateway (colleague's FastAPI proxy over EnPower/True Connector).
+# Called directly from the browser (see dataspace app), not proxied through this backend.
+DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='http://energyguard.epu.ntua.gr:8000')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
