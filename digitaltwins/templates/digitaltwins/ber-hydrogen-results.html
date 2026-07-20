@@ -1,0 +1,213 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}BER Experiment Results - Digital Twins{% endblock %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
+<style>
+    :root {
+        --ber-chart-height: 60vh;
+        --ber-chart-min-height: 300px;
+    }
+    .ber-chart-wrapper {
+        width: 100%;
+        height: var(--ber-chart-height);
+        min-height: var(--ber-chart-min-height);
+    }
+    #power-chart {
+        height: calc(var(--ber-chart-height) + 8vh);
+        min-height: calc(var(--ber-chart-min-height) + 120px);
+    }
+    .ber-legend-swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    @media (max-width: 576px) {
+        .ber-chart-wrapper {
+            height: 260px;
+            min-height: 260px;
+        }
+        #power-chart {
+            height: 300px;
+            min-height: 300px;
+        }
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
+            <li class="breadcrumb-item active">Experiment Results</li>
+          </ol>
+        </nav>
+
+        <!-- Results -->
+        <div class="bg-body rounded-3 shadow-lg border p-4">
+
+            <!-- Results header -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Experiment Results</h5>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% static 'digitaltwins/data/ber-hydrogen-sample.lp' %}" download="{{ experiment_id }}.lp" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <span class="fas fa-download"></span>Download .lp
+                    </a>
+                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
+                        <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
+                <span><span class="fas fa-hashtag me-1 text-body-tertiary"></span>Experiment ID: <span class="fw-semibold text-body-emphasis">{{ experiment_id }}</span></span>
+                <span class="text-body-tertiary">&middot;</span>
+                <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run: <span class="fw-semibold text-body-emphasis">{{ run_timestamp|date:"d M Y, H:i" }} UTC</span></span>
+                <span class="text-body-tertiary">&middot;</span>
+                <span><span class="fas fa-hourglass-half me-1 text-body-tertiary"></span>Duration: <span class="fw-semibold text-body-emphasis">{{ duration_label }}</span></span>
+            </div>
+
+            <!-- KPI cards -->
+            <div class="row g-3 mb-4">
+                {% for card in kpi_cards %}
+                <div class="col-6 col-md-4 col-xl col-xxl-1">
+                    <div class="bg-body border rounded-3 p-3 h-100">
+                        <span class="text-body-tertiary fs-9 d-block mb-1">{{ card.label }}</span>
+                        <span class="fw-bolder {{ card.value_class }} fs-7">{{ card.value|floatformat:2 }}</span>
+                        <span class="text-body-tertiary fs-9 ms-1">{{ card.unit }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chart + Sidebar -->
+            <div class="row g-4">
+
+                <!-- Charts -->
+                <div class="col-12 col-xxl-9">
+
+                    <!-- Chart 1: Power consumption -->
+                    <div class="card mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <h6 class="fw-bold text-body-emphasis mb-0">Power Consumption</h6>
+                                <div class="d-flex align-items-center gap-3 fs-9 text-body-secondary flex-wrap">
+                                    <span class="d-flex align-items-center gap-1">
+                                        <span class="ber-legend-swatch" style="background:var(--phoenix-primary);"></span>Stack power
+                                    </span>
+                                    <span class="d-flex align-items-center gap-1">
+                                        <span class="ber-legend-swatch" style="background:var(--phoenix-turquoise);"></span>Auxiliaries power
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="power-chart" class="ber-chart-wrapper"></div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Stack voltage and current -->
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <h6 class="fw-bold text-body-emphasis mb-0">Stack Voltage &amp; Current</h6>
+                                <div class="d-flex align-items-center gap-3 fs-9 text-body-secondary flex-wrap">
+                                    <span class="d-flex align-items-center gap-1">
+                                        <span class="ber-legend-swatch" style="background:var(--phoenix-primary);"></span>Voltage (V)
+                                    </span>
+                                    <span class="d-flex align-items-center gap-1">
+                                        <span class="ber-legend-swatch" style="background:var(--phoenix-turquoise);"></span>Current (A)
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="electrical-chart" class="ber-chart-wrapper"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-12 col-xxl-3">
+                    <div class="row g-4">
+
+                        <!-- About these signals -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                                        <span class="fas fa-circle-info text-primary"></span>About These Signals
+                                    </h6>
+                                    <ul class="list-unstyled fs-9 mb-0">
+                                        {% for tag, info in signal_info.items %}
+                                        <li class="d-flex gap-2 {% if not forloop.last %}mb-3{% endif %}">
+                                            <span class="fas fa-circle fs-11 text-body-tertiary mt-2"></span>
+                                            <div>
+                                                <span class="fw-semibold text-body-emphasis d-block">{{ info.label }} <span class="text-body-tertiary fw-normal">({{ info.unit }})</span></span>
+                                                <span class="text-body-tertiary">{{ info.description }}</span>
+                                            </div>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration used -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
+                                        <span class="fas fa-list-ul text-body-tertiary"></span>Configuration Used
+                                    </h6>
+                                    <dl class="row fs-9 mb-0">
+                                        <dt class="col-6 text-body-tertiary fw-normal">Experiment ID</dt>
+                                        <dd class="col-6 fw-semibold text-body-emphasis mb-1">{{ experiment_id }}</dd>
+                                        <dt class="col-6 text-body-tertiary fw-normal">Node</dt>
+                                        <dd class="col-6 fw-semibold text-body-emphasis mb-1">BER PEM Electrolyzer</dd>
+                                        <dt class="col-6 text-body-tertiary fw-normal">Serial Number</dt>
+                                        <dd class="col-6 fw-semibold text-body-emphasis mb-1">{{ serial_number }}</dd>
+                                        <dt class="col-6 text-body-tertiary fw-normal">Run Timestamp</dt>
+                                        <dd class="col-6 fw-semibold text-body-emphasis mb-1">{{ run_timestamp|date:"d M Y, H:i" }} UTC</dd>
+                                        <dt class="col-6 text-body-tertiary fw-normal">Duration</dt>
+                                        <dd class="col-6 fw-semibold text-body-emphasis mb-0">{{ duration_label }}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+window.BER_RESULTS_CONFIG = {
+    saveResultUrl: "{% url 'dt-save-result' %}"
+};
+</script>
+{{ chart_power|json_script:"ber-power-data" }}
+{{ chart_power_axis|json_script:"ber-power-axis" }}
+{{ chart_electrical|json_script:"ber-electrical-data" }}
+{{ kpis|json_script:"ber-kpis" }}
+{{ result_meta|json_script:"ber-result-meta" }}
+<script src="{% static 'digitaltwins/ber-results-dt.js' %}" defer></script>
+{% endblock scripts %}
