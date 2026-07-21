@@ -1,7 +1,7 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 
 {% block questionnaire_content %}
-<div class="container mt-5" style="max-width: 800px;">
+<div class="container mt-5" style="max-width: 1100px;">
     <div class="card shadow border-0">
         <div class="card-body p-5">
 
@@ -10,25 +10,30 @@
 
             <div class="my-4" style="font-size: 1.15rem; line-height: 1.7; text-align: justify; color: #333;">
                 <p>
-                    This questionnaire helps organisations in the <strong>energy sector</strong> assess their
-                    obligations under the <strong>EU Artificial Intelligence Act (AI Act)</strong>. It will guide
-                    you through a short assessment to determine your <strong>role</strong> (such as provider or
-                    deployer), the <strong>risk category</strong> that applies to your AI system or general-purpose
-                    AI model, and the specific <strong>obligations</strong> that follow from that classification.
+                    This questionnaire supports organisations in understanding the maturity of their compliance
+                    with regards to <strong>AI Act</strong>. It will guide you through a short assessment to
+                    determine your <strong>role</strong> (such as provider or deployer), the <strong>risk
+                    category/classification</strong> that applies to your AI system or general-purpose AI model,
+                    and the specific <strong>obligations</strong> that follow from that classification. The
+                    questionnaire is an ongoing project, subject to review and update to align with regulatory
+                    developments, thus amendments of Digital Omnibus on AI have not yet been incorporated.
                 </p>
-                <p>
-                    Note that some roles carry no obligations under the AI Act and therefore fall outside the
-                    scope of this questionnaire.
-                </p>
-                <h5 class="fw-bold mt-4">What to expect:</h5>
                 <ul class="list-unstyled">
                     <li class="mb-2"><i class="bi bi-clock me-2 text-primary"></i><strong>Duration:</strong> 10-15 minutes.</li>
-                    <li class="mb-2"><i class="bi bi-gear me-2 text-primary"></i><strong>Process:</strong> Answer questions about your technology's nature and intended use. If your AI system embeds its own general-purpose AI model, you'll be guided into that assessment too.</li>
-                    <li class="mb-2"><i class="bi bi-file-earmark-check me-2 text-primary"></i><strong>Outcome:</strong> A risk classification and a checklist of outstanding vs. fulfilled obligations.</li>
+                    <li class="mb-2"><i class="bi bi-gear me-2 text-primary"></i><strong>Process:</strong> Answer questions about your technology's nature and intended use.</li>
+                    <li class="mb-2"><i class="bi bi-file-earmark-check me-2 text-primary"></i><strong>Outcome:</strong> A risk classification and a checklist of outstanding vs. fulfilled obligations based on the answers provided.</li>
                 </ul>
-                <p class="small text-muted mt-5 fst-italic" style="border-top: 1px solid #eee; padding-top: 1rem;">
-                    *Note: This assessment is for informational purposes only and does not constitute legal advice.
-                </p>
+
+                <p class="mt-4">For the proper completion of the questionnaire, kindly note the following:</p>
+                <ol>
+                    <li class="mb-2">Not all roles covered by AI Act are included in the questionnaire. The roles examined are provider and deployer for AI systems and providers for GPAI models.</li>
+                    <li class="mb-2">In case your entity has more than one roles, repeat questionnaire for each role separately.</li>
+                    <li class="mb-2">The questionnaire should be answered separately for each system or model. If your AI system embeds your own AI model, complete the questionnaire once for the AI system and once for the AI model.</li>
+                    <li class="mb-2">The list of obligations is not exhaustive. Since the questionnaire mainly focuses on the development phase, more obligations can apply eg after the system is marketed or upon requested by the competent authorities.</li>
+                    <li class="mb-2">The questionnaire is adapted to uses cases most likely in the energy sector, thus not all provisions of AI Act (e.g not all cases of prohibited practices or high-risk) are included.</li>
+                    <li class="mb-2">The information provided is based on Consortium's understanding. AI Act provisions may be interpreted differently.</li>
+                    <li class="mb-2">National legislation should be also checked.</li>
+                </ol>
             </div>
 
             <div class="mt-5 text-center d-flex flex-wrap justify-content-center gap-3">
