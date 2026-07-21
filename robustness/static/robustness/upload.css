@@ -40,7 +40,7 @@
 }
 
 .yaml-form {
-  max-width: 980px;
+  max-width: 1360px;
   margin: 0 auto;
 }
 
@@ -269,7 +269,7 @@
 }
 
 .yaml-error-banner {
-  max-width: 980px;
+  max-width: 1360px;
   margin: 0 auto 1rem;
   padding: 0.9rem 1rem;
   border-radius: 12px;
@@ -277,6 +277,126 @@
   border: 1px solid #fecaca;
   color: #b91c1c;
   font-weight: 700;
+}
+
+.yaml-reference-panel {
+  margin-top: 1.2rem;
+  padding: 1.45rem 1.45rem 1.55rem;
+}
+
+.yaml-reference-copy {
+  margin: 0 0 1rem;
+  color: #60728f;
+}
+
+.yaml-reference-copy code {
+  color: #2d7ebd;
+}
+
+.yaml-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-bottom: 1.1rem;
+}
+
+.yaml-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #5f7290;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.yaml-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.yaml-legend-dot--required {
+  background: #c0392b;
+}
+
+.yaml-legend-dot--important {
+  background: #b7791f;
+}
+
+.yaml-legend-dot--optional {
+  background: #8493ab;
+}
+
+.yaml-table-scroll {
+  overflow-x: auto;
+}
+
+.yaml-field-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.yaml-field-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: #6f8099;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #dce5f2;
+}
+
+.yaml-field-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #ebeff6;
+  color: #445269;
+  vertical-align: top;
+}
+
+.yaml-field-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.yaml-field-table code {
+  color: #236bb0;
+  background: #eaf5ff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.yaml-field-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.yaml-field-pill--required {
+  background: #fdeceb;
+  color: #c0392b;
+  border-color: #f7d3cf;
+}
+
+.yaml-field-pill--important {
+  background: #fff4e0;
+  color: #b7791f;
+  border-color: #ffe3ab;
+}
+
+.yaml-field-pill--optional {
+  background: #eef1f6;
+  color: #5f7290;
+  border-color: #dde3ee;
 }
 
 .yaml-actions {
