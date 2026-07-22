@@ -4,6 +4,7 @@
 {% block title %}Provide Evaluation Config – Robustness Benchmarks{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'robustness/upload.css' %}">
 <style>
     .yaml-dropzone {
         display: block; border: 2px dashed var(--phoenix-border-color); border-radius: .5rem;
@@ -175,6 +176,132 @@
                                     </div>
                                 </div>
 
+
+                                <section class="yaml-panel yaml-reference-panel">
+                                    <h2 class="yaml-section-title">Config field reference</h2>
+                                    <p class="yaml-reference-copy">Every field your <code>config.yaml</code> can define. The field name's color shows how important it is.</p>
+
+                                    <div class="yaml-legend">
+                                        <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--required"></span>Required</span>
+                                        <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--important"></span>Important</span>
+                                        <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--optional"></span>Optional</span>
+                                    </div>
+
+                                    <div class="yaml-table-scroll">
+                                        <table class="yaml-field-table">
+                                        <thead>
+                                            <tr>
+                                            <th style="width: 24%;">Field</th>
+                                            <th style="width: 36%;">Options / template</th>
+                                            <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--required">name</span></td>
+                                            <td><code>&lt;run_name&gt;</code></td>
+                                            <td>Human-readable run identifier shown in the UI and output files.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">description</span></td>
+                                            <td><code>&lt;description&gt;</code></td>
+                                            <td>Short note describing the purpose of the run or config.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--required">dataset.path</span></td>
+                                            <td><code>&lt;dataset_uri_or_path&gt;</code></td>
+                                            <td>Source dataset used to load the evaluation records.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">dataset.target_columns</span></td>
+                                            <td><code>[&lt;target_1&gt;, &lt;target_2&gt;, ...]</code></td>
+                                            <td>Columns treated as prediction targets; for multi-target regression, check how per-target loss is aggregated.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">dataset.feature_columns</span></td>
+                                            <td><code>[&lt;feature_1&gt;, &lt;feature_2&gt;, ...]</code></td>
+                                            <td>Input features passed to the model and attacks; mask out categorical/binary columns if they shouldn't be perturbed.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--required">model.backend</span></td>
+                                            <td><code>mlflow</code> | <code>pytorch</code> | <code>sklearn</code></td>
+                                            <td>Selects the loader path used to load the model.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--required">model.task_type</span></td>
+                                            <td><code>classification</code> | <code>regression</code></td>
+                                            <td>Sets whether the evaluation is treated as classification or regression.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">model.mlflow_model_uri</span></td>
+                                            <td><code>runs:/&lt;run_id&gt;/model</code> or <code>models:/&lt;name&gt;/&lt;version&gt;</code></td>
+                                            <td>Points to the MLflow model artifact that will be loaded for evaluation.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">model.mlflow_validate_signature</span></td>
+                                            <td><code>true</code> | <code>false</code></td>
+                                            <td>Validates the model's input schema; only disable once you've manually verified it matches.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">model.mlflow_include_training_metrics</span></td>
+                                            <td><code>true</code> | <code>false</code></td>
+                                            <td>Includes original training metrics in the generated report.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">model.clip_values</span></td>
+                                            <td><code>[&lt;min&gt;, &lt;max&gt;]</code></td>
+                                            <td>Valid input range for gradient-based attacks; must match the actual scale of every feature column.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--required">robustness.attacks</span></td>
+                                            <td><code>[{type: fgsm, ...}, {type: pgd, ...}, {type: bim, ...}, ...]</code></td>
+                                            <td>List of attacks to run (fgsm, pgd, bim, ...), each with its own configuration.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">robustness.sample_size</span></td>
+                                            <td><code>&lt;positive_integer&gt;</code></td>
+                                            <td>Limits how many samples are evaluated; leave it out to use all rows.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">attacks.epsilon</span></td>
+                                            <td><code>&lt;epsilon&gt;</code></td>
+                                            <td>Perturbation budget, relative to the <code>clip_values</code> range.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">attacks.eps_step</span></td>
+                                            <td><code>&lt;step&gt;</code></td>
+                                            <td>Per-iteration step size for iterative attacks like PGD and BIM.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">attacks.max_iter</span></td>
+                                            <td><code>&lt;positive_integer&gt;</code></td>
+                                            <td>Iteration count for iterative attacks like PGD and BIM.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--important">attacks.norm</span></td>
+                                            <td><code>inf</code> | <code>1</code> | <code>2</code></td>
+                                            <td>Distance metric (L∞, L1, L2) bounding the size of the perturbation.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.targeted</span></td>
+                                            <td><code>true</code> | <code>false</code></td>
+                                            <td>Whether the attack targets a specific output or just maximizes error generally.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.regression_objective</span></td>
+                                            <td><code>maximize_loss</code> | <code>maximize_deviation</code></td>
+                                            <td>Controls what the attack optimizes for in regression tasks.</td>
+                                            </tr>
+                                            <tr>
+                                            <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.feature_mask</span></td>
+                                            <td><code>[&lt;column_name&gt;, ...]</code></td>
+                                            <td>Restricts perturbation to specific columns; confirm your library supports this before using mixed-type feature sets.</td>
+                                            </tr>
+                                        </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+
                             </div>
 
                             <div class="d-flex justify-content-end gap-3 pt-4">
@@ -228,131 +355,9 @@
                 
             </div>
         </div>
-        {% endif %}
-        <section class="yaml-panel yaml-reference-panel">
-          <h2 class="yaml-section-title">Config field reference</h2>
-          <p class="yaml-reference-copy">Every field your <code>config.yaml</code> can define. The field name's color shows how important it is.</p>
-
-          <div class="yaml-legend">
-            <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--required"></span>Required</span>
-            <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--important"></span>Important</span>
-            <span class="yaml-legend-item"><span class="yaml-legend-dot yaml-legend-dot--optional"></span>Optional</span>
-          </div>
-
-          <div class="yaml-table-scroll">
-            <table class="yaml-field-table">
-              <thead>
-                <tr>
-                  <th style="width: 24%;">Field</th>
-                  <th style="width: 36%;">Options / template</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--required">name</span></td>
-                  <td><code>&lt;run_name&gt;</code></td>
-                  <td>Human-readable run identifier shown in the UI and output files.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">description</span></td>
-                  <td><code>&lt;description&gt;</code></td>
-                  <td>Short note describing the purpose of the run or config.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--required">dataset.path</span></td>
-                  <td><code>&lt;dataset_uri_or_path&gt;</code></td>
-                  <td>Source dataset used to load the evaluation records.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">dataset.target_columns</span></td>
-                  <td><code>[&lt;target_1&gt;, &lt;target_2&gt;, ...]</code></td>
-                  <td>Columns treated as prediction targets; for multi-target regression, check how per-target loss is aggregated.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">dataset.feature_columns</span></td>
-                  <td><code>[&lt;feature_1&gt;, &lt;feature_2&gt;, ...]</code></td>
-                  <td>Input features passed to the model and attacks; mask out categorical/binary columns if they shouldn't be perturbed.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--required">model.backend</span></td>
-                  <td><code>mlflow</code> | <code>pytorch</code> | <code>sklearn</code></td>
-                  <td>Selects the loader path used to load the model.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--required">model.task_type</span></td>
-                  <td><code>classification</code> | <code>regression</code></td>
-                  <td>Sets whether the evaluation is treated as classification or regression.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">model.mlflow_model_uri</span></td>
-                  <td><code>runs:/&lt;run_id&gt;/model</code> or <code>models:/&lt;name&gt;/&lt;version&gt;</code></td>
-                  <td>Points to the MLflow model artifact that will be loaded for evaluation.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">model.mlflow_validate_signature</span></td>
-                  <td><code>true</code> | <code>false</code></td>
-                  <td>Validates the model's input schema; only disable once you've manually verified it matches.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">model.mlflow_include_training_metrics</span></td>
-                  <td><code>true</code> | <code>false</code></td>
-                  <td>Includes original training metrics in the generated report.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">model.clip_values</span></td>
-                  <td><code>[&lt;min&gt;, &lt;max&gt;]</code></td>
-                  <td>Valid input range for gradient-based attacks; must match the actual scale of every feature column.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--required">robustness.attacks</span></td>
-                  <td><code>[{type: fgsm, ...}, {type: pgd, ...}, {type: bim, ...}, ...]</code></td>
-                  <td>List of attacks to run (fgsm, pgd, bim, ...), each with its own configuration.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">robustness.sample_size</span></td>
-                  <td><code>&lt;positive_integer&gt;</code></td>
-                  <td>Limits how many samples are evaluated; leave it out to use all rows.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">attacks.epsilon</span></td>
-                  <td><code>&lt;epsilon&gt;</code></td>
-                  <td>Perturbation budget, relative to the <code>clip_values</code> range.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">attacks.eps_step</span></td>
-                  <td><code>&lt;step&gt;</code></td>
-                  <td>Per-iteration step size for iterative attacks like PGD and BIM.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">attacks.max_iter</span></td>
-                  <td><code>&lt;positive_integer&gt;</code></td>
-                  <td>Iteration count for iterative attacks like PGD and BIM.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--important">attacks.norm</span></td>
-                  <td><code>inf</code> | <code>1</code> | <code>2</code></td>
-                  <td>Distance metric (L∞, L1, L2) bounding the size of the perturbation.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.targeted</span></td>
-                  <td><code>true</code> | <code>false</code></td>
-                  <td>Whether the attack targets a specific output or just maximizes error generally.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.regression_objective</span></td>
-                  <td><code>maximize_loss</code> | <code>maximize_deviation</code></td>
-                  <td>Controls what the attack optimizes for in regression tasks.</td>
-                </tr>
-                <tr>
-                  <td><span class="yaml-field-pill yaml-field-pill--optional">attacks.feature_mask</span></td>
-                  <td><code>[&lt;column_name&gt;, ...]</code></td>
-                  <td>Restricts perturbation to specific columns; confirm your library supports this before using mixed-type feature sets.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+    </div>
+    {% endif %}
+        
 
     {% include "core/footer.html" %}
 </div>
