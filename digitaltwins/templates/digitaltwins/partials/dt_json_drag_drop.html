@@ -1,10 +1,17 @@
-<label class="d-flex flex-column align-items-center justify-content-center gap-2 rounded-3 border p-4 text-center w-100 mb-3"
+<label class="d-flex flex-column align-items-center justify-content-center gap-2 rounded-3 border text-center w-100 mb-3 {% if large %}rounded-4 p-6{% else %}p-4{% endif %}"
     for="{{ input_id }}" id="json-dropzone"
-    style="min-height:180px;border-style:dashed !important;cursor:pointer;">
+    style="min-height:{% if large %}320px{% else %}180px{% endif %};border-style:dashed !important;cursor:pointer;">
     <input id="{{ input_id }}" name="{{ input_name }}" type="file" accept=".json" hidden>
+    {% if large %}
+    <span class="fas fa-cloud-arrow-up text-primary mb-2" style="font-size:2.5rem;"></span>
+    <span class="fw-semibold text-body-emphasis fs-6">Drag &amp; drop your JSON file here</span>
+    <span class="text-body-tertiary fs-9">or</span>
+    <span class="btn btn-outline-primary">Browse files</span>
+    {% else %}
     <span class="fas fa-cloud-arrow-up fs-2 text-body-tertiary mb-1"></span>
     <span class="fw-semibold text-body-emphasis">Drag &amp; drop your JSON file here</span>
     <span class="text-body-tertiary fs-9">or</span>
     <span class="btn btn-outline-primary btn-sm">Browse Files</span>
-    <span class="text-body-tertiary fs-10 mt-1" id="json-file-pill">Accepted format: .json &middot; Max size: 10 MB</span>
+    {% endif %}
+    <!-- <span class="text-body-tertiary fs-9-5 mt-1" id="json-file-pill">Accepted format: .json &middot; Max size: 10 MB</span> -->
 </label>
