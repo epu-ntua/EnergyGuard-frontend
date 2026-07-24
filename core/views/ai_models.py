@@ -4,8 +4,8 @@ from django.urls import reverse
 
 AI_MODELS = [
     {
-        'slug': 'pv-generation-forecasting',
-        'name': 'PV Generation Forecasting',
+        'slug': 'smart-energy-optimiser',
+        'name': 'Smart Energy Optimiser',
         'description': 'Predicts solar power output from weather and plant configuration.',
         'details': "Estimates how much electricity a photovoltaic plant will produce over a given period, "
                    "and how that production splits between energy fed into the grid and energy self-consumed "
