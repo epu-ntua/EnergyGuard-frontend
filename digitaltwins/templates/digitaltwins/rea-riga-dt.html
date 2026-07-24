@@ -13,13 +13,13 @@
   <nav class="mb-3" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
       <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'rea-riga' %}">Riga's Multi-Apartment Residential Buildings</a></li>
-      <li class="breadcrumb-item active">Riga's Multi-Apartment Residential Buildings Map</li>
+      <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'rea-riga' %}">Riga's Buildings</a></li>
+      <li class="breadcrumb-item active">Buildings Map</li>
     </ol>
   </nav>
 
-  <h2>Riga's Multi-Apartment Residential Buildings Map</h2>
-  <p>Visualization of building energy classes and efficiency metrics accross Riga.</p>
+    {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/REA - icon.png" logo_alt="REA" title="Riga's Multi-Apartment Residential Buildings Map" subtitle="Visualization of building energy classes and efficiency metrics across Riga." %}
+
   <div id="map-container" class="mb-3">
     <div id="map"></div>
     <div id="minimap-toggle" title="Toggle minimap">▼</div>
