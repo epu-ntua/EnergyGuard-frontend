@@ -695,6 +695,11 @@ def ber_hydrogen_dt(request):
 
 
 @login_required
+def ber_hydrogen_documentation(request):
+    return _dt_render(request, 'digitaltwins/ber-hydrogen-documentation.html', sample_json=BER_SAMPLE_JSON)
+
+
+@login_required
 def cartif_hydrogen_dt(request):
     return _dt_render(request, 'digitaltwins/cartif-hydrogen-dt.html')
 

@@ -3,49 +3,6 @@
 
 {% block title %}BER Node Workspace - Digital Twins{% endblock %}
 
-{% block head %}
-<style>
-    .ber-timeline {
-        position: relative;
-        margin: 0;
-        padding-left: 0;
-        list-style: none;
-    }
-    .ber-timeline li {
-        position: relative;
-        padding-left: 2.25rem;
-        padding-bottom: 1.25rem;
-    }
-    .ber-timeline li:last-child {
-        padding-bottom: 0;
-    }
-    .ber-timeline li::before {
-        content: '';
-        position: absolute;
-        left: .5625rem;
-        top: 1.6rem;
-        bottom: 0;
-        width: 1px;
-        background-color: var(--phoenix-border-color);
-    }
-    .ber-timeline li:last-child::before {
-        display: none;
-    }
-    .ber-timeline-marker {
-        position: absolute;
-        left: 0;
-        top: .1rem;
-        width: 1.25rem;
-        height: 1.25rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: .6rem;
-    }
-</style>
-{% endblock head %}
-
 {% block content %}
 <div class="content">
     <div class="px-4 px-lg-6 pt-6 pb-9">
@@ -131,7 +88,7 @@
         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
             <div class="row g-0">
                 <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-plug"></span>
                         </span>
@@ -142,7 +99,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-arrows-rotate"></span>
                         </span>
@@ -153,7 +110,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-4 p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-bolt"></span>
                         </span>
@@ -171,7 +128,7 @@
         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
             <div class="row g-0">
                 <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-gauge-high"></span>
                         </span>
@@ -182,7 +139,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-flask"></span>
                         </span>
@@ -193,7 +150,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-4 p-4 p-lg-5">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-plug"></span>
                         </span>
@@ -210,220 +167,75 @@
             <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Configuration</h3>
         </div>
 
-        <!-- Tab content -->
-        <div class="card">
-            <div class="card-body p-4 tab-content">
+        <div class="card" id="experiment-request">
+            <div class="card-body p-4 p-lg-5">
 
-                    <!-- Experiment Request -->
-                    <div class="tab-pane active" id="experiment-request">
+                <h5 class="fw-bold text-body-emphasis mb-2">Upload Experiment JSON</h5>
+                <p class="text-body-tertiary fs-8-5 mb-3">Upload a JSON file describing the experiment sequence to execute on the PEM electrolyzer.</p>
 
-                        <div class="row g-4">
+                <div class="row g-5">
 
-                            <!-- Upload column -->
-                            <div class="col-12 col-lg-5">
-                                <h6 class="fw-bold text-body-emphasis mb-2">Upload Experiment JSON</h6>
-                                <p class="text-body-tertiary fs-9 mb-3">Upload a JSON file describing the experiment sequence to execute on the PEM electrolyzer.</p>
+                    <!-- Upload column -->
+                    <div class="col-12 col-lg-7">
+                        {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="experiment-json-file" input_name="experiment_json_file" large=True %}
+                    </div>
 
-                                {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="experiment-json-file" input_name="experiment_json_file" %}
+                    <!-- Info column -->
+                    <div class="col-12 col-lg-5">
+                        <div class="p-4 border-start">
 
-                                <!-- Submission card -->
-                                <div class="col-12 mb-3">
-                                    <div class="card h-100" id="submission-card">
-                                        <div class="card-body" id="submission-card-body">
-                                            <div class="d-flex align-items-center gap-2 mb-2">
-                                                <span class="fas fa-paper-plane text-primary"></span>
-                                                <h6 class="fw-bold text-body-emphasis mb-1">Ready to submit</h6>
-                                            </div>
-                                            <p class="text-body-tertiary fs-9 mb-3">Your experiment request will be sent to the BER laboratory for execution.</p>
-                                            <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 mb-0" id="submit-request-btn" disabled>
-                                                <span class="fas fa-paper-plane"></span>Submit Experiment Request
-                                            </button>
-                                        </div>
-                                    </div>
+                            <div class="d-flex align-items-start gap-2 mb-4">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-file-lines"></span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Accepted format</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">JSON</p>
                                 </div>
-
-                                <!-- Status information / timeline -->
-                                <div class="col-12 mb-5">
-                                    <div class="alert alert-subtle-info rounded-3 d-flex align-items-center gap-2 mb-4 fs-9 py-3" role="alert">
-                                        <span class="fas fa-circle-info"></span>
-                                        <span>
-                                            Make sure your JSON file follows the required structure.
-                                            <a href="#json-reference">See required fields and example on the right &rarr;</a>
-                                        </span>
-                                    </div>
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h6 class="fw-bold text-body-emphasis mb-3">What happens next?</h6>
-                                            <ul class="ber-timeline fs-9 mb-0">
-                                                <li>
-                                                    <span class="ber-timeline-marker bg-primary text-white"><span class="fas fa-inbox"></span></span>
-                                                    <span class="fw-semibold text-body-emphasis d-block">Submitted</span>
-                                                    <span class="text-body-tertiary">Request sent to BER.</span>
-                                                </li>
-                                                <li>
-                                                    <span class="ber-timeline-marker bg-info text-white"><span class="fas fa-calendar-check"></span></span>
-                                                    <span class="fw-semibold text-body-emphasis d-block">Scheduled</span>
-                                                    <span class="text-body-tertiary">BER confirms execution date.</span>
-                                                </li>
-                                                <li>
-                                                    <span class="ber-timeline-marker bg-warning text-white"><span class="fas fa-gear"></span></span>
-                                                    <span class="fw-semibold text-body-emphasis d-block">In Progress</span>
-                                                    <span class="text-body-tertiary">Experiment is running.</span>
-                                                </li>
-                                                <li>
-                                                    <span class="ber-timeline-marker bg-success text-white"><span class="fas fa-check"></span></span>
-                                                    <span class="fw-semibold text-body-emphasis d-block">Completed</span>
-                                                    <span class="text-body-tertiary">Results uploaded to Data Lake.</span>
-                                                </li>
-                                                <li>
-                                                    <span class="ber-timeline-marker bg-danger text-white"><span class="fas fa-xmark"></span></span>
-                                                    <span class="fw-semibold text-body-emphasis d-block">Rejected</span>
-                                                    <span class="text-body-tertiary">Request could not be executed.</span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Validation -->
-                                <div class="col-12">
-                                    {% include "digitaltwins/partials/dt_validation_card.html" with checks=validation_checks %}
-                                </div>
-
                             </div>
 
-                            <!-- Reference column -->
-                            <div class="col-12 col-lg-7 ps-6" id="json-reference">
-<!-- 
-                                <h6 class="fw-bold text-body-emphasis mb-2">What is in the JSON file?</h6>
-                                <p class="text-body-tertiary fs-9 mb-3">The JSON file contains a sequence of commands executed by the PEM electrolyzer controller.</p>
-
-                                <div class="row g-3 mb-4">
-                                    <div class="col-4">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-center gap-2 mb-1">
-                                                    <span class="fas fa-terminal text-primary"></span>
-                                                    <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Commands</h6>
-                                                </div>
-                                                <span class="badge badge-phoenix badge-phoenix-info">3 COMMAND TYPES</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-center gap-2 mb-1">
-                                                    <span class="fas fa-clock text-success"></span>
-                                                    <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Max Duration</h6>
-                                                </div>
-                                                <span class="badge badge-phoenix badge-phoenix-success">8 HOURS</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-center gap-2 mb-1">
-                                                    <span class="fas fa-flask text-warning"></span>
-                                                    <h6 class="fw-bold text-body-emphasis mb-0 fs-9">Execution</h6>
-                                                </div>
-                                                <span class="badge badge-phoenix badge-phoenix-warning">MANUAL LAB RUN</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> -->
-
-                                <h6 class="fw-bold text-body-emphasis mb-2">JSON File Structure</h6>
-                                <p class="text-body-tertiary fs-9 mb-3">Your JSON file must be an array of command objects with the following structure.</p>
-
-                                <div class="row g-3 mb-5">
-                                    <div class="col-12 col-md-6 d-flex align-items-center">
-                                        <pre class="bg-light text-body-secondary rounded-3 p-3 mb-0 fs-8 w-100" style="overflow-x:auto; font-weight: 300;">{
-  "time": &lt;number&gt;,
-  "command": "&lt;string&gt;",
-  "value": "&lt;string|number&gt;"
-}</pre>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <ul class="list-unstyled fs-9 mb-0">
-                                            <li class="d-flex gap-2 mb-3">
-                                                <span class="fas fa-circle fs-11 text-body-tertiary mt-2"></span>
-                                                <div>
-                                                    <span class="fw-semibold text-body-emphasis d-block">time</span>
-                                                    <span class="text-body-tertiary">Time in seconds (s) from the start of the experiment. Must be a non-negative number and strictly increasing.</span>
-                                                </div>
-                                            </li>
-                                            <li class="d-flex gap-2 mb-3">
-                                                <span class="fas fa-circle fs-11 text-body-tertiary mt-2"></span>
-                                                <div>
-                                                    <span class="fw-semibold text-body-emphasis d-block">command</span>
-                                                    <span class="text-body-tertiary">The command to execute.</span>
-                                                </div>
-                                            </li>
-                                            <li class="d-flex gap-2 mb-0">
-                                                <span class="fas fa-circle fs-11 text-body-tertiary mt-2"></span>
-                                                <div>
-                                                    <span class="fw-semibold text-body-emphasis d-block">value</span>
-                                                    <span class="text-body-tertiary">The value associated with the command. Type depends on the command.</span>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
+                            <div class="d-flex align-items-start gap-2 mb-4">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-shield-halved"></span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Maximum size</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">10 MB</p>
                                 </div>
-
-                                <h6 class="fw-bold text-body-emphasis mb-2">Commands Reference</h6>
-                                <p class="text-body-tertiary fs-9 mb-3">The following commands are supported in the experiment configuration.</p>
-
-                                <div class="mb-6">
-                                    <table class="table table-sm fs-9 mb-0" style="table-layout: fixed; word-break: break-word;">
-                                        <thead>
-                                            <tr class="text-body-tertiary text-uppercase fs-10">
-                                                <th style="width: 22%;">Command</th>
-                                                <th style="width: 33%;">Description</th>
-                                                <th style="width: 45%;">Allowed Values / Notes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><span class="badge badge-phoenix badge-phoenix-info">set_control_mode</span></td>
-                                                <td class="text-body-tertiary pe-3">Selects the control strategy of the electrolyzer.</td>
-                                                <td class="text-body-tertiary ps-1">
-                                                    <span class="badge badge-phoenix badge-phoenix-secondary">amp</span> &rarr; Current mode (A)<br>
-                                                    <span class="badge badge-phoenix badge-phoenix-secondary">watt</span> &rarr; Power mode (W)
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><span class="badge badge-phoenix badge-phoenix-info">set_regen_mode</span></td>
-                                                <td class="text-body-tertiary pe-3">Defines dryer regeneration behavior.</td>
-                                                <td class="text-body-tertiary ps-1">
-                                                    <span class="badge badge-phoenix badge-phoenix-secondary">instant</span> &rarr; Start regeneration as soon as the column is saturated.<br>
-                                                    <span class="badge badge-phoenix badge-phoenix-secondary">next</span> &rarr; Regenerate the column at the next start.
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><span class="badge badge-phoenix badge-phoenix-info">change_setpoint</span></td>
-                                                <td class="text-body-tertiary pe-3">Changes the operating setpoint.</td>
-                                                <td class="text-body-tertiary ps-1">
-                                                    In amp mode: 7.5&ndash;145 A<br>
-                                                    In watt mode: 500&ndash;14000 W
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {% include "digitaltwins/partials/dt_sample_json.html" with heading="Sample JSON" subtitle="A minimal example of the expected structure." sample_json=sample_json %}
-
                             </div>
+
+                            <a href="{% url 'ber-hydrogen-documentation' %}" class="btn btn-outline-primary w-100 d-flex align-items-center text-start gap-2 mb-3 ps-0">
+                                <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-circle-question"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 fs-9">Need help?</h6>
+                                    <p class="fs-9 mb-0 fw-light">See the documentation for file structure, available commands and examples.</p>
+                                </div>
+                                <span class="fas fa-chevron-right fs-10 flex-shrink-0"></span>
+                            </a>
+
+                            <!-- Submission -->
+                            <div class="mb-4" id="submission-card-body">
+                                <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 mb-0" id="submit-request-btn" disabled>
+                                    <span class="fas fa-paper-plane"></span>Submit Experiment Request
+                                </button>
+                            </div>
+
+                            <a href="#" id="download-example-json" class="d-inline-flex align-items-center gap-2 fs-9 fw-semibold text-decoration-none">
+                                Download Example JSON<span class="fas fa-download"></span>
+                            </a>
+                            <pre id="example-json-source" hidden>{{ sample_json }}</pre>
+
                         </div>
-
                     </div>
 
                 </div>
+
             </div>
         </div>
 
+    </div>
     {% include "core/footer.html" %}
 </div>
 {% endblock content %}
@@ -515,16 +327,19 @@
 
     bindSubmitButton();
 
-    // Copy sample JSON
-    var copySampleBtn = document.getElementById('copy-sample-json');
-    if (copySampleBtn) {
-        copySampleBtn.addEventListener('click', function () {
-            var text = document.getElementById('sample-json').textContent;
-            navigator.clipboard.writeText(text).then(function () {
-                var original = copySampleBtn.innerHTML;
-                copySampleBtn.innerHTML = '<span class="fas fa-check"></span>Copied';
-                setTimeout(function () { copySampleBtn.innerHTML = original; }, 1500);
-            });
+    // Download example JSON
+    var downloadExampleBtn = document.getElementById('download-example-json');
+    if (downloadExampleBtn) {
+        downloadExampleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var text = document.getElementById('example-json-source').textContent;
+            var blob = new Blob([text], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'experiment-example.json';
+            link.click();
+            URL.revokeObjectURL(url);
         });
     }
 })();

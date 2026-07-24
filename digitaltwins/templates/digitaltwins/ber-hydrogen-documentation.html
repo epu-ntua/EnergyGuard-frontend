@@ -1,0 +1,143 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Experiment JSON Documentation - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
+            <li class="breadcrumb-item active">Documentation</li>
+          </ol>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+            <div>
+                <h2 class="fw-bold text-body-emphasis mb-2">BER Experiment JSON Documentation</h2>
+                <p class="text-body-tertiary fs-8-5 mb-0">File structure, available commands and an example configuration for the PEM electrolyzer experiment request.</p>
+            </div>
+            <a href="{% url 'ber-hydrogen-dt' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 flex-shrink-0">
+                <span class="fas fa-arrow-left"></span>Back to Experiment Request
+            </a>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-6 d-flex">
+                <div class="card w-100">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold text-body-emphasis mb-2">JSON File Structure</h5>
+                        <p class="text-body-tertiary fs-8-5 mb-3">Your JSON file must be an array of command objects with the following structure.</p>
+
+                        <pre class="bg-dark text-light rounded-3 p-3 mb-3 fs-8-5" style="overflow-x:auto;">{
+  "time": &lt;number&gt;,
+  "command": "&lt;string&gt;",
+  "value": "&lt;string|number&gt;"
+}</pre>
+
+                        <ul class="list-unstyled fs-8-5 mb-0">
+                            <li class="d-flex gap-2 mb-3">
+                                <span class="fas fa-circle fs-11 text-primary mt-2"></span>
+                                <div>
+                                    <span class="fw-semibold text-body-emphasis d-block">time</span>
+                                    <span class="text-body-tertiary">Time in seconds (s) from the start of the experiment. Must be non-negative and strictly increasing.</span>
+                                </div>
+                            </li>
+                            <li class="d-flex gap-2 mb-3">
+                                <span class="fas fa-circle fs-11 text-primary mt-2"></span>
+                                <div>
+                                    <span class="fw-semibold text-body-emphasis d-block">command</span>
+                                    <span class="text-body-tertiary">The command to execute.</span>
+                                </div>
+                            </li>
+                            <li class="d-flex gap-2 mb-0">
+                                <span class="fas fa-circle fs-11 text-primary mt-2"></span>
+                                <div>
+                                    <span class="fw-semibold text-body-emphasis d-block">value</span>
+                                    <span class="text-body-tertiary">The value associated with the command. Type depends on the command.</span>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6 d-flex">
+                <div class="card w-100">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold text-body-emphasis mb-2">Commands Reference</h5>
+                        <p class="text-body-tertiary fs-8-5 mb-3">The following commands are supported in the experiment configuration.</p>
+
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <span class="badge badge-phoenix badge-phoenix-info mb-2">SET_CONTROL_MODE</span>
+                                <p class="text-body-tertiary fs-8-5 mb-1">Selects the control strategy of the electrolyzer.</p>
+                                <p class="fs-8-5 mb-0"><span class="fw-semibold text-body-emphasis">AMP</span> <span class="text-body-tertiary">&rarr; Current mode (A)</span> &middot; <span class="fw-semibold text-body-emphasis">WATT</span> <span class="text-body-tertiary">&rarr; Power mode (W)</span></p>
+                            </div>
+                            <hr class="my-0">
+                            <div>
+                                <span class="badge badge-phoenix badge-phoenix-info mb-2">SET_REGEN_MODE</span>
+                                <p class="text-body-tertiary fs-8-5 mb-1">Defines dryer regeneration behavior.</p>
+                                <p class="fs-8-5 mb-0"><span class="fw-semibold text-body-emphasis">INSTANT</span> <span class="text-body-tertiary">&rarr; Start as soon as saturated</span> &middot; <span class="fw-semibold text-body-emphasis">NEXT</span> <span class="text-body-tertiary">&rarr; Regenerate at next start</span></p>
+                            </div>
+                            <hr class="my-0">
+                            <div>
+                                <span class="badge badge-phoenix badge-phoenix-info mb-2">CHANGE_SETPOINT</span>
+                                <p class="text-body-tertiary fs-8-5 mb-1">Changes the operating setpoint.</p>
+                                <p class="fs-8-5 mb-0"><span class="text-body-tertiary">Amp mode: 7.5&ndash;145 A &middot; Watt mode: 500&ndash;14000 W</span></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-start">
+            <div class="col-12 col-lg-6 d-flex">
+                <div class="card w-100">
+                    <div class="card-body p-4">
+                        {% include "digitaltwins/partials/dt_sample_json.html" with heading="Sample JSON" subtitle="A minimal example of the expected structure." sample_json=sample_json %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="alert alert-subtle-info rounded-3 d-flex align-items-start gap-2 mb-0 fs-8-5 p-4" role="alert">
+                    <span class="fas fa-circle-info mt-1"></span>
+                    <span>All validation checks (format, ordering, ranges, duration) run automatically after upload &mdash; invalid files are rejected with details on the failing rule.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    // Copy sample JSON
+    var copySampleBtn = document.getElementById('copy-sample-json');
+    if (copySampleBtn) {
+        copySampleBtn.addEventListener('click', function () {
+            var text = document.getElementById('sample-json').textContent;
+            navigator.clipboard.writeText(text).then(function () {
+                var original = copySampleBtn.innerHTML;
+                copySampleBtn.innerHTML = '<span class="fas fa-check"></span>Copied';
+                setTimeout(function () { copySampleBtn.innerHTML = original; }, 1500);
+            });
+        });
+    }
+})();
+</script>
+{% endblock scripts %}

@@ -9,6 +9,7 @@ urlpatterns = [
     path('cea-hydrogen/ai-scenario-generation/', views.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
     path('cea-hydrogen/dt-simulation/', views.cea_dt_simulation, name='cea-dt-simulation'),
     path('ber-hydrogen/ber-hydrogen-dt/', views.ber_hydrogen_dt, name='ber-hydrogen-dt'),
+    path('ber-hydrogen/ber-hydrogen-dt/documentation/', views.ber_hydrogen_documentation, name='ber-hydrogen-documentation'),
     path('ber-hydrogen/ber-hydrogen-results/', views.ber_hydrogen_results, name='ber-hydrogen-results'),
     path('cartif-hydrogen/cartif-hydrogen-dt/', views.cartif_hydrogen_dt, name='cartif-hydrogen-dt'),
     path('antrodoco/engreen-antrodoco-dt/', views.engreen_antrodoco_dt, name='engreen-antrodoco-dt'),
