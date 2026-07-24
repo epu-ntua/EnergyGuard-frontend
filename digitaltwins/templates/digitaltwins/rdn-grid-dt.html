@@ -1,0 +1,496 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Grid Simulation - RDN - Digital Twins{% endblock %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
+<style>
+    .chart-placeholder {
+        background: var(--phoenix-body-bg);
+        border: 2px dashed var(--phoenix-border-color);
+        border-radius: .75rem;
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: .5rem;
+    }
+    .dt-card-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .rdn-asset-row {
+        border: 1px solid var(--phoenix-border-color);
+        border-radius: .75rem;
+        padding: 1rem;
+        margin-bottom: .75rem;
+    }
+    .rdn-asset-row textarea {
+        font-family: var(--phoenix-font-monospace, monospace);
+        font-size: .8rem;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'rdn-grid' %}">Portuguese Grid</a></li>
+                <li class="breadcrumb-item active">Grid Simulation</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/RD-Nester - icon.png" logo_alt="RDN" title="Grid Simulation" %}
+        </div>
+
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The RDN node provides a <strong class="text-body-emphasis">Digital Twin of a large-scale electricity grid</strong> with a high share of renewables, capable of RMS and EMT simulations as well as hardware-in-the-loop simulation with IEDs. Configure a use case, a grid section, and power setpoints for each asset, and the Digital Twin returns instantaneous voltage, current and frequency curves for every bus in the selected section.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#request-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a request <span class="fas fa-arrow-right"></span></a>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
+                                <!-- TODO: Replace with actual RDN node graph -->
+                                <img src="{% static 'assets/img/digital_twins/rdn graph.png' %}" alt="RDN grid digital twin" class="img-fluid rounded-3 w-100">
+                            </div>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">One simulation, full grid dynamics</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">The Digital Twin runs your configured use case, grid section and power setpoints through EMT and RMS models, returning instantaneous voltage, current and frequency curves for every bus in the selected section.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Select a Use Case</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Choose an automatic-interaction use case, or continue a previous request.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Configure</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Pick a grid section and define each asset's power setpoints over time.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Simulate</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">The Digital Twin runs the grid scenario for the selected section.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Results</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Explore per-bus voltage, current and frequency curves, or export them.</p>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-bolt"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Use case &amp; grid section</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Pick one of the automatic-interaction use cases (market results validation, voltage control, governor and load-frequency control), and the grid section to simulate &mdash; one of the Digital Twin's 7 grid sections, or the full grid.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-plug"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Assets</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Each asset connected to the grid section, identified by its bus type (PV, Wind, Small Hydro, Biomass, Large Hydro, Gas or Load).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-chart-line"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Power setpoints</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Active/reactive power (MW/MVAr) for each asset at up to 100 shared setpoint timestamps. The platform derives the exact timestamps for you from a start time, resolution and count.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Configuration</h3>
+        </div>
+
+        <!-- ── Mode toggle ─────────────────────────────────────────────────── -->
+        <div id="request-configuration" class="d-flex align-items-center gap-0 mb-4 border rounded-3 p-1" style="width:fit-content;">
+            <button type="button" class="btn btn-sm btn-primary px-4 py-2 rounded-2" id="toggle-new-request" data-mode="new">
+                New request
+            </button>
+            <button type="button" class="btn btn-sm btn-phoenix-secondary px-4 py-2 rounded-2" id="toggle-follow-request" data-mode="follow">
+                Continue previous request
+            </button>
+        </div>
+
+        <!-- ── New request panel ──────────────────────────────────────────────── -->
+        <div id="new-request-panel">
+
+            <!-- Use case, Grid section & Setpoint timestamps -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">1. Use case</h6>
+                            <p class="text-body-tertiary fs-9 mb-3">Select the use case to configure. Automatic-interaction use cases run immediately; the others require direct contact with the R&amp;D Nester team.</p>
+                            <select class="form-select" id="use-case-select">
+                                {% for use_case_key, use_case_label in use_cases.items %}
+                                <option value="{{ use_case_key }}">{{ use_case_label }}</option>
+                                {% endfor %}
+                                {% for item in locked_use_cases %}
+                                <option value="{{ item.label }}" disabled>{{ item.label }} (need manual config)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">2. Grid section</h6>
+                            <p class="text-body-tertiary fs-9 mb-3">Focus on one grid area to reduce grid size and speed up the experiment, or use the full grid.</p>
+                            <select class="form-select" id="grid-section-select">
+                                {% for section in grid_sections %}
+                                <option value="{{ section }}">{% if section == 'All' %}Full grid (All sections){% else %}Section {{ section }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">3. Setpoint timestamps</h6>
+                            <p class="text-body-tertiary fs-9 mb-3">Every asset shares the same setpoint timestamps. Choose a start time, a resolution, and how many setpoints to submit (max {{ max_setpoints }}).</p>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="setpoint-start-datetime">Start (UTC)</label>
+                                <input type="datetime-local" class="form-control" id="setpoint-start-datetime">
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold" for="setpoint-resolution-select">Resolution</label>
+                                    <select class="form-select" id="setpoint-resolution-select">
+                                        <option value="100">100 ms</option>
+                                        <option value="1000">1 second</option>
+                                        <option value="60000" selected>1 minute</option>
+                                        <option value="900000">15 minutes</option>
+                                        <option value="3600000">1 hour</option>
+                                        <option value="86400000">1 day</option>
+                                        <option value="custom">Custom&hellip;</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold" for="setpoint-count">Number of setpoints</label>
+                                    <input type="number" class="form-control" id="setpoint-count" min="1" max="{{ max_setpoints }}" value="5">
+                                </div>
+                            </div>
+                            <div class="mb-3 d-none" id="setpoint-resolution-custom-wrapper">
+                                <label class="form-label fw-semibold" for="setpoint-resolution-custom-seconds">Seconds</label>
+                                <input type="number" class="form-control" id="setpoint-resolution-custom-seconds" min="1" value="60">
+                            </div>
+
+                            <div class="bg-body rounded-3 p-3">
+                                <span class="text-body-tertiary fs-10 d-block mb-1">Generated timestamps (UTC)</span>
+                                <div class="fs-9-5 text-body-emphasis" id="setpoint-preview-list">Set a start time to preview timestamps.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assets -->
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis fs-8 mb-1">4. Assets</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Add each asset connected to the grid section, its type, and its power setpoints. Enter one line per setpoint, as <code>MW</code>, <code>,MVAr</code>, or <code>MW,MVAr</code>. Max {{ max_assets }} assets.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3" id="assets-table-body"></div>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2 mt-3" id="add-asset-btn">
+                        <span class="fas fa-plus"></span>Add asset
+                    </button>
+                    <div class="text-danger fs-9 mt-2 d-none" id="assets-error"></div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4" id="run-rdn-simulate-btn" disabled>
+                    Run simulation &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Continue previous request panel ────────────────────────────────── -->
+        <div id="follow-request-panel" class="d-none">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-body-emphasis fs-8 mb-1">Continue a previous request</h6>
+                    <p class="text-body-tertiary fs-9 mb-3">Enter the requestId of a previous run from this session. Its grid section and asset list will be reused; you only need to provide new power setpoints.</p>
+                    <div class="d-flex align-items-end gap-2" style="max-width:24rem;">
+                        <div class="flex-grow-1">
+                            <label class="form-label fw-semibold" for="follows-request-id-input">Request ID</label>
+                            <input type="number" class="form-control" id="follows-request-id-input" min="1">
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" id="follows-lookup-btn">Load</button>
+                    </div>
+                    <div class="text-danger fs-9 mt-2 d-none" id="follows-not-found">No request found with that ID in the last hour. Start a new request instead.</div>
+                </div>
+            </div>
+
+            <div id="follows-preview" class="d-none">
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis fs-8 mb-3">Resolved configuration</h6>
+                        <div class="row g-3 mb-4 fs-9">
+                            <div class="col-6 col-md-3">
+                                <span class="text-body-tertiary d-block mb-1">Grid section</span>
+                                <span class="fw-semibold text-body-emphasis" id="follows-grid-section">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <p class="text-body-tertiary fs-9 mb-3">New setpoint timestamps:</p>
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold" for="follow-setpoint-start-datetime">Start (UTC)</label>
+                                <input type="datetime-local" class="form-control" id="follow-setpoint-start-datetime">
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-semibold" for="follow-setpoint-resolution-select">Resolution</label>
+                                <select class="form-select" id="follow-setpoint-resolution-select">
+                                    <option value="100">100 ms</option>
+                                    <option value="1000">1 second</option>
+                                    <option value="60000" selected>1 minute</option>
+                                    <option value="900000">15 minutes</option>
+                                    <option value="3600000">1 hour</option>
+                                    <option value="86400000">1 day</option>
+                                    <option value="custom">Custom&hellip;</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-2 d-none" id="follow-setpoint-resolution-custom-wrapper">
+                                <label class="form-label fw-semibold" for="follow-setpoint-resolution-custom-seconds">Seconds</label>
+                                <input type="number" class="form-control" id="follow-setpoint-resolution-custom-seconds" min="1" value="60">
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-semibold" for="follow-setpoint-count">Number of setpoints</label>
+                                <input type="number" class="form-control" id="follow-setpoint-count" min="1" max="{{ max_setpoints }}" value="5">
+                            </div>
+                        </div>
+                        <div class="bg-body rounded-3 p-3 mb-4">
+                            <span class="text-body-tertiary fs-10 d-block mb-1">Generated timestamps (UTC)</span>
+                            <div class="fs-9 text-body-emphasis" id="follow-setpoint-preview-list">Set a start time to preview timestamps.</div>
+                        </div>
+
+                        <p class="text-body-tertiary fs-9 mb-2">New power setpoints per asset (type is inherited from the previous request):</p>
+                        <div id="follow-assets-table-body"></div>
+                        <div class="text-danger fs-9 mt-2 d-none" id="follow-assets-error"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4" id="run-rdn-follow-btn" disabled>
+                        Run simulation &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset row template (cloned by JS) -->
+        <template id="asset-row-template">
+            <div class="rdn-asset-row">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="fw-bold text-body-emphasis fs-9 mb-0 asset-row-label">Asset</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-asset-btn"><span class="fas fa-trash"></span></button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label fw-semibold fs-9">Bus type</label>
+                        <select class="form-select form-select-sm asset-type-select">
+                            <option value="" disabled selected>Select&hellip;</option>
+                            {% for asset_type in asset_types %}
+                            <option value="{{ asset_type }}">{{ asset_type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-9">
+                        <label class="form-label fw-semibold fs-9">Power setpoints (one line per setpoint: <code>MW</code>, <code>,MVAr</code>, or <code>MW,MVAr</code>)</label>
+                        <textarea class="form-control form-control-sm asset-points-textarea" rows="4" placeholder="65&#10;25&#10;40,15"></textarea>
+                        <span class="form-text fs-10 asset-row-hint">&nbsp;</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ── Loading state ───────────────────────────────────────────────── -->
+        <div id="loading-panel" class="d-none mb-4 mt-4">
+            <div class="card">
+                <div class="card-body p-4 d-flex align-items-center gap-3">
+                    <div class="spinner-border text-primary flex-shrink-0" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-body-emphasis mb-0">Running the grid simulation&hellip;</h6>
+                        <p class="text-body-tertiary fs-9 mb-0">This may take a few moments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Results section ─────────────────────────────────────────────── -->
+        <div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Simulation Results</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
+                        <span class="fas fa-file-code"></span>Download JSON
+                    </button>
+                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
+                        <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
+                <span><span class="fas fa-hashtag me-1 text-body-tertiary"></span>Request ID: <span class="fw-semibold text-body-emphasis" id="res-request-id">&mdash;</span></span>
+                <span class="text-body-tertiary">&middot;</span>
+                <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run at: <span class="fw-semibold text-body-emphasis" id="res-timestamp">&mdash;</span></span>
+            </div>
+
+            <div class="alert alert-subtle-warning rounded-3 py-2 fs-9 mb-4" role="alert">
+                <span class="fas fa-flask me-2"></span>These curves are synthetic placeholder data generated by the platform, not RDN's physics engine, while the live integration is being connected.
+            </div>
+
+            <!-- Selectors -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold" for="setpoint-selector">Setpoint</label>
+                    <select class="form-select" id="setpoint-selector"></select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold" for="bus-selector">Bus</label>
+                    <select class="form-select" id="bus-selector"></select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold" for="phase-select">Phase</label>
+                    <select class="form-select" id="phase-select">
+                        <option value="phase_a">Phase A</option>
+                        <option value="phase_b">Phase B</option>
+                        <option value="phase_c">Phase C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis mb-3">Phase Voltage &amp; Current</h6>
+                            <div id="phase-chart" style="width:100%;height:340px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis mb-3">Grid Frequency</h6>
+                            <div id="frequency-chart" style="width:100%;height:260px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Used -->
+            <div class="card">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                        <span class="fas fa-list-ul text-body-tertiary"></span>Configuration Used
+                    </h6>
+                    <div class="row g-3 fs-9">
+                        <div class="col-12 col-md-4">
+                            <dl class="row mb-0">
+                                <dt class="col-6 text-body-tertiary fw-normal">Grid Section</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-grid-section">&mdash;</dd>
+                                <dt class="col-6 text-body-tertiary fw-normal">Use Case</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="sum-use-case">&mdash;</dd>
+                            </dl>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <span class="text-body-tertiary fw-bold d-block mb-2 text-uppercase fs-10 fw-semibold">Assets</span>
+                            <div id="sum-assets-list" class="fs-9 text-body-secondary">&mdash;</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+window.RDN_GRID_CONFIG = {
+    simulateUrl: "{% url 'rdn-grid-simulate' %}",
+    followLookupUrl: "{% url 'rdn-grid-follow' %}",
+    saveResultUrl: "{% url 'dt-save-result' %}",
+    maxAssets: {{ max_assets }},
+    maxSetpoints: {{ max_setpoints }},
+    userId: "{{ rdn_user_id|escapejs }}",
+    userOrganisation: "{{ rdn_user_organisation|escapejs }}"
+};
+</script>
+<script src="{% static 'digitaltwins/rdn-grid-dt.js' %}" defer></script>
+{% endblock scripts %}

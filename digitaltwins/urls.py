@@ -14,6 +14,9 @@ urlpatterns = [
     path('antrodoco/engreen-antrodoco-dt/', views.engreen_antrodoco_dt, name='engreen-antrodoco-dt'),
     path('antrodoco/engreen-antrodoco-dt/simulate/', views.engreen_pv_simulate, name='engreen-pv-simulate'),
     path('antrodoco/engreen-antrodoco-dt/stations/', views.engreen_stations_api, name='engreen-stations-api'),
+    path('rdn-grid/rdn-grid-dt/', views.rdn_grid_dt, name='rdn-grid-dt'),
+    path('rdn-grid/rdn-grid-dt/simulate/', views.rdn_grid_simulate, name='rdn-grid-simulate'),
+    path('rdn-grid/rdn-grid-dt/follow/', views.rdn_grid_follow_lookup, name='rdn-grid-follow'),
     path('results/save/', views.dt_save_result, name='dt-save-result'),
     path('<slug:slug>/', views.digitaltwins_detail, name='digitaltwins-detail'),
 ]

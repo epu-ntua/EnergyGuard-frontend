@@ -31,14 +31,14 @@
 
         <!-- Hero -->
         <div class="row g-4 align-items-start">
-            
+
             <div class="col-12 col-lg-6">
 
                 <p class="text-body-tertiary fs-8-5 mb-3">The CARTIF Hydrogen Node provides a virtual testing environment for hydrogen and renewable energy systems. It allows users to safely explore, evaluate, and optimize energy management strategies without affecting real equipment.</p>
                 <p class="text-body-tertiary fs-8-5 mb-3">The service is based on a real hybrid energy facility that combines hydrogen production, hydrogen storage, batteries, thermal storage, and heat recovery technologies. Through a Digital Twin of the installation, users can simulate different operating conditions, assess system performance, and test AI-driven control strategies before deploying them in real-world environments.</p>
                 <p class="text-body-tertiary fs-8-5 mb-3">The platform helps users understand how renewable energy, hydrogen technologies, and energy storage can work together to improve efficiency, flexibility, and sustainability. It supports scenario analysis, performance benchmarking, and the evaluation of advanced AI solutions for forecasting, optimization, and energy management.</p>
 
-                
+
 
                 <p class="text-body-tertiary fs-8-5 mb-0">The CARTIF Hydrogen Node is particularly valuable for researchers, AI developers, energy technology providers, utilities, and industrial users seeking to accelerate innovation and reduce the risks associated with deploying advanced energy solutions.</p>
                 <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Key benefits include:</h6>
@@ -82,7 +82,7 @@
                             <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
                             <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
 
-                            <!-- TODO: Browse DT-Specific datasets -->
+                            <!-- Datasets -->
                             <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
                                 <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
                                     <span class="fas fa-database"></span>
@@ -93,10 +93,21 @@
                                 </div>
                             </a>
 
+                            <!-- Run Simulation -->
+                            <a href="{% url 'cartif-hydrogen-dt' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-bolt"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Run Simulation</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Configure the site location and energy asset sizing, then run the hydrogen Digital Twin to view predicted results.</p>
+                                </div>
+                            </a>
+
                         </div>
                     </div>
                 </div>
-            </div>  
+            </div>
         </div>
 
 
