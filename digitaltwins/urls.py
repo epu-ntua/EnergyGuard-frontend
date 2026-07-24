@@ -5,7 +5,6 @@ urlpatterns = [
     path('riga/rea-riga-dt/', views.rea_riga_dt, name='riga-map'),
     path('riga/rea-riga-dt/buildings/', views.rea_riga_buildings_api, name='rea-riga-buildings-api'),
     path('list/', views.digitaltwins_list, name='digitaltwins-list'),
-    path('cea-hydrogen/cea-hydrogen-dt/', views.cea_node_workspace, name='cea-node-workspace'),
     path('cea-hydrogen/ai-scenario-generation/', views.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
     path('cea-hydrogen/dt-simulation/', views.cea_dt_simulation, name='cea-dt-simulation'),
     path('ber-hydrogen/ber-hydrogen-dt/', views.ber_hydrogen_dt, name='ber-hydrogen-dt'),

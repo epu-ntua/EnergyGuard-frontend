@@ -672,12 +672,6 @@ def digitaltwins_list(request):
 
 
 @login_required
-def cea_node_workspace(request):
-    return _dt_render(request, 'digitaltwins/cea-hydrogen-dt.html',
-                      validation_checks=CEA_VALIDATION_CHECKS, sample_json=CEA_SAMPLE_JSON)
-
-
-@login_required
 def cea_ai_scenario_generation(request):
     return _dt_render(request, 'digitaltwins/cea-ai-scenario-generation.html')
 
