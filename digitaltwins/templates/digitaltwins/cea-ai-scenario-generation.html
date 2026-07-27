@@ -1,4 +1,4 @@
-{% extends "core/authenticated-base.html" %}
+﻿{% extends "core/authenticated-base.html" %}
 {% load static %}
 
 {% block title %}AI Scenario Generation - Digital Twins{% endblock %}
@@ -15,75 +15,197 @@
           </ol>
         </nav>
 
-        <div class="row g-4">
+        <!-- Header + About -->
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="AI Scenario Generation" %}
+        </div>
 
-            <!-- Main column -->
-            <div class="col-12">
-
-                <!-- Header -->
-                {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/cea-logo.png" logo_alt="CEA" title="AI Scenario Generation" description="Generate a compatible SOEC scenario file from simple, high-level inputs." %}
-
-                <div class="card">
-                    <div class="card-body p-4">
-
-                        <h6 class="fw-bold text-body-emphasis mb-3">1. Provide inputs</h6>
-
-                        <form id="scenario-form">
-                            <div class="row g-3">
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="test-duration">
-                                        Duration of the test
-                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="How long the test should run for."></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" min="1" max="240" class="form-control scenario-required" id="test-duration" name="test_duration" placeholder="24">
-                                        <select class="form-select" name="test_duration_unit" style="max-width:7rem;">
-                                            <option value="hours" selected>hours</option>
-                                        </select>
-                                    </div>
-                                    <span class="form-text fs-10">e.g. 1 &ndash; 240 hours</span>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="hydrogen-quantity">
-                                        Hydrogen quantity to produce
-                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Target amount of hydrogen to produce during the test."></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" min="1" max="10000" class="form-control scenario-required" id="hydrogen-quantity" name="hydrogen_quantity" placeholder="150">
-                                        <select class="form-select" name="hydrogen_quantity_unit" style="max-width:7rem;">
-                                            <option value="kg_h2" selected>kg H&#8322;</option>
-                                        </select>
-                                    </div>
-                                    <span class="form-text fs-10">e.g. 1 &ndash; 10,000 kg H&#8322;</span>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
-                                        Current to apply
-                                        <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Electrical current applied to the electrolysis stack."></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" min="10" max="2000" class="form-control scenario-required" id="applied-current" name="applied_current" placeholder="320">
-                                        <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
-                                            <option value="amps" selected>A</option>
-                                        </select>
-                                    </div>
-                                    <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center gap-3 mt-4">
-                                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="generate-scenario-btn" disabled>
-                                    <span class="fas fa-wand-magic-sparkles"></span>Generate Scenario
-                                </button>
-                                <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in all fields to enable the Generate button.</span>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">Generate a compatible SOEC <strong class="text-body-emphasis">scenario file</strong> from a few high-level targets. An AI model translates the duration, hydrogen quantity and applied current you specify into a complete set of time-series signals and parameters, ready to run in the <strong class="text-body-emphasis">DT Scenario Simulation</strong> node.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#scenario-generation" class="btn btn-primary d-inline-flex align-items-center gap-2">Generate a scenario <span class="fas fa-arrow-right"></span></a>
             </div>
 
+            <div class="row">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-3 p-lg-4 d-flex flex-column justify-content-center">
+                                <div class="rounded-3 overflow-hidden" style="background:#1e1e1e;">
+                                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="border-color:rgba(255,255,255,.08) !important;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#ff5f56;"></span>
+                                            <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#ffbd2e;"></span>
+                                            <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#27c93f;"></span>
+                                            <span class="fs-10 ms-2" style="color:rgba(255,255,255,.55);">soec-scenario.json</span>
+                                        </div>
+                                        <span class="badge bg-primary d-inline-flex align-items-center gap-1 fs-10">
+                                            <span class="fas fa-wand-magic-sparkles"></span>AI Generated
+                                        </span>
+                                    </div>
+                                    <pre class="mb-0 p-3 fs-9" style="color:#d4d4d4;overflow-x:auto;white-space:pre;"><code>{
+  <span style="color:#9cdcfe;">"timeStamp"</span>: [0, 60, 120, 180, 240],
+  <span style="color:#9cdcfe;">"current"</span>: [-50, -60, -60, -40, -20],
+  <span style="color:#9cdcfe;">"voltageCell"</span>: [<span style="color:#b5cea8;">1.290</span>, <span style="color:#b5cea8;">1.292</span>, <span style="color:#b5cea8;">1.291</span>, <span style="color:#b5cea8;">1.291</span>, <span style="color:#b5cea8;">1.291</span>],
+  <span style="color:#9cdcfe;">"temperatureHotbox"</span>: [750, 752, 751, 753, 751],
+  <span style="color:#9cdcfe;">"steamConversion"</span>: [<span style="color:#b5cea8;">0.85</span>, <span style="color:#b5cea8;">0.86</span>, <span style="color:#b5cea8;">0.87</span>, <span style="color:#b5cea8;">0.88</span>, <span style="color:#b5cea8;">0.89</span>],
+  <span style="color:#9cdcfe;">"coef_degradPerf[1]"</span>: <span style="color:#b5cea8;">1.00</span>
+}</code></pre>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">A few numbers, a full scenario</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">No need to hand-craft time-series signals or degradation coefficients. Describe the test at a high level and the AI model produces a scenario file compatible with the SOEC Digital Twin.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Provide inputs</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Set the test duration, hydrogen quantity and applied current.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Generate</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">The AI model builds a complete scenario matching these targets.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Review</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Inspect the generated signals and scalar parameters.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Use</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Download the file or run it directly in DT Scenario Simulation.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What you'll need to provide -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-clock"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Test duration</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">How long the simulated test should run for, between 1 and 240 hours.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-vial"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Hydrogen quantity</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">The target amount of hydrogen to produce during the test, in kg H&#8322;.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 p-4 p-lg-5">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-bolt"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Applied current</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">The electrical current applied to the electrolysis stack, in Amps.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Scenario Generation</h3>
+        </div>
+
+        <!-- Content -->
+        <div class="card" id="scenario-generation">
+            <div class="card-body p-4 p-lg-5" id="scenario-card-body">
+
+                <h5 class="fw-bold text-body-emphasis mb-2">Provide Inputs</h5>
+                <p class="text-body-tertiary fs-8-5 mb-3">Fill in the fields below to generate a compatible SOEC scenario file.</p>
+
+                <form id="scenario-form">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold d-flex align-items-center gap-1" for="test-duration">
+                                Duration of the test
+                                <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="How long the test should run for."></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" min="1" max="240" class="form-control scenario-required" id="test-duration" name="test_duration" placeholder="24">
+                                <select class="form-select" name="test_duration_unit" style="max-width:7rem;">
+                                    <option value="hours" selected>hours</option>
+                                </select>
+                            </div>
+                            <span class="form-text fs-10">e.g. 1 &ndash; 240 hours</span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold d-flex align-items-center gap-1" for="hydrogen-quantity">
+                                Hydrogen quantity to produce
+                                <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Target amount of hydrogen to produce during the test."></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" min="1" max="10000" class="form-control scenario-required" id="hydrogen-quantity" name="hydrogen_quantity" placeholder="150">
+                                <select class="form-select" name="hydrogen_quantity_unit" style="max-width:7rem;">
+                                    <option value="kg_h2" selected>kg H&#8322;</option>
+                                </select>
+                            </div>
+                            <span class="form-text fs-10">e.g. 1 &ndash; 10,000 kg H&#8322;</span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
+                                Current to apply
+                                <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Electrical current applied to the electrolysis stack."></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" min="10" max="2000" class="form-control scenario-required" id="applied-current" name="applied_current" placeholder="320">
+                                <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
+                                    <option value="amps" selected>A</option>
+                                </select>
+                            </div>
+                            <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mt-4">
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="generate-scenario-btn" disabled>
+                            <span class="fas fa-wand-magic-sparkles"></span>Generate Scenario
+                        </button>
+                        <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in all fields to enable the Generate button.</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
     {% include "core/footer.html" %}
 </div>
@@ -92,27 +214,61 @@
 {% block scripts %}
 <script>
 (function () {
-    var requiredInputs = document.querySelectorAll('.scenario-required');
-    var generateBtn = document.getElementById('generate-scenario-btn');
-    var generateHint = document.getElementById('generate-scenario-hint');
+    var scenarioCardBody = document.getElementById('scenario-card-body');
+    var scenarioCardBodyDefault = scenarioCardBody.innerHTML;
 
-    function updateGenerateButton() {
-        var allFilled = Array.prototype.every.call(requiredInputs, function (input) {
-            return input.value.trim() !== '';
+    function bindForm() {
+        var requiredInputs = document.querySelectorAll('.scenario-required');
+        var generateBtn = document.getElementById('generate-scenario-btn');
+        var generateHint = document.getElementById('generate-scenario-hint');
+
+        function updateGenerateButton() {
+            var allFilled = Array.prototype.every.call(requiredInputs, function (input) {
+                return input.value.trim() !== '';
+            });
+            generateBtn.disabled = !allFilled;
+            generateHint.textContent = allFilled ? '' : 'Fill in all fields to enable the Generate button.';
+        }
+
+        requiredInputs.forEach(function (input) {
+            input.addEventListener('input', updateGenerateButton);
         });
-        generateBtn.disabled = !allFilled;
-        generateHint.textContent = allFilled ? '' : 'Fill in all fields to enable the Generate button.';
+
+        document.getElementById('scenario-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+            setTimeout(showSuccessState, 800);
+        });
     }
 
-    requiredInputs.forEach(function (input) {
-        input.addEventListener('input', updateGenerateButton);
-    });
+    function showSuccessState() {
+        scenarioCardBody.innerHTML =
+            '<div class="alert alert-subtle-success rounded-3 d-flex align-items-center gap-2 mb-3 fs-9 py-2" role="alert">' +
+                '<span class="fas fa-circle-check"></span>' +
+                '<span class="fw-semibold">Scenario generated successfully</span>' +
+            '</div>' +
+            '<dl class="row fs-9 mb-3">' +
+                '<dt class="col-5 text-body-tertiary">File</dt><dd class="col-7 fw-semibold text-body-emphasis mb-1">soec-scenario-generated.json</dd>' +
+                '<dt class="col-5 text-body-tertiary">Status</dt><dd class="col-7 fw-semibold text-body-emphasis mb-0">Ready</dd>' +
+            '</dl>' +
+            '<p class="text-body-tertiary fs-9 mb-3">Download the scenario file or run it directly in the DT Scenario Simulation node.</p>' +
+            '<div class="d-flex flex-wrap gap-2">' +
+                '<button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="download-scenario-btn"><span class="fas fa-download"></span>Download Scenario</button>' +
+                '<a href="{% url "cea-dt-simulation" %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2"><span class="fas fa-play"></span>Run in DT Simulation</a>' +
+                '<button type="button" class="btn btn-link text-decoration-none" id="generate-another-btn">Generate Another</button>' +
+            '</div>';
 
-    document.getElementById('scenario-form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
-    });
+        var generateAnotherBtn = document.getElementById('generate-another-btn');
+        if (generateAnotherBtn) {
+            generateAnotherBtn.addEventListener('click', function () {
+                scenarioCardBody.innerHTML = scenarioCardBodyDefault;
+                bindForm();
+            });
+        }
+    }
+
+    bindForm();
 })();
 </script>
 {% endblock scripts %}
