@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="content">
-    <div class="px-4 px-lg-6 pt-6 pb-9">
+    <div class="px-4 px-xl-6 pt-6 pb-9">
 
         <nav class="mb-3" aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
@@ -30,45 +30,88 @@
         <hr class="mb-5">
 
         <!-- Hero -->
-        <div class="row g-4 align-items-start">
 
-            <div class="col-12 col-lg-6">
+        <!-- TABS -->
+        <ul class="nav nav-pills gap-2 mb-4 dt-pill-tabs" id="cartifTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-5 py-2 fs-9 fw-semibold" id="cartif-overview-tab" data-bs-toggle="tab" data-bs-target="#cartif-tab-overview" type="button" role="tab" aria-controls="cartif-tab-overview" aria-selected="true">Overview</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-9 fw-semibold" id="cartif-benefits-tab" data-bs-toggle="tab" data-bs-target="#cartif-tab-benefits" type="button" role="tab" aria-controls="cartif-tab-benefits" aria-selected="false">Key Benefits</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-9 fw-semibold" id="cartif-usecases-tab" data-bs-toggle="tab" data-bs-target="#cartif-tab-usecases" type="button" role="tab" aria-controls="cartif-tab-usecases" aria-selected="false">Use Cases</button>
+            </li>
+        </ul>
 
-                <p class="text-body-tertiary fs-8-5 mb-3">The CARTIF Hydrogen Node provides a virtual testing environment for hydrogen and renewable energy systems. It allows users to safely explore, evaluate, and optimize energy management strategies without affecting real equipment.</p>
-                <p class="text-body-tertiary fs-8-5 mb-3">The service is based on a real hybrid energy facility that combines hydrogen production, hydrogen storage, batteries, thermal storage, and heat recovery technologies. Through a Digital Twin of the installation, users can simulate different operating conditions, assess system performance, and test AI-driven control strategies before deploying them in real-world environments.</p>
-                <p class="text-body-tertiary fs-8-5 mb-3">The platform helps users understand how renewable energy, hydrogen technologies, and energy storage can work together to improve efficiency, flexibility, and sustainability. It supports scenario analysis, performance benchmarking, and the evaluation of advanced AI solutions for forecasting, optimization, and energy management.</p>
+        <div class="row g-4 align-items-center">
 
-                <p class="text-body-tertiary fs-8-5 mb-0">The CARTIF Hydrogen Node is particularly valuable for researchers, AI developers, energy technology providers, utilities, and industrial users seeking to accelerate innovation and reduce the risks associated with deploying advanced energy solutions.</p>
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Key benefits include:</h6>
-                <ul class="list-unstyled mb-3">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Safe experimentation without risks to physical assets.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Evaluation of energy and hydrogen management strategies before deployment.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Comparison of alternative operating scenarios and control approaches.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Access to performance indicators related to efficiency, renewable energy utilization, flexibility, and hydrogen storage.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Validation of AI-based energy management solutions in a realistic environment.</span>
-                    </li>
-                </ul>
-
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-6">Use cases:</h6>
-                <p class="fs-8-5 text-body-tertiary mb-0 ">Extract Scenario Performance Indicators, Extract Operational Limits, Customise DT Energy Asset Scenarios, Re-parameterise Energy Assets </p>
-            </div>
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-xl-6">
                 <img src="{% static 'assets/img/digital_twins/DT_CARTIF updated.png' %}" alt="CARTIF Hydrogen Digital Twin Node" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
             </div>
+            <div class="col-12 col-xl-6 ps-xl-5">
+
+                <div class="tab-content" id="cartifTabContent">
+
+                    <!-- Overview -->
+                    <div class="tab-pane fade show active" id="cartif-tab-overview" role="tabpanel" aria-labelledby="cartif-overview-tab">
+                        <p class="text-body-tertiary fs-8-5 mb-3">The CARTIF Hydrogen Node provides a virtual testing environment for hydrogen and renewable energy systems. It allows users to safely explore, evaluate, and optimize energy management strategies without affecting real equipment.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-3">The service is based on a real hybrid energy facility that combines hydrogen production, hydrogen storage, batteries, thermal storage, and heat recovery technologies. Through a Digital Twin of the installation, users can simulate different operating conditions, assess system performance, and test AI-driven control strategies before deploying them in real-world environments.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-3">The platform helps users understand how renewable energy, hydrogen technologies, and energy storage can work together to improve efficiency, flexibility, and sustainability. It supports scenario analysis, performance benchmarking, and the evaluation of advanced AI solutions for forecasting, optimization, and energy management.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-0">The CARTIF Hydrogen Node is particularly valuable for researchers, AI developers, energy technology providers, utilities, and industrial users seeking to accelerate innovation and reduce the risks associated with deploying advanced energy solutions.</p>
+                    </div>
+
+                    <!-- Key Benefits -->
+                    <div class="tab-pane fade" id="cartif-tab-benefits" role="tabpanel" aria-labelledby="cartif-benefits-tab">
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Safe experimentation without risks to physical assets.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Evaluation of energy and hydrogen management strategies before deployment.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Comparison of alternative operating scenarios and control approaches.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Access to performance indicators related to efficiency, renewable energy utilization, flexibility, and hydrogen storage.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Validation of AI-based energy management solutions in a realistic environment.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Use Cases -->
+                    <div class="tab-pane fade" id="cartif-tab-usecases" role="tabpanel" aria-labelledby="cartif-usecases-tab">
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Extract Scenario Performance Indicators</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Extract Operational Limits</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-3">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Customise DT Energy Asset Scenarios</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Re-parameterise Energy Assets</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            
         </div>
 
 

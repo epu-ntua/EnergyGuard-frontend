@@ -19,7 +19,7 @@
         <nav class="mb-3" aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-            <li class="breadcrumb-item active">Portuguese Grid</li>
+            <li class="breadcrumb-item active">Transmission Grid</li>
           </ol>
         </nav>
 
@@ -29,7 +29,7 @@
           <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
             <span>
               <strong class="text-body">Organization:</strong>
-              <a href="https://www.rdnester.pt/en-GB" target="_blank" class="ms-1">R&amp;N Nester</a>
+              <a href="https://www.rdnester.pt/en-GB" target="_blank" class="ms-1">R&amp;D Nester</a>
             </span>
             <span><strong class="text-body">Location:</strong> Portugal</span>
             <span><strong class="text-body">Domain:</strong> Power Systems &amp; Grid Stability</span>
@@ -39,130 +39,144 @@
         <hr class="mb-5">
 
         <!-- Hero -->
-        <div class="row g-4 align-items-start">
-            <div class="col-12 col-lg-7">
-                <p class="text-body-tertiary fs-8-5 mb-3">This node provides a high-fidelity digital twin of a large scale electricity grid with high shares of renewable energy sources (RES), inspired in the Portuguese electricity transmission grid. The purpose of this digital twin is to allow testing, evaluating and validating AI solutions to support the operation of smart grids.</p>
 
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Grid Specifications</h6>
-                <p class="text-body-tertiary fs-8-5 mb-2">The digital twin represents a network of:</p>
-                <ul class="list-unstyled mb-3">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">~3000 km of lines/cables at 400 kV</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">~3800 km of lines/cables at 220 kV</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">~2500 km of lines/cables at 150 kV</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Seven interconnectors with a different control area</span>
-                    </li>
-                </ul>
-                <p class="text-body-tertiary fs-8-5 mb-2">The full grid contains electricity generation installations of:</p>
-                <ul class="list-unstyled mb-4">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Biomass</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Gas</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Hydro-pump storage</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Hydro with reservoirs and run-of-river</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Photovoltaic</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Wind power generation</span>
-                    </li>
-                </ul>
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Simulation Capabilities</h6>
-                <p class="text-body-tertiary fs-8-5 mb-3">The digital twin is endowed with EMT and RMS simulation capabilities.</p>
-                <p class="text-body-tertiary fs-8-5 mb-3">Its models of synchronous machines, power park modules and load consumption enable the modification of injection/consumption levels across the network, while continuously assessing the impact of such changes on key system variables, namely voltage profiles and frequency behaviour.</p>
-                <p class="text-body-tertiary fs-8-5 mb-3">Furthermore, the digital twin provides the ability to study the interaction with a number of intelligent electronic devices (IEDs) through hardware-in-the-loop simulations.</p>
-                <p class="text-body-tertiary fs-8-5 mb-4">Hence, the digital twin of large scale electricity grid with high-shares of renewable energy sources provides realistic, physics-based operating scenarios that can be used for the training, testing and validation of AI solutions under diverse grid conditions, supporting the development of trustworthy AI applications for power system operation and control.</p>
+        <!-- TABS -->
+        <ul class="nav nav-pills gap-2 mb-4 dt-pill-tabs" id="rdnTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="rdn-overview-tab" data-bs-toggle="tab" data-bs-target="#rdn-tab-overview" type="button" role="tab" aria-controls="rdn-tab-overview" aria-selected="true">Overview</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="rdn-simulation-tab" data-bs-toggle="tab" data-bs-target="#rdn-tab-simulation" type="button" role="tab" aria-controls="rdn-tab-simulation" aria-selected="false">Simulation Capabilities</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="rdn-usecases-tab" data-bs-toggle="tab" data-bs-target="#rdn-tab-usecases" type="button" role="tab" aria-controls="rdn-tab-usecases" aria-selected="false">Use Cases</button>
+            </li>
+        </ul>
 
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Automatically Configurable Use Cases</h6>
-                <p class="text-body-tertiary fs-8-5 mb-2">The user can automatically configure the scenarios to run the following use cases:</p>
-                <ul class="list-unstyled mb-3">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Technical Validation of Market Results</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Voltage Control</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Governor and Load Frequency Control</span>
-                    </li>
-                </ul>
-                <p class="text-body-tertiary fs-8-5 mb-2">Examples of specific applications include:</p>
-                <ul class="list-unstyled mb-4">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Testing and experimentation of AI-based forecasting of renewable generation and/or load consumption</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Voltage support coordination process</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Assessment of the estimation of model-free voltage profiles, or operational envelopes</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Tools for dynamic security assessment</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Strategies to control ROCOF</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Resilience to events resulting in frequency instability</span>
-                    </li>
-                </ul>
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Use Cases Requiring Manual Configuration</h6>
-                <p class="text-body-tertiary fs-8-5 mb-2">The following use cases cannot be configured automatically &mdash; configuration of the digital twin for these requires contact with the development team.</p>
-                <ul class="list-unstyled mb-0">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Short-circuit analysis</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Stator transient</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Subsynchronous resonance</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Inverter-based control</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="col-12 col-lg-5">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-xl-5">
                 <img src="{% static 'assets/img/digital_twins/DT-RDN2.png' %}" alt="RDN Grid Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
+            <div class="col-12 col-xl-7 ps-xl-5">
+
+                <div class="tab-content" id="rdnTabContent">
+
+                    <!-- Overview -->
+                    <div class="tab-pane fade show active" id="rdn-tab-overview" role="tabpanel" aria-labelledby="rdn-overview-tab">
+                        <p class="text-body-tertiary fs-8-5 mb-3">This node provides a high-fidelity digital twin of a large scale electricity grid with high shares of renewable energy sources (RES), inspired in the Portuguese electricity transmission grid. The purpose of this digital twin is to allow testing, evaluating and validating AI solutions to support the operation of smart grids.</p>
+
+                        <h6 class="fw-bold text-body-emphasis fs-8-5 mb-3 mt-4">Grid Specifications</h6>
+                        <p class="text-body-tertiary fs-8-5 mb-2">The digital twin represents a network of:</p>
+                        <ul class="list-unstyled mb-3">
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">~3000 km of lines/cables at 400 kV</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">~3800 km of lines/cables at 220 kV</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">~2500 km of lines/cables at 150 kV</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Seven interconnectors with a different control area</span>
+                            </li>
+                        </ul>
+                        <p class="fw-bold text-body-emphasis fs-8-5 mb-2">The full grid contains electricity generation installations of:</p>
+                        <div class="row row-cols-2 g-2">
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Biomass</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Gas</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Hydro-pump storage</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Hydro with reservoirs and run-of-river</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Photovoltaic</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Wind power generation</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Capabilities -->
+                    <div class="tab-pane fade" id="rdn-tab-simulation" role="tabpanel" aria-labelledby="rdn-simulation-tab">
+                        <p class="text-body-tertiary fs-8-5 mb-3">The digital twin is endowed with EMT and RMS simulation capabilities.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-3">Its models of synchronous machines, power park modules and load consumption enable the modification of injection/consumption levels across the network, while continuously assessing the impact of such changes on key system variables, namely voltage profiles and frequency behaviour.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-3">Furthermore, the digital twin provides the ability to study the interaction with a number of intelligent electronic devices (IEDs) through hardware-in-the-loop simulations.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-0">Hence, the digital twin of large scale electricity grid with high-shares of renewable energy sources provides realistic, physics-based operating scenarios that can be used for the training, testing and validation of AI solutions under diverse grid conditions, supporting the development of trustworthy AI applications for power system operation and control.</p>
+                    </div>
+
+                    <!-- Use Cases -->
+                    <div class="tab-pane fade" id="rdn-tab-usecases" role="tabpanel" aria-labelledby="rdn-usecases-tab">
+                        <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2">Automatically Configurable Use Cases</h6>
+                        <p class="text-body-tertiary fs-8-5 mb-2">The user can automatically configure the scenarios to run the following use cases:</p>
+                        <div class="row row-cols-2 g-2 mb-3">
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Technical Validation of Market Results</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Voltage Control</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Governor and Load Frequency Control</span>
+                            </div>
+                        </div>
+                        <p class="fw-bold text-body-emphasis fs-8-5 mb-2">Examples of specific applications include:</p>
+                        <ul class="list-unstyled mb-4">
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Testing and experimentation of AI-based forecasting of renewable generation and/or load consumption</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Voltage support coordination process</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Assessment of the estimation of model-free voltage profiles, or operational envelopes</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Tools for dynamic security assessment</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Strategies to control ROCOF</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Resilience to events resulting in frequency instability</span>
+                            </li>
+                        </ul>
+                        <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Use Cases Requiring Manual Configuration</h6>
+                        <p class="text-body-tertiary fs-8-5 mb-2">The following use cases cannot be configured automatically &mdash; configuration of the digital twin for these requires contact with the development team.</p>
+                        <div class="row row-cols-2 g-2">
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Short-circuit analysis</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Stator transient</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Subsynchronous resonance</span>
+                            </div>
+                            <div class="col">
+                                <span class="badge badge-phoenix badge-phoenix-success w-100 fs-9-5 fw-normal py-2">Inverter-based control</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
 

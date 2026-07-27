@@ -30,46 +30,88 @@
         <hr class="mb-5">
 
         <!-- Hero -->
-        <div class="row g-4 align-items-start">
 
-            <div class="col-12 col-lg-6">
+        <!-- TABS -->
+        <ul class="nav nav-pills gap-2 mb-4 dt-pill-tabs" id="ceaTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="cea-overview-tab" data-bs-toggle="tab" data-bs-target="#cea-tab-overview" type="button" role="tab" aria-controls="cea-tab-overview" aria-selected="true">Overview</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="cea-capabilities-tab" data-bs-toggle="tab" data-bs-target="#cea-tab-capabilities" type="button" role="tab" aria-controls="cea-tab-capabilities" aria-selected="false">Capabilities</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-8-5 fw-semibold" id="cea-usecases-tab" data-bs-toggle="tab" data-bs-target="#cea-tab-usecases" type="button" role="tab" aria-controls="cea-tab-usecases" aria-selected="false">Use Cases</button>
+            </li>
+        </ul>
 
-                <p class="text-body-tertiary fs-8-5 mb-3">Access and interact with a comprehensive digital twin of a SOEC system through an intuitive and user-friendly interface. The platform enables users to create, customize, and execute simulation scenarios by adjusting key system parameters and operating conditions.</p>
-
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-4">Using the simulation workspace, users can:</h6>
-                <ul class="list-unstyled mb-3">
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Configure and compare multiple energy system scenarios.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Modify technical, operational, and environmental parameters.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Launch simulations directly from the platform.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Monitor simulation progress in real time.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-2">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Access and download raw simulation outputs for further analysis.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2 mb-0">
-                        <span class="fas fa-check text-success mt-1 fs-10"></span>
-                        <span class="text-body-tertiary fs-8-5">Explore detailed performance indicators and system behavior under different assumptions.</span>
-                    </li>
-                </ul>
-                <p class="text-body-tertiary fs-8-5 mb-0">Designed for engineers, analysts, researchers, and decision-makers, the platform provides direct access to the underlying digital twin, enabling data-driven evaluation of energy strategies, operational optimization, and what-if analyses in a secure and scalable environment.</p>
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-6">Use cases:</h6>
-                <p class="fs-8-5 text-body-tertiary mb-0 ">Scenario generation with AI tool, Scenario simulation and AI algorithm testing, Experimental validation of selected scenarios, EHT module's state of health diagnostic tool</p>
-
-            </div>
-            <div class="col-12 col-lg-6">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-xl-6 ps-xl-5">
                 <img src="{% static 'assets/img/digital_twins/CEA.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
+            <div class="col-12 col-xl-6 ps-xl-5">
+
+                <div class="tab-content" id="ceaTabContent">
+
+                    <!-- Overview -->
+                    <div class="tab-pane fade show active" id="cea-tab-overview" role="tabpanel" aria-labelledby="cea-overview-tab">
+                        <p class="text-body-tertiary fs-8-5 mb-3">Access and interact with a comprehensive digital twin of a SOEC system through an intuitive and user-friendly interface. The platform enables users to create, customize, and execute simulation scenarios by adjusting key system parameters and operating conditions.</p>
+                        <p class="text-body-tertiary fs-8-5 mb-0">Designed for engineers, analysts, researchers, and decision-makers, the platform provides direct access to the underlying digital twin, enabling data-driven evaluation of energy strategies, operational optimization, and what-if analyses in a secure and scalable environment.</p>
+                    </div>
+
+                    <!-- Capabilities -->
+                    <div class="tab-pane fade" id="cea-tab-capabilities" role="tabpanel" aria-labelledby="cea-capabilities-tab">
+                        <!-- <h6 class="fw-bold text-body-emphasis fs-8-5 mb-4">Using the simulation workspace, users can:</h6> -->
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Configure and compare multiple energy system scenarios.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Modify technical, operational, and environmental parameters.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Launch simulations directly from the platform.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Monitor simulation progress in real time.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Access and download raw simulation outputs for further analysis.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Explore detailed performance indicators and system behavior under different assumptions.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Use Cases -->
+                    <div class="tab-pane fade" id="cea-tab-usecases" role="tabpanel" aria-labelledby="cea-usecases-tab">
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Scenario generation with AI tool.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Scenario simulation and AI algorithm testing.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">Experimental validation of selected scenarios.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-0">
+                                <span class="fas fa-check text-success mt-1 fs-10"></span>
+                                <span class="text-body-tertiary fs-8-5">EHT module's state of health diagnostic tool.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
             </div>
 
         </div>

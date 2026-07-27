@@ -118,3 +118,18 @@
   border-color: var(--phoenix-primary);
   color: #fff;
 }
+
+/* Shared digital twin pill tabs (CARTIF, etc.) */
+.dt-pill-tabs .nav-link {
+  background-color: var(--phoenix-secondary-bg);
+  color: var(--phoenix-body-color);
+  border: 1px solid transparent;
+}
+.dt-pill-tabs .nav-link:hover {
+  background-color: var(--phoenix-secondary-bg);
+}
+.dt-pill-tabs .nav-link.active {
+  background-color: var(--phoenix-primary);
+  color: #fff;
+  border-color: var(--phoenix-primary);
+}
