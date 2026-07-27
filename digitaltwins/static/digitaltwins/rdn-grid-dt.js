@@ -52,7 +52,6 @@
     var phaseSelect         = document.getElementById('phase-select');
 
     var exportJsonBtn        = document.getElementById('export-json-btn');
-    var exportCsvBtn         = document.getElementById('export-csv-btn');
     var saveOpenJupyterBtn   = document.getElementById('save-open-jupyterhub-btn');
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -654,26 +653,6 @@
     exportJsonBtn.addEventListener('click', function () {
         if (!lastApiResponse) return;
         triggerDownload(JSON.stringify(lastApiResponse, null, 2), 'rdn-grid-result-' + lastApiResponse.requestId + '.json', 'application/json');
-    });
-
-    exportCsvBtn.addEventListener('click', function () {
-        if (!lastApiResponse) return;
-        var rows = ['setpoint_ts,bus_id,bus_type,phase,sample_index,offset_ms,Voltage_kV,Current_kA,GridFrequency_Hz'];
-        lastApiResponse.outputData.forEach(function (entry) {
-            var freq = entry.GridFrequency_Hz || [];
-            Object.keys(entry.grid || {}).sort().forEach(function (busId) {
-                var bus = entry.grid[busId];
-                ['phase_a', 'phase_b', 'phase_c'].forEach(function (phase) {
-                    if (!bus[phase]) return;
-                    bus[phase].Voltage_kV.forEach(function (v, k) {
-                        var i = bus[phase].Current_kA[k];
-                        var f = freq[k] != null ? freq[k] : '';
-                        rows.push([entry.InputTimestamp_UTC, busId, bus.BusType, phase, k, k * 2, v, i, f].join(','));
-                    });
-                });
-            });
-        });
-        triggerDownload(rows.join('\n'), 'rdn-grid-result-' + lastApiResponse.requestId + '.csv', 'text/csv');
     });
 
     saveOpenJupyterBtn.addEventListener('click', function () {
