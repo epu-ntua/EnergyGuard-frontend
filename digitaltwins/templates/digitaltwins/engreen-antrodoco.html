@@ -39,11 +39,14 @@
         <hr class="mb-5">
 
         <!-- Hero -->
-        <div class="row g-4 align-items-start">
-            <div class="col-12 col-lg-6">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-xl-5 ">
+                <img src="{% static 'assets/img/digital_twins/Antrodoco-map.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
+            <div class="col-12 col-xl-7 ps-xl-5">
                 <p class="text-body-tertiary fs-8-5 mb-3">The Antrodoco REC Node provides access to a real Renewable Energy Community located in the Lazio Region of Italy. It brings together community and technical data, including member and asset profiles, photovoltaic plants, battery storage systems, real-time monitoring data from producers and prosumers, selected consumer-side measurements, historical hourly records of energy withdrawal and injection, and weather data.</p>
                 <p class="text-body-tertiary fs-8-5 mb-4">Within the node, the Antrodoco REC Digital Twin acts as the modelling and simulation layer. It turns these data into an interactive representation of how the community works: how energy is produced, consumed, stored and shared. Users can explore the REC structure, visualise members and assets, monitor key energy indicators, analyse production and consumption trends, estimate shared energy and related benefits, and compare current REC behaviour with forecasted, simulated or AI-enhanced scenarios.</p>
-                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2 mt-6">The node supports four TEF services:</h6>
+                <h6 class="fw-bold text-body-emphasis fs-8-5 mb-2">The node supports four TEF services:</h6>
                 <ul class="fs-8-5 text-body-tertiary mb-0 ps-3">
                     <li class="mb-2"><strong class="text-body-emphasis">Smart Energy Optimiser</strong><br/>Helps users identify opportunities to improve REC operation by analysing production, consumption, self-consumption, battery use and grid exchanges.</li>
                     <li class="mb-2"><strong class="text-body-emphasis">Fair Dynamic Pricing</strong><br/>Supports the assessment of shared energy, expected incentives and the economic effects of different consumption, pricing or behavioural scenarios.</li>
@@ -53,9 +56,7 @@
 
             </div>
 
-            <div class="col-12 col-lg-5 ">
-                <img src="{% static 'assets/img/digital_twins/Antrodoco-map.png' %}" alt="CEA SOEC Digital Twin" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
-            </div>
+            
         </div>
 
         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y my-4">
@@ -65,7 +66,7 @@
                         <div class="col-12">
                             <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
                             <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
-    
+
                             <!-- Datasets -->
                             <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
                                 <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
@@ -83,22 +84,31 @@
                                     <span class="fas fa-sun"></span>
                                 </span>
                                 <div class="flex-grow-1">
-                                    <h6 class="fw-bold text-body-emphasis mb-1">PV Production Simulator</h6>
-                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Forecast photovoltaic production for REC stations or hypothetical new plants using real and historical weather data.</p>
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Smart Energy Optimiser</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Full REC energy balance forecasting including consumption, shared energy, and grid exchanges.</p>
                                 </div>
                             </a>
 
-                            <!-- Smart Energy Optimiser (coming soon) -->
+                            <!-- Fair Dynamic Pricing (coming soon) -->
                             <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
                                 <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
                                     <span class="fas fa-chart-line"></span>
                                 </span>
                                 <div class="flex-grow-1">
-                                    <h6 class="fw-bold text-body-emphasis mb-1">Smart Energy Optimiser <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
-                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Full REC energy balance forecasting including consumption, shared energy, and grid exchanges.</p>
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Fair Dynamic Pricing<span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Calculation of REC economic performance, shared-energy incentives and pricing scenario impacts.</p>
                                 </div>
                             </div>
-
+                            <!-- Multi-Source Planning Suite (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-chart-line"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Multi-Source Planning Suite<span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Future REC planning and expansion analysis through what-if scenarios for new members, PV capacity and storage.</p>
+                                </div>
+                            </div>
                             <!-- Predictive Maintenance (coming soon) -->
                             <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
                                 <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
@@ -106,7 +116,7 @@
                                 </span>
                                 <div class="flex-grow-1">
                                     <h6 class="fw-bold text-body-emphasis mb-1">Predictive Maintenance Monitoring <span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
-                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Detect anomalous operating patterns in monitored photovoltaic plants.</p>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Detection of anomalous operating patterns in monitored photovoltaic plants.</p>
                                 </div>
                             </div>
                         </div>
@@ -114,76 +124,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Bottom bar + CTA -->
-        <!-- <div class="row g-4 mt-0">
-
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold text-body-emphasis mb-4">At a glance</h5>
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
-                            <div class="col">
-                                <div class="d-flex flex-column align-items-center text-center gap-2">
-                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                        <span class="fas fa-bolt"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Technology</h6>
-                                        <p class="text-body-tertiary fs-9-5 mb-0">Photovoltaic &amp; Battery Storage</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-flex flex-column align-items-center text-center gap-2">
-                                    <span class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                        <span class="fas fa-puzzle-piece"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Components</h6>
-                                        <p class="text-body-tertiary fs-9-5 mb-0">11 PV Plants, 5 BESS, 40 REC Users</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-flex flex-column align-items-center text-center gap-2">
-                                    <span class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                        <span class="fas fa-diagram-project"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Use Cases</h6>
-                                        <p class="text-body-tertiary fs-9-5 mb-0">PV Forecasting, Anomaly Detection, REC Planning</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-flex flex-column align-items-center text-center gap-2">
-                                    <span class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                        <span class="fas fa-database"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Data Output</h6>
-                                        <p class="text-body-tertiary fs-9-5 mb-0">Energy KPIs, Anomaly Classifications, Scenario Comparisons</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-flex flex-column align-items-center text-center gap-2">
-                                    <span class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
-                                        <span class="fas fa-user-group"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Who it's for</h6>
-                                        <p class="text-body-tertiary fs-9-5 mb-0">Researchers, AI Developers, Energy SMEs, Policy Makers</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div> -->
 
     </div>
     {% include "core/footer.html" %}

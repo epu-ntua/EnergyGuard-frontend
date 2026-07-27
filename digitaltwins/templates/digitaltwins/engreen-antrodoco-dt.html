@@ -39,21 +39,20 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'engreen-antrodoco' %}">Antrodoco REC</a></li>
-                <li class="breadcrumb-item active">PV Production Simulator</li>
+                <li class="breadcrumb-item active">Smart Energy Optimiser</li>
             </ol>
         </nav>
 
         <!-- Header + About -->
         <div class="mb-5">
-            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="PV Production Simulator"  %}
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="Smart Energy Optimiser"  %}
         </div>
 
         <!-- Hero -->
         <div class="mb-5">
-            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">PV Production Simulator</strong> is an EnGreen node that estimates how much electricity a photovoltaic plant will produce over a chosen period, and how that output splits between energy consumed on-site and energy exported to the grid.</p>
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">Smart Energy Optimiser</strong> is an EnGreen node service that estimates how much electricity a photovoltaic plant will produce over a chosen period, and how that output splits between energy consumed on-site and energy exported to the grid.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
                 <a href="#plant-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a simulation <span class="fas fa-arrow-right"></span></a>
-                <!-- <a href="#about-workspace" class="btn btn-outline-secondary">Read the details</a> -->
             </div>
 
             <div class="row">
@@ -62,7 +61,6 @@
                         <div class="row g-0">
                             <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
                                 <img src="{% static 'assets/img/digital_twins/engreen graph.png' %}" alt="Sample production breakdown chart" class="img-fluid rounded-3 w-100">
-                                <!-- <p class="text-body-tertiary fs-9 mt-2 mb-0">Hourly production, 10-day window &middot; sample output</p> -->
                             </div>
                             <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
                                 <h5 class="fw-bold text-body-emphasis mb-3">One node, a full production forecast</h5>
@@ -284,7 +282,6 @@
                                 <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-1" for="wp-panel">
                                     Panel Power
                                     <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Rated power of each panel in Watt-peak(Wp)"></span>
-                                    <!-- <span class="as fa-circle-info text-body-tertiary fs-10">Peak power output of a single panel under Standard Test Conditions (STC). Typical residential panels range from 300 to 500 Wp.</span> -->
                                 </label>
                                 <div class="input-group">
                                     <select class="form-select" id="wp-panel" name="wp_panel">
@@ -608,7 +605,6 @@
             <!-- Results header -->
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
                 <div class="d-flex align-items-center gap-3">
-                    <!-- <span class="fas fa-chart-column text-primary fs-6"></span> -->
                     <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Forecast Results</h5>
                     <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="res-forecast-type">—</span>
                 </div>
@@ -616,9 +612,6 @@
                     <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
                         <span class="fas fa-download"></span>Download JSON
                     </button>
-                    <!-- <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="export-csv-btn">
-                        <span class="fas fa-file-csv"></span>Export CSV
-                    </button> -->
                     <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
                         <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
                     </button>
