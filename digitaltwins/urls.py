@@ -7,6 +7,7 @@ urlpatterns = [
     path('list/', views.digitaltwins_list, name='digitaltwins-list'),
     path('cea-hydrogen/ai-scenario-generation/', views.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
     path('cea-hydrogen/dt-simulation/', views.cea_dt_simulation, name='cea-dt-simulation'),
+    path('cea-hydrogen/dt-simulation/documentation/', views.cea_dt_documentation, name='cea-dt-simulation-documentation'),
     path('ber-hydrogen/ber-hydrogen-dt/', views.ber_hydrogen_dt, name='ber-hydrogen-dt'),
     path('ber-hydrogen/ber-hydrogen-dt/documentation/', views.ber_hydrogen_documentation, name='ber-hydrogen-documentation'),
     path('ber-hydrogen/ber-hydrogen-results/', views.ber_hydrogen_results, name='ber-hydrogen-results'),

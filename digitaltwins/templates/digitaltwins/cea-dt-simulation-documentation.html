@@ -1,0 +1,215 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Scenario JSON Documentation - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'cea-hydrogen' %}">CEA Hydrogen</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cea-dt-simulation' %}">DT Scenario Simulation</a></li>
+            <li class="breadcrumb-item active">Documentation</li>
+          </ol>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+            <div>
+                <h2 class="fw-bold text-body-emphasis mb-2">CEA Scenario JSON Documentation</h2>
+                <p class="text-body-tertiary fs-8-5 mb-0">File structure, required variables and an example configuration for the SOEC Digital Twin scenario simulation.</p>
+            </div>
+            <a href="{% url 'cea-dt-simulation' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 flex-shrink-0">
+                <span class="fas fa-arrow-left"></span>Back to DT Scenario Simulation
+            </a>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold text-body-emphasis mb-2">What is in the JSON file?</h5>
+                        <p class="text-body-tertiary fs-8-5 mb-3">The scenario file is a single JSON object containing time-series signals (varying over time) and scalar parameters (constant values) used to run the simulation.</p>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="fas fa-chart-line text-primary"></span>
+                                            <h6 class="fw-bold text-body-emphasis mb-0 fs-8-5">Time-series signals</h6>
+                                        </div>
+                                        <p class="text-body-tertiary fs-9 mb-2">Arrays of values associated with the time vector. All signals must have the same length as timeStamp.</p>
+                                        <span class="badge badge-phoenix badge-phoenix-info">9 variables</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="fas fa-sliders text-success"></span>
+                                            <h6 class="fw-bold text-body-emphasis mb-0 fs-8-5">Scalar parameters</h6>
+                                        </div>
+                                        <p class="text-body-tertiary fs-9 mb-2">Single values used across the entire simulation.</p>
+                                        <span class="badge badge-phoenix badge-phoenix-success">4 variables</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold text-body-emphasis mb-2">Required Inputs Reference</h5>
+                        <p class="text-body-tertiary fs-8-5 mb-3">Your JSON file must include the following variables.</p>
+
+                        <div>
+                            <table class="table fs-8-5 mb-0" style="table-layout: fixed; word-break: break-word;">
+                                <thead>
+                                    <tr class="text-body-tertiary text-uppercase fs-9-5">
+                                        <th style="width: 22%;">Variable (Tag)</th>
+                                        <th style="width: 50%;">Description</th>
+                                        <th style="width: 12%;">Unit</th>
+                                        <th style="width: 16%;">Valid Range</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">timeStamp</span></td>
+                                        <td class="text-body-tertiary pe-3">Time vector of the scenario.</td>
+                                        <td class="text-body-tertiary ps-1">s</td>
+                                        <td class="text-body-tertiary ps-1">[0 : inf]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">current</span></td>
+                                        <td class="text-body-tertiary pe-3">Electrical current to apply on each stack of the electrolyser.</td>
+                                        <td class="text-body-tertiary ps-1">A</td>
+                                        <td class="text-body-tertiary ps-1">[-100 : 0]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">voltageCell</span></td>
+                                        <td class="text-body-tertiary pe-3">Mean cell voltage of the stacks to maintain (used only when a current is applied).</td>
+                                        <td class="text-body-tertiary ps-1">V</td>
+                                        <td class="text-body-tertiary ps-1">[1.285 : 1.3]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">temperatureHotbox</span></td>
+                                        <td class="text-body-tertiary pe-3">Temperature of the thermal enclosure of the stacks (used only when no current is applied).</td>
+                                        <td class="text-body-tertiary ps-1">&deg;C</td>
+                                        <td class="text-body-tertiary ps-1">[700 : 800]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">steamConversion</span></td>
+                                        <td class="text-body-tertiary pe-3">Percentage of steam inlet flowrate converted into electricity by the system.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0.4 : 1]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">fuelElectrode_ratioH2O</span></td>
+                                        <td class="text-body-tertiary pe-3">Percentage of steam in the gas mix at the inlet of the system.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0 : 1]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">fuelElectrode_flowrate</span></td>
+                                        <td class="text-body-tertiary pe-3">Total flowrate at the inlet of the fuel side.</td>
+                                        <td class="text-body-tertiary ps-1">NL/min</td>
+                                        <td class="text-body-tertiary ps-1">[0 : 200]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">oxygenElectrode_flowrate</span></td>
+                                        <td class="text-body-tertiary pe-3">Total flowrate at the inlet of the air side.</td>
+                                        <td class="text-body-tertiary ps-1">NL/min</td>
+                                        <td class="text-body-tertiary ps-1">[0 : 200]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-info">deltaP</span></td>
+                                        <td class="text-body-tertiary pe-3">Pressure difference between the air and the fuel electrode of the cells inside the stacks.</td>
+                                        <td class="text-body-tertiary ps-1">mBar</td>
+                                        <td class="text-body-tertiary ps-1">[0 : 100]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[1]</span></td>
+                                        <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 1.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[2]</span></td>
+                                        <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 2.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[3]</span></td>
+                                        <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 3.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge badge-phoenix badge-phoenix-success">coef_degradPerf[4]</span></td>
+                                        <td class="text-body-tertiary pe-3">Coefficient to modify the initial electro-chemical performance of stack 4.</td>
+                                        <td class="text-body-tertiary ps-1">&ndash;</td>
+                                        <td class="text-body-tertiary ps-1">[0.5 : 1.5]</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-start">
+            <div class="col-12 col-lg-6 d-flex">
+                <div class="card w-100">
+                    <div class="card-body p-4">
+                        {% include "digitaltwins/partials/dt_sample_json.html" with heading="Sample JSON" subtitle="A minimal example of the expected structure." sample_json=sample_json %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="alert alert-subtle-info rounded-3 d-flex align-items-start gap-2 mb-0 fs-8-5 p-4" role="alert">
+                    <span class="fas fa-circle-info mt-1"></span>
+                    <span>All validation checks ({{ validation_checks|join:", " }}) run automatically after upload &mdash; invalid files are rejected with details on the failing rule.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+    // Copy sample JSON
+    var copySampleBtn = document.getElementById('copy-sample-json');
+    if (copySampleBtn) {
+        copySampleBtn.addEventListener('click', function () {
+            var text = document.getElementById('sample-json').textContent;
+            navigator.clipboard.writeText(text).then(function () {
+                var original = copySampleBtn.innerHTML;
+                copySampleBtn.innerHTML = '<span class="fas fa-check"></span>Copied';
+                setTimeout(function () { copySampleBtn.innerHTML = original; }, 1500);
+            });
+        });
+    }
+})();
+</script>
+{% endblock scripts %}

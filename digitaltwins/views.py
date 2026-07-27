@@ -678,7 +678,12 @@ def cea_ai_scenario_generation(request):
 
 @login_required
 def cea_dt_simulation(request):
-    return _dt_render(request, 'digitaltwins/cea-dt-simulation.html',
+    return _dt_render(request, 'digitaltwins/cea-dt-simulation.html', sample_json=CEA_SAMPLE_JSON)
+
+
+@login_required
+def cea_dt_documentation(request):
+    return _dt_render(request, 'digitaltwins/cea-dt-simulation-documentation.html',
                       validation_checks=CEA_VALIDATION_CHECKS, sample_json=CEA_SAMPLE_JSON)
 
 
