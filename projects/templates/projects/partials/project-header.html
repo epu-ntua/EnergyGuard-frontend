@@ -6,7 +6,7 @@
 </nav>
 
 <!-- Header: Title + Actions dropdown + Evaluate button -->
-<div class="d-flex align-items-start gap-8 mb-5">
+<div class="d-flex align-items-start gap-8 mb-4">
   <div class="d-flex flex-column gap-2">
     <div class="d-flex align-items-center gap-2 mb-2">
       <h2 class="text-body-emphasis fw-bolder mb-0">{{ project_details.name }}</h2>
@@ -34,9 +34,6 @@
         {% if project_details.visibility %}border-success text-success{% else %}border-secondary text-secondary{% endif %}">
         <i class="fas {% if project_details.visibility %}fa-lock-open{% else %}fa-lock{% endif %} me-1"></i>
         {% if project_details.visibility %}Public Project{% else %}Private Project{% endif %}
-      </span>
-      <span class="badge border border-warning text-warning bg-transparent rounded-pill px-3 py-2 fs-10">
-        {{ project_details.type }}
       </span>
     </div>
   </div>

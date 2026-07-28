@@ -1,54 +1,36 @@
 {% load static %}
 <!-- Info + Actions -->
 <div class="d-flex align-items-end gap-5 mb-8">
-  <!-- Left: cards + buttons -->
+  <!-- Left: info row + buttons -->
   <div class="flex-grow-1">
-    <!-- Info cards row -->
-    <div class="d-flex gap-3 mb-4">
+    <!-- Info row -->
+    <div class="d-flex align-items-center flex-wrap gap-3 py-3 mb-6 border-bottom border-top border-translucent fs-8-5 text-body-secondary">
+      <!-- Type -->
+      <span class="d-flex align-items-center gap-2 border-end border-translucent pe-3">
+        <span class="fa-solid fa-tag text-body-tertiary"></span>
+        <span class="fw-semibold text-body-emphasis">Type</span>
+        <span>{{ project_details.type|default:"-" }}</span>
+      </span>
       <!-- Created -->
-      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm">
-        <div class="d-flex align-items-start gap-2">
-          <span class="fa-regular fa-calendar-days text-body-tertiary  fs-7 mt-2 me-1"></span>
-          <div class="d-flex flex-column">
-            <span class="fw-bold text-body-emphasis">Created</span>
-            <span class="text-body-secondary">{{ project_details.start_date|date:"j M, Y" }}</span>
-          </div>
-        </div>
-      </div>
+      <span class="d-flex align-items-center gap-2{% if project_details.team %} border-end border-translucent pe-3{% endif %}">
+        <span class="fa-regular fa-calendar-days text-body-tertiary"></span>
+        <span class="fw-semibold text-body-emphasis">Created</span>
+        <span>{{ project_details.start_date|date:"j M, Y" }}</span>
+      </span>
       <!-- Team -->
       {% if project_details.team %}
-      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm">
-        <div class="d-flex align-items-start gap-2">
-          <span class="fa-solid fa-user-group text-body-tertiary  fs-7 mt-2 me-1"></span>
-          <div class="d-flex flex-column">
-            <span class="fw-bold text-body-emphasis">Team</span>
-            <span class="text-body-secondary">{{ project_details.team|default:"-" }}</span>
-          </div>
-        </div>
-      </div>
+      <span class="d-flex align-items-center gap-2">
+        <span class="fa-solid fa-user-group text-body-tertiary"></span>
+        <span class="fw-semibold text-body-emphasis">Team</span>
+        <span>{{ project_details.team|default:"-" }}</span>
+      </span>
       {% endif %}
-      <!-- Description (inline / collapsed) -->
-      <div class="flex-grow-2 p-5 border border-translucent rounded-4 shadow-sm" id="descInlineCard">
-        <div class="d-flex align-items-start gap-2">
-          <span class="fa-regular fa-file-lines text-body-tertiary fs-7 mt-2 me-1"></span>
-          <div class="d-flex flex-column">
-            <span class="fw-bold text-body-emphasis">Description</span>
-            <span class="text-body-secondary" id="descInlineText"></span>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Description expanded (below row, hidden initially) -->
-    <div class="p-5 border border-translucent rounded-4 shadow-sm d-none" id="descExpandedCard">
-      <div class="d-flex align-items-start gap-2">
-        <span class="fa-regular fa-file-lines text-body-tertiary fs-7 mt-2 me-1"></span>
-        <div class="d-flex flex-column w-100">
-          <span class="fw-bold text-body-emphasis">Description</span>
-          <span class="text-body-secondary" id="descFullText"></span>
-          <a href="#" class="text-primary fs-9 mt-2" id="seeLessBtn">See less</a>
-        </div>
-      </div>
+    <!-- Description -->
+    <div class="mb-5 w-70">
+      <h4 class="fw-bold mb-2">Project description</h4>
+      <p class="text-body-secondary mb-0">{{ project_details.description|default:"No description available." }}</p>
     </div>
 
     <!-- Action buttons -->
@@ -68,71 +50,3 @@
   </div>
 
 </div>
-
-<script>
-(function () {
-  const fullText = "{{ project_details.description|default:'No description available.'|escapejs }}";
-  const words = fullText.split(/\s+/);
-  const limit = 12;
-
-  const inlineCard    = document.getElementById('descInlineCard');
-  const inlineText    = document.getElementById('descInlineText');
-  const expandedCard  = document.getElementById('descExpandedCard');
-  const descFullText  = document.getElementById('descFullText');
-  const seeLessBtn    = document.getElementById('seeLessBtn');
-
-  descFullText.textContent = fullText;
-
-  function showExpanded() {
-    inlineCard.classList.add('d-none');
-    expandedCard.classList.add('w-md-50');
-    expandedCard.classList.remove('d-none');
-    expandedCard.style.overflow = 'hidden';
-    expandedCard.style.maxHeight = '0';
-    expandedCard.style.opacity = '0';
-    expandedCard.style.transition = 'max-height 0.4s ease, opacity 0.35s ease, margin-bottom 0.4s ease';
-    expandedCard.style.marginBottom = '0';
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        expandedCard.style.maxHeight = expandedCard.scrollHeight + 'px';
-        expandedCard.style.opacity = '1';
-        expandedCard.style.marginBottom = '1.5rem';
-      });
-    });
-  }
-
-  function hideExpanded() {
-    expandedCard.style.maxHeight = '0';
-    expandedCard.style.opacity = '0';
-    expandedCard.style.marginBottom = '0';
-    expandedCard.addEventListener('transitionend', function handler() {
-      expandedCard.classList.add('d-none');
-      expandedCard.classList.remove('w-md-50');
-      expandedCard.style.transition = '';
-      inlineCard.classList.remove('d-none');
-      expandedCard.removeEventListener('transitionend', handler);
-    });
-  }
-
-  if (words.length <= limit) {
-    inlineText.textContent = fullText;
-  } else {
-    const truncated = words.slice(0, limit).join(' ') + '…';
-    const seeMoreLink = document.createElement('a');
-    seeMoreLink.href = '#';
-    seeMoreLink.className = 'text-primary fs-9 ms-1';
-    seeMoreLink.textContent = 'See more';
-    seeMoreLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      showExpanded();
-    });
-    inlineText.textContent = truncated + ' ';
-    inlineText.appendChild(seeMoreLink);
-  }
-
-  seeLessBtn.addEventListener('click', function (e) {
-    e.preventDefault();
-    hideExpanded();
-  });
-})();
-</script>
