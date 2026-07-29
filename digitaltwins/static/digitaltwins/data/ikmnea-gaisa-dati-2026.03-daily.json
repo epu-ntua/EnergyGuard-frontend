@@ -1,0 +1,6394 @@
+[
+  {
+    "station": "Rīga-Kronvalda bulvāris",
+    "geom": {
+      "coordinates": [
+        506371.3472,
+        312364.7113
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": {
+          "avg": 20.54,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 22.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.28,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.64,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 45.98,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": {
+          "avg": 4.25,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "PM10": {
+          "avg": 6.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 8.38,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.91,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 63.82,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "O3"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": {
+          "avg": 7.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 10.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 16.63,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.95,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 53.3,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": {
+          "avg": 8.43,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 13.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 11.66,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.84,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 61.28,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": {
+          "avg": 5.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 9.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 6.6,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -1.07,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 69.55,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": {
+          "avg": 12.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 24.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 34.39,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.09,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 33.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": {
+          "avg": 21.42,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 34.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 38.91,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.02,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 30.07,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": {
+          "avg": 30.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 49.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 46.39,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.08,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 35.8,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": {
+          "avg": 23.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 43.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 39.34,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.11,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.63,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": {
+          "avg": 22.33,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 46.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 43.91,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 49.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": {
+          "avg": 30.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 55.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 34.6,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.25,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.64,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": {
+          "avg": 20.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 36.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 25.67,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.65,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 47.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": {
+          "avg": 12.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 23.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.16,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.73,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 46.66,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": {
+          "avg": 14.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 36.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 16.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 0.0,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": {
+          "avg": 14.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 33.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.24,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 61.31,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": {
+          "avg": 15.54,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 21.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 32.75,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 27.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": {
+          "avg": 15.21,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.56,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.11,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 31.03,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": {
+          "avg": 17.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 29.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 30.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.31,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 25.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": {
+          "avg": 14.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 24.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 22.78,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.86,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 39.29,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": {
+          "avg": 9.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.03,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 46.88,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": {
+          "avg": 16.92,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 38.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 34.84,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.99,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 33.01,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": {
+          "avg": 16.46,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 32.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 29.74,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.85,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 37.28,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": {
+          "avg": 17.88,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 45.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 30.57,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.56,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 44.56,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": {
+          "avg": 16.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 37.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 21.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.27,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 56.02,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": {
+          "avg": 23.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 45.92,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 17.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 0.53,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 63.66,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": {
+          "avg": 8.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 21.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 17.35,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.34,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 53.94,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": {
+          "avg": 10.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 34.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.31,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.84,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 40.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": {
+          "avg": 14.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 33.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 26.36,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -0.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 33.27,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": {
+          "avg": 21.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 40.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.9,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 38.66,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": {
+          "avg": 14.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 34.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 21.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.6,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.23,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": {
+          "avg": 8.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 19.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.69,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 44.32,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      }
+    ]
+  },
+  {
+    "station": "Rīga-Valdemāra iela 65",
+    "geom": {
+      "coordinates": [
+        507368.601,
+        313037.5876
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 24.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 32.01,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 46.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 9.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 12.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 11.75,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 22.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 55.97,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 14.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 13.95,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 66.73,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 10.55,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 10.64,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 75.06,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 38.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 45.63,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 31.3,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 37.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 44.98,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 29.27,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 53.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 49.81,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 38.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 60.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 45.87,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 54.34,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 52.75,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 38.95,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 62.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 67.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 37.77,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 56.97,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 47.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 33.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 49.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.84,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 52.37,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 37.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 17.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 75.19,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 34.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.81,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 70.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 23.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 35.59,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 31.1,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 36.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 30.18,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 34.61,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 30.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 36.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 24.2,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 34.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 29.9,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 41.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 22.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 20.43,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 50.01,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 54.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 42.46,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 32.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 35.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 33.53,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 40.36,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 50.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 39.76,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 44.27,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 44.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 32.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 56.16,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 48.21,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 21.47,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 72.72,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 26.37,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 56.26,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 39.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 33.02,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 41.1,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 28.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 29.7,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 38.28,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 37.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.43,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 46.34,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 33.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.81,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 55.98,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 17.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.36,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 42.34,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      }
+    ]
+  },
+  {
+    "station": "Rucava",
+    "geom": {
+      "coordinates": [
+        324473.6144,
+        227746.6259
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": {
+          "avg": 19.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 22.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.37,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": {
+          "avg": 7.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 9.67,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 4.91,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 64.74,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": {
+          "avg": 13.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 14.59,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 9.93,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.32,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.91,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": {
+          "avg": 10.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 14.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.6,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 75.76,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": {
+          "avg": 6.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 6.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.81,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.63,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 72.36,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": {
+          "avg": 7.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 7.67,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 11.4,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.81,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": {
+          "avg": 20.33,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.53,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.49,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 46.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": {
+          "avg": 23.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 64.49,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": {
+          "avg": 22.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.36,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.49,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 82.07,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": {
+          "avg": 22.42,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 28.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.76,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 77.31,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": {
+          "avg": 38.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 49.46,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 12.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 0.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 71.47,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": {
+          "avg": 18.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 27.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.31,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 64.95,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": {
+          "avg": 12.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 14.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 6.45,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.08,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.84,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": {
+          "avg": 19.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 5.57,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 1.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 86.2,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": {
+          "avg": 15.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 21.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 5.26,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.35,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 69.22,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": {
+          "avg": 6.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 4.21,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.64,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.31,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 53.27,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": {
+          "avg": 13.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 12.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 6.25,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.66,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 39.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": {
+          "avg": 8.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 7.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 4.73,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.9,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 51.61,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": {
+          "avg": 11.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 12.0,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 7.49,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 59.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": {
+          "avg": 7.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 8.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 4.03,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.37,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 58.64,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": {
+          "avg": 8.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 8.71,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 2.82,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 47.0,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": {
+          "avg": 11.57,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 11.33,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.88,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 48.69,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": {
+          "avg": 18.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 21.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 6.22,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.01,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 56.93,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": {
+          "avg": 23.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.48,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 73.43,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": {
+          "avg": 20.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 27.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.88,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 1.09,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 82.31,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": {
+          "avg": 7.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 12.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 76.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": {
+          "avg": 6.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 12.42,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 4.37,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.2,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 73.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": {
+          "avg": 9.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 13.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 2.87,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.36,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 70.65,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": {
+          "avg": 8.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 11.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 3.08,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.33,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 56.89,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": {
+          "avg": 9.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 13.62,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 4.33,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.37,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 72.77,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": {
+          "avg": 13.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 11.0,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 7.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 55.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      }
+    ]
+  },
+  {
+    "station": "Liepāja-Ezerlīču iela 1",
+    "geom": {
+      "coordinates": [
+        316315.1698,
+        264236.4616
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 23.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.64,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.01,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 19.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.87,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 57.26,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 19.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 17.49,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 48.87,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 18.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 10.09,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 77.77,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 17.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 17.52,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 64.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 17.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.53,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 44.09,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 42.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 36.03,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 40.69,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 58.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 31.41,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 59.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 46.42,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 22.15,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 80.3,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 46.33,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 19.61,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 77.34,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 67.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 23.98,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.84,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 37.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 16.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 63.6,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 27.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.53,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 68.76,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 38.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 84.44,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 33.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 10.1,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 70.11,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 19.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.86,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 46.6,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 31.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.51,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 50.14,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.9,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 53.31,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 32.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 22.95,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 54.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 62.54,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 32.44,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 42.72,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 48.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 27.2,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 41.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 38.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 18.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 49.67,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 51.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 17.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 65.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 56.19,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 19.52,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 46.46,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 14.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 85.31,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.99,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 74.91,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 30.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.01,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 69.8,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 28.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 18.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 18.53,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 55.06,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 30.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.69,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 73.82,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 23.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 3.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 80.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      }
+    ]
+  },
+  {
+    "station": "Liepāja-Ganību iela",
+    "geom": {
+      "coordinates": [
+        316221.1013,
+        265310.6539
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": {
+          "avg": 20.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.6,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.66,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.74,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": {
+          "avg": 21.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.19,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 59.28,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": {
+          "avg": 19.42,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 21.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.23,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.23,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 46.61,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": {
+          "avg": 12.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 18.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 6.68,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -1.26,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 78.6,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": {
+          "avg": 13.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 10.98,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.38,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": {
+          "avg": 14.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 47.13,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": {
+          "avg": 39.87,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 43.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 29.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": -1.16,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 40.9,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": {
+          "avg": 41.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 46.83,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 24.16,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.24,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 57.72,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": {
+          "avg": 30.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 36.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 18.9,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.61,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 78.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": {
+          "avg": 29.05,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 36.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 16.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.76,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 80.02,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": {
+          "avg": 47.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 60.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 16.27,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.33,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 75.32,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": {
+          "avg": 24.92,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 33.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 12.02,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -1.38,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 68.95,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": {
+          "avg": 14.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 21.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 7.98,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -1.39,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 71.18,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": {
+          "avg": 24.88,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 33.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 8.8,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 88.51,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": {
+          "avg": 19.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 28.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 7.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.98,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 73.61,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": {
+          "avg": 19.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 19.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 19.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 52.38,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": {
+          "avg": 15.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 17.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 0.53,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 57.63,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": {
+          "avg": 13.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 8.32,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 60.3,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": {
+          "avg": 21.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.11,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 62.32,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": {
+          "avg": 19.22,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 28.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 4.33,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 48.52,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": {
+          "avg": 24.83,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 34.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 20.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.35,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 43.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": {
+          "avg": 25.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 46.93,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": {
+          "avg": 29.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 35.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.15,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": {
+          "avg": 33.75,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 40.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.02,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 0.78,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 70.07,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 10.2,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.31,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 90.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 4.9,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 0.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 81.16,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "O3"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 7.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.42,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 74.91,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "O3"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 11.73,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.59,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 70.49,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 14.28,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": -0.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 56.11,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 9.34,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.22,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 75.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "O3"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": null,
+        "PM10": null,
+        "NO2": {
+          "avg": 3.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": -0.21,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 79.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "O3"
+      }
+    ]
+  },
+  {
+    "station": "Ventspils-Pārventa",
+    "geom": {
+      "coordinates": [
+        355224.6551,
+        364923.9155
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": {
+          "avg": 12.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": {
+          "avg": 9.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 13.21,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": {
+          "avg": 16.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 18.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": {
+          "avg": 9.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 14.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": {
+          "avg": 15.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 18.04,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": {
+          "avg": 16.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": {
+          "avg": 35.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 43.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": {
+          "avg": 35.71,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 54.92,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": {
+          "avg": 36.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 50.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": {
+          "avg": 37.62,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 59.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": {
+          "avg": 45.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 59.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": {
+          "avg": 21.83,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 31.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": {
+          "avg": 13.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 22.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": {
+          "avg": 29.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 39.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": {
+          "avg": 24.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 32.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": {
+          "avg": 12.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 13.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": {
+          "avg": 9.88,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 10.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": {
+          "avg": 12.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": {
+          "avg": 15.74,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 22.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": {
+          "avg": 8.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 8.17,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": {
+          "avg": 21.42,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": {
+          "avg": 19.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 24.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": {
+          "avg": 25.38,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 35.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": {
+          "avg": 26.48,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 37.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": {
+          "avg": 25.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 33.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": {
+          "avg": 11.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 20.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": {
+          "avg": 13.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 23.5,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": {
+          "avg": 18.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 29.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": {
+          "avg": 18.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 24.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": {
+          "avg": 12.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 22.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": {
+          "avg": 18.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": null,
+        "SO2": null,
+        "O3": null,
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      }
+    ]
+  },
+  {
+    "station": "Rēzekne-Atbrīvošanas aleja 115A",
+    "geom": {
+      "coordinates": [
+        705161.8307,
+        268215.7801
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 33.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.26,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.56,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 12.0,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 13.35,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 67.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 8.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 12.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 52.83,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 14.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 10.68,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 74.06,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 12.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 16.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 74.78,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 19.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 22.56,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 61.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 41.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 49.44,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 39.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 28.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 31.64,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 53.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 24.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.98,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 94.62,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 29.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 23.03,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 84.98,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 35.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 19.9,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 83.11,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 45.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 20.01,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 80.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 39.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.7,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 66.43,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 37.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 9.2,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 88.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 35.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 7.14,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 88.47,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 45.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.05,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 78.76,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 53.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 21.37,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 70.87,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 93.5,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 47.34,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 31.57,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 31.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 21.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 49.36,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 54.3,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 32.43,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 40.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 44.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 25.8,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 41.96,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "NO2"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 65.17,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 28.4,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 48.86,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 60.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 24.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 61.01,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 31.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.86,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 83.11,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 49.73,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 15.89,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 91.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 38.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 16.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 74.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 79.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 29.9,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 47.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 81.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 38.64,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 38.51,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 63.75,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 35.27,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 49.2,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 61.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 36.59,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 53.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM10"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": null,
+        "PM10": {
+          "avg": 27.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.37,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": null,
+        "O3": {
+          "avg": 62.87,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM10"
+      }
+    ]
+  },
+  {
+    "station": "Rēzekne-Dārzu iela",
+    "geom": {
+      "coordinates": [
+        705367.4531,
+        267947.4837
+      ],
+      "crs": {
+        "properties": {
+          "name": "EPSG:3059"
+        },
+        "type": "name"
+      },
+      "type": "Point"
+    },
+    "days": [
+      {
+        "date": "2026-03-01",
+        "PM2.5": {
+          "avg": 28.08,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 15.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.49,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.32,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-02",
+        "PM2.5": {
+          "avg": 9.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 10.71,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 9.08,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 1.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 64.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-03",
+        "PM2.5": {
+          "avg": 6.92,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 7.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 8.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 1.46,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 49.09,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-04",
+        "PM2.5": {
+          "avg": 11.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 15.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.05,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 64.35,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-05",
+        "PM2.5": {
+          "avg": 7.58,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 9.21,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "NO2": {
+          "avg": 5.9,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 1.82,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 74.93,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-06",
+        "PM2.5": {
+          "avg": 15.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 16.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 20.85,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.39,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 56.94,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-07",
+        "PM2.5": {
+          "avg": 33.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 34.67,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 36.96,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": 1.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 49.64,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-08",
+        "PM2.5": {
+          "avg": 21.12,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 22.42,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 27.47,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": 1.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 53.4,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-09",
+        "PM2.5": {
+          "avg": 20.58,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 23.29,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.14,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 88.03,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-10",
+        "PM2.5": {
+          "avg": 18.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 22.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.28,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.41,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 82.2,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-11",
+        "PM2.5": {
+          "avg": 26.21,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 33.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.54,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.71,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 77.8,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-12",
+        "PM2.5": {
+          "avg": 29.5,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 42.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.87,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 72.41,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-13",
+        "PM2.5": {
+          "avg": 21.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 28.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 12.65,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.5,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 66.35,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-14",
+        "PM2.5": {
+          "avg": 14.96,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 27.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 4.86,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 2.91,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 82.45,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-15",
+        "PM2.5": {
+          "avg": 14.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 27.79,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 4.11,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 2.59,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 80.84,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-16",
+        "PM2.5": {
+          "avg": 16.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 29.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 6.55,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 2.8,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 75.32,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-17",
+        "PM2.5": {
+          "avg": 17.5,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 28.83,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 7.25,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 2.12,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 73.66,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-18",
+        "PM2.5": {
+          "avg": 35.67,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 51.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 30.23,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": 1.23,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 37.7,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-19",
+        "PM2.5": {
+          "avg": 23.33,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 31.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 18.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.8,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 44.57,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-20",
+        "PM2.5": {
+          "avg": 14.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "PM10": {
+          "avg": 19.08,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 13.59,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.04,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 43.67,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Fair",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-21",
+        "PM2.5": {
+          "avg": 24.61,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.38,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 14.76,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.67,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 43.05,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-22",
+        "PM2.5": {
+          "avg": 29.88,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 35.17,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 16.46,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 1.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 50.15,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-23",
+        "PM2.5": {
+          "avg": 22.71,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 36.21,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 19.22,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.18,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 57.54,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-24",
+        "PM2.5": {
+          "avg": 19.21,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 29.25,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.68,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 75.34,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-25",
+        "PM2.5": {
+          "avg": 19.77,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.73,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 7.94,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "SO2": {
+          "avg": 3.79,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 87.86,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-26",
+        "PM2.5": {
+          "avg": 17.04,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 26.12,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.27,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 3.28,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 70.05,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-27",
+        "PM2.5": {
+          "avg": 28.25,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 54.5,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 32.27,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": 2.58,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 45.6,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-28",
+        "PM2.5": {
+          "avg": 37.21,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 51.29,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "NO2": {
+          "avg": 27.79,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "SO2": {
+          "avg": 2.53,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 42.3,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-29",
+        "PM2.5": {
+          "avg": 30.65,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 43.71,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 24.39,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 2.53,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 51.99,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-30",
+        "PM2.5": {
+          "avg": 15.54,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 30.75,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 17.33,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 3.06,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 59.74,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      },
+      {
+        "date": "2026-03-31",
+        "PM2.5": {
+          "avg": 20.0,
+          "unit": "µg/m3",
+          "level": "Moderate"
+        },
+        "PM10": {
+          "avg": 32.0,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "NO2": {
+          "avg": 11.78,
+          "unit": "µg/m3",
+          "level": "Fair"
+        },
+        "SO2": {
+          "avg": 3.24,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "O3": {
+          "avg": 59.22,
+          "unit": "µg/m3",
+          "level": "Good"
+        },
+        "daily_level": "Moderate",
+        "main_pollutant": "PM2.5"
+      }
+    ]
+  }
+]

@@ -1,12 +1,17 @@
-#map-container {
-  position: relative;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-#map { position: absolute; inset: 0; }
+/* Embedded in the Django page above the breadcrumb/header/footer (see
+   rea-riga-dt.html) rather than being the sole content of the page.
+   #map-viewport is the positioned ancestor all the map overlays (minimap,
+   legend, station cards, city overview panel) anchor their bottom/left/right
+   to — without it they'd position against the whole (scrollable) document
+   instead of the map's own box, and drift onto the footer below.
+   The colleague's overlay offsets (bottom:20px, bottom:330px, etc.) were
+   calibrated for her standalone page, where the map was the full viewport.
+   Height is kept at a full 100vh here so that stack has as much room as
+   it was designed for; the breadcrumb/header/footer above and below just
+   push the page taller and scroll, rather than shrinking the map's own
+   box and squeezing the overlays into less space than they need. */
+#map-viewport { position: relative; width: 100%; height: 100vh; margin-bottom: 2rem; }
+#map { width: 100%; height: 100%; }
 
 /* ── Minimap container ── */
 #minimap-wrapper {
@@ -52,6 +57,34 @@
 }
 #minimap-toggle:hover { background: rgba(240,240,240,0.98); }
 
+/* "Return to Riga" button, pinned to the minimap's corner */
+#minimap-home-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10000;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.18);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f3b4c;
+  transition: background 0.15s, transform 0.15s;
+}
+#minimap-home-btn:hover {
+  background: rgba(255,255,255,0.98);
+  transform: scale(1.08);
+}
+#minimap-home-btn:active {
+  transform: scale(0.94);
+}
+
 /* Viewport rectangle drawn on the minimap */
 .minimap-viewport {
   position: absolute;
@@ -61,6 +94,111 @@
   box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
   border-radius: 2px;
   z-index: 9999;
+}
+
+/* ── Air quality station quick-nav card (above minimap) ── */
+.aq-station-card {
+  position: absolute;
+  left: 20px;
+  bottom: 208px;
+  z-index: 1002;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(28, 47, 74, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(12, 24, 44, 0.2);
+  padding: 10px;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+.aq-station-card[hidden] {
+  display: none;
+}
+
+#meteo-station-card {
+  bottom: 330px;
+}
+
+.aq-station-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.aq-station-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #425269;
+}
+
+.aq-station-collapse-btn {
+  transition: transform 0.15s ease;
+}
+
+/* Panels collapse to just their header on short viewports, where the
+   colleague's stacked, fixed-pixel overlay offsets (bottom:330px etc.)
+   don't all fit — see #meteo-station-card / #aq-station-card / the
+   region & year filter legends, and toggleAqCardCollapse() in app.js. */
+.aq-station-card.collapsed .aq-station-list {
+  display: none;
+}
+
+.aq-station-card.collapsed .aq-station-collapse-btn {
+  transform: rotate(-90deg);
+}
+
+.aq-station-list {
+  display: grid;
+  gap: 6px;
+}
+
+.aq-station-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid #e2e8f1;
+  border-radius: 9px;
+  background: #fbfdff;
+  padding: 7px 9px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: #20344d;
+  text-align: left;
+  appearance: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.aq-station-btn:hover {
+  border-color: #c9d7e8;
+  background: #f4f8fd;
+  transform: translateX(1px);
+}
+
+.aq-station-btn:active {
+  transform: translateY(1px);
+}
+
+.aq-station-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.15);
+}
+
+.aq-station-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Energy filter legend ── */
@@ -91,6 +229,22 @@
   font-weight: 600;
   line-height: 1.2;
   color: #1e3149;
+}
+
+.legend-collapse-btn {
+  transition: transform 0.15s ease;
+}
+
+/* Collapses the panel to just its .legend-head — used by the Region
+   Filter / Year Filter Leaflet controls (regionLegend / yearFilterLegend
+   in app.js) on short viewports where the colleague's fixed-pixel
+   overlay stack doesn't all fit at once. */
+.energy-legend.collapsed > *:not(.legend-head) {
+  display: none;
+}
+
+.energy-legend.collapsed .legend-collapse-btn {
+  transform: rotate(-90deg);
 }
 
 .legend-sub {
@@ -190,6 +344,14 @@
   color: #1f344d;
 }
 
+.legend-region-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f344d;
+}
+
 .legend-state {
   margin-left: auto;
   font-size: 11px;
@@ -217,6 +379,914 @@
   background: transparent;
   border-color: #8f9daf;
   color: #46576d;
+}
+
+.legend-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  border: 1px solid #e2e8f1;
+  background: #fbfdff;
+}
+
+/* ── Year / renovation filter (below Energy Class Filter) ── */
+.year-filter-control.leaflet-control {
+  margin-top: 8px !important;
+}
+
+.year-filter-block {
+  margin-top: 10px;
+}
+
+.year-filter-block:first-of-type {
+  margin-top: 6px;
+}
+
+.year-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #425269;
+  margin-bottom: 6px;
+}
+
+.year-filter-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.year-filter-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #c5d3e2;
+  background: #ffffff;
+  color: #1e3149;
+  font-size: 12.5px;
+  padding: 0 8px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.year-filter-input::placeholder {
+  color: #96a6ba;
+}
+
+.year-filter-input:focus {
+  border-color: #6f8faf;
+  box-shadow: 0 0 0 3px rgba(57, 111, 163, 0.12);
+}
+
+.year-filter-dash {
+  color: #8798ad;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+.year-filter-options {
+  display: grid;
+  gap: 7px;
+}
+
+.year-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #354357;
+  cursor: pointer;
+}
+
+.year-filter-option input[type="radio"] {
+  accent-color: #396fa3;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* ── City-scale overview: standalone button in the bottom-right corner
+   (mirrors the minimap sitting in the bottom-left) + a panel that expands
+   upward and leftward out of it, covering as much space as it needs ── */
+.city-overview-toggle-btn {
+  position: absolute;
+  bottom: 0px;
+  right: 20px;
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #1c3a5c;
+  background: linear-gradient(135deg, #5b7fa6 0%, #3f6188 100%);
+  backdrop-filter: blur(7px);
+  box-shadow: 0 12px 30px rgba(12, 24, 44, 0.36), 0 0 0 4px rgba(91, 127, 166, 0.22);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.city-overview-toggle-btn:hover {
+  box-shadow: 0 16px 36px rgba(12, 24, 44, 0.42), 0 0 0 5px rgba(91, 127, 166, 0.3);
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #6c8fb4 0%, #476c98 100%);
+}
+
+.city-overview-toggle-btn.open {
+  background: linear-gradient(135deg, #3f6188 0%, #2c4c6f 100%);
+  border-color: #1c3a5c;
+  box-shadow: 0 4px 14px rgba(28, 58, 92, 0.45);
+}
+
+.city-overview-toggle-btn svg:first-child {
+  flex: 0 0 auto;
+  color: #ffffff;
+}
+
+.cf-toggle-chevron {
+  flex: 0 0 auto;
+  color: #dce6f0;
+  transition: transform 0.2s ease;
+}
+
+.city-overview-toggle-btn.open .cf-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* top/right/max-height are set inline by positionCityOverviewPanel() so the
+   panel always anchors to the toggle button's actual on-screen position
+   (see app.js) — width is the only sizing left to CSS. */
+.city-overview-panel {
+  position: absolute;
+  width: min(760px, calc(100vw - 40px));
+  z-index: 1003;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(28, 47, 74, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(12, 24, 44, 0.32);
+  padding: 20px 24px 20px;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: #1d2b3d;
+}
+
+.city-overview-panel[hidden] {
+  display: none;
+}
+
+.cf-panel-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 14px;
+  padding: 0 34px 12px;
+  border-bottom: 1px solid #e2e8f1;
+}
+
+.cf-panel-close {
+  position: absolute;
+  top: -2px;
+  right: 0;
+}
+
+.cf-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1e3149;
+}
+
+.cf-panel-subtitle {
+  margin: 4px auto 0;
+  font-size: 12px;
+  color: #6a7789;
+  line-height: 1.4;
+  max-width: 560px;
+}
+
+/* Section cards sit two-up on a wide panel, each a self-contained card so
+   the filter groups read as distinct, scannable blocks rather than one
+   long list. Two independent flex columns (rather than a single grid)
+   so column 1's cards (Construction & renovation, then Heat performance
+   directly under it) stack tight to their own content, unaffected by how
+   tall column 2's card (Building profile) happens to be — a shared grid
+   would otherwise size every row to its tallest cell across both columns. */
+.cf-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.cf-grid-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.cf-section-card {
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fc 100%);
+  border: 1px solid #e2e8f1;
+  border-radius: 14px;
+  padding: 14px 15px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Slightly narrower than its column so Heat performance doesn't read as
+   wide as the taller Building profile card beside it. */
+.cf-section-narrow .cf-section-card {
+  max-width: 88%;
+}
+
+.cf-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #3a4a63;
+  margin: 0 2px 8px;
+}
+
+.cf-section-rows {
+  display: grid;
+  gap: 13px;
+}
+
+.cf-row {
+  margin-bottom: 0;
+}
+
+/* Renovation year stays visible (not hidden) even when it doesn't apply,
+   just faded and non-interactive, so its presence still hints that setting
+   "Renovated" to Yes unlocks it. */
+.cf-row-faded {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.cf-row-label {
+  font-size: 11px;
+  color: #425269;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+/* Comparison-with-similar-buildings row label: the help button sits right
+   next to the title text instead of inside the slider card, so the card's
+   frame below only has to wrap the meter itself. */
+.cf-row-label-help {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cf-row-help-btn {
+  flex: 0 0 auto;
+}
+
+.cf-row-label.show-help .indicator-help {
+  display: block;
+}
+
+/* Wraps just the "?" button (not the whole label row) so the popover below
+   it anchors to the button's own small box — needed here because, unlike
+   the row labels above, .cf-panel-section-label spans the full width of
+   the results card, so anchoring to it directly would push the popover off
+   to the card's far right edge instead of under the button. */
+.cf-help-btn-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.cf-help-btn-wrap.show-help .indicator-help {
+  display: block;
+}
+
+.cf-help-btn-wrap .indicator-help {
+  left: 0;
+  right: auto;
+}
+
+.cf-row-suffix {
+  font-size: 11.5px;
+  color: #5f6b7a;
+}
+
+.cf-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cf-select {
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #c5d3e2;
+  background: #ffffff;
+  color: #1e3149;
+  font-size: 11.5px;
+  padding: 0 5px;
+  outline: none;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cf-select:focus {
+  border-color: #6f8faf;
+  box-shadow: 0 0 0 3px rgba(57, 111, 163, 0.12);
+}
+
+.cf-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #c5d3e2;
+  background: #ffffff;
+  color: #1e3149;
+  font-size: 11.5px;
+  padding: 0 6px;
+  outline: none;
+}
+
+.cf-input:focus {
+  border-color: #6f8faf;
+  box-shadow: 0 0 0 3px rgba(57, 111, 163, 0.12);
+}
+
+.cf-input[hidden] {
+  display: none;
+}
+
+.cf-dash {
+  color: #8798ad;
+  font-size: 11px;
+  flex: 0 0 auto;
+}
+
+.cf-dash[hidden] {
+  display: none;
+}
+
+/* Segmented pill group — replaces plain <select> for Any/Below/Above/Between
+   and the tri-state Renovated / Underground-floors pickers. */
+.cf-seg-group {
+  display: inline-flex;
+  border: 1px solid #c9d5e4;
+  border-radius: 8px;
+  background: #eef2f7;
+  padding: 2px;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.cf-seg-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #4a5a70;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cf-seg-btn:hover {
+  background: rgba(91, 127, 166, 0.14);
+}
+
+.cf-seg-btn.active {
+  background: #ffffff;
+  color: #1c3a5c;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+}
+
+.cf-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cf-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cf-range-inputs .cf-input {
+  width: 64px;
+  flex: 0 0 auto;
+}
+
+.cf-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Energy class dual-handle slider: two overlapping range inputs sharing one
+   track, each with only its thumb interactive (classic dual-slider trick).
+   All sizes are named custom properties so the track, its masks and the
+   thumb's centering math share one source of truth instead of scattered
+   pixel numbers that can drift out of sync. */
+.cf-class-slider {
+  --cf-class-slider-h: 22px;
+  --cf-class-track-h: 6px;
+  --cf-class-thumb-size: 15px;
+  position: relative;
+  height: var(--cf-class-slider-h);
+  margin: 6px 7px 0;
+}
+
+.cf-class-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: var(--cf-class-track-h);
+  transform: translateY(-50%);
+  border-radius: 999px;
+  /* Background is set inline (see CF_CLASS_GRADIENT in app.js) so it always
+     matches getEnergyColor()'s actual A+→F colors, not a hardcoded copy. */
+  background: #d7e0eb;
+}
+
+/* The unselected portions of the class range are dimmed with a translucent
+   mask, so the colorful track stays visible but the current A+–F selection
+   still reads clearly (matching the earlier "less wide" solid-fill look). */
+.cf-class-mask {
+  position: absolute;
+  top: 50%;
+  height: var(--cf-class-track-h);
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.cf-class-mask-left {
+  left: 0;
+  border-radius: 999px 0 0 999px;
+}
+
+.cf-class-mask-right {
+  right: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+.cf-range-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+
+.cf-range-thumb::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 0;
+  background: transparent;
+}
+
+.cf-range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: var(--cf-class-thumb-size);
+  height: var(--cf-class-thumb-size);
+  /* Centers the thumb on the track's vertical middle, matching where the
+     invisible native (zero-height) track sits within the full-height input. */
+  margin-top: calc((var(--cf-class-slider-h) - var(--cf-class-thumb-size)) / 2);
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #5b7fa6;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  cursor: pointer;
+}
+
+.cf-range-thumb::-moz-range-track {
+  background: transparent;
+  height: 0;
+  border: none;
+}
+
+.cf-range-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  width: var(--cf-class-thumb-size);
+  height: var(--cf-class-thumb-size);
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #5b7fa6;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  cursor: pointer;
+}
+
+/* Labels sit at the exact same percentage points as the thumbs/gradient
+   stops (i / (n - 1) * 100%, set inline per label in app.js) instead of a
+   flexbox row — flex's `justify-between` centers items by their own
+   (unequal) text width, which drifts out of alignment with the point-based
+   track underneath. The first/last labels anchor to their own edge instead
+   of centering, so they stay fully inside the bar instead of overhanging it. */
+.cf-class-ticks {
+  position: relative;
+  height: 12px;
+  margin-top: 22px;
+}
+
+.cf-class-tick-label {
+  position: absolute;
+  top: -12px;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #7a8aa0;
+  white-space: nowrap;
+}
+
+.cf-class-tick-label.cf-class-tick-start {
+  transform: translateX(0);
+}
+
+.cf-class-tick-label.cf-class-tick-end {
+  transform: translateX(-100%);
+}
+
+.cf-region-row .cf-row-label {
+  margin-bottom: 6px;
+}
+
+/* "Comparison with similar buildings" — reuses the building popup's
+   .indicator-card/.indicator-meter/.indicator-point/etc. classes verbatim
+   (defined earlier for the building popup) so the visual language and
+   colors match exactly. A single track carries one or two invisible
+   overlaid <input type="range"> thumbs (same technique as the energy-class
+   slider) instead of the popup's single static dot. */
+.cf-indicator-card {
+  margin-top: 8px;
+}
+
+/* A more saturated version of the popup meter's pale track gradient, so the
+   segment revealed by the masks (the in-filter range) reads clearly bright
+   against the faded rest of the bar. Scoped to the filter's own track by id
+   so the building popup's meter keeps its original, softer look. */
+#cf-indicator-track {
+  background: linear-gradient(90deg, #2d8f5f 0%, #90a3b8 50%, #dc4e41 100%);
+}
+
+/* Covers the out-of-filter portion of the track; the in-filter segment is
+   left uncovered so the track's brighter gradient shows through in full
+   color. In "any" mode one mask spans the full width, so "nothing selected"
+   reads as the same faded look whether it covers part of the bar or all of
+   it — the fade is never a different, separate dimming effect. */
+.cf-indicator-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(238, 241, 245, 0.85);
+  transition: width 0.15s ease;
+}
+
+.cf-indicator-mask-left {
+  left: 0;
+}
+
+.cf-indicator-mask-right {
+  right: 0;
+}
+
+.cf-indicator-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+
+.cf-indicator-thumb::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 0;
+  background: transparent;
+}
+
+.cf-indicator-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.cf-indicator-thumb::-moz-range-track {
+  background: transparent;
+  height: 0;
+  border: none;
+}
+
+.cf-indicator-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.cf-indicator-thumb:active::-webkit-slider-thumb,
+.cf-indicator-thumb:active::-moz-range-thumb {
+  cursor: grabbing;
+}
+
+/* A fixed 3-column grid (rather than flex-wrap, which wraps based on each
+   chip's own text width and available space) always lays out exactly 3
+   chips per row regardless of region name length or count. */
+.cf-region-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  max-height: 108px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Region multi-select as toggle chips instead of a checkbox list. */
+.cf-chip {
+  appearance: none;
+  border: 1px solid #c9d5e4;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #4a5a70;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 8px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.cf-chip:hover {
+  border-color: #9fb4cb;
+  background: #f4f8fd;
+}
+
+.cf-chip.active {
+  background: #5b7fa6;
+  border-color: #4a6d90;
+  color: #ffffff;
+}
+
+.cf-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #354357;
+  cursor: pointer;
+}
+
+.cf-checkbox-row input[type="checkbox"] {
+  accent-color: #396fa3;
+  cursor: pointer;
+  margin: 0;
+}
+
+.cf-top-input {
+  width: 52px;
+  flex: 0 0 auto;
+}
+
+/* Results as three stat tiles, matching the KPI-tile language used
+   throughout the building/AQ/meteo popups elsewhere in the app. A crisp
+   white card with a colored top accent (instead of another pale-blue-gray
+   gradient tint like the filter cards) reads as clearly distinct without
+   going as dark/heavy as a solid-navy fill. */
+.cf-panel-section-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5b7fa6;
+  margin-bottom: 5px;
+}
+
+.cf-results-panel {
+  margin-top: 10px;
+  padding: 8px 14px 9px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #dbe6f2;
+  border-top: 3px solid #5b7fa6;
+  box-shadow: 0 8px 22px rgba(91, 127, 166, 0.18);
+}
+
+.cf-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.cf-stat-tile {
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #dfedfa;
+  border: 1px solid #b9d6ef;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cf-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c6099;
+  line-height: 1.2;
+}
+
+.cf-stat-label {
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: #5f7189;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+/* Highlight toggle — same emphasis treatment as the results card, and it
+   visibly shifts to a green "active" tint when switched on, so the map
+   state (filtered vs. not) is obvious at a glance. */
+.cf-highlight-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #f7f9fc;
+  border: 1px solid #dde4ee;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cf-highlight-panel.active {
+  background: linear-gradient(180deg, #eef7f1 0%, #e2f2e8 100%);
+  border-color: #b9dcc4;
+}
+
+.cf-highlight-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2f7;
+  color: #5b7fa6;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cf-highlight-panel.active .cf-highlight-icon {
+  background: #d9efe0;
+  color: #2d8f5f;
+}
+
+.cf-highlight-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cf-highlight-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #24344a;
+}
+
+.cf-highlight-desc {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6a7789;
+  line-height: 1.35;
+}
+
+.cf-highlight-panel .legend-switch {
+  flex: 0 0 auto;
+}
+
+.cf-actions-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f1;
+}
+
+.cf-reset-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.cf-reset-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .cf-grid {
+    flex-direction: column;
+  }
+
+  .cf-section-narrow .cf-section-card {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cf-highlight-panel {
+    align-items: flex-start;
+  }
+}
+
+.legend-toggle-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #314861;
+}
+
+.legend-switch {
+  position: relative;
+  width: 34px;
+  height: 19px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid #c3cbd6;
+  background: #d7dde5;
+  cursor: pointer;
+  padding: 0;
+  appearance: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.legend-switch-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.legend-switch.on {
+  background: #396fa3;
+  border-color: #33628f;
+}
+
+.legend-switch.on .legend-switch-thumb {
+  transform: translateX(15px);
 }
 
 .legend-help-panel {
@@ -297,6 +1367,27 @@
   margin-top: 2px;
   font-size: 11px;
   color: #5f7189;
+}
+
+/* ── Air quality station markers ── */
+.aq-marker-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.9;
+  filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.35));
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  transform-origin: bottom center;
+}
+
+.aq-marker-icon svg {
+  display: block;
+}
+
+.aq-marker-icon:hover {
+  opacity: 1;
+  transform: scale(1.15);
+  z-index: 10000 !important;
 }
 
 /* ── Building popup ── */
@@ -402,6 +1493,176 @@
 .panel-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-soft);
+}
+
+/* ── Cadastral search control ── */
+.code-search-control.leaflet-control {
+  position: absolute;
+  left: 58px;
+  top: 10px;
+  margin: 0;
+  z-index: 1100;
+  width: auto;
+}
+
+/* ── Region filter control (below zoom controls + search card) ── */
+.region-filter-control.leaflet-control {
+  position: absolute;
+  left: 20px; /* matches .aq-station-card / #minimap-wrapper's left, not the default leaflet-control 10px inset */
+  top: 80px;
+  margin: 0;
+  z-index: 1050;
+}
+
+.code-search-panel {
+  position: relative;
+  width: min(275px, calc(100vw - 20px));
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(28, 47, 74, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(12, 24, 44, 0.2);
+  padding: 6px;
+  overflow: hidden;
+}
+
+.code-search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+}
+
+.code-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid #c5d3e2;
+  background: #ffffff;
+  color: #1e3149;
+  font-size: 13px;
+  padding: 0 10px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.code-search-input::placeholder {
+  color: #7b8ca1;
+}
+
+.code-search-input:focus {
+  border-color: #6f8faf;
+  box-shadow: 0 0 0 3px rgba(57, 111, 163, 0.12);
+}
+
+.code-search-button {
+  width: 30px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  border: 1px solid #c3cbd6;
+  background: linear-gradient(180deg, #fbfcfd 0%, #edf1f5 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 5px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+}
+
+.code-search-button:hover {
+  border-color: #aeb9c6;
+  background: linear-gradient(180deg, #ffffff 0%, #e8edf3 100%);
+}
+
+.code-search-button:active {
+  transform: translateY(1px);
+}
+
+.code-search-results {
+  margin-top: 4px;
+  display: grid;
+  gap: 5px;
+  max-height: 170px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.code-search-results[hidden] {
+  display: none;
+}
+
+.search-result-item {
+  width: 100%;
+  border: 1px solid #e2e8f1;
+  border-radius: 9px;
+  background: #fbfdff;
+  padding: 6px 8px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.search-result-item:hover {
+  border-color: #c9d7e8;
+  background: #f4f8fd;
+}
+
+.search-result-item:active {
+  transform: translateY(1px);
+}
+
+.search-result-code {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: #20344d;
+  letter-spacing: 0.02em;
+}
+
+.search-empty {
+  border: 1px solid #e2e8f1;
+  border-radius: 9px;
+  background: #f8fafc;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  color: #63748a;
+}
+
+.code-search-status {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .code-search-control.leaflet-control {
+    left: 54px;
+    top: 8px;
+  }
+
+  .code-search-panel {
+    width: min(275px, calc(100vw - 16px));
+  }
+
+  .code-search-input {
+    font-size: 13px;
+  }
+
+  .code-search-results {
+    left: 0;
+    right: 0;
+  }
+
+  .region-filter-control.leaflet-control {
+    left: 20px;
+    top: 74px;
+  }
 }
 
 .details-card {
@@ -618,6 +1879,9 @@
   background: #ffffff;
   border: 1px solid #d9e3ee;
   font-size: 10.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
   line-height: 1.35;
   color: #4a596d;
   position: absolute;
@@ -814,9 +2078,14 @@
   padding: 3px;
 }
 
+.annual-usage-card {
+  margin-top: 7px;
+}
+
 .popup-actions {
   display: flex;
   justify-content: center;
+  gap: 10px;
   padding: 10px 14px 12px;
   border-top: 1px solid #e5ebf3;
   background: #fcfdff;
@@ -830,7 +2099,7 @@
   font-size: 13px;
   font-weight: 500;
   padding: 9px 18px;
-  min-width: 200px;
+  min-width: 180px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
   box-shadow: 0 8px 16px rgba(31, 103, 211, 0.28);
@@ -848,6 +2117,29 @@
   box-shadow: none;
 }
 
+/* Secondary counterpart to .api-btn — same size and the same blue family
+   (a lighter fill rather than the API button's solid blue) so the pair
+   reads as a matched action row. */
+.export-btn {
+  border: 1px solid #7fa8e0;
+  background: #eaf2fc;
+  color: #1f4fa3;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  min-width: 180px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+  background: #dcebfa;
+  border-color: #5b8fd8;
+}
+
 .legend-donut-label {
   margin-top: 2px;
   font-size: 11px;
@@ -861,5 +2153,518 @@
 
   .building-popup-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   AIR QUALITY POPUP
+═══════════════════════════════════════════════════ */
+.aq-popup {
+  width: 680px;
+  max-width: 92vw;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: var(--text-main);
+  background: var(--popup-bg);
+  border-radius: 18px;
+}
+
+.aq-popup-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%);
+  border-radius: 18px 18px 0 0;
+  text-align: center;
+}
+
+.aq-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.aq-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.aq-latest-head-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+/* Air quality levels help — a table of the exact 1-hour thresholds each
+   level is defined by (mirrors classify_air_quality.py's THRESHOLDS table),
+   toggled open by the "?" button next to the latest-month badge. This is a
+   single shared element appended straight to <body> (see toggleAqLevelsHelp
+   in app.js) rather than nested inside the popup, so it's never subject to
+   the popup's own internal stacking/paint order — it always renders above
+   the popup's content (e.g. the pollutant bar chart) no matter what.
+   top/right are set inline from the button's position each time it opens. */
+.aq-levels-help-panel {
+  display: none;
+  position: fixed;
+  width: 480px;
+  max-width: min(90vw, 480px);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d9e3ee;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  z-index: 5000;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 80vh;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: var(--text-main);
+}
+
+.aq-levels-help-panel.open {
+  display: block;
+}
+
+.aq-levels-help-table {
+  min-width: 440px;
+}
+
+.aq-levels-help-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.aq-levels-help-unit {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.aq-levels-help-note {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.aq-section {
+  padding: 10px 14px;
+}
+
+.aq-heatmap-card,
+.aq-latest-card {
+  padding: 12px 14px;
+}
+
+.aq-heatmap-wrap {
+  overflow-x: auto;
+}
+
+.aq-heatmap-wrap svg {
+  display: block;
+}
+
+.aq-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #edf2f8;
+  justify-content: center;
+}
+
+.aq-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.aq-legend-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  flex: 0 0 auto;
+}
+
+.aq-latest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.aq-latest-month-label {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-soft);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.aq-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 12px;
+  border-radius: 9px;
+  color: #29344a;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.12);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.aq-latest-card {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.aq-latest-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aq-latest-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #e5ebf3;
+}
+
+.aq-mini-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7a8aa0;
+  font-weight: 600;
+}
+
+.aq-pie-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aq-pie-wrap svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.aq-pie-legend {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.aq-pie-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.aq-pie-legend-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-main);
+}
+
+.aq-pollutant-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.aq-pollutant-wrap svg {
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .aq-popup {
+    width: 92vw;
+  }
+
+  .aq-latest-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .aq-latest-divider {
+    width: auto;
+    height: 1px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   METEO STATION POPUP
+═══════════════════════════════════════════════════ */
+.meteo-popup {
+  width: 760px;
+  max-width: 95vw;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: var(--text-main);
+  background: var(--popup-bg);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.meteo-popup-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%);
+  text-align: center;
+}
+
+.meteo-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.meteo-subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-soft);
+}
+
+.meteo-popup-body {
+  padding: 10px 12px;
+}
+
+.meteo-section {
+  margin-top: 12px;
+}
+
+.meteo-section:first-child {
+  margin-top: 0;
+}
+
+.meteo-temp-kpis {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.kpi-change.temp-up {
+  color: #b5620f;
+}
+
+.kpi-change.temp-down {
+  color: #1f5ed8;
+}
+
+.kpi-card.change-card.temp-up {
+  background: #fff5ea;
+  border-color: #f0d9b8;
+}
+
+.kpi-card.change-card.temp-down {
+  background: #edf3ff;
+  border-color: #c9d7f5;
+}
+
+.meteo-daynight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.meteo-conditions-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.meteo-conditions-grid .meteo-mini-card {
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+}
+
+.meteo-mini-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.meteo-conditions-grid .meteo-wind-row {
+  justify-content: center;
+}
+
+.meteo-mini-card {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.meteo-mini-card.inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.meteo-mini-card .aq-mini-title,
+.meteo-mini-card .meteo-stat-value,
+.meteo-mini-card .kpi-sub {
+  white-space: nowrap;
+}
+
+.meteo-stat-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.meteo-wind-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.meteo-wind-row svg {
+  flex: 0 0 auto;
+}
+
+.meteo-wind-values {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.meteo-gauge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.meteo-gauge-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e9eef5;
+  overflow: hidden;
+}
+
+.meteo-gauge-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #5b7fa6;
+}
+
+.meteo-gauge-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #29344a;
+  min-width: 32px;
+  text-align: right;
+}
+
+.meteo-trend-card {
+  padding: 10px 10px 8px;
+}
+
+.meteo-metric-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.meteo-metric-btn {
+  border: 1px solid #d7e0eb;
+  border-radius: 999px;
+  background: #f5f8fb;
+  color: #4a5a70;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 11px;
+  cursor: pointer;
+  appearance: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.meteo-metric-btn:hover {
+  border-color: #b9c8db;
+  background: #eef3f9;
+}
+
+.meteo-metric-btn.active {
+  background: #5b7fa6;
+  border-color: #4a6d90;
+  color: #ffffff;
+}
+
+.meteo-metric-plot[hidden] {
+  display: none;
+}
+
+.meteo-metric-plot svg {
+  display: block;
+}
+
+.meteo-trend-card .chart-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .meteo-popup {
+    width: 95vw;
+  }
+
+  .meteo-temp-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .meteo-daynight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .meteo-conditions-grid {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .meteo-conditions-grid .meteo-mini-card {
+    flex: 1 1 calc(50% - 8px);
   }
 }

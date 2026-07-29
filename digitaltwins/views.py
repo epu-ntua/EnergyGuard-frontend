@@ -610,7 +610,7 @@ def ber_hydrogen_results(request):
     )
 
 
-_RIGA_BUILDINGS_PATH = Path(__file__).resolve().parent / 'static' / 'digitaltwins' / 'DT_data.json'
+_RIGA_BUILDINGS_PATH = Path(__file__).resolve().parent / 'static' / 'digitaltwins' / 'data' / 'DT_data.json'
 
 
 def _iter_coordinates(coords):

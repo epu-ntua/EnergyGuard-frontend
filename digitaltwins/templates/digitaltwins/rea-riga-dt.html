@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="content d-flex flex-column" style="height:calc(100vh - var(--phoenix-navbar-top-height,4rem));overflow:hidden;">
+<div class="content d-flex flex-column">
   <nav class="mb-3" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
       <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
@@ -18,14 +18,50 @@
     </ol>
   </nav>
 
-    {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/REA - icon.png" logo_alt="REA" title="Riga's Multi-Apartment Residential Buildings Map" subtitle="Visualization of building energy classes and efficiency metrics across Riga." %}
+  {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/REA - icon.png" logo_alt="REA" title="Riga's Multi-Apartment Residential Buildings Map" subtitle="Visualization of building energy classes and efficiency metrics across Riga." %}
 
-  <div id="map-container" class="mb-3">
+  <div id="map-viewport">
     <div id="map"></div>
+    <div id="city-overview-panel" class="city-overview-panel" hidden></div>
+    <button id="city-overview-toggle-btn" class="city-overview-toggle-btn" type="button" title="City-scale Overview" aria-label="Open city-scale overview" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/>
+        <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/>
+        <line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2"/>
+      </svg>
+      <span>City-scale Overview</span>
+      <svg class="cf-toggle-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
+    <div id="meteo-station-card" class="aq-station-card" hidden>
+      <div class="aq-station-card-head">
+        <div class="aq-station-card-title">Meteorological stations</div>
+        <button type="button" class="legend-help-btn aq-station-collapse-btn" data-collapse-toggle title="Collapse" aria-label="Collapse meteorological stations list">▾</button>
+      </div>
+      <div class="aq-station-list" id="meteo-station-list"></div>
+    </div>
+    <div id="aq-station-card" class="aq-station-card" hidden>
+      <div class="aq-station-card-head">
+        <div class="aq-station-card-title">Air quality stations</div>
+        <button type="button" class="legend-help-btn aq-station-collapse-btn" data-collapse-toggle title="Collapse" aria-label="Collapse air quality stations list">▾</button>
+      </div>
+      <div class="aq-station-list" id="aq-station-list"></div>
+    </div>
     <div id="minimap-toggle" title="Toggle minimap">▼</div>
     <div id="minimap-wrapper">
       <div id="minimap"></div>
       <div class="minimap-viewport" id="viewport-rect"></div>
+      <button id="minimap-home-btn" type="button" title="Return to Riga" aria-label="Return to Riga">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="7"/>
+          <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+          <path d="M12 1.5v3"/>
+          <path d="M12 19.5v3"/>
+          <path d="M1.5 12h3"/>
+          <path d="M19.5 12h3"/>
+        </svg>
+      </button>
     </div>
   </div>
   {% include 'core/footer.html' %}
@@ -36,6 +72,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
   window.RIGA_BUILDINGS_API_URL = "{% url 'rea-riga-buildings-api' %}";
+  window.RIGA_DATA_BASE_URL = "{% static 'digitaltwins/data/' %}";
 </script>
 <script src="{% static 'digitaltwins/rea-riga-map.js' %}"></script>
 {% endblock %}
