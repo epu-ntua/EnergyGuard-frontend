@@ -1,0 +1,145 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CEDER-CIEMAT Node - Digital Twins{% endblock %}
+
+{% block head %}
+<style>
+    .dt-card-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+            <li class="breadcrumb-item active">CIEMAT Microgrid</li>
+          </ol>
+        </nav>
+
+        <!-- HEADER -->
+        <div class="mb-4">
+          <h2 class="mb-2">CIEMAT Microgrid</h2>
+          <div class="d-flex flex-wrap gap-4 fs-9 text-body-secondary">
+            <span>
+              <strong class="text-body">Organization:</strong>
+              <a href="https://www.ciemat.es/" target="_blank" class="ms-1">CIEMAT</a>
+            </span>
+            <span><strong class="text-body">Location:</strong> Soria, Spain</span>
+            <span><strong class="text-body">Domain:</strong> Microgrids & Renewable Energy</span>
+          </div>
+        </div>
+
+        <hr class="mb-5">
+
+        <!-- Hero -->
+
+        <!-- TABS -->
+        <ul class="nav nav-pills gap-2 mb-4 dt-pill-tabs" id="cederTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-5 py-2 fs-9 fw-semibold" id="ceder-overview-tab" data-bs-toggle="tab" data-bs-target="#ceder-tab-overview" type="button" role="tab" aria-controls="ceder-tab-overview" aria-selected="true">Overview</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-5 py-2 fs-9 fw-semibold" id="ceder-services-tab" data-bs-toggle="tab" data-bs-target="#ceder-tab-services" type="button" role="tab" aria-controls="ceder-tab-services" aria-selected="false">Services</button>
+            </li>
+        </ul>
+
+        <div class="row g-4 align-items-center">
+
+            <div class="col-12 col-xl-6">
+                <img src="{% static 'assets/img/digital_twins/ceder.jpg' %}" alt="CEDER-CIEMAT Microgrid" class="img-fluid rounded-3 w-100" style="max-height:540px;object-fit:contain;">
+            </div>
+            <div class="col-12 col-xl-6 ps-xl-5">
+
+                <div class="tab-content" id="cederTabContent">
+
+                    <!-- Overview -->
+                    <div class="tab-pane fade show active" id="ceder-tab-overview" role="tabpanel" aria-labelledby="ceder-overview-tab">
+                        <p class="text-body-tertiary fs-8-5 mb-3">The CIEMAT TEF node is located at the Centre for Renewable Energy Development (CEDER-CIEMAT) in Soria, Spain, and provides a real-world testing and experimentation environment for the development and validation of AI-enabled services for renewable energy systems and smart microgrids. The node comprises a hybrid microgrid integrating photovoltaic, wind and hydropower generation, energy storage systems, electric vehicles with V2G capability, flexible loads and an advanced monitoring and control infrastructure. The microgrid can operate in both grid-connected and dedicated experimental configurations, enabling the evaluation of innovative energy management strategies under realistic operating conditions.</p>
+
+                        <p class="text-body-tertiary fs-8-5 mb-0">Complementing the physical infrastructure, the node provides a digital experimentation environment where AI-based forecasting, optimisation, digital twin and energy management services are developed and validated. Through its integration with the EnergyGuard platform, the node offers secure and interoperable access to data, forecasting services and experimentation capabilities.</p>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="tab-pane fade" id="ceder-tab-services" role="tabpanel" aria-labelledby="ceder-services-tab">
+                        <ul class="fs-8-5 text-body-tertiary mb-0 ps-3">
+                            <li class="mb-2"><strong class="text-body-emphasis">Renewable Generation Forecasting Service</strong><br/>AI-based day-ahead forecasting of photovoltaic and wind generation, combining Numerical Weather Prediction data with historical and real-time measurements from the microgrid.</li>
+                            <li class="mb-2"><strong class="text-body-emphasis">Renewable Energy Scenario Analysis Service</strong><br/>Configuration and evaluation of renewable energy integration scenarios and flexibility resources, such as batteries and electric vehicles, under different operating conditions.</li>
+                            <li class="mb-0"><strong class="text-body-emphasis">Digital Twin Experimentation Service</strong><br/>Simulation and analysis of renewable energy systems, with customisable AI model parameters, before implementing changes in the physical microgrid.</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 pb-3 border-y my-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-body-emphasis mb-1">What can you do here?</h5>
+                            <p class="text-body-tertiary fs-9 mb-3">Select the service you want to use.</p>
+
+                            <!-- Datasets -->
+                            <a href="{% url 'datasets_list' %}" class="d-flex align-items-center text-decoration-none py-3 border-bottom">
+                                <span class="bg-turquoise text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-database"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Datasets</h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Find relevant datasets for your research or analysis.</p>
+                                </div>
+                            </a>
+
+                            <!-- Renewable Generation Forecasting (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-cloud-sun"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Renewable Generation Forecasting<span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Day-ahead forecasting of photovoltaic and wind generation, with performance evaluation against measured data.</p>
+                                </div>
+                            </div>
+
+                            <!-- Renewable Energy Scenario Analysis (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-sliders"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Renewable Energy Scenario Analysis<span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Configuration and evaluation of renewable generation and flexibility-resource scenarios across the microgrid.</p>
+                                </div>
+                            </div>
+
+                            <!-- Digital Twin Experimentation (coming soon) -->
+                            <div class="d-flex align-items-center py-3 border-bottom dt-card-disabled">
+                                <span class="bg-secondary-subtle text-secondary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width:48px;height:48px;font-size:1.1rem;">
+                                    <span class="fas fa-display"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-body-emphasis mb-1">Digital Twin Experimentation<span class="badge bg-secondary-subtle text-secondary fw-normal ms-1" style="font-size:.7rem;">Coming soon</span></h6>
+                                    <p class="text-body-tertiary fw-light fs-9 mb-0">Run Digital Twin scenarios and customise AI model parameters in a safe, reproducible environment.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

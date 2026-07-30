@@ -63,8 +63,8 @@ DIGITAL_TWINS = [
         'image': 'assets/img/digital_twins/thumbs/RDN.webp',
     },
     {
-        'slug': 'ceder-microgrid',
-        'name': 'CEDER-CIEMAT Microgrid with Distributed Energy Resources',
+        'slug': 'ciemat-microgrid',
+        'name': 'CIEMAT Microgrid with Distributed Energy Resources',
         'description': 'A real renewable microgrid with solar, wind, storage, and hydrogen integration, supported by a Digital Twin for testing intelligent energy management strategies.',
         'image': 'assets/img/digital_twins/thumbs/Ceder-Lubia.webp',
     },
