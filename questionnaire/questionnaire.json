@@ -37,7 +37,7 @@
           "type": "branching",
           "question": "Does your solution qualify as an AI system according to the definition of AI Act?",
           "more_info": "AI Act kicks in for a system that include all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infer from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems.",
-          "example": "e.g. AI system forecasting energy demand, detecting electricity theft, optimising grid loads, scheduling EV charging that meet the provided criteria of the AI system definition.",
+          "example": "e.g. Simple prediction systems such as a system that uses the average temperature of a certain period’s temperature to predict temperature when only estimating averages and not achieving the performance of more complicated time-series forecasting may non constitute an AI system according to AI Act’s definition.",
           "more_info_example": "AI system that balances supply and demand on the grid may be considered as AI system if it complies with the provided criteria, while traditional software systems that are based on rules solely defined by natural persons to execute operations are not considered AI systems. For Transmission System Operators (TSOs) special attention should be paid to identify AI within existing systems as well as intergate AI within existing systems",
           "sub_items": [],
           "answer_options": [
@@ -190,7 +190,7 @@
           "type": "branching",
           "question": "Does any of the following apply to AI systems already marketed or put into service (narrowed down only to the most likely to energy sector) ? \n(a)Have you put your company's name/brand on a third-party high-risk AI system,\n(b) Have you substantially changed how it works so that it remains high-risk,\n(c) Have you changed its intended purpose so it now falls into high-risk category?",
           "more_info": "Distributors, importers, deployers or other third parties may be considered providers under certain circumstances. Already marketed means that this high-risk AI system is already placed on the market.Substantial modification means a change to an AI system after its placing on the market or putting into service, not foreseen or planned in the initial conformity assessment of the provider, resulting the compliance of the system being affected or modification of the intended purpose for which the AI system was assessed.",
-          "example": "e.g. repurposing a Al system that has not been classified as high-risk to make automated hiring decisions.",
+          "example": "e.g. Repurposing a Al system that has not been classified as high-risk to make automated hiring decisions modifying a GPAI system such as ChatGPT in a high risk setting for example for critical infrastructure use cases.",
           "more_info_example": null,
           "sub_items": [],
           "answer_options": [
@@ -416,7 +416,7 @@
               "label": "b",
               "text": "harmful exploitation of vulnerabilities",
               "more_info": "Harmful exploitation of vulnerabilities: exploit vulnerabilities of a person or group of persons (due to age, disability,or specific social or economic situation) aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
-              "example": null,
+              "example": "e.g. An AI system targeting vulnerable consumers on the basis of energy poverty situation for predatory energy products, exploiting their susceptibility, causing significant financial harm.",
               "more_info_example": null,
               "article_links": [
                 {
@@ -942,7 +942,7 @@
               "number": "5.6",
               "text": "Human oversight enabling measures designed in.",
               "more_info": "Human oversight can be achived through one of the following approaches or by their combination: a) incorporation of the measures, when technically feasible in the system by the provider, b)identification of the measures that are appropriate to be implemented by the deployer. The high-risk AI system should be provided to the deployer so as the person to whom oversight is assigned to be able to monitor system's operation, correctly interpret the output, acknowledge automation bias, avoid the use of the system or disregard the output and interrupt the system.",
-              "example": null,
+              "example": "e.g. In case of a grid operator AI tool, the design of the tool should enable the control room operator to understand, intervene in and override AI.",
               "more_info_example": null,
               "article_links": [
                 {
@@ -1085,8 +1085,8 @@
               "item_id": "AI-5.14",
               "number": "5.14",
               "text": "Serious incident reporting process (including obligation to timely report, investigate and cooperate)",
-              "more_info": "Providers of high-risk AI systems placed on the market, should report any serious incident to the market surveillance authorities where the incident has occurred, thus art. 73 can be interpreted as imposing an obligation for an incident reporting framework.Τhe report should be provided immediately after the provider has established a causal link between the AI system and the serious incident or reasonable likelihood of such link and not later than 15 days the provider, or where applicable the deployer becomes aware of the serious incident . An immediate report is required in two circumstances: a) when there is a widespread infringement or serious incident or there is a serious and irreversible disruption of the management or operation of critical infrastructure, where report should be provided immediately and not later than two days after the provider or the deployer becomes aware of the incident without the necessity of the establishment of a causal link. \nAdditionally, in case of a death of a person, the report should be provided immediately after the provider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and the serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer becomes aware of the serious incident.\nIn addition to the abovementioned obligations, after the submission of the report, the provider should conduct the necessary investigations without delay and cooperate with the competent authorities and where relevant with the notified body concerned during the investigations. An incident report for serious incidents under the AI Act is also available to be completed in case such an incident takes place.",
-              "example": null,
+              "more_info": "Providers of high-risk AI systems placed on the market, should report any serious incident to the market surveillance authorities where the incident has occurred, thus art. 73 can be interpreted as imposing an obligation for an incident reporting framework.Τhe report should be provided immediately after the provider has established a causal link between the AI system and the serious incident or reasonable likelihood of such link and not later than 15 days the provider, or where applicable the deployer becomes aware of the serious incident . An immediate report is required in two circumstances: a) when there is a widespread infringement or serious incident or there is a serious and irreversible disruption of the management or operation of critical infrastructure, where report should be provided immediately and not later than two days after the provider or the deployer becomes aware of the incident without the necessity of the establishment of a causal link. \nAdditionally, in case of a death of a person, the report should be provided immediately after the provider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and the serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer becomes aware of the serious incident.\nIn addition to the abovementioned obligations, after the submission of the report, the provider should conduct the necessary investigations without delay and cooperate with the competent authorities and where relevant with the notified body concerned during the investigations. An incident report for serious incidents under the AI Act is also available to be completed in case such an incident takes place. For high risk AI systems falling in the scope of Annex III among which critical infrastructure, examine the exact scope of report obligation in case your entity is obliged to incident reporting on the basis of other legislation like CER or NIS2.",
+              "example": "e.g. A permanent displacement of a power substation for which years will be needed for its repair or replacement.",
               "more_info_example": null,
               "article_links": [
                 {
@@ -1104,6 +1104,11 @@
                   "label": "Incident report for serious incidents under the AI Act",
                   "url": "https://digital-strategy.ec.europa.eu/en/consultations/ai-act-commission-issues-draft-guidance-and-reporting-template-serious-ai-incidents-and-seeks",
                   "type": "incident_reporting_guidance"
+                },
+                {
+                  "label": "Incident Report",
+                  "url": "https://ec.europa.eu/newsroom/dae/redirection/document/119623",
+                  "type": "incident_report"
                 }
               ]
             },
@@ -1387,9 +1392,9 @@
           "track": "ai_system",
           "type": "checklist",
           "question": "Have you addressed all transparency obligations according to your role for certain AI systems mentioned below?",
-          "more_info": null,
+          "more_info": "Should be provided in a clear and distinguishable manner no later than the time of first interaction.",
           "example": null,
-          "more_info_example": null,
+          "more_info_example": "Show attention to exceptions of the obligations. Obligations apply regardless of whether an AI system qualifies as high-risk.",
           "status_options": [
             "COMPLETE",
             "IN_PROGRESS",
@@ -1400,7 +1405,7 @@
             {
               "item_id": "AI-7.1",
               "number": "7.1",
-              "text": "Provider of AI system directly interacting with natural persons such as chatbots, virtual agents: AI system is designed and developed in a way that users are informed they are interacting with an AI system and not a human. ΑΙ systems operating in closed physical environments are likely excluded.",
+              "text": "Provider of AI system directly interacting with natural persons such as chatbots, virtual agents: AI system is designed and developed in a way that users are informed they are interacting with an AI system and not a human. ΑΙ systems operating in closed physical environments (such as part of an industrial machinery set-up) whose outputs are not intended to reach natural persons, are likely excluded.",
               "more_info": "This obligation applies for systems intended to have direct bidirectional exchange of information with natural person. A predictive maintenance and optimisation system in industrial applications not interacting with a natural person is likely to be excluded from transparency obligations.",
               "example": "e.g. A customer support chatbot provided by an energy supplier must say it is an AI when initiating a conversation through the use of appropriate to the context techniques such as textual disclosure, auditory disclosure, visual cues and multimodal combinations.A smart home energy management AI system interacting with consumers must inform them that they are interacting with an AI system.",
               "more_info_example": null,
@@ -1423,10 +1428,10 @@
             {
               "item_id": "AI-7.2",
               "number": "7.2",
-              "text": "Provider of an AI system generating syntetic audio, image, video or text content: AI system implements technical solutions so as AI-generated output is clearly labelled in a machine readable format and detectable as AI generated. (Compliance can be demonstrated by adhering to code of practice that is deemed adequate by the AI Office)",
+              "text": "Provider of an AI system generating or manipulating syntetic audio, image, video or text content: AI system implements technical solutions so as AI-generated output is clearly labelled in a machine readable format and detectable as AI generated. (Compliance can be demonstrated by adhering to code of practice that is deemed adequate by the AI Office)",
               "more_info": "When the output of the AI system is composed by recordings of data from physical environment and/or data transmission by AI systems without modification it may fall outside of the scope. Exceptions to the obligation apply e.g assistive function for standard editing aiming at grammar correction. Consumption recorded by AI enabled- smart meters may fall out of the scope transparency obligation when it is the output of the system that records data and/or transmit them without changing them. Check whether positive assessment of the Code has been completed.",
               "example": "Automated energy reports written by AI and presented as human-authored must be labelled as AI-generated and they are detectable as artificially generated",
-              "more_info_example": "GENERAL Show attention to exceptions to the obligations. Obligations apply regardless of whether an AI system qualifies as high-risk.",
+              "more_info_example": null,
               "applicable_role": "provider",
               "allow_not_applicable": true,
               "article_links": [
@@ -1451,7 +1456,7 @@
             {
               "item_id": "AI-7.3",
               "number": "7.3",
-              "text": "Deployer of emotion recognition or biometric categorisation system: disclose their use to individuals",
+              "text": "Deployer of emotion recognition or biometric categorisation system: disclose their use to individuals and process personal data in accordance with data protection regulation.",
               "more_info": null,
               "example": null,
               "more_info_example": null,
@@ -2189,7 +2194,7 @@
                   "type": "commission_guidelines"
                 }
               ]
-            },
+            },            
             {
               "item_id": "GP-5.2",
               "number": "5.2",
@@ -2198,7 +2203,18 @@
               "example": null,
               "more_info_example": null,
               "article_links": [],
-              "guideline_links": []
+              "guideline_links": [
+                {
+                  "label": "Code of Practice for General- Purpose AI models",
+                  "url": "https://digital-strategy.ec.europa.eu/en/policies/contents-code-gpai",
+                  "type": "code_of_practice"
+                },
+                {
+                  "label": "Report for serious incidents under the AI Act (General-Purpose AI Models with systemic risk)",
+                  "url": "https://digital-strategy.ec.europa.eu/en/library/ai-act-commission-publishes-reporting-template-serious-incidents-involving-general-purpose-ai",
+                  "type": "other_guidance"
+                }
+              ]
             },
             {
               "item_id": "GP-5.4",

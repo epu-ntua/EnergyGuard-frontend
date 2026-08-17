@@ -588,6 +588,7 @@ def download_assessment_json(request):
     export_data = {
         'report_id': assessment.id,
         'completion_date': assessment.created_at.isoformat(),
+        'disclaimer': 'Any compliance-related insights, assessments, guidance, results and reports generated are preliminary, non-exhaustive, and intended strictly for informational use. They do not constitute regulatory approval, accreditation, formal conformity assessment, legally binding compliance determination or presumption of any type that the AI applications are in conformity with applicable requirements or legal advice, nor should they be relied upon as a substitute for professional legal consultation.',
         'roles': assessment.roles,
         'track_results': assessment.track_results,
         'answers': assessment.answers,

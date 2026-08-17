@@ -16,6 +16,7 @@ _GUIDELINE_BADGE_META = {
     'code_of_practice': ('bg-success', 'bi-clipboard-check'),
     'explanatory_notice_template': ('bg-warning text-dark', 'bi-file-earmark-ruled'),
     'incident_reporting_guidance': ('bg-danger', 'bi-exclamation-triangle'),
+    'incident_report': ('bg-success', 'bi-file-earmark-text'),
     'other_guidance': ('bg-secondary', 'bi-info-circle'),
 }
 _DEFAULT_BADGE = ('bg-secondary', 'bi-link-45deg')
