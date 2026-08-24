@@ -3,7 +3,9 @@ from django.db.models import Count
 from django.shortcuts import render
 
 from accounts.models import Profile
+from core.views.ai_models import AI_MODELS
 from datasets.models import Dataset
+from digitaltwins.views import DIGITAL_TWINS
 from projects.models import Project
 
 
@@ -11,6 +13,8 @@ from projects.models import Project
 def dashboard(request):
     projects_count = Project.objects.count()
     datasets_count = Dataset.objects.filter(publisher__isnull=True).count()
+    ai_models_count = len(AI_MODELS)
+    digital_twins_count = len(DIGITAL_TWINS)
 
     datasets_counts_by_label = {
         row["label"]: row["total"]
@@ -39,6 +43,8 @@ def dashboard(request):
             "chart_data": datasets_chart_data,
             "projects_count": projects_count,
             "datasets_count": datasets_count,
+            "ai_models_count": ai_models_count,
+            "digital_twins_count": digital_twins_count,
             "team": profile.team,
         },
     )

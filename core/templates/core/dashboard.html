@@ -76,8 +76,7 @@
             <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-cube text-danger-dark"></span>
               <div class="ms-2">
                 <div class="d-flex align-items-end">
-                  <!-- TODO: Replace with dynamic count -->
-                  <h2 class="mb-0 me-2">37</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
+                  <h2 class="mb-0 me-2">{{ ai_models_count }}</h2><span class="fs-7 fw-semibold text-body">AI Models</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Registered & deployable</p>
               </div>
@@ -90,8 +89,7 @@
             <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-building text-success-dark"></span>
               <div class="ms-2">
                 <div class="d-flex align-items-end">
-                  <!-- TODO: Replace with dynamic count -->
-                  <h2 class="mb-0 me-2">5</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
+                  <h2 class="mb-0 me-2">{{ digital_twins_count }}</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
                 </div>
                 <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
               </div>
@@ -134,14 +132,17 @@
           <h3 class="mb-5">Trustworthiness assessments</h3>
           <p class="text-body-tertiary fw-semibold mb-4">
             Access distinct trust benchmarks covering AI Act compliance, <br class="d-none d-sm-block" />
-            ALTAI self-assessment for the energy sector, source code analysis,<br class="d-none d-sm-block" />
-            and automated fairness, bias and robustness testing. 
+            source code analysis, and automated fairness,<br class="d-none d-sm-block" />
+             bias and robustness testing. 
           </p>
           <ul>
-            <li class="ls-2 mb-2"><span class="fw-bold">5 </span> Different Benchmarks</li>
-            <li class="ls-2 mb-2"><span class="fw-bold">56 </span> Assessments conducted</li>
-            <li class="ls-2 mb-2">Automated Bias & Robustness Checks</li>
-            <li class="ls-2">Human-in-the-loop Validation</li>
+            <!-- <li class="ls-2 mb-2"><span class="fw-bold">3 </span> Different Benchmarks</li> -->
+            <!-- <li class="ls-2 mb-2"><span class="fw-bold">56 </span> Assessments conducted</li> -->
+            <!-- <li class="ls-2 mb-2">Automated Bias & Robustness Checks</li> -->
+            <!-- <li class="ls-2">Human-in-the-loop Validation</li> -->
+            <li class="ls-2 mb-2">AI Act Questionnaire</li>
+            <li class="ls-2 mb-2">Code Analysis</li>
+            <li class="ls-2 mb-2">Adversarial Robustness</li>
           </ul>
           <div class="py-0 z-1 mt-6">
             <!-- TODO: Add functionality to button -->
@@ -181,7 +182,7 @@
           <h3 class="mb-4">Digital Twins</h3>
           <p class="text-body-tertiary mb-3 mb-xl-5">Digital Twins enable simulation, monitoring and AI-driven optimization across energy systems.</p>
           <ul>
-            <li class="mb-2">5 Configured Twins</li>
+            <li class="mb-2">{{ digital_twins_count }} Configured Twins</li>
             <li class="mb-2">Model & Dataset Integration</li>
             <li class="mb-2">Simulation & Scenario Testing</li>
           </ul>
@@ -201,8 +202,8 @@
           <p class="text-body-tertiary mb-3 mb-xl-5">Powered by MeluXina, Luxembourg’s EuroHPC supercomputer,
           enabling large-scale model training, simulation and trust benchmarking.</p>
           <ul>
-            <li class="mb-2">Access to 3000 A100 GPUs</li>
-            <li class="mb-2">1000+ Nodes Available</li>
+            <li class="mb-2">Access to 800 GPU-AI Accelerators</li>
+            <li class="mb-2">20 PB High Performance Storage</li>
             <li class="mb-2">Large Scale Model Training</li>
           </ul>
           <div class="py-0 z-1 position-relative mt-4 mt-xl-9">
