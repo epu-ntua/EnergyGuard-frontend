@@ -327,6 +327,29 @@ def ai7_all_not_applicable(item_statuses):
     return bool(statuses) and all(s == 'NOT_APPLICABLE' for s in statuses)
 
 
+def ai7_open_source_check_applies(track_name, answers, item_statuses):
+    """
+    Step 7.5's open-source exemption question only surfaces on the specific
+    path where Step 4.2 found no high-risk category at all ("NO - not
+    high-risk", straight to Step 7) and the provider's own Step 7 items
+    (7.1/7.2) are both marked NOT_APPLICABLE - i.e. neither a high-risk nor
+    a transparency trigger applies. That leaves a genuine open-source
+    release as the one remaining reason the system could still be entirely
+    outside the AI Act's scope, so it's worth asking about explicitly
+    before letting the track fall through to Step 8.
+    """
+    step = get_step(track_name, 'AI-4.2')
+    no_option = next(
+        (opt['value'] for opt in (step or {}).get('answer_options', [])
+         if opt['value'].strip().upper().startswith('NO')),
+        None,
+    )
+    if not no_option or (answers or {}).get('AI-4.2') != no_option:
+        return False
+    statuses = item_statuses or {}
+    return statuses.get('AI-7.1') == 'NOT_APPLICABLE' and statuses.get('AI-7.2') == 'NOT_APPLICABLE'
+
+
 def compute_obligations(track_name, risk_category, role, checklist_status, answers=None):
     """
     Build the results-screen obligations summary for one track: which

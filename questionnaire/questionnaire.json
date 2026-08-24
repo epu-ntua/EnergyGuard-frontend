@@ -229,9 +229,9 @@
           "more_info_example": null,
           "sub_items": [
             {
-              "label": "a",
+              "label": "*",
               "text": "Is this AI system being placed on the EU market or put into service in the EU (only for providers)",
-              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "more_info": null,
               "example": "e.g. development and provision via an application programming interface in Germany and France of an AI system that turns on and off devices or systems based on grid signals to balance supply loads→ YES.",
               "more_info_example": null,
               "applicable_role": "provider",
@@ -244,9 +244,9 @@
               "guideline_links": []
             },
             {
-              "label": "b",
+              "label": "*",
               "text": "Is the AI system's output being used in the EU (both for providers and deployers)",
-              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "more_info": null,
               "example": "e.g a system used by an entity with no establishment in the EU, only outside the EU with no EU impact (output is not used in the Union)→ likely NO. A participant of the electricity market located within EU that procures an AI system from a developer outside the EU, but uses it within EU market → YES",
               "more_info_example": null,
               "article_links": [
@@ -258,9 +258,9 @@
               "guideline_links": []
             },
             {
-              "label": "c",
+              "label": "*",
               "text": "Do you have your place of establishment or are you located within the EU (only for deployers)",
-              "more_info": "For providers, AI Act applies when placing on the Union market or putting into service an AI system regardless of where they are located and as such it applies both to those established within EU or in third countries. Similarly, AI Act applies for providers and deployers established or located in a third country, when the output produced is used in the Union.",
+              "more_info": null,
               "example": null,
               "more_info_example": null,
               "applicable_role": "deployer",
@@ -471,7 +471,7 @@
           ],
           "answer_options": [
             {
-              "value": "YES — use of a prohibited practice",
+              "value": "YES",
               "next_step_raw": "PROHIBITED — This system cannot be deployed. Marketing or use is illegal under the EU AI Act.",
               "derived_hints": {
                 "risk_category": "prohibited"
@@ -957,7 +957,7 @@
               "number": "5.7",
               "text": "Accuracy, robustness & cybersecurity appropriate levels met",
               "more_info": "The levels levels of accuracy and relevant accuracy metrics should be referred in the instructions of use of the AI system. Robustness means that the system should be resilient in relation to harmful or otherwise undesirable behaviour that may result from limitations within the system or the environment in which the system operates (e.g. errors, faults, inconsistencies, unexpected situations).Cybersecurity means that the system should be resilient against attempts by unauthorized third parties to change its use, outputs or performance, through the adoption of technical solutions (for example technical solutions for AI specific vulnerabilities mitigation may include measures for the prevention, detection, response and control of data poisoning, model poisoning, adversial examples or models invasion).",
-              "example": "e.g. increased risk in cybersecurity issues (like non authorised access, false data injenction) due to vulnerability of two way communication requirement of AI programs connected to the grid (e.g collection of consumption data and sending commands to en EV to charge).",
+              "example": "e.g. increased risk in cybersecurity issues (like non authorised access, false data injenction) due to vulnerability of two way communication requirement of AI programs connected to the grid (e.g collection of consumption data and sending commands to an EV to charge).",
               "more_info_example": null,
               "article_links": [
                 {
@@ -1085,7 +1085,7 @@
               "item_id": "AI-5.14",
               "number": "5.14",
               "text": "Serious incident reporting process (including obligation to timely report, investigate and cooperate)",
-              "more_info": "Providers of high-risk AI systems placed on the market, should report any serious incident to the market surveillance authorities where the incident has occurred, thus art. 73 can be interpreted as imposing an obligation for an incident reporting framework.Τhe report should be provided immediately after the provider has established a causal link between the AI system and the serious incident or reasonable likelihood of such link and not later than 15 days the provider, or where applicable the deployer becomes aware of the serious incident . An immediate report is required in two circumstances: a) when there is a widespread infringement or serious incident or there is a serious and irreversible disruption of the management or operation of critical infrastructure, where report should be provided immediately and not later than two days after the provider or the deployer becomes aware of the incident without the necessity of the establishment of a causal link. \nAdditionally, in case of a death of a person, the report should be provided immediately after the provider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and the serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer becomes aware of the serious incident.\nIn addition to the abovementioned obligations, after the submission of the report, the provider should conduct the necessary investigations without delay and cooperate with the competent authorities and where relevant with the notified body concerned during the investigations. An incident report for serious incidents under the AI Act is also available to be completed in case such an incident takes place. For high risk AI systems falling in the scope of Annex III among which critical infrastructure, examine the exact scope of report obligation in case your entity is obliged to incident reporting on the basis of other legislation like CER or NIS2.",
+              "more_info": "Providers of high-risk AI systems placed on the market, should report any serious incident to the market surveillance authorities where the incident has occurred, thus art. 73 can be interpreted as imposing an obligation for an incident reporting framework.Τhe report should be provided immediately after the provider has established a causal link between the AI system and the serious incident or reasonable likelihood of such link and not later than 15 days the provider, or where applicable the deployer becomes aware of the serious incident . An immediate report is required in two circumstances: a) when there is a widespread infringement or b) there is a serious and irreversible disruption of the management or operation of critical infrastructure, where report should be provided immediately and not later than two days after the provider or the deployer becomes aware of the incident without the necessity of the establishment of a causal link.\nAdditionally, in case of a death of a person, the report should be provided immediately after the provider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and the serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer becomes aware of the serious incident.\nIn addition to the abovementioned obligations, after the submission of the report, the provider should conduct the necessary investigations without delay and cooperate with the competent authorities and where relevant with the notified body concerned during the investigations. An incident report for serious incidents under the AI Act is also available to be completed in case such an incident takes place. For high risk AI systems falling in the scope of Annex III among which critical infrastructure, examine the exact scope of report obligation in case your entity is obliged to incident reporting on the basis of other legislation like CER or NIS2.",
               "example": "e.g. A permanent displacement of a power substation for which years will be needed for its repair or replacement.",
               "more_info_example": null,
               "article_links": [
@@ -1539,6 +1539,40 @@
           ]
         },
         {
+          "step_id": "AI-7.5",
+          "step_label": "Step 7.5 · Open-Source Exemption",
+          "track": "ai_system",
+          "type": "branching",
+          "question": "Is your AI system released under a genuine open-source licence not intended for high-risk use, prohibited practice or a system having transparency obligations?",
+          "more_info": "AI systems released under a free and open-source licence fall outside the scope of the AI Act, unless they are high-risk, involve a prohibited practice, or are subject to Article 50 transparency obligations. Since this system was found neither high-risk (Step 4.2) nor subject to any transparency trigger (Step 7), a genuine open-source release would place it entirely outside the Regulation's scope.",
+          "example": null,
+          "more_info_example": null,
+          "sub_items": [],
+          "answer_options": [
+            {
+              "value": "YES",
+              "next_step_raw": "OUT OF SCOPE — the AI Act does not apply to this system",
+              "derived_hints": {
+                "risk_category": "out_of_scope"
+              }
+            },
+            {
+              "value": "NO",
+              "next_step_raw": "Step 8 · AI Literacy",
+              "derived_hints": {
+                "goes_to_step_hint": "Step 8"
+              }
+            }
+          ],
+          "article_links": [
+            {
+              "label": "Article 2 of the AI Act",
+              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
+            }
+          ],
+          "guideline_links": []
+        },
+        {
           "step_id": "AI-8",
           "step_label": "Step 8 · AI Literacy",
           "track": "ai_system",
@@ -1609,7 +1643,7 @@
             {
               "label": "b",
               "text": "shows significant generality",
-              "more_info": "The provision of a specific list of capabilities that a model should dispose and tasks to accomplish to qualify as a General purpose AI (GPAI) model is not feasible, due to the variety of its capabilities and use cases. Thus, the amount of computational resources used for the training of the model \"training compute\" threshold (measured in FLOP) and the modalities of the model is currently considered by the Comission as the most suitable apporach for the definition of model as GPAI model. This is sublect to future amendments based on technology and market developments. GPAI models are not classified according to risk level.If a general -purpose AI model meets criterion (f) but exceptionally does not show significant generality or is not capable of performing a wide range of distinct tasks, it is not considered a GPAI model. If a general purpose AI model does not meet the criteria of necessary compute training and language generation, still it can be assessed as GPAI model if it displays significant generality and is capable of performing a wide range of distinct tasks",
+              "more_info": "The provision of a specific list of capabilities that a model should dispose and tasks to accomplish to qualify as a General purpose AI (GPAI) model is not feasible, due to the variety of its capabilities and use cases. Thus, the amount of computational resources used for the training of the model \"training compute\" threshold (measured in FLOP) and the modalities of the model is currently considered by the Commission as the most suitable approach for the definition of model as GPAI model. This is sublect to future amendments based on technology and market developments. GPAI models are not classified according to risk level.If a general -purpose AI model meets criterion (f) but exceptionally does not show significant generality or is not capable of performing a wide range of distinct tasks, it is not considered a GPAI model. If a general purpose AI model does not meet the criteria of necessary compute training and language generation, still it can be assessed as GPAI model if it displays significant generality and is capable of performing a wide range of distinct tasks.",
               "example": null,
               "more_info_example": null,
               "article_links": [
@@ -1750,7 +1784,7 @@
           "track": "gpai_model",
           "type": "branching",
           "question": "Does the model have high impact capabilities evaluated on the basis of appropriate technical tools and methodologies, including indicators and benchmarks?",
-          "more_info": "High impact capabilities is when the cumulative amount of computation used for its training measured in floating point operations is greater than 10^25.",
+          "more_info": "High impact capabilities is when the cumulative amount of computation used for its training measured in floating point operations is greater than 10^25. This is subject to amendment in the light of technological developments.",
           "example": "A GPAI model (fulfilling the criteria of GPAI Model) that meets the compute threshold of 10²⁵ floating-point operations and can be intergated in various downstream energy applications such as e.g for technical support analysis",
           "more_info_example": null,
           "sub_items": [],
@@ -1800,8 +1834,8 @@
           "step_label": "Step 1.3b · Systemic risk classification due to Commission Decision",
           "track": "gpai_model",
           "type": "branching",
-          "question": "Has the European Commission formally defined your model as having systemic risk?(subject to amendment in the light of technological developments)",
-          "more_info": "The European Commission can classify a GPAI model as having systemic risk, if it has capabilities or impact equivalent to or exceeding those recorded in the most advanced models, having regard to the criteria included in Annex XIII of AI Act. This designation can take place by the Commission, either on its own initiative or after a qualified alert from the scientific panel. When the GPAI model fulfils the criterion and is classified with systemic risk, its provider should abide by the respective obligations",
+          "question": "Has the European Commission formally defined your model as having systemic risk?",
+          "more_info": "The European Commission can classify a GPAI model as having systemic risk, if it has capabilities or impact equivalent to or exceeding those recorded in the most advanced models, having regard to the criteria included in Annex XIII of AI Act. This designation can take place by the Commission, either on its own initiative or after a qualified alert from the scientific panel. When the GPAI model fulfils the criterion and is classified with systemic risk, its provider should abide by the respective obligations.",
           "example": "A GPAI model is designated by the European Commission as having a systemic risk, based on a case by case assessment, although it may not reach compute threashold",
           "more_info_example": null,
           "sub_items": [],
@@ -1884,7 +1918,7 @@
           "question": "Did you make substantial modifications to another organisation's GPAI model and then place that modified model on the market (indicative criterion for substantial modifications is when the training compute used for the modification is more than a third of the training compute of the original model/subject to amendments depending on technology developments )?",
           "more_info": "Downstream modifier is a downstream actor, that is different from the original provider and is not acting on his/her behalf. He/she can modify the GPAI model with or without integrating it in an AI system. Only in some cases, the downstream modifier can be considered as a provider of the modified GPAI model. This is the case when the modification leads to a significant change in the model's generality, capabilities or systemic risk.Check Commission's Guidelines if the value of the training compute of the original GPAI is not available",
           "example": "e.g. you built a new foundational model on top of an existing base model and the training compute used for the modification is greater that a third of the training compute of the original model",
-          "more_info_example": ".",
+          "more_info_example": null,
           "sub_items": [],
           "answer_options": [
             {
@@ -2136,6 +2170,7 @@
               "more_info": "The appointment should take place by a written mandate that empowers the authorised representative to materialize the tasks listed in article 54 of the AI Act. The obligation does not apply to providers of GPAI models released under a free and open-source licence whose parameters are made publicly available and are not GPAI models withn systemic risk.",
               "example": null,
               "more_info_example": null,
+              "allow_not_applicable": true,
               "article_links": [
                 {
                   "label": "Article 54 of AI Act",

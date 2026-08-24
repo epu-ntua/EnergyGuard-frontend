@@ -488,9 +488,17 @@ def submit_checklist(request, track, step_id):
         if warning:
             track_state['flash_note'] = warning
     else:
-        if step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
+        if step_id == 'AI-7' and engine.ai7_open_source_check_applies(track, track_state['answers'], statuses):
+            # No high-risk category (Step 4.2) and no transparency trigger
+            # (Step 7) applies - detour through Step 7.5 to check for an
+            # open-source scope exemption before continuing to Step 8.
             track_state['risk_category'] = 'minimal_risk'
-        _finish_current_step(track_state)
+            track_state['current_step'] = 'AI-7.5'
+        elif step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
+            track_state['risk_category'] = 'minimal_risk'
+            _finish_current_step(track_state)
+        else:
+            _finish_current_step(track_state)
 
     _save_state(request, state)
 
