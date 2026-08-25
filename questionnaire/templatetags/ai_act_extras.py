@@ -74,16 +74,26 @@ def filter_by_role(items, role):
 
 
 @register.filter
-def filter_by_gp4a(items, gp4a_answer):
+def filter_by_gp4a(items, track_state):
     """GP-4b's and GP-5's visible items both depend on the GP-4a Code of
-    Practice answer; dispatches by the items' own step prefix so the same
-    filter chain in step_checklist.html works for either checklist step -
-    see engine.filter_gp4b_items / engine.filter_gp5_items for the rules."""
+    Practice answer, and GP-4b's also depend on whether GP-3's open-source
+    exception applies to a non-systemic-risk model; dispatches by the
+    items' own step prefix so the same filter chain in step_checklist.html
+    works for either checklist step - see engine.filter_gp4b_items /
+    engine.filter_gp5_items for the rules. Takes the whole track_state
+    (rather than just the GP-4a answer) since the open-source check also
+    needs GP-3's answer and the track's risk_category."""
     if not items:
         return items
+    track_state = track_state or {}
+    answers = track_state.get('answers') or {}
+    gp4a_answer = answers.get('GP-4a')
     if items[0]['item_id'].startswith('GP-5'):
         return engine.filter_gp5_items(items, gp4a_answer)
-    return engine.filter_gp4b_items(items, gp4a_answer)
+    open_source_exempt = engine.gp4b_open_source_exemption_applies(
+        'gpai_model', track_state.get('risk_category'), answers.get('GP-3')
+    )
+    return engine.filter_gp4b_items(items, gp4a_answer, open_source_exempt)
 
 
 @register.filter

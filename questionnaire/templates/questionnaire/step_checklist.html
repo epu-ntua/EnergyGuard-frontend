@@ -33,7 +33,7 @@
             <form method="post" action="{% url 'questionnaire:submit_checklist' track=track step_id=step.step_id %}" class="mt-4">
                 {% csrf_token %}
                 <div class="d-flex flex-column gap-3 mb-4">
-                    {% for item in step.items|filter_by_role:track_state.role|filter_by_gp4a:gp4a_answer %}
+                    {% for item in step.items|filter_by_role:track_state.role|filter_by_gp4a:track_state %}
                         <div class="p-3 border rounded-4">
                             <div class="d-flex align-items-start gap-2 mb-2">
                                 <span class="fw-semibold text-nowrap">{{ item.number }}</span>

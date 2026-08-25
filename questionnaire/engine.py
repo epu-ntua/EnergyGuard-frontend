@@ -202,16 +202,45 @@ def gpai_risk_classification(step_id, answer_value):
     return None
 
 
-def filter_gp4b_items(items, gp4a_answer):
+def gp4b_open_source_exemption_applies(track_name, risk_category, gp3_answer):
     """
-    GP-4b's item list depends on the GP-4a Code of Practice answer: a
-    provider fully adhering to the Code only owes 4.4 (training data
-    summary) and 4.5 (EU representative), since the Code itself already
-    covers the rest. Any other answer (NO / IN PROGRESS) still needs the
-    full obligations list demonstrated through other adequate means.
+    Article 53(2)'s free/open-source licence exception drops the
+    obligations behind items 4.1 (Article 53(1)(a) technical documentation),
+    4.2 (Article 53(1)(b) downstream-provider documentation) and 4.5
+    (Article 54 EU authorised representative) - but only for GPAI models
+    without systemic risk; GP-3's own guidance is explicit that "Open-source
+    models WITH systemic risk get no exception." Items 4.3 (copyright
+    policy) and 4.4 (training data summary) still apply regardless, per that
+    same guidance ("Open-source models without systemic risk still need a
+    public training data summary and a copyright policy").
+    """
+    if risk_category == 'systemic_risk':
+        return False
+    step = get_step(track_name, 'GP-3')
+    yes_option = next(
+        (opt['value'] for opt in (step or {}).get('answer_options', [])
+         if opt['value'].strip().upper().startswith('YES')),
+        None,
+    )
+    return bool(yes_option) and gp3_answer == yes_option
+
+
+def filter_gp4b_items(items, gp4a_answer, open_source_exempt=False):
+    """
+    GP-4b's item list depends on two independent things: the GP-4a Code of
+    Practice answer - a provider fully adhering to the Code only owes 4.4
+    (training data summary) and 4.5 (EU representative), since the Code
+    itself already covers the rest, while any other answer (NO / IN
+    PROGRESS) still needs the full obligations list demonstrated through
+    other adequate means - and, separately, whether GP-3's open-source
+    exception applies to a non-systemic-risk model (see
+    gp4b_open_source_exemption_applies), which drops 4.1, 4.2 and 4.5
+    regardless of the GP-4a answer.
     """
     if (gp4a_answer or '').strip().upper().startswith('YES'):
-        return [item for item in items if item.get('required_even_if_full_adherence')]
+        items = [item for item in items if item.get('required_even_if_full_adherence')]
+    if open_source_exempt:
+        items = [item for item in items if item['item_id'] not in ('GP-4b.1', 'GP-4b.2', 'GP-4b.5')]
     return items
 
 
@@ -331,12 +360,15 @@ def ai7_open_source_check_applies(track_name, answers, item_statuses):
     """
     Step 7.5's open-source exemption question only surfaces on the specific
     path where Step 4.2 found no high-risk category at all ("NO - not
-    high-risk", straight to Step 7) and the provider's own Step 7 items
-    (7.1/7.2) are both marked NOT_APPLICABLE - i.e. neither a high-risk nor
-    a transparency trigger applies. That leaves a genuine open-source
-    release as the one remaining reason the system could still be entirely
-    outside the AI Act's scope, so it's worth asking about explicitly
-    before letting the track fall through to Step 8.
+    high-risk", straight to Step 7) and the role's own Step 7 items are all
+    marked NOT_APPLICABLE - 7.1/7.2 for a provider, 7.3/7.4 for a deployer -
+    i.e. neither a high-risk nor a transparency trigger applies for either
+    role. That leaves a genuine open-source release as the one remaining
+    reason the system could still be entirely outside the AI Act's scope,
+    so it's worth asking about explicitly before letting the track fall
+    through to Step 8. Reuses ai7_all_not_applicable rather than naming
+    specific item_ids, since item_statuses only ever holds the items the
+    template actually rendered for the current role (see filter_by_role).
     """
     step = get_step(track_name, 'AI-4.2')
     no_option = next(
@@ -346,8 +378,7 @@ def ai7_open_source_check_applies(track_name, answers, item_statuses):
     )
     if not no_option or (answers or {}).get('AI-4.2') != no_option:
         return False
-    statuses = item_statuses or {}
-    return statuses.get('AI-7.1') == 'NOT_APPLICABLE' and statuses.get('AI-7.2') == 'NOT_APPLICABLE'
+    return ai7_all_not_applicable(item_statuses)
 
 
 def compute_obligations(track_name, risk_category, role, checklist_status, answers=None):
@@ -377,7 +408,10 @@ def compute_obligations(track_name, risk_category, role, checklist_status, answe
         if role:
             items = [it for it in items if it.get('applicable_role') in (None, role)]
         if step_id == 'GP-4b':
-            items = filter_gp4b_items(items, (answers or {}).get('GP-4a'))
+            open_source_exempt = gp4b_open_source_exemption_applies(
+                track_name, risk_category, (answers or {}).get('GP-3')
+            )
+            items = filter_gp4b_items(items, (answers or {}).get('GP-4a'), open_source_exempt)
         if step_id == 'GP-5':
             items = filter_gp5_items(items, (answers or {}).get('GP-4a'))
 
@@ -399,3 +433,25 @@ def compute_obligations(track_name, risk_category, role, checklist_status, answe
             'outstanding': outstanding,
         })
     return summary
+
+
+def ai_literacy_summary(track_name, answers):
+    """
+    Step 8 (AI Literacy) is a track-wide acknowledgement, not a per-item
+    checklist, so compute_obligations - which only walks checklist steps -
+    never surfaces it. The results screen still needs to show whether it
+    was confirmed, so this looks up the stored AI-8 answer against the
+    step's own answer_options for its label/guidance text. Returns None if
+    the track never reached Step 8 (e.g. it ended on a terminal risk
+    category first).
+    """
+    answer = (answers or {}).get('AI-8')
+    if not answer:
+        return None
+    step = get_step(track_name, 'AI-8')
+    option = next((opt for opt in (step or {}).get('answer_options', []) if opt['value'] == answer), None)
+    return {
+        'answer': answer,
+        'confirmed': answer.strip().upper() == 'YES',
+        'next_step_raw': (option or {}).get('next_step_raw'),
+    }

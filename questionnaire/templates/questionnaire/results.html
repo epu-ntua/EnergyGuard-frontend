@@ -90,6 +90,19 @@
                         {% else %}
                             <p class="text-muted small mb-0">No specific obligations checklist applies for this outcome.</p>
                         {% endif %}
+                        {% if data.literacy %}
+                            <div class="mt-3">
+                                <h6 class="fw-bold small text-uppercase text-muted">AI Literacy</h6>
+                                {% if data.literacy.confirmed %}
+                                    <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-circle me-1"></i>{{ data.literacy.answer }}</span>
+                                    {% if data.literacy.next_step_raw %}
+                                        <p class="text-muted small mb-0 mt-1">{{ data.literacy.next_step_raw }}</p>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}

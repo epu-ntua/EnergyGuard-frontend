@@ -260,7 +260,6 @@ def step_view(request, track, step_id):
 
     if step['type'] == 'checklist':
         context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
-        context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id in ('GP-4b', 'GP-5') else None
         return render(request, 'questionnaire/step_checklist.html', context)
 
     answer = track_state['answers'].get(step_id)
@@ -551,6 +550,8 @@ def results(request):
                 name, risk_category, track_state['role'], track_state['checklist_status'],
                 track_state['answers']
             ) if track_state['completed'] else [],
+            'literacy': engine.ai_literacy_summary(name, track_state['answers'])
+            if track_state['completed'] else None,
         }
 
     display_roles = sorted({

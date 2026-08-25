@@ -1564,12 +1564,7 @@
               }
             }
           ],
-          "article_links": [
-            {
-              "label": "Article 2 of the AI Act",
-              "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-2"
-            }
-          ],
+          "article_links": [],
           "guideline_links": []
         },
         {
