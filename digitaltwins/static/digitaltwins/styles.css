@@ -6,21 +6,102 @@
    instead of the map's own box, and drift onto the footer below.
    The colleague's overlay offsets (bottom:20px, bottom:330px, etc.) were
    calibrated for her standalone page, where the map was the full viewport.
-   Height is kept at a full 100vh here so that stack has as much room as
-   it was designed for; the breadcrumb/header/footer above and below just
-   push the page taller and scroll, rather than shrinking the map's own
-   box and squeezing the overlays into less space than they need. */
-#map-viewport { position: relative; width: 100%; height: 100vh; margin-bottom: 2rem; }
+   The theme's `.content` wrapper (see rea-riga-dt.html) is already a flex
+   column sized to one viewport (`min-height: 100vh` in theme.css, padded
+   clear of the fixed top navbar) — `flex: 1 1 0` here lets #map-viewport
+   claim whatever's left after the breadcrumb/header/footer take their own
+   natural height, instead of stacking a full 100vh on top of them and
+   forcing the whole page to scroll just to see the map. Basis must be `0`,
+   not `auto`: #map-viewport's only in-flow child is #map (height:100%,
+   which can't resolve until #map-viewport itself has a definite height —
+   its other children are all `position:absolute` overlays, contributing
+   nothing to flow height either), so an `auto` basis measures its content
+   as ~0 and, against a parent sized only by `min-height` rather than a
+   definite `height`, isn't reliably grown to fill the remaining space.
+   min-height is a floor so it isn't squeezed away if the header ever
+   grows tall. */
+#map-viewport { position: relative; width: 100%; flex: 1 1 0; min-height: 480px; margin-bottom: 2rem; }
 #map { width: 100%; height: 100%; }
+
+/* ── Filter chips (Region / Energy class / Year) — replacement for the
+   colleague's three always-visible corner panels, used on every screen
+   size. Tap a chip and its Leaflet control's own div (reparented here —
+   see initFilterChips() in rea-riga-map.js) opens below; only one open
+   at a time, others are forced `.collapsed`. */
+.filter-chips {
+  position: absolute;
+  top: 80px; /* clears the zoom control + search bar */
+  left: 16px;
+  width: min(260px, calc(100% - 32px)); /* matches .filter-chip-dropdown so the row and its opened panel line up as one narrow card, not a full-width bar */
+  z-index: 1004;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.filter-chip {
+  flex: 0 0 auto;
+  border: 1px solid rgba(28, 47, 74, 0.16);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2c3e54;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(12, 24, 44, 0.16);
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, #5b7fa6 0%, #3f6188 100%);
+  border-color: #1c3a5c;
+  color: #ffffff;
+}
+
+.filter-chip-dropdown {
+  position: absolute;
+  top: 128px; /* below .filter-chips (top:80px + its own ~40px height + gap) */
+  left: 16px;
+  width: min(260px, calc(100% - 32px)); /* keeps the opened panel at its natural ~200px-ish card width instead of stretching edge-to-edge on wide screens */
+  z-index: 1004;
+  /* 100% resolves against #map-viewport's own height (its nearest
+     positioned ancestor), not the browser viewport — so the dropdown is
+     capped at the map's actual bottom edge instead of vh, which could
+     run past it. overflow-y (below) scrolls whatever doesn't fit. */
+  max-height: calc(100% - 128px - 16px);
+  overflow-y: auto;
+}
+
+/* Fully hide collapsed panels here (not just their inner content, which
+   is all the plain `.collapsed` rule does elsewhere) — with the chip
+   itself acting as the header/trigger, a stack of empty collapsed panel
+   headers underneath would be redundant. */
+.filter-chip-dropdown > .collapsed {
+  display: none;
+}
+
+/* Neutralize each panel's own desktop positioning/sizing (custom
+   absolute offsets for Region Filter, Leaflet corner-flow sizing for the
+   other two) so the one visible child just fills this dropdown. */
+.filter-chip-dropdown > * {
+  position: static !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
 
 /* ── Minimap container ── */
 #minimap-wrapper {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
   z-index: 1000;
   width: 220px;
-  height: 150px;
+  height: 150px; /* back to its original size; .city-overview-toggle-btn stacks above it, so POPUP_AUTOPAN_PADDING in rea-riga-map.js is sized to clear this again */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 6px 24px rgba(0,0,0,0.28);
@@ -36,8 +117,8 @@
 /* Toggle button */
 #minimap-toggle {
   position: absolute;
-  bottom: 178px;
-  left: 20px;
+  bottom: 178px; /* wrapper top (20+150) + 8px gap */
+  right: 20px;
   z-index: 1001;
   width: 28px;
   height: 22px;
@@ -96,12 +177,24 @@
   z-index: 9999;
 }
 
-/* ── Air quality station quick-nav card (above minimap) ── */
-.aq-station-card {
+/* ── Air quality / meteorological station quick-nav cards, bottom-left ──
+   Wrapped in a flex column (not two independent fixed `bottom` offsets —
+   see git history) so #meteo-station-card always sits flush above
+   #aq-station-card regardless of either's actual height (collapsed vs
+   expanded, empty vs a long station list). The minimap that used to sit
+   below them here is now bottom-right (see #minimap-wrapper), so the
+   stack no longer needs to leave room for it. */
+.station-cards-stack {
   position: absolute;
   left: 20px;
-  bottom: 208px;
+  bottom: 20px;
   z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aq-station-card {
   width: 220px;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(8px);
@@ -114,10 +207,6 @@
 
 .aq-station-card[hidden] {
   display: none;
-}
-
-#meteo-station-card {
-  bottom: 330px;
 }
 
 .aq-station-card-head {
@@ -141,9 +230,9 @@
 }
 
 /* Panels collapse to just their header on short viewports, where the
-   colleague's stacked, fixed-pixel overlay offsets (bottom:330px etc.)
-   don't all fit — see #meteo-station-card / #aq-station-card / the
-   region & year filter legends, and toggleAqCardCollapse() in app.js. */
+   colleague's stacked overlays (#meteo-station-card / #aq-station-card,
+   the region & year filter legends) don't all fit — see
+   toggleAqCardCollapse() in app.js. */
 .aq-station-card.collapsed .aq-station-list {
   display: none;
 }
@@ -235,10 +324,9 @@
   transition: transform 0.15s ease;
 }
 
-/* Collapses the panel to just its .legend-head — used by the Region
-   Filter / Year Filter Leaflet controls (regionLegend / yearFilterLegend
-   in app.js) on short viewports where the colleague's fixed-pixel
-   overlay stack doesn't all fit at once. */
+/* Collapses the panel to just its .legend-head — used by all three
+   filter-chip controls (regionLegend / legend / yearFilterLegend in
+   rea-riga-map.js) so only the chip that's tapped open shows its body. */
 .energy-legend.collapsed > *:not(.legend-head) {
   display: none;
 }
@@ -304,6 +392,7 @@
 
 .legend-items {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
 
@@ -470,79 +559,196 @@
   margin: 0;
 }
 
-/* ── City-scale overview: standalone button in the bottom-right corner
-   (mirrors the minimap sitting in the bottom-left) + a panel that expands
-   upward and leftward out of it, covering as much space as it needs ── */
-.city-overview-toggle-btn {
+/* ── City-scale overview: two UIs sharing one #city-overview-panel ──
+   Below MIN_HEIGHT_FOR_DESKTOP_OVERVIEW (701px, kept in sync with the JS
+   matchMedia query of the same name in app.js): a bottom sheet, the
+   colleague's original stacked pixel-offset overlays don't fit a short
+   viewport. At/above it: the colleague's original floating button +
+   JS-positioned panel (untouched design), since there's room for it.
+   #bottom-sheet itself only draws a visible card in the compact mode —
+   at the desktop breakpoint it becomes `display: contents` so it stops
+   contributing to layout/paint entirely and #city-overview-panel +
+   #city-overview-toggle-btn behave as if they were direct children of
+   #map-viewport again, positioned by positionCityOverviewPanel(). */
+.bottom-sheet {
   position: absolute;
-  bottom: 0px;
   right: 20px;
-  z-index: 1002;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 16px;
-  border-radius: 999px;
-  border: 1.5px solid #1c3a5c;
-  background: linear-gradient(135deg, #5b7fa6 0%, #3f6188 100%);
-  backdrop-filter: blur(7px);
-  box-shadow: 0 12px 30px rgba(12, 24, 44, 0.36), 0 0 0 4px rgba(91, 127, 166, 0.22);
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-  cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
-}
-
-.city-overview-toggle-btn:hover {
-  box-shadow: 0 16px 36px rgba(12, 24, 44, 0.42), 0 0 0 5px rgba(91, 127, 166, 0.3);
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, #6c8fb4 0%, #476c98 100%);
-}
-
-.city-overview-toggle-btn.open {
-  background: linear-gradient(135deg, #3f6188 0%, #2c4c6f 100%);
-  border-color: #1c3a5c;
-  box-shadow: 0 4px 14px rgba(28, 58, 92, 0.45);
-}
-
-.city-overview-toggle-btn svg:first-child {
-  flex: 0 0 auto;
-  color: #ffffff;
-}
-
-.cf-toggle-chevron {
-  flex: 0 0 auto;
-  color: #dce6f0;
-  transition: transform 0.2s ease;
-}
-
-.city-overview-toggle-btn.open .cf-toggle-chevron {
-  transform: rotate(180deg);
-}
-
-/* top/right/max-height are set inline by positionCityOverviewPanel() so the
-   panel always anchors to the toggle button's actual on-screen position
-   (see app.js) — width is the only sizing left to CSS. */
-.city-overview-panel {
-  position: absolute;
-  width: min(760px, calc(100vw - 40px));
+  bottom: 210px; /* clears #minimap-wrapper (bottom:20px + height:150px) + its #minimap-toggle tab (top edge at 200px) + a gap, both now also right-anchored */
   z-index: 1003;
-  overflow-y: auto;
-  overflow-x: hidden;
+  width: min(320px, calc(100% - 40px));
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(28, 47, 74, 0.14);
   border-radius: 18px;
-  box-shadow: 0 20px 50px rgba(12, 24, 44, 0.32);
-  padding: 20px 24px 20px;
+  box-shadow: 0 12px 34px rgba(12, 24, 44, 0.28);
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   color: #1d2b3d;
 }
 
-.city-overview-panel[hidden] {
+.bottom-sheet-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 18px 12px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.bottom-sheet-drag-bar {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: #d3dce6;
+}
+
+.bottom-sheet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.bottom-sheet-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bottom-sheet-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3149;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.bottom-sheet-bar {
+  flex: 1 1 auto;
+  height: 8px;
+  min-width: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: #edf2f8;
+}
+
+.bottom-sheet-chevron {
+  flex: 0 0 auto;
+  color: #5e7088;
+  transition: transform 0.2s ease;
+}
+
+.bottom-sheet.expanded .bottom-sheet-chevron {
+  transform: rotate(180deg);
+}
+
+.city-overview-panel {
+  width: 100%;
+  max-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 24px;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+
+.bottom-sheet.expanded .city-overview-panel {
+  max-height: min(70vh, 640px);
+  padding: 0 24px 20px;
+}
+
+.city-overview-toggle-btn {
   display: none;
+}
+
+/* ── Desktop / tall-viewport mode: colleague's original design ── */
+@media (min-height: 701px) {
+  .bottom-sheet-handle {
+    display: none;
+  }
+
+  .bottom-sheet {
+    display: contents;
+  }
+
+  .city-overview-toggle-btn {
+    position: absolute;
+    bottom: 210px; /* clears #minimap-wrapper + its #minimap-toggle tab, both now right-anchored — see .bottom-sheet's comment */
+    right: 20px;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px; /* trimmed from 11px — shortens the bottom-right stack, see #minimap-wrapper's comment */
+    border-radius: 999px;
+    border: 1.5px solid #1c3a5c;
+    background: linear-gradient(135deg, #5b7fa6 0%, #3f6188 100%);
+    backdrop-filter: blur(7px);
+    box-shadow: 0 12px 30px rgba(12, 24, 44, 0.36), 0 0 0 4px rgba(91, 127, 166, 0.22);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  }
+
+  .city-overview-toggle-btn:hover {
+    box-shadow: 0 16px 36px rgba(12, 24, 44, 0.42), 0 0 0 5px rgba(91, 127, 166, 0.3);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #6c8fb4 0%, #476c98 100%);
+  }
+
+  .city-overview-toggle-btn.open {
+    background: linear-gradient(135deg, #3f6188 0%, #2c4c6f 100%);
+    border-color: #1c3a5c;
+    box-shadow: 0 4px 14px rgba(28, 58, 92, 0.45);
+  }
+
+  .city-overview-toggle-btn svg:first-child {
+    flex: 0 0 auto;
+    color: #ffffff;
+  }
+
+  .cf-toggle-chevron {
+    flex: 0 0 auto;
+    color: #dce6f0;
+    transition: transform 0.2s ease;
+  }
+
+  .city-overview-toggle-btn.open .cf-toggle-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* top/right/max-height are set inline by positionCityOverviewPanel() so
+     the panel always anchors to the toggle button's actual on-screen
+     position (see app.js) — width is the only sizing left to CSS. */
+  .city-overview-panel {
+    position: absolute;
+    width: min(760px, calc(100vw - 40px));
+    max-height: none;
+    z-index: 1003;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(28, 47, 74, 0.14);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(12, 24, 44, 0.32);
+    padding: 20px 24px 20px;
+    display: none;
+    transition: none;
+  }
+
+  .bottom-sheet.expanded .city-overview-panel {
+    display: block;
+  }
 }
 
 .cf-panel-header {
@@ -1342,6 +1548,14 @@
   font-weight: 600;
 }
 
+[data-action="chart"] {
+  display: block;
+}
+
+.legend-actions:has([data-action="chart"]) {
+  display: grid;
+}
+
 .legend-chart-panel {
   display: none;
   margin-top: 8px;
@@ -1363,10 +1577,8 @@
   font-weight: 600;
 }
 
-.legend-donut-label {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #5f7189;
+.legend-chart-panel .bottom-sheet-bar {
+  margin-bottom: 6px;
 }
 
 /* ── Air quality station markers ── */
@@ -1411,6 +1623,13 @@
 
 .leaflet-popup-content {
   margin: 0;
+}
+
+/* Leaflet's popup pane defaults to z-index:700 — below every custom
+   overlay panel on this page (all in the 1000-1100 range), so building
+   and station popups render underneath them instead of on top. */
+.leaflet-popup-pane {
+  z-index: 1200;
 }
 
 .building-popup {
@@ -1508,7 +1727,7 @@
 /* ── Region filter control (below zoom controls + search card) ── */
 .region-filter-control.leaflet-control {
   position: absolute;
-  left: 20px; /* matches .aq-station-card / #minimap-wrapper's left, not the default leaflet-control 10px inset */
+  left: 20px; /* matches .aq-station-card's left, not the default leaflet-control 10px inset */
   top: 80px;
   margin: 0;
   z-index: 1050;
@@ -2138,12 +2357,6 @@
   transform: translateY(-1px);
   background: #dcebfa;
   border-color: #5b8fd8;
-}
-
-.legend-donut-label {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #5f7189;
 }
 
 @media (max-width: 860px) {

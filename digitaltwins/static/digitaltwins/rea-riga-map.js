@@ -183,7 +183,7 @@ function openSearchResult(feature) {
       return;
     }
 
-    L.popup({ maxWidth: 740, autoPan: true })
+    L.popup({ maxWidth: 740, maxHeight: POPUP_MAX_HEIGHT, autoPan: true })
       .setLatLng(bounds.getCenter())
       .setContent(buildPopupContent(feature))
       .openOn(map);
@@ -387,19 +387,56 @@ toggleBtn.addEventListener('click', function () {
   toggleBtn.style.borderRadius = minimapVisible ? '6px 6px 0 0' : '6px';
   toggleBtn.style.borderBottom = minimapVisible ? 'none' : '1px solid rgba(0,0,0,0.18)';
   toggleBtn.textContent = minimapVisible ? '▼' : '▲';
+  updateCityOverviewAnchor();
 });
 
-/* ── Station card collapse buttons (meteo/AQ quick-nav lists) — same
-   "collapse to just the header" escape hatch as the legend panels above,
-   for short viewports where everything doesn't fit stacked at once. */
-document.querySelectorAll("[data-collapse-toggle]").forEach(btn => {
+/* ── Left-side panel accordion ─────────────────────────────────────
+   Region Filter, Meteorological stations and Air quality stations share
+   the same strip of screen space down the left edge, so at most one of
+   the three is ever open — opening one collapses whichever of the other
+   two was open. Each starts collapsed. The minimap keeps its own
+   independent ▼/▲ toggle above and isn't part of this group. */
+var accordionPanels = [];
+
+function collapseAccordionPanel(panel) {
+  panel.el.classList.add("collapsed");
+  panel.btn.textContent = "▸";
+  panel.btn.setAttribute("aria-label", panel.expandLabel);
+}
+
+function expandAccordionPanel(panel) {
+  accordionPanels.forEach(function (p) { if (p !== panel) collapseAccordionPanel(p); });
+  panel.el.classList.remove("collapsed");
+  panel.btn.textContent = "▾";
+  panel.btn.setAttribute("aria-label", panel.collapseLabel);
+}
+
+function registerAccordionPanel(el, btn, collapseLabel, expandLabel) {
+  var panel = { el: el, btn: btn, collapseLabel: collapseLabel, expandLabel: expandLabel };
+  accordionPanels.push(panel);
+  collapseAccordionPanel(panel);
   btn.addEventListener("click", function () {
-    const card = btn.closest(".aq-station-card");
-    if (!card) return;
-    const collapsed = card.classList.toggle("collapsed");
-    btn.textContent = collapsed ? "▸" : "▾";
-    btn.setAttribute("aria-label", (collapsed ? "Expand " : "Collapse ") + card.querySelector(".aq-station-card-title").textContent.toLowerCase());
+    if (panel.el.classList.contains("collapsed")) expandAccordionPanel(panel);
+    else collapseAccordionPanel(panel);
   });
+  return panel;
+}
+
+/* Keeps a filter-chip's active/aria-expanded state in sync when its panel is
+   collapsed via the panel's own internal button rather than via the chip
+   itself (chip clicks already do this through setPanelCollapsed's caller). */
+function syncChipActiveState(chipKey, collapsed) {
+  var chipBtn = document.querySelector('.filter-chip[data-chip="' + chipKey + '"]');
+  if (!chipBtn) return;
+  var isActive = !collapsed;
+  chipBtn.classList.toggle("active", isActive);
+  chipBtn.setAttribute("aria-expanded", String(isActive));
+}
+
+document.querySelectorAll(".aq-station-card").forEach(card => {
+  const btn = card.querySelector("[data-collapse-toggle]");
+  const title = card.querySelector(".aq-station-card-title").textContent;
+  if (btn) registerAccordionPanel(card, btn, "Collapse " + title.toLowerCase(), "Expand " + title.toLowerCase());
 });
 
 /* ── "Return to Riga" button ── */
@@ -444,48 +481,17 @@ function style(feature) {
   };
 }
 
-function donutChartSVG(counts, total) {
-  const size = 126;
-  const cx = 63, cy = 63, r = 42;
-  const strokeW = 14;
-  const c = 2 * Math.PI * r;
-
-  if (!total) {
-    return `
-      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e8eef5" stroke-width="${strokeW}"/>
-        <text x="${cx}" y="${cy + 3}" text-anchor="middle" font-size="11" fill="#71839c">No data</text>
-      </svg>
-    `;
-  }
-
-  let acc = 0;
-  let arcs = "";
-  CLASS_ORDER.forEach(cls => {
-    const val = counts[cls] || 0;
-    if (!val) return;
-    const len = (val / total) * c;
-    arcs += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${getEnergyColor(cls)}" stroke-width="${strokeW}" stroke-dasharray="${len} ${c}" stroke-dashoffset="${-acc}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    acc += len;
-  });
-
-  return `
-    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#edf2f8" stroke-width="${strokeW}"/>
-      ${arcs}
-      <circle cx="${cx}" cy="${cy}" r="${r - strokeW * 0.72}" fill="#ffffff"/>
-      <text x="${cx}" y="${cy - 3}" text-anchor="middle" font-size="18" fill="#243a53" font-weight="600">${total}</text>
-      <text x="${cx}" y="${cy + 13}" text-anchor="middle" font-size="10" fill="#64788f">buildings</text>
-    </svg>
-  `;
-}
-
+/* Drives both bar instances at once (cheap — a few DOM writes either
+   way): the Energy Class panel's own bar (#legend-bar / #legend-bar-count)
+   and the compact bottom-sheet's (#bottom-sheet-bar / #bottom-sheet-count)
+   — same bar markup/style (.bottom-sheet-bar / .bottom-sheet-count),
+   just two separate instances of it. */
 function updateStatsPanel() {
-  var donutEl = document.getElementById("legend-donut");
-  var donutLabelEl = document.getElementById("legend-donut-label");
-  if (!donutEl || !donutLabelEl) return;
-  var chartPanelEl = document.getElementById("legend-chart-panel");
-  if (chartPanelEl && !chartPanelEl.classList.contains("open")) return;
+  var legendBarEl = document.getElementById("legend-bar");
+  var legendBarCountEl = document.getElementById("legend-bar-count");
+  var barEl = document.getElementById("bottom-sheet-bar");
+  var countEl = document.getElementById("bottom-sheet-count");
+  if (!legendBarEl && !barEl) return;
 
   const counts = {};
   CLASS_ORDER.forEach(c => counts[c] = 0);
@@ -507,8 +513,17 @@ function updateStatsPanel() {
     });
   }
 
-  donutEl.innerHTML = donutChartSVG(counts, total);
-  donutLabelEl.textContent = total ? `${total} building${total === 1 ? "" : "s"} in your current view` : "No buildings in this view";
+  function renderBar(countTargetEl, barTargetEl) {
+    if (!countTargetEl || !barTargetEl) return;
+    countTargetEl.textContent = total ? `${total} building${total === 1 ? "" : "s"} in view` : "No buildings in view";
+    barTargetEl.innerHTML = CLASS_ORDER
+      .filter(cls => counts[cls] > 0)
+      .map(cls => `<span style="flex:${counts[cls]} 0 0;background:${getEnergyColor(cls)};" title="${cls}: ${counts[cls]}"></span>`)
+      .join("");
+  }
+
+  renderBar(legendBarCountEl, legendBarEl);
+  renderBar(countEl, barEl);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -974,11 +989,45 @@ function buildPopupContent(feature) {
   `;
 }
 
+/* Leaflet's default autoPan (which shifts the map so a newly-opened or
+   re-anchored popup stays fully visible) only keeps 5px clear from the
+   map's own edges — it has no idea our custom overlays (zoom control,
+   search bar, filter chips up top; bottom sheet, minimap, station cards
+   down low) are sitting on top of that space. Without this padding, a
+   popup can autoPan to a position that's on-map but visually behind our
+   own UI, which shows up as "the popup gets cut off" after zooming (the
+   popup re-anchors to its feature, autoPan kicks in again, and it lands
+   in that dead zone).
+   Popups can never actually stack above these overlays via z-index, no
+   matter how high: Leaflet pans the whole map by transform-ing
+   .leaflet-map-pane, which creates its own stacking context with no
+   z-index of its own, so it — and everything inside it, popups included
+   — paints as a single unit below any sibling that has an explicit
+   z-index (.bottom-sheet, .filter-chips, etc. all do). Padding that
+   actually keeps autoPan from landing a popup under them is the only
+   real fix.
+   Bottom padding must clear the tallest thing sitting on the bottom
+   edge — the minimap + .city-overview-toggle-btn stack, bottom-right
+   (bottom:210px + the button's own ~38px height, see styles.css). On a
+   short browser window there just isn't much room left over for a tall
+   popup to avoid scrolling internally — that's an inherent trade-off of
+   keeping this much fixed UI on screen, not a bug. */
+var POPUP_AUTOPAN_PADDING = { autoPanPaddingTopLeft: L.point(20, 140), autoPanPaddingBottomRight: L.point(20, 260) };
+
+/* Popup content (building details + charts) can be taller than the map
+   itself now that #map-viewport no longer claims a full 100vh (see
+   styles.css) — without an explicit maxHeight, Leaflet lets the popup
+   grow past the bottom of the map instead of scrolling internally.
+   Sized against the same padding autoPan already leaves clear above/
+   below, so the popup never claims space we know is covered by our own
+   UI. */
+var POPUP_MAX_HEIGHT = Math.max(280, map.getSize().y - POPUP_AUTOPAN_PADDING.autoPanPaddingTopLeft.y - POPUP_AUTOPAN_PADDING.autoPanPaddingBottomRight.y);
+
 function onEachFeature(feature, layer) {
   layer.on({ mouseover: highlightFeature, mouseout: resetHighlight });
   layer.bindPopup(function () {
     return buildPopupContent(feature);
-  }, { maxWidth: 740 });
+  }, Object.assign({ maxWidth: 740, maxHeight: POPUP_MAX_HEIGHT }, POPUP_AUTOPAN_PADDING));
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1615,7 +1664,7 @@ function renderAirQualityStations(stations, shiftByName) {
       marker.bindTooltip(getStationDisplayName(station.name), { direction: "top", offset: [0, -8] });
       marker.bindPopup(function () {
         return buildAirQualityPopupContent(station);
-      }, { maxWidth: 700 });
+      }, Object.assign({ maxWidth: 700 }, POPUP_AUTOPAN_PADDING));
       marker.addTo(airQualityLayer);
       aqMarkersByName.set(station.name, marker);
       placed += 1;
@@ -2284,7 +2333,7 @@ function renderMeteoStations(stations, shiftByName) {
       marker.bindTooltip(station.name, { direction: "top", offset: [0, -8] });
       marker.bindPopup(function () {
         return buildMeteoPopupContent(station);
-      }, { maxWidth: 800 });
+      }, Object.assign({ maxWidth: 800 }, POPUP_AUTOPAN_PADDING));
       marker.addTo(meteoLayer);
       meteoMarkersByName.set(station.name, marker);
       placed += 1;
@@ -2527,6 +2576,7 @@ legend.onAdd = function () {
         <div class="legend-title">Energy Class Filter</div>
       </div>
       <button class="legend-help-btn" type="button" data-action="help" title="Class definition help">?</button>
+      <button type="button" class="legend-help-btn legend-collapse-btn" data-action="collapse-panel" title="Collapse" aria-label="Collapse Energy Class panel">▾</button>
       <div class="legend-help-panel" id="legend-help-panel">
         <p class="legend-help-title">Definition of energy classes for residential buildings in Latvia.</p>
         <table class="legend-table">
@@ -2574,8 +2624,8 @@ legend.onAdd = function () {
     </div>
     <div class="legend-chart-panel open" id="legend-chart-panel">
       <div class="legend-chart-title">Visible buildings by class</div>
-      <div id="legend-donut"></div>
-      <div id="legend-donut-label" class="legend-donut-label">0 visible buildings</div>
+      <div id="legend-bar" class="bottom-sheet-bar" aria-hidden="true"></div>
+      <span id="legend-bar-count" class="bottom-sheet-count">0 buildings</span>
     </div>
   `;
 
@@ -2601,6 +2651,14 @@ legend.onAdd = function () {
       const action = actionBtn.getAttribute("data-action");
       if (action === "help") {
         helpPanel.classList.toggle("open");
+        return;
+      }
+      if (action === "collapse-panel") {
+        const collapsed = div.classList.toggle("collapsed");
+        actionBtn.textContent = collapsed ? "▸" : "▾";
+        actionBtn.title = collapsed ? "Expand" : "Collapse";
+        actionBtn.setAttribute("aria-label", collapsed ? "Expand Energy Class panel" : "Collapse Energy Class panel");
+        syncChipActiveState("energy-class", collapsed);
         return;
       }
       if (action === "chart") {
@@ -2703,6 +2761,7 @@ yearFilterLegend.onAdd = function () {
       const collapsed = div.classList.toggle("collapsed");
       collapseBtn.textContent = collapsed ? "▸" : "▾";
       collapseBtn.setAttribute("aria-label", collapsed ? "Expand Year Filter panel" : "Collapse Year Filter panel");
+      syncChipActiveState("year", collapsed);
       return;
     }
     if (!e.target.closest('[data-action="reset-year"]')) return;
@@ -2819,7 +2878,9 @@ regionLegend.onAdd = function () {
     if (collapseBtn) {
       const collapsed = div.classList.toggle("collapsed");
       collapseBtn.textContent = collapsed ? "▸" : "▾";
+      collapseBtn.title = collapsed ? "Expand" : "Collapse";
       collapseBtn.setAttribute("aria-label", collapsed ? "Expand Region Filter panel" : "Collapse Region Filter panel");
+      syncChipActiveState("region", collapsed);
       return;
     }
     if (e.target.closest("[data-region-borders-toggle]")) {
@@ -3319,53 +3380,107 @@ function resetIndicatorRowUI(panelDiv) {
   updateIndicatorMasks(panelDiv, "any", 0, 0);
 }
 
-/* Standalone button pinned to the bottom-right corner of the map (plain
-   DOM element, not a Leaflet control — nothing else lives in that corner).
-   The panel it opens anchors to the button's own top-right corner and
-   expands upward and leftward from there, covering however much space its
-   content needs, so opening it reads as a natural expansion of the button
-   the user just clicked. */
+/* City-scale overview has two UIs sharing one #city-overview-panel — see
+   the "min-height: 701px" block in styles.css for which shows when.
+   Below that height: #bottom-sheet-handle expands #city-overview-panel
+   in place via a CSS max-height transition (no positioning math needed).
+   At/above it: #bottom-sheet becomes `display: contents` (so it stops
+   affecting layout) and the colleague's original floating button +
+   JS-positioned panel take over — positionCityOverviewPanel() anchors
+   the panel to the button's actual on-screen corner. The breakpoint
+   value must stay in sync with styles.css by hand; there's no single
+   source of truth to share it from. */
+var DESKTOP_OVERVIEW_QUERY = window.matchMedia("(min-height: 701px)");
+var bottomSheetEl = document.getElementById("bottom-sheet");
+var bottomSheetHandle = document.getElementById("bottom-sheet-handle");
 var cityOverviewToggleBtn = document.getElementById("city-overview-toggle-btn");
+
+/* #minimap-toggle's own top edge — the tallest point of the minimap
+   stack — at bottom:178px+height:22px when open, or bottom:20px+
+   height:22px once collapsed (see the minimap toggle handler above).
+   Kept in sync with those values by hand, same as the 701px breakpoint
+   above. */
+var MINIMAP_TOP_EXPANDED = 200;
+var MINIMAP_TOP_COLLAPSED = 42;
+var CITY_OVERVIEW_GAP = 10;
+
+/* Keeps the City-scale Overview trigger (in either of its two forms —
+   .city-overview-toggle-btn on tall viewports, .bottom-sheet on short
+   ones) anchored just above the minimap, following it down when the
+   minimap is collapsed to just its #minimap-toggle tab. */
+function updateCityOverviewAnchor() {
+  var bottom = (minimapVisible ? MINIMAP_TOP_EXPANDED : MINIMAP_TOP_COLLAPSED) + CITY_OVERVIEW_GAP + "px";
+  if (cityOverviewToggleBtn) cityOverviewToggleBtn.style.bottom = bottom;
+  if (bottomSheetEl) bottomSheetEl.style.bottom = bottom;
+  if (bottomSheetEl && bottomSheetEl.classList.contains("expanded") && DESKTOP_OVERVIEW_QUERY.matches) {
+    positionCityOverviewPanel();
+  }
+}
 
 function positionCityOverviewPanel() {
   if (!cityOverviewPanelEl || !cityOverviewToggleBtn) return;
   const rect = cityOverviewToggleBtn.getBoundingClientRect();
   const margin = 16;
 
-  // right/bottom are resolved against offsetParent (the map viewport, its
-  // nearest positioned ancestor), not the browser viewport, since the map
-  // no longer fills the whole page.
+  // right/bottom are resolved against offsetParent — #map-viewport at this
+  // breakpoint, since #bottom-sheet is `display: contents` and drops out
+  // of the positioned-ancestor chain.
   const containerRect = (cityOverviewPanelEl.offsetParent || document.documentElement).getBoundingClientRect();
 
   cityOverviewPanelEl.style.left = "auto";
   cityOverviewPanelEl.style.top = "auto";
   cityOverviewPanelEl.style.right = Math.round(containerRect.right - rect.right) + "px";
   cityOverviewPanelEl.style.bottom = Math.round(containerRect.bottom - rect.top + 4) + "px";
-  cityOverviewPanelEl.style.maxHeight = Math.max(280, rect.top - margin - 10) + "px";
+  // Capped against containerRect.top (#map-viewport's own top edge), not
+  // 0/the browser viewport's top — the map sits below a breadcrumb/header
+  // (see the file-level comment above), so the viewport's top is usually
+  // higher up than the map's, and the panel would otherwise be able to
+  // grow past the top of the map into that header.
+  cityOverviewPanelEl.style.maxHeight = Math.max(280, rect.top - containerRect.top - margin) + "px";
 }
 
 function toggleCityOverviewPanel() {
-  if (!cityOverviewPanelEl) return;
-  const isOpen = !cityOverviewPanelEl.hidden;
-  if (isOpen) {
-    cityOverviewPanelEl.hidden = true;
-    if (cityOverviewToggleBtn) {
-      cityOverviewToggleBtn.classList.remove("open");
-      cityOverviewToggleBtn.setAttribute("aria-expanded", "false");
-    }
-    return;
+  if (!bottomSheetEl || !cityOverviewPanelEl) return;
+  const expanding = !bottomSheetEl.classList.contains("expanded");
+  const desktop = DESKTOP_OVERVIEW_QUERY.matches;
+
+  // Apply `.expanded` first: positionCityOverviewPanel() reads
+  // cityOverviewPanelEl.offsetParent, which is null while the panel is
+  // still `display: none` — before `.expanded` flips it to `display:
+  // block`, offsetParent falls back past #map-viewport all the way to
+  // <html>, so the computed `bottom` picks up the page content below
+  // the map (footer etc.) and the panel opens far above the button.
+  bottomSheetEl.classList.toggle("expanded", expanding);
+
+  if (expanding && desktop) {
+    positionCityOverviewPanel();
+  } else if (!desktop) {
+    // Clear any leftover inline positioning from a previous desktop-mode
+    // expand, so the compact mode's CSS max-height transition isn't
+    // fighting a higher-specificity inline style.
+    cityOverviewPanelEl.style.right = "";
+    cityOverviewPanelEl.style.bottom = "";
+    cityOverviewPanelEl.style.maxHeight = "";
   }
-  positionCityOverviewPanel();
-  cityOverviewPanelEl.hidden = false;
+
+  if (bottomSheetHandle) bottomSheetHandle.setAttribute("aria-expanded", String(expanding));
   if (cityOverviewToggleBtn) {
-    cityOverviewToggleBtn.classList.add("open");
-    cityOverviewToggleBtn.setAttribute("aria-expanded", "true");
+    cityOverviewToggleBtn.classList.toggle("open", expanding);
+    cityOverviewToggleBtn.setAttribute("aria-expanded", String(expanding));
   }
 }
 
+if (bottomSheetHandle) {
+  bottomSheetHandle.addEventListener("click", toggleCityOverviewPanel);
+}
 if (cityOverviewToggleBtn) {
   cityOverviewToggleBtn.addEventListener("click", toggleCityOverviewPanel);
 }
+
+window.addEventListener("resize", function () {
+  POPUP_MAX_HEIGHT = Math.max(280, map.getSize().y - POPUP_AUTOPAN_PADDING.autoPanPaddingTopLeft.y - POPUP_AUTOPAN_PADDING.autoPanPaddingBottomRight.y);
+  if (bottomSheetEl && bottomSheetEl.classList.contains("expanded") && DESKTOP_OVERVIEW_QUERY.matches) positionCityOverviewPanel();
+});
 
 var CF_ICON_HIGHLIGHT = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/></svg>`;
 
@@ -3712,9 +3827,65 @@ yearFilterLegend.addTo(map);
 regionLegend.addTo(map);
 initCityOverviewPanel();
 
-window.addEventListener("resize", function () {
-  if (cityOverviewPanelEl && !cityOverviewPanelEl.hidden) positionCityOverviewPanel();
+/* ── Filter chips (Region / Energy class / Year) ──────────────────────
+   These three Leaflet controls live in one shared dropdown below a row
+   of chips instead of stacked corner panels, on every screen size — only
+   one open at a time. Each control's own div — with all its existing
+   listeners and its own collapse button — is reparented as-is; nothing
+   about its content is duplicated or rebuilt. */
+function setPanelCollapsed(panelEl, collapsed, collapseLabel, expandLabel) {
+  panelEl.classList.toggle("collapsed", collapsed);
+  var btn = panelEl.querySelector(".legend-collapse-btn");
+  if (btn) {
+    btn.textContent = collapsed ? "▸" : "▾";
+    btn.title = collapsed ? "Expand" : "Collapse";
+    btn.setAttribute("aria-label", collapsed ? expandLabel : collapseLabel);
+  }
+}
+
+var CHIP_FILTERS = [
+  { key: "region", label: "Region", control: regionLegend },
+  { key: "energy-class", label: "Energy class", control: legend },
+  { key: "year", label: "Year", control: yearFilterLegend }
+];
+
+function initFilterChips() {
+  var dropdown = document.getElementById("filter-chip-dropdown");
+  if (!dropdown) return;
+
+  CHIP_FILTERS.forEach(function (f) {
+    var el = f.control.getContainer && f.control.getContainer();
+    if (!el) return;
+    dropdown.appendChild(el);
+    setPanelCollapsed(el, true, "Collapse " + f.label, "Expand " + f.label);
+  });
+}
+
+document.querySelectorAll(".filter-chip").forEach(function (chipBtn) {
+  chipBtn.addEventListener("click", function () {
+    var key = chipBtn.getAttribute("data-chip");
+    var target = CHIP_FILTERS.find(function (f) { return f.key === key; });
+    if (!target) return;
+    var targetEl = target.control.getContainer();
+    if (!targetEl) return;
+    var opening = targetEl.classList.contains("collapsed");
+
+    CHIP_FILTERS.forEach(function (f) {
+      var el = f.control.getContainer();
+      if (!el) return;
+      var shouldOpen = opening && f.key === key;
+      setPanelCollapsed(el, !shouldOpen, "Collapse " + f.label, "Expand " + f.label);
+    });
+
+    document.querySelectorAll(".filter-chip").forEach(function (btn) {
+      var isActive = opening && btn === chipBtn;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-expanded", String(isActive));
+    });
+  });
 });
+
+initFilterChips();
 
 map.on("moveend zoomend", updateStatsPanel);
 
