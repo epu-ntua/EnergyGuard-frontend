@@ -398,21 +398,13 @@
 
             <!-- Selectors -->
             <div class="row g-3 mb-4">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold" for="setpoint-selector">Setpoint</label>
                     <select class="form-select" id="setpoint-selector"></select>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold" for="bus-selector">Bus</label>
                     <select class="form-select" id="bus-selector"></select>
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label fw-semibold" for="phase-select">Phase</label>
-                    <select class="form-select" id="phase-select">
-                        <option value="phase_a">Phase A</option>
-                        <option value="phase_b">Phase B</option>
-                        <option value="phase_c">Phase C</option>
-                    </select>
                 </div>
             </div>
 
@@ -420,8 +412,9 @@
                 <div class="col-12">
                     <div class="card h-100">
                         <div class="card-body p-4">
-                            <h6 class="fw-bold text-body-emphasis mb-3">Phase Voltage &amp; Current</h6>
-                            <div id="phase-chart" style="width:100%;height:340px;"></div>
+                            <h6 class="fw-bold text-body-emphasis mb-1">Instantaneous Power</h6>
+                            <p class="text-body-tertiary fs-9 mb-3">Total instantaneous power at the selected bus, derived from voltage and current across all three phases.</p>
+                            <div id="power-chart" style="width:100%;height:260px;"></div>
                         </div>
                     </div>
                 </div>

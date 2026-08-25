@@ -49,7 +49,6 @@
 
     var setpointSelector    = document.getElementById('setpoint-selector');
     var busSelector         = document.getElementById('bus-selector');
-    var phaseSelect         = document.getElementById('phase-select');
 
     var exportJsonBtn        = document.getElementById('export-json-btn');
     var saveOpenJupyterBtn   = document.getElementById('save-open-jupyterhub-btn');
@@ -62,7 +61,7 @@
     var lastApiResponse    = null;
     var lastRequestMeta    = null;     // { gridSection, useCaseLabel, assets: [{id, type}] }
     var activeController   = null;
-    var phaseChartRoot     = null;
+    var powerChartRoot     = null;
     var freqChartRoot      = null;
 
     // ── CSRF helper ───────────────────────────────────────────────────────────
@@ -539,7 +538,6 @@
 
     setpointSelector.addEventListener('change', function () { populateBusSelector(); renderCharts(); });
     busSelector.addEventListener('change', renderCharts);
-    phaseSelect.addEventListener('change', renderCharts);
 
     // ── Charts (amCharts 5) ───────────────────────────────────────────────────
     function themeColor(varName) {
@@ -616,21 +614,40 @@
         return values.map(function (v, k) { return { t: k * 0.002, value: v }; });
     }
 
+    // Instantaneous power per phase is Voltage_kV * Current_kA (= MW); total power
+    // at the bus is the sum of the three phases at each timestamp, per RDN's guidance.
+    function computeTotalInstantaneousPower(bus) {
+        var phases = ['phase_a', 'phase_b', 'phase_c'];
+        var length = 0;
+        phases.forEach(function (phase) {
+            if (bus[phase]) length = Math.max(length, bus[phase].Voltage_kV.length);
+        });
+        var total = new Array(length).fill(0);
+        phases.forEach(function (phase) {
+            if (!bus[phase]) return;
+            var voltage = bus[phase].Voltage_kV;
+            var current = bus[phase].Current_kA;
+            var phaseLength = Math.min(voltage.length, current.length);
+            for (var k = 0; k < phaseLength; k++) {
+                total[k] += voltage[k] * current[k];
+            }
+        });
+        return total;
+    }
+
     function renderCharts() {
         if (!lastApiResponse) return;
         var setpointIdx = parseInt(setpointSelector.value, 10) || 0;
         var entry = lastApiResponse.outputData[setpointIdx];
         var busId = busSelector.value;
-        var phase = phaseSelect.value;
         if (!entry || !busId) return;
         var bus = entry.grid[busId];
 
-        if (phaseChartRoot) { phaseChartRoot.dispose(); phaseChartRoot = null; }
-        if (bus && bus[phase]) {
-            phaseChartRoot = buildLineChart('phase-chart', [
-                { name: 'Voltage', data: seriesToChartData(bus[phase].Voltage_kV), color: themeColor('--phoenix-primary'), unit: 'kV', axis: 'left' },
-                { name: 'Current', data: seriesToChartData(bus[phase].Current_kA), color: themeColor('--phoenix-turquoise'), unit: 'kA', axis: 'right' },
-            ], { yUnit: 'kV', secondAxisUnit: 'kA' });
+        if (powerChartRoot) { powerChartRoot.dispose(); powerChartRoot = null; }
+        if (bus) {
+            powerChartRoot = buildLineChart('power-chart', [
+                { name: 'Total power', data: seriesToChartData(computeTotalInstantaneousPower(bus)), color: themeColor('--phoenix-primary'), unit: 'MW' },
+            ], { yUnit: 'MW' });
         }
 
         if (freqChartRoot) { freqChartRoot.dispose(); freqChartRoot = null; }
