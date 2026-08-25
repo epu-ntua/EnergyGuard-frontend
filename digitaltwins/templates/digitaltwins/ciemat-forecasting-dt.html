@@ -1,0 +1,1051 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}CEDER-CIEMAT Node - Digital Twins{% endblock %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
+<style>
+    .chart-placeholder {
+        background: var(--phoenix-body-bg);
+        border: 2px dashed var(--phoenix-border-color);
+        border-radius: .75rem;
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: .5rem;
+    }
+    .profiles-locked .dt-tab-card {
+        pointer-events: none;
+        cursor: default;
+    }
+    .profiles-locked .dt-tab-card:not(.active) {
+        opacity: 0.35;
+        filter: grayscale(0.25);
+    }
+    .location-map {
+        height: 320px;
+        border-radius: .75rem;
+        cursor: crosshair;
+    }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'ciemat-microgrid' %}">CIEMAT Microgrid</a></li>
+                <li class="breadcrumb-item active">Renewable Generation Forecasting</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-5">
+            {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/ciemat-icon.jpg" logo_alt="CIEMAT" title="Renewable Generation Forecasting" %}
+        </div>
+
+        <!-- Hero -->
+        <div class="mb-5">
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">Renewable Generation Forecasting Service</strong> is a CIEMAT node service, provided by the EnergyPrediction application, that estimates wind and photovoltaic power output at the CEDER-CIEMAT microgrid. It offers three complementary modes: 5-day weather-based forecasting, real-time power calculation from live measurements, and a model comparator that evaluates the multilag wind model against the base models.</p>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a href="#service-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a run <span class="fas fa-arrow-right"></span></a>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 shadow-sm overflow-hidden mb-0">
+                        <div class="row g-0">
+                            <div class="col-12 col-lg-7 bg-body-tertiary p-4 d-flex flex-column justify-content-center">
+                                <img src="{% static 'assets/img/digital_twins/ciemat-graph.png' %}" alt="CEDER-CIEMAT Microgrid" class="img-fluid rounded-3 w-100" style="max-height:320px;object-fit:cover;">
+                            </div>
+                            <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-body-emphasis mb-3">Two generation types, three ways to use them</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">Forecast wind power for the NED100 turbine or photovoltaic power for the Afrisol reference plant. Run a 5-day forecast for a location, calculate instantaneous output from live measurements, or compare the wind models against each other.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">How it works</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-y mb-5">
+            <div class="row row-cols-1 row-cols-md-4 g-0">
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Choose a Mode</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">5-day forecast, real-time calculation, or model comparator.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="50.27" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Select Generation Type</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Choose wind or photovoltaic, and provide location or live measurements.</p>
+                </div>
+                <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="25.13" transform="rotate(-90 18 18)"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Run</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">EnergyPrediction applies its forecasting or ML correction models.</p>
+                </div>
+                <div class="col text-center p-4 p-lg-5">
+                    <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Results</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Review KPIs and charts, and export or save the data.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What you'll need -->
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
+            <div class="row g-0">
+                <div class="col-12 col-md-6 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-wind"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Generation type</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Choose whether to forecast wind power output (NED100 turbine model) or photovoltaic power output (Afrisol reference plant).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-location-dot"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Location coordinates</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Latitude and longitude used to retrieve the Numerical Weather Prediction data (Open-Meteo). Must fall within Spain. Defaults to the CEDER-CIEMAT site in Soria, Spain.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">Available modes</h4>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-6 border-bottom border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-cloud-sun"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">5-Day Forecast</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Predicts wind or PV output over the next five days for a location, combining Open-Meteo weather forecasts with a machine-learning correction model.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 border-bottom p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-gauge-high"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Real-Time Calculation</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Calculates instantaneous wind or PV power output from live measurements, at 1-second, 1-minute or 5-minute resolution for wind.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 border-end-md p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-code-compare"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Model Comparator</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Evaluates the differences between the wind multilag model (1-second) and the base models (1-minute, 5-minute) for the same measurements.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-arrows-left-right"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Compare with a Second Model</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">A toggle inside 5-Day Forecast that adds a second, independently configured model (any generation type, any location) and runs both over the same 5-day window for a direct side-by-side comparison. Distinct from the Model Comparator, which compares the wind multilag and base models directly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis" id="service-configuration">
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-4">Configuration</h3>
+            <ul class="nav nav-pills gap-2 justify-content-center dt-pill-tabs" id="ciematModeTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill px-5 py-2 fs-9 fw-semibold" id="mode-forecast-tab" data-bs-toggle="tab" data-bs-target="#tab-forecast" type="button" role="tab" aria-controls="tab-forecast" aria-selected="true">5-Day Forecast</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-5 py-2 fs-9 fw-semibold" id="mode-calculation-tab" data-bs-toggle="tab" data-bs-target="#tab-calculation" type="button" role="tab" aria-controls="tab-calculation" aria-selected="false">Real-Time Calculation</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-5 py-2 fs-9 fw-semibold" id="mode-compare-tab" data-bs-toggle="tab" data-bs-target="#tab-compare" type="button" role="tab" aria-controls="tab-compare" aria-selected="false">Model Comparator</button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="ciematModeTabContent">
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             MODE 1: 5-DAY FORECAST
+             ══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade show active" id="tab-forecast" role="tabpanel" aria-labelledby="mode-forecast-tab">
+
+        <!-- ── Section 1 & 2: Generation Type + Location ─────────────────────── -->
+
+        <div class="row g-3" id="forecast-configuration">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="compare-toggle" aria-label="Compare with a second model">
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-body-emphasis d-block">Compare with a second model</span>
+                                <span class="text-body-tertiary fs-9" id="compare-toggle-hint">OFF &mdash; Forecasting one configuration</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-body-secondary text-body-tertiary fw-normal rounded-pill fs-9 px-3 py-2" id="compare-toggle-cta">Turn on to configure two models side by side</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ Single-model configuration (toggle OFF) ══════════ -->
+            <div class="col-12 col-lg-6 single-mode-only">
+                <div class="card mb-4 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis fs-8 mb-1">1. Generation Type</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Choose which type of generation to forecast.</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3" id="generation-type-group">
+                            <div class="col-12 col-md-6">
+                                <div class="card dt-tab-card cursor-pointer h-100 active" data-generation="wind" tabindex="0" role="button">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                            <span class="fas fa-wind"></span>
+                                        </span>
+                                        <div>
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Wind Power</h6>
+                                            <p class="text-body-tertiary fs-9 mb-0">NED100 turbine model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="card dt-tab-card cursor-pointer h-100" data-generation="solar" tabindex="0" role="button">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                            <span class="fas fa-solar-panel"></span>
+                                        </span>
+                                        <div>
+                                            <h6 class="fw-bold text-body-emphasis mb-1">Solar PV</h6>
+                                            <p class="text-body-tertiary fs-9 mb-0">Afrisol reference plant.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6 single-mode-only">
+                <div class="card mb-4 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="fw-bold text-body-emphasis fs-8 mb-1">2. Location</h6>
+                                <p class="text-body-tertiary fs-9 mb-0">Coordinates used to retrieve the weather forecast.</p>
+                            </div>
+                            <div class="d-flex gap-2 flex-shrink-0">
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" id="toggle-map-btn">
+                                    <span class="fas fa-map me-1"></span>Map
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold" for="lat-input">Latitude</label>
+                                <input type="number" class="form-control" id="lat-input" name="lat" min="-90" max="90" step="0.0001" value="41.68">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold" for="lon-input">Longitude</label>
+                                <input type="number" class="form-control" id="lon-input" name="lon" min="-180" max="180" step="0.0001" value="-2.53">
+                            </div>
+                        </div>
+                        <span class="form-text fs-10">Coordinates must fall within Spain (latitude 27.6&deg;&ndash;43.9&deg;N, longitude 18.4&deg;W&ndash;4.6&deg;E), the area covered by this service.</span>
+
+                        <div id="location-map-wrapper" class="d-none mt-3">
+                            <div id="location-map" class="location-map"></div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <span class="fas fa-circle-info text-body-tertiary fs-9"></span>
+                                <span class="text-body-tertiary fs-9">Click to set the forecast location.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ Compare configuration: Model A / Model B (toggle ON) ══════════ -->
+            <div class="col-12 col-lg-6 compare-mode-only d-none">
+                <div class="card mb-4 h-100" style="border-top:3px solid var(--phoenix-primary);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold" style="width:28px;height:28px;font-size:.8rem;background:color-mix(in srgb, var(--phoenix-primary) 18%, var(--phoenix-body-bg));color:var(--phoenix-primary);">A</span>
+                            <select class="form-select" id="model-a-generation">
+                                <option value="wind" selected>Wind NED100</option>
+                                <option value="solar">Solar Photovoltaic (Afrisol)</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-3 align-items-end">
+                            <div class="col-6">
+                                <label class="form-label fs-10 text-uppercase text-body-tertiary mb-1" for="model-a-lat">Latitude</label>
+                                <input type="number" class="form-control" id="model-a-lat" min="-90" max="90" step="0.0001" value="41.68">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fs-10 text-uppercase text-body-tertiary mb-1" for="model-a-lon">Longitude</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" class="form-control" id="model-a-lon" min="-180" max="180" step="0.0001" value="-2.53">
+                                    <button type="button" class="btn btn-phoenix-secondary flex-shrink-0" id="model-a-toggle-map-btn">
+                                        <span class="fas fa-map me-1"></span>Map
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text fs-10 mt-2">Must fall within Spain (27.6&deg;&ndash;43.9&deg;N, 18.4&deg;W&ndash;4.6&deg;E).</div>
+                        <div id="model-a-map-wrapper" class="d-none mt-2">
+                            <div id="model-a-map" class="location-map"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6 compare-mode-only d-none">
+                <div class="card mb-4 h-100" style="border-top:3px solid var(--phoenix-purple);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold" style="width:28px;height:28px;font-size:.8rem;background:color-mix(in srgb, var(--phoenix-purple) 18%, var(--phoenix-body-bg));color:var(--phoenix-purple);">B</span>
+                            <select class="form-select" id="model-b-generation">
+                                <option value="wind">Wind NED100</option>
+                                <option value="solar" selected>Solar Photovoltaic (Afrisol)</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-3 align-items-end">
+                            <div class="col-6">
+                                <label class="form-label fs-10 text-uppercase text-body-tertiary mb-1" for="model-b-lat">Latitude</label>
+                                <input type="number" class="form-control" id="model-b-lat" min="-90" max="90" step="0.0001" value="41.68">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fs-10 text-uppercase text-body-tertiary mb-1" for="model-b-lon">Longitude</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" class="form-control" id="model-b-lon" min="-180" max="180" step="0.0001" value="-2.53">
+                                    <button type="button" class="btn btn-phoenix-secondary flex-shrink-0" id="model-b-toggle-map-btn">
+                                        <span class="fas fa-map me-1"></span>Map
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text fs-10 mt-2">Must fall within Spain (27.6&deg;&ndash;43.9&deg;N, 18.4&deg;W&ndash;4.6&deg;E).</div>
+                        <div id="model-b-map-wrapper" class="d-none mt-2">
+                            <div id="model-b-map" class="location-map"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Section 3: Run ──────────────────────────────────────────────── -->
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="bg-body rounded-3 p-4">
+                            <div class="d-flex justify-content-between align-items-center gap-4 flex-wrap">
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1" id="run-panel-title">5-day forecast &middot; 15-minute resolution</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0" id="run-panel-subtitle">The forecast horizon and resolution are fixed by the EnergyPrediction service.</p>
+                                </div>
+                                <button type="button" class="btn btn-primary flex-shrink-0 d-inline-flex align-items-center gap-2 px-4" id="run-forecast-btn">
+                                    Run forecast &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Loading state ───────────────────────────────────────────────── -->
+        <div id="loading-panel" class="d-none mb-4">
+            <div class="card">
+                <div class="card-body p-4 d-flex align-items-center gap-3">
+                    <div class="spinner-border text-primary flex-shrink-0" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-body-emphasis mb-0">Running forecast&hellip;</h6>
+                        <p class="text-body-tertiary fs-9 mb-0">This may take a few moments. Configuration remains available while the forecast runs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Results section ─────────────────────────────────────────────── -->
+
+        <div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
+
+            <!-- Results header -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Forecast Results</h5>
+                    <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="res-generation-type">—</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
+                        <span class="fas fa-download"></span>Download JSON
+                    </button>
+                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
+                        <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
+                <span><span class="fas fa-location-dot me-1 text-body-tertiary"></span>Location: <span class="fw-semibold text-body-emphasis" id="res-location">—</span></span>
+                <span class="text-body-tertiary">·</span>
+                <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run at: <span class="fw-semibold text-body-emphasis" id="res-timestamp">—</span></span>
+                <span class="text-body-tertiary">·</span>
+                <span><span class="fas fa-calendar-days me-1 text-body-tertiary"></span>Horizon: <span class="fw-semibold text-body-emphasis" id="res-horizon">5 days · 15-min resolution</span></span>
+            </div>
+
+            <!-- KPI cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="bg-body border rounded-3 p-3 h-100">
+                        <span class="text-body-tertiary fs-9 d-block mb-1">Total Estimated Energy</span>
+                        <span class="fw-bolder text-primary fs-7" id="res-total">—</span>
+                        <span class="text-body-tertiary fs-9 ms-1">kWh</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="bg-body border rounded-3 p-3 h-100">
+                        <span class="text-body-tertiary fs-9 d-block mb-1">Peak Power</span>
+                        <span class="fw-bolder text-body-emphasis fs-7" id="res-peak">—</span>
+                        <span class="text-body-tertiary fs-9 ms-1">kW</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="bg-body border rounded-3 p-3 h-100">
+                        <span class="text-body-tertiary fs-9 d-block mb-1" id="res-weather-label">Avg Wind Speed</span>
+                        <span class="fw-bolder text-body-emphasis fs-7" id="res-weather">—</span>
+                        <span class="text-body-tertiary fs-9 ms-1" id="res-weather-unit">m/s</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="bg-body border rounded-3 p-3 h-100">
+                        <span class="text-body-tertiary fs-9 d-block mb-1">Generating Hours</span>
+                        <span class="fw-bolder text-body-emphasis fs-7" id="res-gen-hours">—</span>
+                        <span class="text-body-tertiary fs-9 ms-1">h</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart + Insights + Config -->
+            <div class="row g-4 mb-4">
+
+                <div class="col-12 col-xxl-9">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <h6 class="fw-bold text-body-emphasis mb-0">Power Output Forecast</h6>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <div class="d-flex align-items-center gap-3 fs-9 text-body-secondary" id="chart-legend-row"></div>
+                                    <button type="button" class="btn btn-sm btn-phoenix-secondary d-inline-flex align-items-center gap-1" id="chart-reset-zoom-btn">
+                                        <span class="fas fa-arrows-rotate"></span>Reset zoom
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chart-placeholder-inner" class="chart-placeholder">
+                                <span class="fas fa-chart-area fs-2 text-body-tertiary"></span>
+                                <span class="text-body-tertiary fs-9">Power output &nbsp;&middot;&nbsp; Weather input &middot; Time series chart</span>
+                                <span class="text-body-tertiary fs-10">Run a forecast to generate the chart.</span>
+                            </div>
+                            <div id="chart-canvas-wrapper" style="height:48vh;min-height:420px;display:none;">
+                                <div id="power-chart" style="width:100%;height:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xxl-3">
+                    <div class="row g-4 h-100">
+
+                        <div class="col-4 col-xxl-12">
+                            <div class="card h-100">
+                                <div class="card-body p-4">
+                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                                        <span class="fas fa-lightbulb text-warning"></span>Scenario Insights
+                                    </h6>
+                                    <ul class="list-unstyled fs-9 mb-0">
+                                        <li class="d-flex gap-2 mb-3">
+                                            <span class="fas fa-bolt text-primary mt-1 flex-shrink-0"></span>
+                                            <span class="text-body-secondary">Peak output of <strong id="insight-peak">—</strong> is expected at <strong id="insight-peak-time">—</strong>.</span>
+                                        </li>
+                                        <li class="d-flex gap-2 mb-0">
+                                            <span class="fas fa-circle-info text-info mt-1 flex-shrink-0"></span>
+                                            <span class="text-body-secondary">Forecast is based on Open-Meteo weather data corrected by CIEMAT's machine-learning model. Accuracy decreases towards the end of the 5-day horizon.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-8 col-xxl-12">
+                            <div class="card h-100">
+                                <div class="card-body p-4">
+                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
+                                        <span class="fas fa-list-ul text-body-tertiary"></span>
+                                        Configuration Used
+                                    </h6>
+                                    <div id="config-summary-body">
+                                        <dl class="row mb-0 fs-9">
+                                            <dt class="col-6 text-body-tertiary fw-normal">Generation Type</dt>
+                                            <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-generation-type">—</dd>
+                                            <dt class="col-6 text-body-tertiary fw-normal">Latitude</dt>
+                                            <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-lat">—</dd>
+                                            <dt class="col-6 text-body-tertiary fw-normal">Longitude</dt>
+                                            <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-lon">—</dd>
+                                            <dt class="col-6 text-body-tertiary fw-normal">Horizon</dt>
+                                            <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-horizon">5 days</dd>
+                                            <dt class="col-6 text-body-tertiary fw-normal">Data Source</dt>
+                                            <dd class="col-6 fw-semibold text-body-emphasis mb-0">Open-Meteo NWP</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ── Comparison results (shown instead of the single-model results when "Compare with a second model" is on) ── -->
+        <div id="cm-results-section" class="d-none">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-0">Production Comparison</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Next 5 days &mdash; drag to zoom</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-phoenix-secondary d-inline-flex align-items-center gap-1" id="cm-reset-zoom-btn">
+                            <span class="fas fa-arrows-rotate"></span>Reset zoom
+                        </button>
+                    </div>
+                    <div id="cm-chart" style="width:100%;height:44vh;min-height:380px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-body-tertiary fs-9 fw-semibold">Metric</th>
+                                    <th class="fs-9 fw-semibold" id="cm-th-a" style="color:var(--phoenix-primary);">Model A</th>
+                                    <th class="fs-9 fw-semibold" id="cm-th-b" style="color:var(--phoenix-purple);">Model B</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-9">
+                                <tr>
+                                    <td class="text-body-tertiary">Total energy</td>
+                                    <td class="fw-bold" id="cm-total-a" style="color:var(--phoenix-primary);">—</td>
+                                    <td class="fw-bold" id="cm-total-b" style="color:var(--phoenix-purple);">—</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-body-tertiary">Peak maximum</td>
+                                    <td class="fw-bold" id="cm-peak-a" style="color:var(--phoenix-primary);">—</td>
+                                    <td class="fw-bold" id="cm-peak-b" style="color:var(--phoenix-purple);">—</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-body-tertiary">Generating hours</td>
+                                    <td class="fw-bold" id="cm-hours-a" style="color:var(--phoenix-primary);">—</td>
+                                    <td class="fw-bold" id="cm-hours-b" style="color:var(--phoenix-purple);">—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- /#tab-forecast -->
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             MODE 2: REAL-TIME CALCULATION
+             ══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="tab-calculation" role="tabpanel" aria-labelledby="mode-calculation-tab">
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                    <div class="card mb-4 h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis fs-8 mb-1">1. Generation Type</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Choose which type of generation to calculate.</p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3" id="calc-generation-type-group">
+                                <div class="col-12 col-md-6">
+                                    <div class="card dt-tab-card cursor-pointer h-100 active" data-generation="wind" tabindex="0" role="button">
+                                        <div class="card-body d-flex align-items-start gap-3">
+                                            <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                                <span class="fas fa-wind"></span>
+                                            </span>
+                                            <div>
+                                                <h6 class="fw-bold text-body-emphasis mb-1">Wind Power</h6>
+                                                <p class="text-body-tertiary fs-9 mb-0">NED100 turbine model.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="card dt-tab-card cursor-pointer h-100" data-generation="solar" tabindex="0" role="button">
+                                        <div class="card-body d-flex align-items-start gap-3">
+                                            <span class="dt-tab-number rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                                                <span class="fas fa-solar-panel"></span>
+                                            </span>
+                                            <div>
+                                                <h6 class="fw-bold text-body-emphasis mb-1">Solar PV</h6>
+                                                <p class="text-body-tertiary fs-9 mb-0">Afrisol reference plant.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card mb-4 h-100" id="calc-resolution-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis fs-8 mb-1">2. Model Resolution</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Wind output can be calculated at three resolutions.</p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3" id="calc-resolution-group">
+                                <div class="col-12 col-md-4">
+                                    <div class="card dt-tab-card cursor-pointer h-100" data-resolution="1min" tabindex="0" role="button">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-bold text-body-emphasis mb-1 fs-9">1 Minute</h6>
+                                            <p class="text-body-tertiary fs-10 mb-0">Base model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="card dt-tab-card cursor-pointer h-100" data-resolution="5min" tabindex="0" role="button">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-bold text-body-emphasis mb-1 fs-9">5 Minutes</h6>
+                                            <p class="text-body-tertiary fs-10 mb-0">Base model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="card dt-tab-card cursor-pointer h-100 active" data-resolution="1s" tabindex="0" role="button">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-bold text-body-emphasis mb-1 fs-9">1 Second</h6>
+                                            <p class="text-body-tertiary fs-10 mb-0">Multilag model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="calc-resolution-locked-notice" class="d-none mt-3 d-flex align-items-center gap-2">
+                                <span class="fas fa-lock text-body-tertiary fs-9"></span>
+                                <span class="text-body-tertiary fs-9">Solar PV uses a single real-time model; resolution does not apply.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Section 3: Measurements ─────────────────────────────────── -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis fs-8 mb-1">3. Live Measurements</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Provide the current sensor readings for the selected model.</p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-semibold" for="calc-device-id">Device ID</label>
+                                    <input type="text" class="form-control" id="calc-device-id" value="NED100-01">
+                                </div>
+                            </div>
+
+                            <!-- Wind fields -->
+                            <div id="calc-wind-fields">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label fw-semibold" for="calc-wind-speed">Wind Speed</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="calc-wind-speed" value="9.1">
+                                            <span class="input-group-text">m/s</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label fw-semibold" for="calc-rpm">Rotor RPM</label>
+                                        <input type="number" step="0.1" class="form-control" id="calc-rpm" value="125.0">
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label fw-semibold" for="calc-temperature">Temperature</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="calc-temperature" value="16.0">
+                                            <span class="input-group-text">°C</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label fw-semibold" for="calc-pitch">Pitch</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="calc-pitch" value="2.0">
+                                            <span class="input-group-text">°</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 1s-only lag fields -->
+                                <div id="calc-lag-fields">
+                                    <span class="text-body-tertiary fw-bold d-block mb-2 text-uppercase fs-10 fw-semibold">Wind Speed &amp; Pitch History (required for the 1-second multilag model)</span>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-3">
+                                            <label class="form-label fw-semibold" for="calc-ws-lag5">Wind Speed &minus;5s</label>
+                                            <input type="number" step="0.1" class="form-control" id="calc-ws-lag5" value="8.9">
+                                        </div>
+                                        <div class="col-12 col-md-3">
+                                            <label class="form-label fw-semibold" for="calc-ws-lag10">Wind Speed &minus;10s</label>
+                                            <input type="number" step="0.1" class="form-control" id="calc-ws-lag10" value="8.7">
+                                        </div>
+                                        <div class="col-12 col-md-3">
+                                            <label class="form-label fw-semibold" for="calc-ws-lag20">Wind Speed &minus;20s</label>
+                                            <input type="number" step="0.1" class="form-control" id="calc-ws-lag20" value="8.5">
+                                        </div>
+                                        <div class="col-12 col-md-3">
+                                            <label class="form-label fw-semibold" for="calc-pitch-lag5">Pitch &minus;5s</label>
+                                            <input type="number" step="0.1" class="form-control" id="calc-pitch-lag5" value="2.1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Solar fields -->
+                            <div id="calc-solar-fields" class="d-none">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-semibold" for="calc-radiation">Solar Irradiance</label>
+                                        <div class="input-group">
+                                            <input type="number" step="1" class="form-control" id="calc-radiation" value="650.0">
+                                            <span class="input-group-text">W/m²</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-semibold" for="calc-t-ambiente">Ambient Temperature</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="calc-t-ambiente" value="22.5">
+                                            <span class="input-group-text">°C</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-body rounded-3 p-4 mt-4">
+                                <div class="d-flex justify-content-between align-items-center gap-4 flex-wrap">
+                                    <p class="text-body-tertiary fs-9 mb-0">Returns the instantaneous predicted power output for the given measurements.</p>
+                                    <button type="button" class="btn btn-primary flex-shrink-0 d-inline-flex align-items-center gap-2 px-4" id="calc-run-btn">
+                                        Calculate power output &rarr;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div id="calc-loading-panel" class="d-none mb-4">
+                <div class="card">
+                    <div class="card-body p-4 d-flex align-items-center gap-3">
+                        <div class="spinner-border text-primary flex-shrink-0" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-0">Calculating&hellip;</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Sending measurements to the EnergyPrediction service.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="calc-results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Calculation Result</h5>
+                        <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="calc-res-model">—</span>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="calc-export-json-btn">
+                        <span class="fas fa-download"></span>Download JSON
+                    </button>
+                </div>
+
+                <div class="row g-3 align-items-stretch">
+                    <div class="col-12 col-md-5">
+                        <div class="bg-primary bg-opacity-50 p-4 border rounded-4 border-0 h-100 d-flex flex-column justify-content-center">
+                            <span class="text-body-tertiary fs-9 d-block mb-1">Predicted Power Output</span>
+                            <div class="d-flex align-items-baseline flex-nowrap">
+                                <span class="fs-4 fw-bolder text-body-emphasis text-nowrap" id="calc-res-power-kw">—</span>
+                                <span class="text-body-tertiary fs-9 ms-2 text-nowrap">kW</span>
+                            </div>
+                            <span class="text-body-tertiary fs-10" id="calc-res-power-w">—</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-7">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <dl class="row mb-0 fs-9">
+                                    <dt class="col-6 text-body-tertiary fw-normal">Device ID</dt>
+                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-device">—</dd>
+                                    <dt class="col-6 text-body-tertiary fw-normal">Generation Type</dt>
+                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-generation-type">—</dd>
+                                    <dt class="col-6 text-body-tertiary fw-normal">Resolution</dt>
+                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-resolution">—</dd>
+                                    <dt class="col-6 text-body-tertiary fw-normal">Run at</dt>
+                                    <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="calc-res-timestamp">—</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#tab-calculation -->
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             MODE 3: MODEL COMPARATOR
+             ══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="tab-compare" role="tabpanel" aria-labelledby="mode-compare-tab">
+
+            <div class="alert alert-subtle-info rounded-3 py-2 fs-9 mb-4" role="alert">
+                <span class="fas fa-circle-info me-2"></span>Available for wind power only. The same measurements are sent to the three NED100 models &mdash; the 1-minute and 5-minute base models, and the 1-second multilag model &mdash; so their predictions can be compared directly.
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis fs-8 mb-1">Live Measurements</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">Wind speed and pitch history are required for the 1-second multilag model.</p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-device-id">Device ID</label>
+                                    <input type="text" class="form-control" id="cmp-device-id" value="NED100-01">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-wind-speed">Wind Speed</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" id="cmp-wind-speed" value="9.1">
+                                        <span class="input-group-text">m/s</span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-rpm">Rotor RPM</label>
+                                    <input type="number" step="0.1" class="form-control" id="cmp-rpm" value="125.0">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-temperature">Temperature</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" id="cmp-temperature" value="16.0">
+                                        <span class="input-group-text">°C</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-pitch">Pitch</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" id="cmp-pitch" value="2.0">
+                                        <span class="input-group-text">°</span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-ws-lag5">Wind Speed &minus;5s</label>
+                                    <input type="number" step="0.1" class="form-control" id="cmp-ws-lag5" value="8.9">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-ws-lag10">Wind Speed &minus;10s</label>
+                                    <input type="number" step="0.1" class="form-control" id="cmp-ws-lag10" value="8.7">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-ws-lag20">Wind Speed &minus;20s</label>
+                                    <input type="number" step="0.1" class="form-control" id="cmp-ws-lag20" value="8.5">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-semibold" for="cmp-pitch-lag5">Pitch &minus;5s</label>
+                                    <input type="number" step="0.1" class="form-control" id="cmp-pitch-lag5" value="2.1">
+                                </div>
+                            </div>
+
+                            <div class="bg-body rounded-3 p-4 mt-3">
+                                <div class="d-flex justify-content-between align-items-center gap-4 flex-wrap">
+                                    <p class="text-body-tertiary fs-9 mb-0">Calls all three NED100 models with the same measurements.</p>
+                                    <button type="button" class="btn btn-primary flex-shrink-0 d-inline-flex align-items-center gap-2 px-4" id="cmp-run-btn">
+                                        Compare models &rarr;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div id="cmp-loading-panel" class="d-none mb-4">
+                <div class="card">
+                    <div class="card-body p-4 d-flex align-items-center gap-3">
+                        <div class="spinner-border text-primary flex-shrink-0" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-0">Running the three models&hellip;</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">This calls the 1-minute, 5-minute and 1-second endpoints in sequence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="cmp-results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Model Comparison</h5>
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="cmp-export-json-btn">
+                        <span class="fas fa-download"></span>Download JSON
+                    </button>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-4">
+                        <div class="bg-body border rounded-3 p-3 h-100">
+                            <span class="text-body-tertiary fs-9 d-block mb-1">1-Minute Model (base)</span>
+                            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-1min">—</span>
+                            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="bg-body border rounded-3 p-3 h-100">
+                            <span class="text-body-tertiary fs-9 d-block mb-1">5-Minute Model (base)</span>
+                            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-5min">—</span>
+                            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="bg-primary bg-opacity-50 border rounded-3 p-3 h-100">
+                            <span class="text-body-tertiary fs-9 d-block mb-1">1-Second Model (multilag)</span>
+                            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-1s">—</span>
+                            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-body-emphasis mb-3">Predicted Power by Model</h6>
+                                <div id="compare-chart" style="width:100%;height:280px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-4">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                                    <span class="fas fa-lightbulb text-warning"></span>Insight
+                                </h6>
+                                <p class="text-body-secondary fs-9 mb-0">The 1-second multilag model differs from the average of the base models by <strong id="cmp-insight-diff">—</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#tab-compare -->
+
+        </div><!-- /#ciematModeTabContent -->
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+window.CIEMAT_CONFIG = {
+    forecastUrl: "{% url 'ciemat-forecast' %}",
+    calculateUrl: "{% url 'ciemat-calculate' %}",
+    compareUrl: "{% url 'ciemat-compare' %}",
+    saveResultUrl: "{% url 'dt-save-result' %}"
+};
+</script>
+<script src="{% static 'digitaltwins/ciemat-dt.js' %}" defer></script>
+{% endblock scripts %}

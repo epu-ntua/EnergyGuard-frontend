@@ -4,6 +4,7 @@ import logging
 import math
 import random
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import lru_cache
 from math import ceil
@@ -35,6 +36,18 @@ _HAL_STATIONS_TIMEOUT = 5   # seconds
 _HAL_SIMULATE_TIMEOUT = 30  # seconds
 _MAX_FORECAST_DAYS    = 16
 _MAX_PANELS           = 50
+
+_CIEMAT_API_BASE = settings.CIEMAT_API_BASE_URL.rstrip('/')
+_CIEMAT_API_KEY = settings.CIEMAT_API_KEY
+_CIEMAT_FORECAST_TIMEOUT = 30   # seconds
+_CIEMAT_CALCULATE_TIMEOUT = 15  # seconds
+
+_CIEMAT_CALCULATE_ROUTES = {
+    '1s':    'calculate/1s',
+    '1min':  'calculate/1min',
+    '5min':  'calculate/5min',
+    'solar': 'calculate/solar',
+}
 
 
 def _check_simulate_rate_limit(user_id, prefix, limit=_SIMULATE_RATE_LIMIT, window=_SIMULATE_RATE_WINDOW):
@@ -796,6 +809,225 @@ def engreen_pv_simulate(request):
     except requests.RequestException:
         logger.exception('HAL request failed: url=%s', hal_url)
         return JsonResponse({'error': 'Could not reach the forecast service.'}, status=502)
+
+
+@login_required
+def ciemat_forecasting_dt(request):
+    return _dt_render(request, 'digitaltwins/ciemat-forecasting-dt.html')
+
+
+@login_required
+@require_POST
+def ciemat_forecast(request):
+    if not _check_simulate_rate_limit(request.user.pk, 'ciemat'):
+        return JsonResponse({'error': 'Too many requests. Please wait before running another forecast.'}, status=429)
+
+    if not _CIEMAT_API_KEY:
+        return JsonResponse({'error': 'The CIEMAT forecasting service is not configured yet.'}, status=503)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    generation_type = body.get('generation_type')
+    if generation_type not in ('wind', 'solar'):
+        return JsonResponse({'error': 'Invalid generation type.'}, status=400)
+
+    try:
+        lat = float(body.get('lat'))
+        lon = float(body.get('lon'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Invalid or missing coordinates.'}, status=400)
+
+    if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+        return JsonResponse({'error': 'Coordinates out of range.'}, status=400)
+
+    forecast_url = f'{_CIEMAT_API_BASE}/api/v1/forecast/{generation_type}'
+    headers = {'X-API-Key': _CIEMAT_API_KEY, 'Content-Type': 'application/json'}
+
+    try:
+        resp = requests.post(forecast_url, json={'lat': lat, 'lon': lon}, headers=headers,
+                              timeout=_CIEMAT_FORECAST_TIMEOUT)
+        resp.raise_for_status()
+        try:
+            data = resp.json()
+        except ValueError:
+            logger.error('CIEMAT API returned non-JSON body (status %s): %s', resp.status_code, resp.text[:200])
+            return JsonResponse({'error': 'The forecast service returned an unexpected response.'}, status=502)
+        return JsonResponse({'points': data})
+    except requests.Timeout:
+        return JsonResponse({'error': 'The forecast service timed out. Please try again.'}, status=504)
+    except requests.HTTPError as exc:
+        code = exc.response.status_code if exc.response is not None else 502
+        body = exc.response.text[:200] if exc.response is not None else ''
+        if code in (401, 403):
+            logger.error('CIEMAT API rejected credentials: status=%s', code)
+            return JsonResponse({'error': 'The forecast service rejected the request credentials.'}, status=502)
+        if 400 <= code < 500:
+            logger.warning('CIEMAT API rejected forecast configuration: status=%s body=%s', code, body)
+            return JsonResponse(
+                {'error': 'The forecast service rejected the configuration. Check your inputs.'},
+                status=422,
+            )
+        logger.error('CIEMAT API returned server error: status=%s body=%s', code, body)
+        return JsonResponse({'error': 'The forecast service is temporarily unavailable.'}, status=502)
+    except requests.RequestException:
+        logger.exception('CIEMAT API request failed: url=%s', forecast_url)
+        return JsonResponse({'error': 'Could not reach the forecast service.'}, status=502)
+
+
+def _build_ciemat_calculate_payload(resolution, body):
+    device_id = str(body.get('device_id', '')).strip()
+    if not device_id:
+        return None, 'A device ID is required.'
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    if resolution == 'solar':
+        try:
+            radiation = float(body['radiation'])
+            t_ambiente = float(body['t_ambiente'])
+        except (KeyError, TypeError, ValueError):
+            return None, 'Invalid or missing solar input values.'
+        return {
+            'device_id': device_id,
+            'timestamp': timestamp,
+            'radiation': radiation,
+            'T_ambiente': t_ambiente,
+        }, None
+
+    try:
+        wind_speed = float(body['wind_speed'])
+        rpm = float(body['rpm'])
+        temperature = float(body['temperature'])
+        pitch = float(body['pitch'])
+    except (KeyError, TypeError, ValueError):
+        return None, 'Invalid or missing wind input values.'
+
+    payload = {
+        'device_id': device_id,
+        'timestamp': timestamp,
+        'wind_speed': wind_speed,
+        'rpm': rpm,
+        'temperature': temperature,
+        'pitch': pitch,
+    }
+
+    if resolution == '1s':
+        try:
+            payload['wind_speed_lag_5s'] = float(body['wind_speed_lag_5s'])
+            payload['wind_speed_lag_10s'] = float(body['wind_speed_lag_10s'])
+            payload['wind_speed_lag_20s'] = float(body['wind_speed_lag_20s'])
+            payload['pitch_lag_5s'] = float(body['pitch_lag_5s'])
+        except (KeyError, TypeError, ValueError):
+            return None, 'Invalid or missing wind/pitch history values required for the 1-second model.'
+
+    return payload, None
+
+
+def _call_ciemat_calculate(resolution, payload):
+    url = f'{_CIEMAT_API_BASE}/api/v1/{_CIEMAT_CALCULATE_ROUTES[resolution]}'
+    headers = {'X-API-Key': _CIEMAT_API_KEY, 'Content-Type': 'application/json'}
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=_CIEMAT_CALCULATE_TIMEOUT)
+        resp.raise_for_status()
+        try:
+            data = resp.json()
+        except ValueError:
+            logger.error('CIEMAT API returned non-JSON body (status %s): %s', resp.status_code, resp.text[:200])
+            return None, 'The calculation service returned an unexpected response.', 502
+        try:
+            return float(data), None, None
+        except (TypeError, ValueError):
+            logger.error('CIEMAT API returned a non-numeric power value: %r', data)
+            return None, 'The calculation service returned an unexpected response.', 502
+    except requests.Timeout:
+        return None, 'The calculation service timed out. Please try again.', 504
+    except requests.HTTPError as exc:
+        code = exc.response.status_code if exc.response is not None else 502
+        body_text = exc.response.text[:200] if exc.response is not None else ''
+        if code in (401, 403):
+            logger.error('CIEMAT API rejected credentials: status=%s', code)
+            return None, 'The calculation service rejected the request credentials.', 502
+        if 400 <= code < 500:
+            logger.warning('CIEMAT API rejected calculate input: status=%s body=%s', code, body_text)
+            return None, 'The calculation service rejected the input values.', 422
+        logger.error('CIEMAT API returned server error: status=%s body=%s', code, body_text)
+        return None, 'The calculation service is temporarily unavailable.', 502
+    except requests.RequestException:
+        logger.exception('CIEMAT API request failed: url=%s', url)
+        return None, 'Could not reach the calculation service.', 502
+
+
+@login_required
+@require_POST
+def ciemat_calculate(request):
+    if not _check_simulate_rate_limit(request.user.pk, 'ciemat_calc'):
+        return JsonResponse({'error': 'Too many requests. Please wait before running another calculation.'}, status=429)
+
+    if not _CIEMAT_API_KEY:
+        return JsonResponse({'error': 'The CIEMAT forecasting service is not configured yet.'}, status=503)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    resolution = body.get('resolution')
+    if resolution not in _CIEMAT_CALCULATE_ROUTES:
+        return JsonResponse({'error': 'Invalid resolution.'}, status=400)
+
+    payload, error = _build_ciemat_calculate_payload(resolution, body)
+    if error:
+        return JsonResponse({'error': error}, status=400)
+
+    power, error, status = _call_ciemat_calculate(resolution, payload)
+    if error:
+        return JsonResponse({'error': error}, status=status)
+
+    return JsonResponse({'power_w': power, 'timestamp': payload['timestamp']})
+
+
+@login_required
+@require_POST
+def ciemat_compare(request):
+    if not _check_simulate_rate_limit(request.user.pk, 'ciemat_compare'):
+        return JsonResponse({'error': 'Too many requests. Please wait before running another comparison.'}, status=429)
+
+    if not _CIEMAT_API_KEY:
+        return JsonResponse({'error': 'The CIEMAT forecasting service is not configured yet.'}, status=503)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    resolutions = ('1min', '5min', '1s')
+    payloads = {}
+    for resolution in resolutions:
+        payload, error = _build_ciemat_calculate_payload(resolution, body)
+        if error:
+            return JsonResponse({'error': error}, status=400)
+        payloads[resolution] = payload
+
+    # The three resolutions are independent calls against the same service,
+    # so run them concurrently instead of paying up to 3x _CIEMAT_CALCULATE_TIMEOUT.
+    with ThreadPoolExecutor(max_workers=len(resolutions)) as executor:
+        futures = {
+            resolution: executor.submit(_call_ciemat_calculate, resolution, payloads[resolution])
+            for resolution in resolutions
+        }
+        outcomes = {resolution: future.result() for resolution, future in futures.items()}
+
+    results = {}
+    for resolution in resolutions:
+        power, error, status = outcomes[resolution]
+        if error:
+            return JsonResponse({'error': f'{resolution} model: {error}'}, status=status)
+        results[resolution] = power
+
+    return JsonResponse({'results': results})
 
 
 @login_required

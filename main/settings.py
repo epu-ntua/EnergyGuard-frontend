@@ -352,3 +352,7 @@ SCAN_API_TIMEOUT = env.int('SCAN_API_TIMEOUT', default=300)
 
 # Engreen HAL simulation service
 HAL_BASE_URL = env('HAL_BASE_URL')
+
+# CIEMAT EnergyPrediction forecasting service (CEDER-CIEMAT node)
+CIEMAT_API_BASE_URL = env('CIEMAT_API_BASE_URL', default='https://energyguard.fora.es/api_eg')
+CIEMAT_API_KEY = env('CIEMAT_API_KEY', default='')
