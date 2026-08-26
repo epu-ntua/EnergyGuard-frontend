@@ -260,7 +260,6 @@ def step_view(request, track, step_id):
 
     if step['type'] == 'checklist':
         context['checklist_status'] = track_state['checklist_status'].get(step_id, {})
-        context['gp4a_answer'] = track_state['answers'].get('GP-4a') if step_id in ('GP-4b', 'GP-5') else None
         return render(request, 'questionnaire/step_checklist.html', context)
 
     answer = track_state['answers'].get(step_id)
@@ -488,9 +487,17 @@ def submit_checklist(request, track, step_id):
         if warning:
             track_state['flash_note'] = warning
     else:
-        if step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
+        if step_id == 'AI-7' and engine.ai7_open_source_check_applies(track, track_state['answers'], statuses):
+            # No high-risk category (Step 4.2) and no transparency trigger
+            # (Step 7) applies - detour through Step 7.5 to check for an
+            # open-source scope exemption before continuing to Step 8.
             track_state['risk_category'] = 'minimal_risk'
-        _finish_current_step(track_state)
+            track_state['current_step'] = 'AI-7.5'
+        elif step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
+            track_state['risk_category'] = 'minimal_risk'
+            _finish_current_step(track_state)
+        else:
+            _finish_current_step(track_state)
 
     _save_state(request, state)
 
@@ -543,6 +550,8 @@ def results(request):
                 name, risk_category, track_state['role'], track_state['checklist_status'],
                 track_state['answers']
             ) if track_state['completed'] else [],
+            'literacy': engine.ai_literacy_summary(name, track_state['answers'])
+            if track_state['completed'] else None,
         }
 
     display_roles = sorted({
@@ -588,6 +597,7 @@ def download_assessment_json(request):
     export_data = {
         'report_id': assessment.id,
         'completion_date': assessment.created_at.isoformat(),
+        'disclaimer': 'Any compliance-related insights, assessments, guidance, results and reports generated are preliminary, non-exhaustive, and intended strictly for informational use. They do not constitute regulatory approval, accreditation, formal conformity assessment, legally binding compliance determination or presumption of any type that the AI applications are in conformity with applicable requirements or legal advice, nor should they be relied upon as a substitute for professional legal consultation.',
         'roles': assessment.roles,
         'track_results': assessment.track_results,
         'answers': assessment.answers,
