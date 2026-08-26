@@ -4,11 +4,20 @@
    legend, station cards, city overview panel) anchor their bottom/left/right
    to — without it they'd position against the whole (scrollable) document
    instead of the map's own box, and drift onto the footer below.
-   Height is kept at a full 100vh here so that stack has as much room as
-   it was designed for; the breadcrumb/header/footer above and below just
-   push the page taller and scroll, rather than shrinking the map's own
-   box and squeezing the overlays into less space than they need. */
-#map-viewport { position: relative; width: 100%; height: 100vh; margin-bottom: 2rem; }
+
+   .content (from theme.css) is capped to exactly one viewport tall instead
+   of its default min-height:100vh (which let it grow past the viewport),
+   and is already a flex column (see the `d-flex flex-column` class in
+   rea-riga-dt.html) with the breadcrumb and dt_workspace_header above this
+   element. Making #map-viewport a flex:1 item lets it fill whatever space
+   is left after that header and the footer's reserved bottom padding, so
+   breadcrumb + header + map + footer all fit on one screen with nothing to
+   scroll — instead of the map keeping a fixed 100vh and pushing the whole
+   page taller. overflow-y:auto on .content is a fallback only, for narrow
+   viewports where the header wraps taller than the space left for it. */
+.content { height: 100vh; overflow-y: auto; }
+
+#map-viewport { position: relative; width: 100%; flex: 1 1 auto; min-height: 320px; margin-bottom: 0.75rem; }
 #map { width: 100%; height: 100%; }
 
 /* ── Minimap container ── */
