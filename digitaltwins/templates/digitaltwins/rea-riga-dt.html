@@ -22,61 +22,25 @@
 
   <div id="map-viewport">
     <div id="map"></div>
-    <!-- The Region Filter / Energy Class Filter / Year Filter Leaflet
-         controls are reparented here from their normal map corners —
-         see initFilterChips() in rea-riga-map.js. -->
-    <div id="filter-chips" class="filter-chips">
-      <button type="button" class="filter-chip" data-chip="region" aria-expanded="false">Region</button>
-      <button type="button" class="filter-chip" data-chip="energy-class" aria-expanded="false">Energy class</button>
-      <button type="button" class="filter-chip" data-chip="year" aria-expanded="false">Year</button>
+    <div id="city-overview-panel" class="city-overview-panel" hidden></div>
+    <button id="city-overview-toggle-btn" class="city-overview-toggle-btn" type="button" title="City-scale Overview" aria-label="Open city-scale overview" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/>
+        <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/>
+        <line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2"/>
+      </svg>
+      <span>City-scale Overview</span>
+      <svg class="cf-toggle-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
+    <div id="meteo-station-card" class="aq-station-card" hidden>
+      <div class="aq-station-card-title">Meteorological stations</div>
+      <div class="aq-station-list" id="meteo-station-list"></div>
     </div>
-    <div id="filter-chip-dropdown" class="filter-chip-dropdown"></div>
-    <div id="bottom-sheet" class="bottom-sheet">
-      <!-- Compact mode (viewport shorter than 701px, see styles.css): tap
-           to expand #city-overview-panel in place. -->
-      <button type="button" id="bottom-sheet-handle" class="bottom-sheet-handle" aria-expanded="false" aria-controls="city-overview-panel" aria-label="Expand city-scale overview">
-        <span class="bottom-sheet-drag-bar" aria-hidden="true"></span>
-        <div class="bottom-sheet-row">
-          <div class="bottom-sheet-summary">
-            <span id="bottom-sheet-count" class="bottom-sheet-count">0 buildings</span>
-            <div id="bottom-sheet-bar" class="bottom-sheet-bar" aria-hidden="true"></div>
-          </div>
-          <svg class="bottom-sheet-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="18 15 12 9 6 15"/>
-          </svg>
-        </div>
-      </button>
-      <!-- Desktop / tall-viewport mode: the colleague's original floating
-           pill button, positioned by positionCityOverviewPanel() in
-           app.js instead of the compact handle above. -->
-      <button id="city-overview-toggle-btn" class="city-overview-toggle-btn" type="button" title="City-scale Overview" aria-label="Open city-scale overview" aria-expanded="false">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/>
-          <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/>
-          <line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2"/>
-        </svg>
-        <span>City-scale Overview</span>
-        <svg class="cf-toggle-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"/>
-        </svg>
-      </button>
-      <div id="city-overview-panel" class="city-overview-panel"></div>
-    </div>
-    <div class="station-cards-stack">
-      <div id="meteo-station-card" class="aq-station-card" hidden>
-        <div class="aq-station-card-head">
-          <div class="aq-station-card-title">Meteorological stations</div>
-          <button type="button" class="legend-help-btn aq-station-collapse-btn" data-collapse-toggle title="Collapse" aria-label="Collapse meteorological stations list">▾</button>
-        </div>
-        <div class="aq-station-list" id="meteo-station-list"></div>
-      </div>
-      <div id="aq-station-card" class="aq-station-card" hidden>
-        <div class="aq-station-card-head">
-          <div class="aq-station-card-title">Air quality stations</div>
-          <button type="button" class="legend-help-btn aq-station-collapse-btn" data-collapse-toggle title="Collapse" aria-label="Collapse air quality stations list">▾</button>
-        </div>
-        <div class="aq-station-list" id="aq-station-list"></div>
-      </div>
+    <div id="aq-station-card" class="aq-station-card" hidden>
+      <div class="aq-station-card-title">Air quality stations</div>
+      <div class="aq-station-list" id="aq-station-list"></div>
     </div>
     <div id="minimap-toggle" title="Toggle minimap">▼</div>
     <div id="minimap-wrapper">
