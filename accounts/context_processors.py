@@ -21,6 +21,7 @@ def header_notifications(request):
     for n in unread:
         notifications.append(
             {
+                "id": n.id,
                 "message": n.message,
                 "url": reverse("read_notification", args=[n.id]),
                 "icon": n.icon,

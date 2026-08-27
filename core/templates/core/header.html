@@ -47,16 +47,16 @@
             </div>
             <div class="card-body p-0" id="notif-dropdown-body">
               {% if header_notifications %}
-              <div class="scrollbar-overlay" id="notif-dropdown-list" style="max-height: 18rem;">
+              <div id="notif-dropdown-list" style="max-height: 18rem; overflow-y: auto;">
                 {% for notification in header_notifications %}
-                <div class="px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom">
+                <div class="px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom"{% if notification.id %} data-notification-id="{{ notification.id }}"{% endif %}>
                   <div class="d-flex align-items-center justify-content-between position-relative">
                     <div class="d-flex">
                       <div class="avatar avatar-m me-3">
                         <div class="avatar-name rounded-circle"><span><span class="fas fa-{{ notification.icon }}"></span></span></div>
                       </div>
                       <div class="flex-1 me-sm-3">
-                        <a class="stretched-link text-decoration-none" href="{{ notification.url }}">
+                        <a class="stretched-link text-decoration-none notification-link" href="{{ notification.url }}"{% if notification.id %} data-notification-id="{{ notification.id }}"{% endif %}>
                           <p class="fs-8-5 text-body-highlight mb-2 fw-normal">{{ notification.message }}</p>
                         </a>
                       </div>
@@ -67,7 +67,7 @@
               </div>
               {% else %}
               <div class="px-2 px-sm-3 py-3 text-center text-body-secondary fs-9" id="notif-empty-state">No new notifications</div>
-              <div class="scrollbar-overlay d-none" id="notif-dropdown-list" style="max-height: 18rem;"></div>
+              <div class="d-none" id="notif-dropdown-list" style="max-height: 18rem; overflow-y: auto;"></div>
               {% endif %}
             </div>
           </div>

@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from ..forms import TeamEditForm, TeamInviteForm
 from ..models import Notification, Profile, TeamInvite, User
@@ -216,19 +217,21 @@ def pending_invites_partial(request):
 
 @login_required
 def poll_notifications(request):
-    unread = Notification.objects.filter(recipient=request.user, is_read=False).values(
-        "id", "message", "icon", "created_at"
-    )
-    return JsonResponse({"notifications": list(unread)})
+    unread = Notification.objects.filter(recipient=request.user, is_read=False)
+    return JsonResponse({
+        "notifications": list(unread.values("id", "message", "icon", "created_at")),
+        "count": unread.count(),
+    })
 
 
 @login_required
+@require_POST
 def read_notification(request, notification_id):
     notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
     notification.is_read = True
     notification.save()
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse({"ok": True})
+        return JsonResponse({"ok": True, "url": notification.url or ""})
     return redirect(notification.url or "team_management")
 
 
