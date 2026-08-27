@@ -4,6 +4,8 @@
 {% block title %}CARTIF Node Workspace - Digital Twins{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
     .chart-placeholder {
         background: var(--phoenix-body-bg);
@@ -15,6 +17,11 @@
         justify-content: center;
         flex-direction: column;
         gap: .5rem;
+    }
+    .location-map {
+        height: 320px;
+        border-radius: .75rem;
+        cursor: crosshair;
     }
 </style>
 {% endblock head %}
@@ -155,13 +162,18 @@
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-6">
+                            <div class="col-6">
                                 <label class="form-label fw-semibold" for="cfg-lat">Latitude</label>
-                                <input type="number" step="any" class="form-control" id="cfg-lat" name="lat" value="41.602869111083955">
+                                <input type="number" step="any" class="form-control" id="cfg-lat" name="lat" min="-90" max="90" value="41.602869111083955">
                             </div>
-                            <div class="col-12 col-md-6">
+                            <div class="col-6">
                                 <label class="form-label fw-semibold" for="cfg-lon">Longitude</label>
-                                <input type="number" step="any" class="form-control" id="cfg-lon" name="lon" value="-2.508015578034199">
+                                <div class="d-flex gap-2">
+                                    <input type="number" step="any" class="form-control" id="cfg-lon" name="lon" min="-180" max="180" value="-2.508015578034199">
+                                    <button type="button" class="btn btn-phoenix-secondary flex-shrink-0 text-nowrap" id="toggle-map-btn">
+                                        <span class="fas fa-map me-1"></span>Map
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-semibold" for="cfg-altitude">Altitude</label>
@@ -175,6 +187,14 @@
                                 <select class="form-select" id="cfg-tz" name="tz">
                                     <option value="Europe/Madrid" selected>Europe/Madrid</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div id="location-map-wrapper" class="d-none mt-3">
+                            <div id="location-map" class="location-map"></div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <span class="fas fa-circle-info text-body-tertiary fs-9"></span>
+                                <span class="text-body-tertiary fs-9">Click or drag the marker to set the site location.</span>
                             </div>
                         </div>
 
@@ -238,13 +258,13 @@
             </div>
 
             <!-- ── Section 3: AI Model Configuration (advanced / defaults) ─────── -->
-            <div class="col-12">
-                <div class="card mb-4">
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                             <div>
                                 <h6 class="fw-bold text-body-emphasis fs-8 mb-1">3. AI Model Configuration <span class="text-body-tertiary fw-normal">(advanced)</span></h6>
-                                <p class="text-body-tertiary fs-9 mb-0">Hyperparameters of the Random Forest model used by the Digital Twin (configAI.ini). CARTIF ships these with sensible defaults — most users can leave this section untouched.</p>
+                                <p class="text-body-tertiary fs-9 mb-0">Hyperparameters of the Random Forest model used by the Digital Twin (configAI.ini).</p>
                             </div>
                             <div class="form-check form-switch flex-shrink-0 mt-1">
                                 <input class="form-check-input" type="checkbox" role="switch" id="ai-advanced-toggle">
@@ -264,7 +284,7 @@
                                 <!-- <span class="text-body-tertiary fs-9">configAI.ini · [RF]</span> -->
                             </div>
                             <div class="row g-3 mb-3">
-                                <div class="col-12 col-md-4 col-lg-2">
+                                <div class="col-6">
                                     <label class="form-label fw-semibold d-flex align-items-center gap-1" for="ai-n-estimators">
                                         n_estimators
                                         <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Number of trees in the forest."></span>
@@ -274,7 +294,7 @@
                                         <option value="300">300</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4 col-lg-2">
+                                <div class="col-6">
                                     <label class="form-label fw-semibold d-flex align-items-center gap-1" for="ai-max-depth">
                                         max_depth
                                         <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Maximum depth of each tree. None = unlimited."></span>
@@ -285,7 +305,7 @@
                                         <option value="20">20</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4 col-lg-2">
+                                <div class="col-6">
                                     <label class="form-label fw-semibold d-flex align-items-center gap-1" for="ai-min-samples-split">
                                         min_samples_split
                                         <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Minimum number of samples required to split an internal node."></span>
@@ -295,7 +315,7 @@
                                         <option value="5">5</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4 col-lg-2">
+                                <div class="col-6">
                                     <label class="form-label fw-semibold d-flex align-items-center gap-1" for="ai-min-samples-leaf">
                                         min_samples_leaf
                                         <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Minimum number of samples required at a leaf node."></span>
@@ -305,7 +325,7 @@
                                         <option value="2">2</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4 col-lg-4">
+                                <div class="col-6">
                                     <label class="form-label fw-semibold d-flex align-items-center gap-1" for="ai-max-features">
                                         max_features
                                         <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Number of features considered at each split."></span>
@@ -317,7 +337,7 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center justify-content-between gap-3 p-3 bg-body-tertiary rounded-3">
+                            <div class="d-flex align-items-center justify-content-between gap-3 p-3 bg-body-secondary rounded-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <!-- <span class="fas fa-flask text-body-tertiary fs-9"></span> -->
                                     <span class="text-body-tertiary fs-9">XGBoost model</span>
@@ -329,36 +349,39 @@
                 </div>
             </div>
 
-            <!-- ── Section 4: Real Facility Values (optional) + Run ────────────── -->
-            <div class="col-12">
-                <div class="card mb-4">
+            <!-- ── Section 4: Real Facility Values (optional) ──────────────────── -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
                     <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                             <div>
                                 <h6 class="fw-bold text-body-emphasis fs-8 mb-1">4. Real Facility Values <span class="text-body-tertiary fw-normal">(optional)</span></h6>
                                 <p class="text-body-tertiary fs-9 mb-0">Upload measured facility data for the same 24-hour period to enable AI-prediction accuracy metrics in the results.</p>
                             </div>
+                            <div class="form-check form-switch flex-shrink-0 mt-1">
+                                <input class="form-check-input" type="checkbox" role="switch" id="real-values-toggle">
+                                <label class="form-check-label fs-9 text-body-tertiary text-nowrap" for="real-values-toggle">Provide</label>
+                            </div>
                         </div>
 
-                        <div class="row g-4 align-items-start">
-                            <div class="col-12 col-lg-6">
-                                {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="real-values-json-file" input_name="real_values_json_file" %}
-                            </div>
-                            <div class="col-12 col-lg-6">
-                                <div class="bg-body rounded-3 p-4 h-100 d-flex flex-column justify-content-between">
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1">Ready to run</h6>
-                                        <p class="text-body-tertiary fs-9 mb-3">The Digital Twin uses the configuration above, together with default AI model parameters, to run a 24-hour predictive simulation.</p>
-                                    </div>
-                                    <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2" id="run-simulation-btn">
-                                        <span class="fas fa-play"></span>Run Simulation
-                                    </button>
-                                </div>
-                            </div>
+                        <div id="real-values-default-note" class="d-flex align-items-center gap-2">
+                            <span class="fas fa-circle-info text-body-tertiary fs-9"></span>
+                            <span class="text-body-tertiary fs-9">No real facility values provided — accuracy metrics will not be available.</span>
+                        </div>
+
+                        <div id="real-values-body" class="d-none mt-3">
+                            {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="real-values-json-file" input_name="real_values_json_file" %}
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- ── Run Simulation button ────────────────────────────────────────── -->
+        <div class="d-flex justify-content-end my-4">
+            <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="run-simulation-btn">
+                Run simulation <span class="fas fa-arrow-right"></span>
+            </button>
         </div>
 
         <!-- ── Loading state ───────────────────────────────────────────────── -->
@@ -510,6 +533,8 @@
                                                 <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-mh">—</dd>
                                                 <dt class="col-6 text-body-tertiary fw-normal">Battery</dt>
                                                 <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-elec">—</dd>
+                                                <dt class="col-6 text-body-tertiary fw-normal">Heat pump</dt>
+                                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-hp">—</dd>
                                                 <dt class="col-6 text-body-tertiary fw-normal">Fuel cell</dt>
                                                 <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="sum-h2cell">—</dd>
                                             </dl>
@@ -575,6 +600,7 @@
     var realValuesPill = document.getElementById('json-file-pill');
 
     function updateRealValuesState(file) {
+        if (!realValuesPill) return;
         if (!file) {
             realValuesPill.textContent = 'Accepted format: .json · Max size: 10 MB';
             return;
@@ -604,8 +630,85 @@
         realValuesDropzone.addEventListener('drop', function (e) {
             var files = e.dataTransfer && e.dataTransfer.files;
             if (!files || !files.length) return;
+            if (!/\.json$/i.test(files[0].name)) {
+                if (realValuesPill) realValuesPill.textContent = 'Only .json files are accepted.';
+                return;
+            }
             realValuesInput.files = files;
             updateRealValuesState(files[0]);
+        });
+    }
+
+    // Real Facility Values toggle
+    var realValuesToggle = document.getElementById('real-values-toggle');
+    var realValuesBody = document.getElementById('real-values-body');
+    var realValuesDefaultNote = document.getElementById('real-values-default-note');
+
+    if (realValuesToggle) {
+        realValuesToggle.addEventListener('change', function () {
+            if (realValuesToggle.checked) {
+                realValuesBody.classList.remove('d-none');
+                realValuesDefaultNote.classList.add('d-none');
+            } else {
+                realValuesBody.classList.add('d-none');
+                realValuesDefaultNote.classList.remove('d-none');
+                if (realValuesInput) realValuesInput.value = '';
+                updateRealValuesState(null);
+            }
+        });
+    }
+
+    // Site location map
+    var latInput = document.getElementById('cfg-lat');
+    var lonInput = document.getElementById('cfg-lon');
+    var toggleMapBtn = document.getElementById('toggle-map-btn');
+    var locationMapWrapper = document.getElementById('location-map-wrapper');
+    var CARTIF_SITE = { lat: 41.602869111083955, lon: -2.508015578034199 };
+    var locationMap = null;
+    var locationMarker = null;
+
+    function setMapMarker(lat, lon, recenter) {
+        if (!locationMap) return;
+        locationMarker.setLatLng([lat, lon]);
+        if (recenter) locationMap.setView([lat, lon], locationMap.getZoom());
+    }
+
+    function initLocationMap() {
+        if (locationMap) return;
+        var parsedLat = parseFloat(latInput.value);
+        var parsedLon = parseFloat(lonInput.value);
+        var lat = isNaN(parsedLat) ? CARTIF_SITE.lat : parsedLat;
+        var lon = isNaN(parsedLon) ? CARTIF_SITE.lon : parsedLon;
+
+        locationMap = L.map('location-map').setView([lat, lon], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18,
+        }).addTo(locationMap);
+
+        locationMarker = L.marker([lat, lon], { draggable: true }).addTo(locationMap);
+
+        locationMap.on('click', function (e) {
+            latInput.value = e.latlng.lat.toFixed(6);
+            lonInput.value = e.latlng.lng.toFixed(6);
+            setMapMarker(e.latlng.lat, e.latlng.lng, false);
+        });
+
+        locationMarker.on('dragend', function () {
+            var pos = locationMarker.getLatLng();
+            latInput.value = pos.lat.toFixed(6);
+            lonInput.value = pos.lng.toFixed(6);
+        });
+    }
+
+    if (toggleMapBtn) {
+        toggleMapBtn.addEventListener('click', function () {
+            var willShow = locationMapWrapper.classList.contains('d-none');
+            locationMapWrapper.classList.toggle('d-none');
+            if (willShow) {
+                initLocationMap();
+                setTimeout(function () { locationMap.invalidateSize(); }, 0);
+            }
         });
     }
 
@@ -659,6 +762,7 @@
         document.getElementById('sum-electrolyzer').textContent = fieldValue('cfg-electrolyzer-power') + ' kW';
         document.getElementById('sum-mh').textContent = fieldValue('cfg-mh-capacity');
         document.getElementById('sum-elec').textContent = fieldValue('cfg-elec-capacity');
+        document.getElementById('sum-hp').textContent = fieldValue('cfg-hp-power') || '—';
         document.getElementById('sum-h2cell').textContent = fieldValue('cfg-h2cell-power') || '—';
         document.getElementById('sum-ai-mode').textContent = aiHyperparams().customised ? 'Custom' : 'Default';
 
@@ -692,11 +796,14 @@
             loadingPanel.classList.remove('d-none');
 
             setTimeout(function () {
-                loadingPanel.classList.add('d-none');
-                populateResults();
-                resultsSection.classList.remove('d-none');
-                runBtn.disabled = false;
-                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                try {
+                    populateResults();
+                    resultsSection.classList.remove('d-none');
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } finally {
+                    loadingPanel.classList.add('d-none');
+                    runBtn.disabled = false;
+                }
             }, 1200);
         });
     }
@@ -706,7 +813,7 @@
         exportBtn.addEventListener('click', function () {
             var payload = {
                 location: { lat: fieldValue('cfg-lat'), lon: fieldValue('cfg-lon'), altitude: fieldValue('cfg-altitude'), tz: fieldValue('cfg-tz') },
-                assets: { electrolyzer_power: fieldValue('cfg-electrolyzer-power'), mh_capacity: fieldValue('cfg-mh-capacity'), elec_capacity: fieldValue('cfg-elec-capacity'), h2cell_power: fieldValue('cfg-h2cell-power') },
+                assets: { electrolyzer_power: fieldValue('cfg-electrolyzer-power'), mh_capacity: fieldValue('cfg-mh-capacity'), elec_capacity: fieldValue('cfg-elec-capacity'), hp_power: fieldValue('cfg-hp-power'), h2cell_power: fieldValue('cfg-h2cell-power') },
                 ai_model: aiHyperparams(),
                 results: {
                     h2_produced_nl: document.getElementById('res-h2-produced').textContent,
