@@ -2,7 +2,7 @@ import logging
 import os
 
 from django.contrib.auth.decorators import login_required
-from django.http import StreamingHttpResponse
+from django.http import Http404, HttpResponseServerError, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from core.services.object_storage import MinioUploadError, build_minio_client
@@ -19,19 +19,19 @@ def dataset_download(request, dataset_id):
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
     if not dataset.data_file:
-        from django.http import Http404
         raise Http404("No data file available for this dataset.")
 
     try:
         client = build_minio_client()
         s3_response = client.get_object(Bucket=dataset.bucket_name, Key=dataset.data_file)
     except MinioUploadError as exc:
-        from django.http import HttpResponseServerError
         logger.error("Storage error retrieving dataset %s: %s", dataset_id, exc)
         return HttpResponseServerError("File could not be retrieved. Please try again.")
 
     filename = os.path.basename(dataset.data_file)
     content_type = s3_response.get("ContentType", "application/octet-stream")
+    if filename.endswith(".gz"):
+        content_type = "application/gzip"
     content_length = s3_response.get("ContentLength")
 
     def _stream():

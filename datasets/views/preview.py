@@ -1,6 +1,7 @@
 import csv
 import io
 import zipfile
+import zlib
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -106,6 +107,21 @@ def _parse_csv(raw: bytes, max_rows: int) -> tuple[list, list]:
     raise ValueError("Could not decode the file as UTF-8 or latin-1.")
 
 
+def _inflate_prefix(raw: bytes) -> bytes:
+    """
+    Inflate as much of a truncated gzip stream as possible.
+
+    The Range request deliberately cuts the stream mid-member, so the trailing
+    bytes are incomplete; decompressobj yields everything up to that point and
+    the unused tail is simply dropped.
+    """
+    decompressor = zlib.decompressobj(wbits=31)
+    try:
+        return decompressor.decompress(raw)
+    except zlib.error as exc:
+        raise ValueError(f"Could not decompress the gzip stream: {exc}") from exc
+
+
 @login_required
 def dataset_preview(request, dataset_id):
     dataset = get_object_or_404(Dataset, pk=dataset_id)
@@ -143,6 +159,18 @@ def dataset_preview(request, dataset_id):
 
             headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
             return JsonResponse({"headers": headers, "rows": rows, "source_file": csv_names[0]})
+
+        elif magic[:2] == b"\x1f\x8b":
+            # gzip — not seekable, but it inflates from the start, so the first
+            # chunk is far more than the handful of rows a preview needs.
+            response = client.get_object(
+                Bucket=dataset.bucket_name,
+                Key=dataset.data_file,
+                Range=f"bytes=0-{PREVIEW_CHUNK_BYTES - 1}",
+            )
+            raw = _inflate_prefix(response["Body"].read())
+            headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
+            return JsonResponse({"headers": headers, "rows": rows})
 
         else:
             # Plain CSV — Range request, no full download needed

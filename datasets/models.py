@@ -57,6 +57,21 @@ class Dataset(TimeStampedModel):
         return self.name
 
     @property
+    def pilot_partner(self) -> str | None:
+        """
+        The pilot partner this dataset belongs to, or None for a user-uploaded
+        dataset. Pilot data is a platform-owned export shared by every user, so
+        JupyterHub mounts it read-only instead of copying it per user.
+        """
+        from .services.pilot import pilot_partner_for
+
+        return pilot_partner_for(self)
+
+    @property
+    def is_pilot(self) -> bool:
+        return self.pilot_partner is not None
+
+    @property
     def publisher_display(self) -> str:
         if self.publisher_id:
             full_name = self.publisher.get_full_name().strip()
