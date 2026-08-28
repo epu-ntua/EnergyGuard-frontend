@@ -11,4 +11,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('hpc/', views.hpc, name='hpc'),
     path('ai-models/', views.ai_models, name='ai_models'),
+    path('ai-models/request-access/', views.request_ai_model_access, name='ai_model_request_access'),
 ]

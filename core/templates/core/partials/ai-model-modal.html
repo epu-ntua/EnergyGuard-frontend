@@ -1,5 +1,5 @@
 <div class="modal fade" id="aiModelModal-{{ model.slug }}" tabindex="-1" aria-labelledby="aiModelModalLabel-{{ model.slug }}" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered {% if not model.compact %}modal-xl{% endif %}">
     <div class="modal-content">
       <div class="modal-header">
         <div class="d-flex align-items-center gap-3">
@@ -8,11 +8,14 @@
           </span> -->
           <div>
             <h5 class="modal-title mb-0" id="aiModelModalLabel-{{ model.slug }}">{{ model.name }}</h5>
+            {% if not model.compact %}
             <p class="text-body-tertiary fs-9 mb-0">{{ model.description }}</p>
+            {% endif %}
           </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      {% if not model.compact %}
       <div class="modal-body">
         {% if model.modes %}
         <div class="row">
@@ -67,6 +70,8 @@
           </div>
           {% endfor %}
         </div>
+        {% elif model.details %}
+        <p class="text-body-tertiary fs-9 mb-0">{{ model.details }}</p>
         {% else %}
         <div class="text-center py-4">
           <span class="fas fa-hourglass-half fs-3 text-body-tertiary mb-2 d-block"></span>
@@ -74,12 +79,21 @@
         </div>
         {% endif %}
       </div>
+      {% endif %}
       <div class="modal-footer">
         <button type="button" class="btn btn-link text-body-tertiary" data-bs-dismiss="modal">Cancel</button>
         {% if model.cta_url %}
-        <a href="{{ model.cta_url }}" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
-          Open Workspace <span class="fas fa-arrow-right"></span>
+        <a href="{{ model.cta_url }}" {% if model.cta_external %}target="_blank" rel="noopener noreferrer"{% endif %} class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+          {{ model.cta_label|default:"Open Workspace" }} <span class="fas fa-arrow-right"></span>
         </a>
+        {% elif model.request_access %}
+        <form method="post" action="{% url 'ai_model_request_access' %}">
+          {% csrf_token %}
+          <input type="hidden" name="model_slug" value="{{ model.slug }}">
+          <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+            Request access to {{ model.name }}
+          </button>
+        </form>
         {% else %}
         <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
         {% endif %}

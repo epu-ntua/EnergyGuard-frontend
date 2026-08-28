@@ -1,4 +1,4 @@
-from .ai_models import ai_models
+from .ai_models import ai_models, request_ai_model_access
 from .dashboard import dashboard
 from .hpc import hpc
 from .public import (
@@ -12,6 +12,7 @@ from .wizard import BaseWizardView
 
 __all__ = [
     "ai_models",
+    "request_ai_model_access",
     "BaseWizardView",
     "collaboration_hub",
     "contact_form",
