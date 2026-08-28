@@ -339,6 +339,18 @@ DATA_MANAGEMENT_SERVER_URL = env('DATA_MANAGEMENT_SERVER_URL')
 DATA_MANAGEMENT_SERVER_API_KEY = env('DATA_MANAGEMENT_SERVER_API_KEY')
 JUPYTERHUB_URL = env('JUPYTERHUB_URL')
 
+# EnergyGuard pilot data lake (read-only Postgres, one database per partner)
+DATALAKE_HOST = env('DATALAKE_HOST', default='srv9.cartif.es')
+DATALAKE_PORT = env.int('DATALAKE_PORT', default=60007)
+DATALAKE_USER = env('DATALAKE_USER', default='readonlyaccess')
+DATALAKE_PASSWORD = env('DATALAKE_PASSWORD', default='')
+DATALAKE_CONNECT_TIMEOUT = env.int('DATALAKE_CONNECT_TIMEOUT', default=10)
+
+# Bucket-relative folder where the data management server publishes the daily
+# pilot exports, one gzipped CSV per partner. Must match PILOT_DATASETS_PREFIX
+# on the data management server.
+PILOT_DATASETS_PREFIX = env('PILOT_DATASETS_PREFIX', default='pilot_datasets')
+
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
 

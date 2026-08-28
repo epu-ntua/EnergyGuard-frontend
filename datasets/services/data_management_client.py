@@ -41,6 +41,39 @@ def provision_user_datasets(username: str, datasets: dict[str, str]) -> None:
         raise
 
 
+def provision_pilot_dataset(
+    username: str, partner: str, dataset_local_name: str
+) -> None:
+    """
+    POST /api/v1/provision/pilot
+
+    Pilot datasets have no MinIO object to copy, so provisioning works the other
+    way round from provision_user_datasets: the dashboard only announces which
+    partner's data the user wants, and the data management server pulls it out
+    of the data lake itself and writes it into the user's datasets folder.
+    """
+    try:
+        response = requests.post(
+            f"{_base_url()}/api/v1/provision/pilot",
+            headers=_headers(),
+            json={
+                "username": username,
+                "partner": partner.upper(),
+                "dataset_name": dataset_local_name,
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        logger.error(
+            "Pilot provision failed for user %s (partner %s): %s",
+            username,
+            partner,
+            exc,
+        )
+        raise
+
+
 def delete_dataset_cache(username: str, dataset_local_name: str) -> None:
     """
     DELETE /api/v1/datasets/cache/{username}/{dataset_local_name}

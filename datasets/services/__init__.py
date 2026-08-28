@@ -6,7 +6,29 @@ from .minio_storage import (
     object_exists,
     upload_dataset_objects,
 )
-from .data_management_client import delete_dataset_cache, provision_user_datasets, sync_jupyterhub
+from .data_management_client import (
+    delete_dataset_cache,
+    provision_pilot_dataset,
+    provision_user_datasets,
+    sync_jupyterhub,
+)
+from .datalake import (
+    PARTNER_DATABASES,
+    RAW_COLUMNS,
+    DataLakeError,
+    PartnerDataUnavailableError,
+    UnknownPartnerError,
+    fetch_raw_preview,
+    resolve_partner,
+    stream_raw_csv,
+)
+from .pilot import (
+    PILOT_PARTNERS,
+    pilot_object_folder,
+    pilot_object_key,
+    pilot_partner_for,
+    pilot_prefix,
+)
 
 __all__ = [
     "MinioUploadError",
@@ -16,6 +38,20 @@ __all__ = [
     "move_dataset_object",
     "object_exists",
     "delete_dataset_cache",
+    "provision_pilot_dataset",
     "provision_user_datasets",
     "sync_jupyterhub",
+    "PARTNER_DATABASES",
+    "PILOT_PARTNERS",
+    "RAW_COLUMNS",
+    "DataLakeError",
+    "PartnerDataUnavailableError",
+    "UnknownPartnerError",
+    "fetch_raw_preview",
+    "pilot_object_folder",
+    "pilot_object_key",
+    "pilot_partner_for",
+    "pilot_prefix",
+    "resolve_partner",
+    "stream_raw_csv",
 ]

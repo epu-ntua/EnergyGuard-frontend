@@ -1,0 +1,53 @@
+# Local-development only: reach the CARTIF pilot data lake through an SSH tunnel.
+#
+# The data lake (srv9.cartif.es:60007) only accepts connections from the
+# EnergyGuard server. In production the dashboard runs on that server already,
+# so nothing here is needed. On a laptop we hop through it instead.
+#
+# Usage:
+#   ssh-add /Users/theodosios/Desktop/keys/tpountridisOpenSSH     # once per boot
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#
+# Verify:
+#   docker compose exec web python manage.py datalake_check --partner RDN
+#
+# This relies on Docker Desktop's ssh-agent socket so a passphrase-protected key
+# never has to be copied into a container. If you use a passphrase-less key
+# instead, drop the agent bits and mount it directly:
+#     volumes:
+#       - ${SSH_TUNNEL_KEY}:/key:ro
+#     # ...and add `-i /key` to the autossh command below.
+
+services:
+  datalake-tunnel:
+    image: alpine:3.20
+    command: >
+      sh -c "apk add --no-cache openssh-client autossh >/dev/null &&
+      exec autossh -M 0 -N
+      -o StrictHostKeyChecking=accept-new
+      -o ServerAliveInterval=30
+      -o ServerAliveCountMax=3
+      -o ExitOnForwardFailure=yes
+      -L 0.0.0.0:${DATALAKE_TUNNEL_PORT:-60007}:${DATALAKE_REMOTE_HOST:-srv9.cartif.es}:${DATALAKE_REMOTE_PORT:-60007}
+      ${SSH_TUNNEL_USER:-tpountridis}@${SSH_TUNNEL_HOST:-energyguard.epu.ntua.gr}"
+    volumes:
+      - /run/host-services/ssh-auth.sock:/ssh-agent
+    environment:
+      SSH_AUTH_SOCK: /ssh-agent
+    restart: always
+
+  web:
+    environment:
+      DATALAKE_HOST: datalake-tunnel
+      DATALAKE_PORT: ${DATALAKE_TUNNEL_PORT:-60007}
+    depends_on:
+      - db
+      - datalake-tunnel
+
+  qcluster:
+    environment:
+      DATALAKE_HOST: datalake-tunnel
+      DATALAKE_PORT: ${DATALAKE_TUNNEL_PORT:-60007}
+    depends_on:
+      - db
+      - datalake-tunnel
