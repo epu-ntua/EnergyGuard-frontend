@@ -22,7 +22,7 @@
 
         <!-- Hero -->
         <div class="mb-5">
-            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">Generate a compatible SOEC <strong class="text-body-emphasis">scenario file</strong> from a few high-level targets. An AI model translates the duration, hydrogen quantity and applied current you specify into a complete set of time-series signals and parameters, ready to run in the <strong class="text-body-emphasis">DT Scenario Simulation</strong> node.</p>
+            <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">Generate a compatible SOEC <strong class="text-body-emphasis">scenario file</strong> from a few high-level targets. An AI model translates the duration and hydrogen quantity you specify &mdash; plus any optional variation settings &mdash; into a complete set of time-series signals and parameters, ready to run in the <strong class="text-body-emphasis">DT Scenario Simulation</strong> node.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
                 <a href="#scenario-generation" class="btn btn-primary d-inline-flex align-items-center gap-2">Generate a scenario <span class="fas fa-arrow-right"></span></a>
             </div>
@@ -73,7 +73,7 @@
                         <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
                     </svg>
                     <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Provide inputs</h6>
-                    <p class="text-body-tertiary fs-8-5 mb-0">Set the test duration, hydrogen quantity and applied current.</p>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Set the test duration and hydrogen quantity, and optionally tune scenario-variation settings.</p>
                 </div>
                 <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
                     <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
@@ -104,9 +104,9 @@
 
         <!-- What you'll need to provide -->
         <h4 class="fw-bold text-body-emphasis pt-5 px-4 px-lg-5 mb-3">What you'll need to provide</h4>
-        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-5">
             <div class="row g-0">
-                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                <div class="col-12 col-md-6 border-end-md p-4 p-lg-5">
                     <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-clock"></span>
@@ -117,7 +117,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
+                <div class="col-12 col-md-6 p-4 p-lg-5">
                     <div class="d-flex align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-vial"></span>
@@ -128,14 +128,33 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 p-4 p-lg-5">
+            </div>
+        </div>
+
+        <!-- Optional variation settings -->
+        <h4 class="fw-bold text-body-emphasis px-4 px-lg-5 mb-1">Optional &mdash; to vary the scenario</h4>
+        <p class="text-body-tertiary fs-8-5 px-4 px-lg-5 mb-3">Leave these unset for a default scenario, or tune them to generate a different variant.</p>
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y mb-9">
+            <div class="row g-0">
+                <div class="col-12 col-md-6 border-end-md p-4 p-lg-5">
                     <div class="d-flex align-items-start gap-3">
-                        <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                        <span class="bg-body-tertiary text-body-emphasis rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
                             <span class="fas fa-bolt"></span>
                         </span>
                         <div>
                             <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Applied current</h6>
-                            <p class="text-body-tertiary fs-9 mb-0">The electrical current applied to the electrolysis stack, in Amps.</p>
+                            <p class="text-body-tertiary fs-9 mb-0">The nominal current density applied to the electrolysis stack, in Amps.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 p-4 p-lg-5">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="bg-body-tertiary text-body-emphasis rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                            <span class="fas fa-droplet"></span>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Steam flowrate</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">The steam flowrate available at the input of the system, in NL/min.</p>
                         </div>
                     </div>
                 </div>
@@ -151,13 +170,14 @@
             <div class="card-body p-4 p-lg-5" id="scenario-card-body">
 
                 <h5 class="fw-bold text-body-emphasis mb-2">Provide Inputs</h5>
-                <p class="text-body-tertiary fs-8-5 mb-3">Fill in the fields below to generate a compatible SOEC scenario file.</p>
+                <p class="text-body-tertiary fs-8-5 mb-4">Fill in the required fields below to generate a compatible SOEC scenario file.</p>
+                
 
                 <form id="scenario-form">
                     <div class="row g-3">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold d-flex align-items-center gap-1" for="test-duration">
-                                Duration of the test
+                                Duration of the test <span class="text-danger">*</span>
                                 <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="How long the test should run for."></span>
                             </label>
                             <div class="input-group">
@@ -168,9 +188,9 @@
                             </div>
                             <span class="form-text fs-10">e.g. 1 &ndash; 240 hours</span>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold d-flex align-items-center gap-1" for="hydrogen-quantity">
-                                Hydrogen quantity to produce
+                                Hydrogen quantity to produce <span class="text-danger">*</span>
                                 <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Target amount of hydrogen to produce during the test."></span>
                             </label>
                             <div class="input-group">
@@ -181,18 +201,41 @@
                             </div>
                             <span class="form-text fs-10">e.g. 1 &ndash; 10,000 kg H&#8322;</span>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
-                                Current to apply
-                                <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Electrical current applied to the electrolysis stack."></span>
-                            </label>
-                            <div class="input-group">
-                                <input type="number" min="10" max="2000" class="form-control scenario-required" id="applied-current" name="applied_current" placeholder="320">
-                                <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
-                                    <option value="amps" selected>A</option>
-                                </select>
+                    </div>
+
+                    <div class="bg-body-secondary border rounded-3 p-3 p-lg-4 mt-4">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h6 class="fw-bold text-body-emphasis mb-0">To vary the scenario</h6>
+                            <span class="badge badge-phoenix badge-phoenix-secondary">Optional</span>
+                        </div>
+                        <p class="text-body-tertiary fs-9 mb-3">Leave these blank for a default scenario.</p>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold d-flex align-items-center gap-1" for="applied-current">
+                                    Current to apply
+                                    <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Optional: nominal current density applied to the electrolysis stack."></span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" min="10" max="2000" class="form-control" id="applied-current" name="applied_current" placeholder="320">
+                                    <select class="form-select" name="applied_current_unit" style="max-width:7rem;">
+                                        <option value="amps" selected>A</option>
+                                    </select>
+                                </div>
+                                <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
                             </div>
-                            <span class="form-text fs-10">e.g. 10 &ndash; 2,000 A</span>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold d-flex align-items-center gap-1" for="steam-flowrate">
+                                    Steam flowrate
+                                    <span class="fas fa-circle-info text-body-tertiary fs-10" data-bs-toggle="tooltip" data-bs-title="Optional: steam flowrate available at the input of the system."></span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" min="0" max="200" class="form-control" id="steam-flowrate" name="steam_flowrate" placeholder="80">
+                                    <select class="form-select" name="steam_flowrate_unit" style="max-width:7rem;">
+                                        <option value="nl_min" selected>NL/min</option>
+                                    </select>
+                                </div>
+                                <span class="form-text fs-10">e.g. 0 &ndash; 200 NL/min</span>
+                            </div>
                         </div>
                     </div>
 
@@ -200,7 +243,7 @@
                         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="generate-scenario-btn" disabled>
                             <span class="fas fa-wand-magic-sparkles"></span>Generate Scenario
                         </button>
-                        <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in all fields to enable the Generate button.</span>
+                        <span class="text-body-tertiary fs-9" id="generate-scenario-hint">Fill in the required fields to enable the Generate button.</span>
                     </div>
                 </form>
             </div>
@@ -227,7 +270,7 @@
                 return input.value.trim() !== '';
             });
             generateBtn.disabled = !allFilled;
-            generateHint.textContent = allFilled ? '' : 'Fill in all fields to enable the Generate button.';
+            generateHint.textContent = allFilled ? '' : 'Fill in the required fields to enable the Generate button.';
         }
 
         requiredInputs.forEach(function (input) {
