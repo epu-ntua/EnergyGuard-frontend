@@ -163,7 +163,7 @@
           <div class="row h-100">
             <div class="col-12 col-md-6">
               <h3 class="text-body-emphasis text-nowrap">AI Models Inventory</h3>
-              <p class="text-body-tertiary mb-md-7">How registered models are distributed by model type</p>
+              <p class="text-body-tertiary mb-md-7">How registered models are distributed by category</p>
               <!-- LEGEND -->
               <div id="donutLegend" style="width: 100%; min-height: 220px;"></div>
               <div class="border-0"><a class="fw-bold fs-9 mt-3" href="{% url 'ai_models' %}">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
@@ -176,6 +176,7 @@
           </div>
         </div>
       </div>
+      {{ ai_models_chart_data|json_script:"ai-models-donut-data" }}
       <!-- Digital Twins -->
       <div class="col-12 col-xl-3 ps-lg-6 mb-3" id="dt_card">
         <div class="border border-tertiary rounded-3 p-4 h-100">
@@ -409,11 +410,12 @@ am5.ready(function() {
     return;
   }
 
-  var donutData = [
-    { category: "ML", value: 49 },
-    { category: "Deep Learning", value: 18 },
-    { category: "Time-series / Forecasting", value: 33 }
-  ];
+  var donutData = JSON.parse(document.getElementById("ai-models-donut-data").textContent || "[]").map(function(item) {
+    return {
+      category: item.category,
+      value: Number(item.value) || 0
+    };
+  });
 
   var donutRoot = am5.Root.new("aiModelsDonutChart");
   donutRoot.setThemes([am5themes_Animated.new(donutRoot)]);
@@ -448,7 +450,13 @@ am5.ready(function() {
 
   donutLegend.itemContainers.template.setAll({
     paddingTop: 6,
-    paddingBottom: 6
+    paddingBottom: 6,
+    width: am5.p100,
+  });
+  donutLegend.labels.template.setAll({
+    oversizedBehavior: "wrap",
+    maxWidth: 190,
+    textAlign: "left"
   });
   donutLegend.valueLabels.template.set("forceHidden", true);
 
@@ -472,9 +480,11 @@ am5.ready(function() {
     donutThemeObserver.disconnect();
   });
 
+  var donutTotal = donutData.reduce(function(sum, d) { return sum + d.value; }, 0);
   donutLegend.data.setAll(donutData.map(function(d, i) {
     var c = donutSeries.get("colors").getIndex(i);
-    return { name: d.category + " " + d.value + "%", fill: c, stroke: c };
+    var pct = donutTotal ? Math.round((d.value / donutTotal) * 100) : 0;
+    return { name: d.category + " " + pct + "% (" + d.value + ")", fill: c, stroke: c };
   }));
 
   donutSeries.appear(1000, 100);
