@@ -16,6 +16,8 @@ shared copy read-only.
 
 from django.conf import settings
 
+from core.services.object_storage import build_minio_client
+
 from .datalake import PARTNER_DATABASES
 
 # Every partner that has pilot data. Kept in sync with PARTNER_DATABASES by a
@@ -39,6 +41,27 @@ def pilot_object_folder(partner: str) -> str:
     return f"{pilot_prefix()}/{partner.strip().upper()}"
 
 
+def pilot_object_size(partner: str) -> int | None:
+    """
+    Size in bytes of a partner's published export, or None if it has not been
+    exported yet. Used to keep Dataset.size_gb honest.
+    """
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = build_minio_client()
+    try:
+        head = client.head_object(
+            Bucket=settings.OBJECT_STORAGE_BUCKET, Key=pilot_object_key(partner)
+        )
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") in ("404", "NoSuchKey"):
+            return None
+        raise
+    except BotoCoreError:
+        raise
+    return head["ContentLength"]
+
+
 def pilot_partner_for(dataset) -> str | None:
     """
     Return the pilot partner a Dataset belongs to, or None for a regular
@@ -47,6 +70,11 @@ def pilot_partner_for(dataset) -> str | None:
     Two ways to mark a dataset as pilot data, checked in order:
       1. ``metadata["pilot_partner"]`` — explicit, wins over everything.
       2. a ``data_file`` key under ``pilot_datasets/<PARTNER>/``.
+
+    Seeded rows rely on rule 2 alone. Rule 1 stays as an escape hatch for a
+    dataset published under a non-standard key, but it must not be used
+    routinely: the details page renders `metadata` as a table of dataset
+    features, so a marker stored there shows up as a bogus feature row.
     """
     metadata = dataset.metadata
     if isinstance(metadata, dict):

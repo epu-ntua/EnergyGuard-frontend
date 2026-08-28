@@ -1,6 +1,7 @@
 import logging
 import os
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseServerError, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -24,7 +25,18 @@ def dataset_download(request, dataset_id):
     try:
         client = build_minio_client()
         s3_response = client.get_object(Bucket=dataset.bucket_name, Key=dataset.data_file)
-    except MinioUploadError as exc:
+    except ClientError as exc:
+        # A Dataset row can outlive its object: a pilot export that has not run
+        # yet, or a file removed behind the platform's back.
+        if exc.response.get("Error", {}).get("Code") in ("404", "NoSuchKey"):
+            logger.warning(
+                "Dataset %s points at missing object %s/%s",
+                dataset_id, dataset.bucket_name, dataset.data_file,
+            )
+            raise Http404("This dataset is not available yet.") from exc
+        logger.error("Storage error retrieving dataset %s: %s", dataset_id, exc)
+        return HttpResponseServerError("File could not be retrieved. Please try again.")
+    except (BotoCoreError, MinioUploadError) as exc:
         logger.error("Storage error retrieving dataset %s: %s", dataset_id, exc)
         return HttpResponseServerError("File could not be retrieved. Please try again.")
 

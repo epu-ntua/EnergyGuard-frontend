@@ -173,3 +173,78 @@ class PilotProvisioningTests(SimpleTestCase):
         )
         mock_regular.assert_not_called()
         self.assertEqual(response.status_code, 200)
+
+
+class MissingObjectTests(SimpleTestCase):
+    """A Dataset row can outlive its object (pilot export not run yet)."""
+
+    def _dataset(self):
+        ds = Dataset(
+            name="RDN Pilot Data", size_gb=1,
+            data_file="pilot_datasets/RDN/RDN.csv.gz", bucket_name="datasets",
+        )
+        ds.id = 7
+        return ds
+
+    def _no_such_key(self):
+        from botocore.exceptions import ClientError
+
+        return ClientError(
+            {"Error": {"Code": "NoSuchKey", "Message": "The specified key does not exist."}},
+            "GetObject",
+        )
+
+    def test_preview_returns_404_not_500(self):
+        from datasets.views import preview as preview_view
+
+        client = MagicMock()
+        client.get_object.side_effect = self._no_such_key()
+        with patch.object(preview_view, "get_object_or_404", return_value=self._dataset()), \
+             patch.object(preview_view, "build_minio_client", return_value=client):
+            response = preview_view.dataset_preview.__wrapped__(
+                RequestFactory().get("/"), 7
+            )
+
+        self.assertEqual(response.status_code, 404)
+        body = json.loads(response.content)
+        self.assertEqual(body["error"], "This dataset is not available yet.")
+        self.assertNotIn("NoSuchKey", body["error"])
+
+    def test_download_raises_404_not_500(self):
+        from django.http import Http404
+
+        from datasets.views import download as download_view
+
+        client = MagicMock()
+        client.get_object.side_effect = self._no_such_key()
+        with patch.object(download_view, "get_object_or_404", return_value=self._dataset()), \
+             patch.object(download_view, "build_minio_client", return_value=client):
+            with self.assertRaises(Http404):
+                download_view.dataset_download.__wrapped__(RequestFactory().get("/"), 7)
+
+    def test_other_storage_errors_still_500(self):
+        from botocore.exceptions import ClientError
+
+        from datasets.views import preview as preview_view
+
+        client = MagicMock()
+        client.get_object.side_effect = ClientError(
+            {"Error": {"Code": "AccessDenied", "Message": "nope"}}, "GetObject"
+        )
+        with patch.object(preview_view, "get_object_or_404", return_value=self._dataset()), \
+             patch.object(preview_view, "build_minio_client", return_value=client):
+            response = preview_view.dataset_preview.__wrapped__(
+                RequestFactory().get("/"), 7
+            )
+
+        self.assertEqual(response.status_code, 500)
+
+
+class SeedSizeTests(SimpleTestCase):
+    def test_size_gb_conversion_and_floor(self):
+        from datasets.management.commands.seed_pilot_datasets import _size_gb
+
+        self.assertEqual(str(_size_gb(724497048)), "0.67")   # CEDER ~691 MB
+        self.assertEqual(str(_size_gb(5645874)), "0.01")     # REA 5.4 MB -> floor
+        self.assertEqual(str(_size_gb(None)), "0.01")        # not exported
+        self.assertEqual(str(_size_gb(0)), "0.01")

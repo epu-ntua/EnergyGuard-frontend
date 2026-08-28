@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
+from botocore.exceptions import ClientError
+
 from core.services.object_storage import MinioUploadError, build_minio_client
 
 from ..models import Dataset
@@ -183,6 +185,13 @@ def dataset_preview(request, dataset_id):
             headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
             return JsonResponse({"headers": headers, "rows": rows})
 
+    except ClientError as exc:
+        # See dataset_download: the row can outlive the object.
+        if exc.response.get("Error", {}).get("Code") in ("404", "NoSuchKey"):
+            return JsonResponse(
+                {"error": "This dataset is not available yet."}, status=404
+            )
+        return JsonResponse({"error": "The file could not be read."}, status=500)
     except MinioUploadError as exc:
         return JsonResponse({"error": str(exc)}, status=500)
     except Exception as exc:
