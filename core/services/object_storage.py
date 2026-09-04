@@ -54,6 +54,20 @@ def object_exists(*, bucket_name: str, object_key: str) -> bool:
         raise MinioUploadError(str(exc)) from exc
 
 
+def get_object_size(*, bucket_name: str, object_key: str) -> int:
+    """Return the size in bytes of an object in MinIO, or raise if it doesn't exist."""
+    from botocore.exceptions import ClientError
+
+    client = build_minio_client()
+    try:
+        response = client.head_object(Bucket=bucket_name, Key=object_key)
+        return response["ContentLength"]
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] in ("404", "NoSuchKey"):
+            raise MinioUploadError(f"Object '{object_key}' not found in bucket '{bucket_name}'.") from exc
+        raise MinioUploadError(str(exc)) from exc
+
+
 def put_object(*, bucket_name: str, object_key: str, body: bytes, content_type: str) -> None:
     """Upload an in-memory payload directly to MinIO (no multipart transfer)."""
     from botocore.exceptions import BotoCoreError, ClientError

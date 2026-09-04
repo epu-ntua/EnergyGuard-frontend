@@ -2,6 +2,7 @@ from .minio_storage import (
     MinioUploadError,
     delete_dataset_objects,
     generate_presigned_upload_url,
+    get_object_size,
     move_dataset_object,
     object_exists,
     upload_dataset_objects,
@@ -24,6 +25,7 @@ from .datalake import (
 )
 from .pilot import (
     PILOT_PARTNERS,
+    pilot_description,
     pilot_object_folder,
     pilot_object_key,
     pilot_partner_for,
@@ -37,6 +39,7 @@ __all__ = [
     "generate_presigned_upload_url",
     "move_dataset_object",
     "object_exists",
+    "get_object_size",
     "delete_dataset_cache",
     "provision_pilot_dataset",
     "provision_user_datasets",
@@ -48,6 +51,7 @@ __all__ = [
     "PartnerDataUnavailableError",
     "UnknownPartnerError",
     "fetch_raw_preview",
+    "pilot_description",
     "pilot_object_folder",
     "pilot_object_key",
     "pilot_partner_for",

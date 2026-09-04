@@ -22,6 +22,55 @@ from .datalake import PARTNER_DATABASES
 # test, so adding a partner in one place fails loudly if the other is missed.
 PILOT_PARTNERS = tuple(PARTNER_DATABASES)
 
+# What each partner's raw export actually contains, for the Dataset description.
+# The raw table shape (public.f_tsdata) is identical across partners, so this is
+# sourced from the corresponding digitaltwins app pages/use cases, which document
+# what the sensor_id/f_value readings physically represent for that pilot site.
+PILOT_DESCRIPTIONS: dict[str, str] = {
+    "RDN": (
+        "Grid telemetry from R&D Nester's digital twin of Portugal's transmission "
+        "network: bus voltage, current and frequency readings across PV, wind, "
+        "hydro, biomass and gas assets."
+    ),
+    "CEDER": (
+        "Time series from CEDER-CIEMAT's hybrid microgrid in Soria, Spain, covering "
+        "photovoltaic, wind and hydropower generation, battery storage, V2G-capable "
+        "EVs and flexible loads."
+    ),
+    "BER": (
+        "Operational data from BluEnergy Revolution's PEM electrolyzer hydrogen "
+        "testing facility in Italy: total, stack and auxiliary power, stack voltage "
+        "and current from controlled hydrogen production experiments."
+    ),
+    "CEA": (
+        "Operating variables from CEA's Solid Oxide Electrolysis Cell (SOEC) system: "
+        "current, cell voltage, hotbox temperature, steam conversion and electrode "
+        "flow rates."
+    ),
+    "CARTIF": (
+        "Performance data from CARTIF's hybrid hydrogen-electric-thermal energy "
+        "facility in Valladolid, Spain, combining hydrogen production and storage, "
+        "batteries, thermal storage and heat recovery."
+    ),
+    "REA": (
+        "Building energy and weather data for Riga's residential building stock, "
+        "combining EPC registry records, monitored heating consumption and "
+        "municipal meteorological measurements."
+    ),
+    "ENGREEN": (
+        "Member, PV and battery storage data from the Antrodoco Renewable Energy "
+        "Community in Italy: producer/prosumer monitoring, energy withdrawal and "
+        "injection records, and weather data."
+    ),
+}
+
+
+def pilot_description(partner: str) -> str:
+    """A short description of what a pilot partner's raw export contains."""
+    name = partner.strip().upper()
+    detail = PILOT_DESCRIPTIONS.get(name, f"Raw sensor time series for the {name} pilot.")
+    return f"{detail} Refreshed daily from the EnergyGuard data lake."
+
 
 def pilot_prefix() -> str:
     """Bucket-relative folder holding every partner's pilot dataset."""

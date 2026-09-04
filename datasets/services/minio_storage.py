@@ -1,10 +1,17 @@
-﻿from core.services.object_storage import MinioUploadError, _setting, build_minio_client, object_exists
+﻿from core.services.object_storage import (
+    MinioUploadError,
+    _setting,
+    build_minio_client,
+    get_object_size,
+    object_exists,
+)
 
 __all__ = [
     "MinioUploadError",
     "upload_dataset_objects",
     "generate_presigned_upload_url",
     "object_exists",
+    "get_object_size",
     "move_dataset_object",
     "delete_dataset_objects",
 ]
