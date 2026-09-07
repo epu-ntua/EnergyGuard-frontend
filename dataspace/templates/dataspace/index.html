@@ -1,0 +1,307 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Data Space | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <!-- HEADER -->
+    <div class="row g-3 mb-5 align-items-end justify-content-between">
+      <div class="col-auto">
+        <h2 class="mb-2 text-body-emphasis">Data Space</h2>
+        <h5 class="text-body-tertiary fw-semibold">TEF Data Space &middot; energy data exchange with external participants</h5>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-3">
+        <div class="d-none" id="signedInAs">
+          <span class="fs-9 text-body-secondary">Signed in as <span class="fw-semibold text-body-emphasis" id="signedInAsUsername"></span></span>
+        </div>
+        <div id="authStatusLoggedOut">
+          <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">Log in to Data Space</button>
+        </div>
+        <div class="dropdown d-none" id="authStatusLoggedIn">
+          <a class="nav-link lh-1 pe-0 d-flex align-items-center" id="navbarDropdownDataspaceUser" href="#!" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <div class="avatar avatar-l">
+              <div class="avatar-name rounded-circle"><span id="authUserInitial">?</span></div>
+            </div>
+            <span class="ms-2 fs-9 fw-semibold text-body-emphasis d-none d-md-inline" id="authUsername"></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border" aria-labelledby="navbarDropdownDataspaceUser">
+            <div class="card position-relative border-0">
+              <div class="card-body p-3">
+                <p class="mb-1 fs-9 text-body-secondary">Signed in as</p>
+                <p class="mb-0 fw-semibold text-body-emphasis" id="authUserEmail"></p>
+              </div>
+              <div class="card-footer p-0 border-top border-translucent">
+                <button type="button" class="btn btn-phoenix-secondary d-flex flex-center w-100 rounded-0" id="logoutBtn"><span class="me-2" data-feather="log-out"></span>Sign out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shown when no token is held yet -->
+    <div id="loggedOutNotice" class="card border-0 bg-body-tertiary text-center py-6 mb-5">
+      <p class="mb-3 fs-8 text-body-secondary">Log in with your Middleware account to see your Data Space activity.</p>
+      <div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</button>
+      </div>
+    </div>
+
+    <div id="dataspaceContent" class="d-none">
+
+      <!-- STAT CARDS -->
+      <div class="row mb-5 gy-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-exchange text-info-dark"></span>
+            <div class="ms-2">
+              <div class="d-flex align-items-end"><h2 class="mb-0 me-2" id="statSubscriptions">&ndash;</h2><span class="fs-7 fw-semibold text-body">Active Subscriptions</span></div>
+              <p class="text-body-secondary fs-9 mb-0">Receiving data now</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-cloud-download text-warning-dark"></span>
+            <div class="ms-2">
+              <div class="d-flex align-items-end"><h2 class="mb-0 me-2" id="statEntities">&ndash;</h2><span class="fs-7 fw-semibold text-body">Data Entities Received</span></div>
+              <p class="text-body-secondary fs-9 mb-0">From your subscriptions</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-database text-primary-dark"></span>
+            <div class="ms-2">
+              <div class="d-flex align-items-end"><h2 class="mb-0 me-2" id="statCatalog">&ndash;</h2><span class="fs-7 fw-semibold text-body">Offerings in Catalog</span></div>
+              <p class="text-body-secondary fs-9 mb-0" id="statCatalogSub">&nbsp;</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil uil-cloud-upload text-success-dark"></span>
+            <div class="ms-2">
+              <div class="d-flex align-items-end"><h2 class="mb-0 me-2" id="statOwned">&ndash;</h2><span class="fs-7 fw-semibold text-body">Offerings Published</span></div>
+              <p class="text-body-secondary fs-9 mb-0">By you, as a provider</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <ul class="nav nav-underline" id="dataspaceTab" role="tablist">
+        <li class="nav-item me-3"><a class="nav-link fs-8 active" id="mydata-tab" data-bs-toggle="tab" href="#tab-mydata" role="tab" aria-controls="tab-mydata">My Data</a></li>
+        <li class="nav-item me-3"><a class="nav-link fs-8" id="mysubs-tab" data-bs-toggle="tab" href="#tab-mysubs" role="tab" aria-controls="tab-mysubs">My Subscriptions</a></li>
+        <li class="nav-item me-3"><a class="nav-link fs-8" id="browse-tab" data-bs-toggle="tab" href="#tab-browse" role="tab" aria-controls="tab-browse">Browse Catalog</a></li>
+        <li class="nav-item me-3"><a class="nav-link fs-8" id="myofferings-tab" data-bs-toggle="tab" href="#tab-myofferings" role="tab" aria-controls="tab-myofferings">My Offerings</a></li>
+        <li class="nav-item"><a class="nav-link fs-8" id="requests-tab" data-bs-toggle="tab" href="#tab-requests" role="tab" aria-controls="tab-requests">Incoming Requests</a></li>
+      </ul>
+
+      <div class="tab-content mt-5" id="dataspaceTabContent">
+
+        <!-- MY DATA -->
+        <div class="tab-pane fade show active" id="tab-mydata" role="tabpanel">
+          <p class="fs-9 text-body-secondary mb-3" id="myDataCount">&nbsp;</p>
+          <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+            <div class="table-responsive mx-n1 px-1">
+              <table class="table table-sm fs-9 mb-0">
+                <thead>
+                  <tr>
+                    <th class="align-middle pe-3 ps-2 fs-9">ENTITY</th>
+                    <th class="align-middle fs-9">FROM OFFERING</th>
+                    <th class="align-middle fs-9">PROVIDER</th>
+                    <th class="align-middle fs-9">RECEIVED</th>
+                    <th class="align-middle fs-9 pe-2"></th>
+                  </tr>
+                </thead>
+                <tbody id="myDataBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MY SUBSCRIPTIONS -->
+        <div class="tab-pane fade" id="tab-mysubs" role="tabpanel">
+          <p class="fs-9 text-body-secondary mb-3" id="mySubsCount">&nbsp;</p>
+          <div class="d-flex flex-column gap-2" id="mySubsList"></div>
+        </div>
+
+        <!-- BROWSE CATALOG -->
+        <div class="tab-pane fade" id="tab-browse" role="tabpanel">
+          <div class="d-flex justify-content-between flex-wrap gap-3">
+            <ul class="nav nav-links mb-3 mb-lg-2 mx-n3" id="browseCategoryPills"></ul>
+            <div class="mb-4">
+              <div class="search-box">
+                <input id="browseSearchInput" class="form-control search-input search fs-9" type="search" placeholder="Search offerings" aria-label="Search" />
+                <span class="fas fa-search search-box-icon fs-9"></span>
+              </div>
+            </div>
+          </div>
+          <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+            <div class="table-responsive mx-n1 px-1">
+              <table class="table table-sm fs-9 mb-0">
+                <thead>
+                  <tr>
+                    <th class="align-middle pe-3 ps-2 fs-9">OFFERING</th>
+                    <th class="align-middle fs-9">CATEGORY</th>
+                    <th class="align-middle fs-9">PROVIDER</th>
+                    <th class="align-middle fs-9 pe-2"></th>
+                  </tr>
+                </thead>
+                <tbody id="browseBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="fs-9 text-body-secondary text-center py-4 d-none" id="browseEmptyHint">No offerings match that filter.</p>
+        </div>
+
+        <!-- MY OFFERINGS -->
+        <div class="tab-pane fade" id="tab-myofferings" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <p class="fs-9 text-body-secondary mb-0" id="myOfferingsCount">&nbsp;</p>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createOfferingModal"><span class="fas fa-plus me-2"></span>New Offering</button>
+          </div>
+          <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+            <div class="table-responsive mx-n1 px-1">
+              <table class="table table-sm fs-9 mb-0">
+                <thead>
+                  <tr>
+                    <th class="align-middle pe-3 ps-2 fs-9">OFFERING</th>
+                    <th class="align-middle fs-9">CATEGORY</th>
+                    <th class="align-middle fs-9">STATUS</th>
+                    <th class="align-middle fs-9">CREATED</th>
+                    <th class="align-middle fs-9 pe-2"></th>
+                  </tr>
+                </thead>
+                <tbody id="myOfferingsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- INCOMING REQUESTS -->
+        <div class="tab-pane fade" id="tab-requests" role="tabpanel">
+          <p class="fs-9 text-body-secondary mb-3" id="requestsCount">&nbsp;</p>
+          <div id="requestsList"></div>
+          <div class="text-center py-6 d-none" id="requestsEmptyState">
+            <span class="fs-1 uil uil-bell text-body-tertiary"></span>
+            <p class="fw-semibold text-body-emphasis mt-2 mb-1">No subscription requests yet</p>
+            <p class="fs-9 text-body-secondary mb-0">When another participant asks to subscribe to one of your offerings, it'll show up here for you to accept or reject.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {% include "core/footer.html" %}
+  </div>
+</div>
+
+<!-- Login modal - posts straight to the gateway's /auth/login, never touches Django -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="loginModalLabel">Log in to the Data Space</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-body-secondary fs-9">Your Middleware account credentials for TEF Data Space.</p>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="loginUsername">Username</label>
+          <input type="text" class="form-control" id="loginUsername" autocomplete="username">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fs-9" for="loginPassword">Password</label>
+          <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
+        </div>
+        <div class="text-danger fs-9 d-none" id="loginError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-phoenix-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="loginSubmitBtn">Log in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Offering modal -->
+<div class="modal fade" id="createOfferingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create a new Data Offering</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-9 text-body-secondary">Publish a service others in TEF Data Space can discover and subscribe to.</p>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="offeringTitleInput">Title</label>
+          <input type="text" class="form-control" id="offeringTitleInput" placeholder="e.g. Grid Fault Detection Feed">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="offeringBoInput">Business object</label>
+          <select class="form-select" id="offeringBoInput"></select>
+          <div class="form-text fs-9">Pulled live from GET /offerings/catalog</div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fs-9" for="offeringProfileInput">Profile selector</label>
+          <select class="form-select" id="offeringProfileInput">
+            <option value="json">json</option>
+            <option value="csv">csv</option>
+            <option value="xml">xml</option>
+          </select>
+        </div>
+        <div class="text-danger fs-9 d-none" id="offeringError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-phoenix-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="createOfferingSubmitBtn">Create Offering</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Data modal -->
+<div class="modal fade" id="uploadDataModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-9 text-body-secondary">To <span class="fw-semibold text-body-emphasis" id="uploadTargetTitle">an offering</span></p>
+        <input type="hidden" id="uploadTargetId">
+        <div class="mb-3">
+          <label class="form-label fs-9" for="uploadTitleInput">Title</label>
+          <input type="text" class="form-control" id="uploadTitleInput" placeholder="e.g. June grid readings">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="uploadDescInput">Description</label>
+          <textarea class="form-control" id="uploadDescInput" rows="2" placeholder="Optional description"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="uploadFilenameInput">Filename</label>
+          <input type="text" class="form-control" id="uploadFilenameInput" value="message.txt">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fs-9" for="uploadContentInput">File content</label>
+          <textarea class="form-control" id="uploadContentInput" rows="3">hello from EnergyGuard</textarea>
+        </div>
+        <div class="text-danger fs-9 d-none" id="uploadError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-phoenix-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="uploadSubmitBtn">Upload</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>window.DATASPACE_GATEWAY_URL = "{{ dataspace_gateway_url }}";</script>
+<script src="{% static 'dataspace/api.js' %}"></script>
+<script src="{% static 'dataspace/app.js' %}"></script>
+{% endblock scripts %}

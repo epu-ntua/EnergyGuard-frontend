@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'code_analysis',
     'robustness',
     'trustworthiness',
+    'dataspace',
 ]
 
 MIDDLEWARE = [
@@ -350,6 +351,9 @@ DATALAKE_CONNECT_TIMEOUT = env.int('DATALAKE_CONNECT_TIMEOUT', default=10)
 # pilot exports, one gzipped CSV per partner. Must match PILOT_DATASETS_PREFIX
 # on the data management server.
 PILOT_DATASETS_PREFIX = env('PILOT_DATASETS_PREFIX', default='pilot_datasets')
+# EnergyGuard Data Space gateway (colleague's FastAPI proxy over EnPower/True Connector).
+# Called directly from the browser (see dataspace app), not proxied through this backend.
+DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='http://energyguard.epu.ntua.gr:8000')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
