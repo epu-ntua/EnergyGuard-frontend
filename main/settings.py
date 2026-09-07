@@ -326,6 +326,16 @@ OBJECT_STORAGE_VERIFY_SSL = env.bool("OBJECT_STORAGE_VERIFY_SSL")
 OBJECT_STORAGE_BUCKET = env("OBJECT_STORAGE_BUCKET")
 OBJECT_STORAGE_BUCKET_SIMULATIONS = env("OBJECT_STORAGE_BUCKET_SIMULATIONS", default="dt-results")
 
+# Shared cache (Postgres-backed) so cached values (e.g. the RDN API token) are
+# visible to both the web process and the qcluster process. Table is created by
+# `manage.py createcachetable` (see docker-compose.yml web command).
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+    }
+}
+
 # Django-Q2 (async task queue)
 Q_CLUSTER = {
     'name': 'energyguard',
@@ -372,3 +382,10 @@ HAL_BASE_URL = env('HAL_BASE_URL')
 # CIEMAT EnergyPrediction forecasting service (CEDER-CIEMAT node)
 CIEMAT_API_BASE_URL = env('CIEMAT_API_BASE_URL', default='https://energyguard.fora.es/api_eg')
 CIEMAT_API_KEY = env('CIEMAT_API_KEY', default='')
+
+# R&D Nester (RDN) Grid Digital Twin API - single shared EnergyGuard service account
+RDN_API_URL = env('RDN_API_URL', default='').rstrip('/')
+RDN_API_EMAIL = env('RDN_API_EMAIL', default='')
+RDN_API_PASSWORD = env('RDN_API_PASSWORD', default='')
+RDN_API_USER_ID = env('RDN_API_USER_ID', default='')
+RDN_API_ORGANISATION = env('RDN_API_ORGANISATION', default='')

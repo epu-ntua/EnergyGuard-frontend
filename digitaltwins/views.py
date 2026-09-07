@@ -1,8 +1,6 @@
 import bisect
 import json
 import logging
-import math
-import random
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -14,15 +12,16 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
+from django_q.tasks import async_task
 
 from core.services.object_storage import MinioUploadError
 from datasets.services import provision_user_datasets
 
-from .services import save_simulation_result
+from .models import RdnSimulationJob
+from .services import save_simulation_result, RdnApiError, upload_rdn_input
 
 logger = logging.getLogger(__name__)
 
@@ -172,10 +171,10 @@ BER_SAMPLE_JSON = """[
 
 
 # ── RDN Grid DT ──────────────────────────────────────────────────────────────
-# RDN's real physics engine is external and not available to this platform, so
-# the simulate endpoint below generates schema-conformant SYNTHETIC output. The
-# shape matches RDN's real input/output JSON schemas exactly, so swapping the
-# generator for a real call to RDN's API later only touches _generate_rdn_mock_output.
+# Calls the real R&D Nester Digital Twin API (digitaltwins/services/rdn_client.py).
+# RDN jobs run for many minutes to over an hour, so simulation is asynchronous:
+# rdn_grid_simulate uploads the input and returns immediately, digitaltwins/tasks.py
+# polls RDN in the background (via django_q), and the frontend polls rdn_grid_job_status.
 
 RDN_USE_CASES = {
     'MarketResultsTechnicalValidation': 'Validation of Market Results',
@@ -195,25 +194,12 @@ _RDN_MAX_ASSETS = 25          # well under the schema's 1000, kept usable in a h
 _RDN_MAX_SETPOINTS = 100      # == schema max
 _RDN_MAX_OUTPUT_SAMPLES = 4_000_000  # guards response size/CPU for pathological requests
 
-_RDN_NOMINAL_KV_BY_SECTION = {  # placeholder tiering matching rdn-grid.html's voltage classes
-    'A': 400, 'B': 400, 'C': 220, 'D': 220, 'E': 150, 'F': 150, 'G': 150, 'All': 220,
-}
 _RDN_STEP_MS = 2
 _RDN_MAX_SPAN_MS = 10_000            # output covers at most 10s per setpoint
 _RDN_DEFAULT_LAST_RESOLUTION_MS = 900_000  # 15 min, used only when there's a single setpoint
 
-_RDN_FOLLOW_CACHE_TTL = 3600  # seconds
-
-_RDN_SIMULATE_RATE_LIMIT = 5  # lower than the default: mock generation is CPU-heavier
+_RDN_SIMULATE_RATE_LIMIT = 5  # lower than the default: real RDN jobs are far heavier than a typical request
 _RDN_SIMULATE_RATE_WINDOW = 60
-
-
-def _user_organisation_name(user):
-    try:
-        team = user.profile.team
-    except ObjectDoesNotExist:
-        return 'Independent'
-    return team.name if team else 'Independent'
 
 
 def _iso_to_epoch_ms(ts):
@@ -224,27 +210,12 @@ def _validate_rdn_grid_input(body):
     if not isinstance(body, dict):
         return None, 'Request body must be a JSON object.'
 
-    user_id = body.get('userId')
-    user_organisation = body.get('userOrganisation')
     use_case = body.get('useCase')
-    request_id = body.get('requestId')
-    request_timestamp = body.get('requestTimestamp_UTC')
     follows_request_id = body.get('followsRequestId')
     input_data = body.get('inputData')
 
-    if not isinstance(user_id, str) or not user_id.strip():
-        return None, 'userId is required.'
-    if not isinstance(user_organisation, str) or not user_organisation.strip():
-        return None, 'userOrganisation is required.'
     if use_case not in RDN_USE_CASES:
         return None, 'useCase must be one of the supported automatic-interaction use cases.'
-    if not isinstance(request_id, int) or isinstance(request_id, bool) or request_id < 1:
-        return None, 'requestId must be an integer >= 1.'
-
-    try:
-        _iso_to_epoch_ms(request_timestamp)
-    except (ValueError, TypeError):
-        return None, 'requestTimestamp_UTC must be an ISO-8601 UTC timestamp ending in Z.'
 
     if follows_request_id is not None and (not isinstance(follows_request_id, int) or isinstance(follows_request_id, bool)):
         return None, 'followsRequestId must be an integer.'
@@ -317,31 +288,11 @@ def _validate_rdn_grid_input(body):
         return None, 'Request too large — reduce setpoints, assets, or resolution.'
 
     cleaned = {
-        'userId': user_id,
-        'userOrganisation': user_organisation,
         'useCase': use_case,
-        'requestId': request_id,
-        'requestTimestamp_UTC': request_timestamp,
         'followsRequestId': follows_request_id,
         'inputData': {'gridSection': grid_section, 'asset': cleaned_assets},
     }
     return cleaned, None
-
-
-def _rdn_follow_cache_key(request_id):
-    return f'rdn_follow_{request_id}'
-
-
-def _store_rdn_follow(request_id, grid_section, use_case, assets):
-    cache.set(
-        _rdn_follow_cache_key(request_id),
-        {'gridSection': grid_section, 'useCase': use_case, 'assets': assets},
-        timeout=_RDN_FOLLOW_CACHE_TTL,
-    )
-
-
-def _load_rdn_follow(request_id):
-    return cache.get(_rdn_follow_cache_key(request_id))
 
 
 def _rdn_derive_resolution_ms(timestamps_ms, index):
@@ -355,107 +306,6 @@ def _rdn_derive_resolution_ms(timestamps_ms, index):
 def _rdn_n_points_for_resolution(resolution_ms):
     span_ms = min(resolution_ms, _RDN_MAX_SPAN_MS)
     return max(1, round(span_ms / _RDN_STEP_MS))
-
-
-def _rdn_transient(steady_value, amplitude, t_seconds, tau, freq_hz, phase_rad):
-    return steady_value + amplitude * math.exp(-t_seconds / tau) * math.cos(2 * math.pi * freq_hz * t_seconds + phase_rad)
-
-
-def _rdn_bus_series(mw, mvar, nominal_kv, n_points, rng):
-    """Placeholder physics: a damped oscillation around a steady-state value
-    derived from the setpoint. NOT a real power-flow/EMT solution."""
-    mw = mw or 0.0
-    mvar = mvar or 0.0
-    apparent_mva = math.hypot(mw, mvar)
-
-    dv_pu = max(-0.05, min(0.05, 0.0005 * mw))
-    steady_v_kv = nominal_kv * (1 + dv_pu)
-    steady_i_ka = apparent_mva / (math.sqrt(3) * steady_v_kv) if steady_v_kv else 0.0
-
-    v_amp = steady_v_kv * 0.005
-    i_amp = steady_i_ka * 0.02
-    tau_v, tau_i = 0.05, 0.08
-    f_osc = 5.0
-
-    phase_offsets = {'phase_a': 0.0, 'phase_b': -2 * math.pi / 3, 'phase_c': 2 * math.pi / 3}
-    out = {}
-    for phase_name, phase_offset in phase_offsets.items():
-        v_series, i_series = [], []
-        for k in range(n_points):
-            t = k * (_RDN_STEP_MS / 1000.0)
-            jitter_v = rng.uniform(-1, 1) * v_amp * 0.1
-            jitter_i = rng.uniform(-1, 1) * i_amp * 0.1
-            v_series.append(round(_rdn_transient(steady_v_kv, v_amp, t, tau_v, f_osc, phase_offset) + jitter_v, 4))
-            i_series.append(round(_rdn_transient(steady_i_ka, i_amp, t, tau_i, f_osc, phase_offset) + jitter_i, 5))
-        out[phase_name] = {'Voltage_kV': v_series, 'Current_kA': i_series}
-    return out
-
-
-def _rdn_frequency_series(total_imbalance_mw, n_points, rng):
-    base_hz = 50.0
-    d_hz = max(-0.2, min(0.2, -0.00005 * total_imbalance_mw))
-    tau_f, f_osc = 2.0, 0.3
-    noise_smoothing = 0.03  # lower = smoother, slower-wandering noise instead of per-sample jitter
-    values = []
-    noise = 0.0
-    for k in range(n_points):
-        noise += noise_smoothing * (rng.uniform(-1, 1) * 0.01 - noise)
-        values.append(round(
-            _rdn_transient(base_hz + d_hz, abs(d_hz) * 0.3, k * (_RDN_STEP_MS / 1000.0), tau_f, f_osc, 0.0) + noise,
-            4,
-        ))
-    return values
-
-
-def _generate_rdn_mock_output(cleaned_input):
-    grid_section = cleaned_input['inputData']['gridSection']
-    nominal_kv = _RDN_NOMINAL_KV_BY_SECTION[grid_section]
-    assets = cleaned_input['inputData']['asset']
-    request_id = cleaned_input['requestId']
-
-    asset_ids = sorted(assets)
-    timestamps = [item['timestamp_UTC'] for item in assets[asset_ids[0]]['assetTimeSeries']]
-    timestamps_ms = [_iso_to_epoch_ms(ts) for ts in timestamps]
-
-    output_data = []
-    for idx, ts in enumerate(timestamps):
-        resolution_ms = _rdn_derive_resolution_ms(timestamps_ms, idx)
-        n_points = _rdn_n_points_for_resolution(resolution_ms)
-
-        total_mw = sum((assets[aid]['assetTimeSeries'][idx].get('MW') or 0.0) for aid in asset_ids)
-
-        grid_entry = {}
-        for a_idx, aid in enumerate(asset_ids):
-            asset = assets[aid]
-            point = asset['assetTimeSeries'][idx]
-            mw, mvar = point.get('MW'), point.get('MVAr')
-            rng = random.Random(request_id * 1_000_000 + a_idx * 1000 + idx)
-            grid_id = 'grid_' + aid.split('_', 1)[1]
-            setpoint = {}
-            if mw is not None:
-                setpoint['MW'] = mw
-            if mvar is not None:
-                setpoint['MVAr'] = mvar
-            grid_entry[grid_id] = {
-                'BusType': asset['assetType'],
-                'InputPowerSetpoint': setpoint,
-                **_rdn_bus_series(mw, mvar, nominal_kv, n_points, rng),
-            }
-
-        freq_rng = random.Random(request_id * 1_000_000 + 999 * 1000 + idx)
-        output_data.append({
-            'InputTimestamp_UTC': ts,
-            'GridFrequency_Hz': _rdn_frequency_series(total_mw, n_points, freq_rng),
-            'grid': grid_entry,
-        })
-
-    return {
-        'userId': cleaned_input['userId'],
-        'useCase': cleaned_input['useCase'],
-        'requestId': request_id,
-        'timestamp_UTC': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
-        'outputData': output_data,
-    }
 
 
 def _dt_render(request, template, **extra):
@@ -1040,8 +890,9 @@ def rdn_grid_dt(request):
         asset_types=RDN_ASSET_TYPES,
         max_assets=_RDN_MAX_ASSETS,
         max_setpoints=_RDN_MAX_SETPOINTS,
-        rdn_user_id=request.user.email,
-        rdn_user_organisation=_user_organisation_name(request.user),
+        rdn_recent_jobs=list(RdnSimulationJob.objects.filter(user=request.user).order_by('-created_at')[:10].values(
+            'id', 'status', 'use_case', 'grid_section', 'created_at', 'error_message',
+        )),
     )
 
 
@@ -1060,20 +911,62 @@ def rdn_grid_simulate(request):
     if error:
         return JsonResponse({'error': error}, status=400)
 
-    try:
-        result = _generate_rdn_mock_output(cleaned)
-    except Exception:
-        logger.exception('RDN mock generation failed for request %s', cleaned.get('requestId'))
-        return JsonResponse({'error': 'Could not generate the simulation result.'}, status=500)
+    job = RdnSimulationJob.objects.create(
+        user=request.user,
+        use_case=cleaned['useCase'],
+        grid_section=cleaned['inputData']['gridSection'],
+        assets={aid: a['assetType'] for aid, a in cleaned['inputData']['asset'].items()},
+    )
+    job.rdn_request_id = job.pk
+    job.save(update_fields=['rdn_request_id'])
 
-    _store_rdn_follow(
-        cleaned['requestId'],
-        cleaned['inputData']['gridSection'],
-        cleaned['useCase'],
-        {aid: a['assetType'] for aid, a in cleaned['inputData']['asset'].items()},
+    # userId/userOrganisation are the single shared EnergyGuard service account, never
+    # the platform user's own identity - see [[project_rdn_api_integration]] design.
+    payload = {
+        'userId': settings.RDN_API_USER_ID,
+        'userOrganisation': settings.RDN_API_ORGANISATION,
+        'useCase': cleaned['useCase'],
+        'requestId': job.rdn_request_id,
+        'requestTimestamp_UTC': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        'followsRequestId': cleaned['followsRequestId'],
+        'inputData': cleaned['inputData'],
+    }
+
+    try:
+        upload_rdn_input(payload)
+    except RdnApiError as exc:
+        logger.exception('RDN upload failed for job %s', job.pk)
+        RdnSimulationJob.objects.filter(pk=job.pk).update(
+            status=RdnSimulationJob.Status.FAILED, error_message=str(exc),
+        )
+        return JsonResponse({'error': 'Could not submit the request to RDN.'}, status=502)
+
+    RdnSimulationJob.objects.filter(pk=job.pk).update(status=RdnSimulationJob.Status.RUNNING)
+    async_task('digitaltwins.tasks.poll_rdn_job', job.pk)  # enqueued into qcluster, returns immediately
+
+    return JsonResponse(
+        {'jobId': job.pk, 'requestId': job.rdn_request_id, 'status': RdnSimulationJob.Status.RUNNING},
+        status=202,
     )
 
-    return JsonResponse(result)
+
+@login_required
+def rdn_grid_job_status(request):
+    try:
+        job_id = int(request.GET.get('job', ''))
+    except ValueError:
+        return JsonResponse({'error': 'Invalid job id.'}, status=400)
+
+    job = RdnSimulationJob.objects.filter(pk=job_id, user=request.user).first()
+    if job is None:
+        return JsonResponse({'error': 'Not found.'}, status=404)
+
+    payload = {'status': job.status, 'requestId': job.rdn_request_id}
+    if job.status == RdnSimulationJob.Status.COMPLETED:
+        payload['result'] = job.result
+    elif job.status == RdnSimulationJob.Status.FAILED:
+        payload['error'] = job.error_message
+    return JsonResponse(payload)
 
 
 @login_required
@@ -1082,10 +975,14 @@ def rdn_grid_follow_lookup(request):
         request_id = int(request.GET.get('requestId', ''))
     except ValueError:
         return JsonResponse({'error': 'Invalid requestId.'}, status=400)
-    prior = _load_rdn_follow(request_id)
-    if prior is None:
+
+    job = RdnSimulationJob.objects.filter(
+        pk=request_id, user=request.user, status=RdnSimulationJob.Status.COMPLETED,
+    ).first()
+    if job is None:
         return JsonResponse({'found': False})
-    return JsonResponse({'found': True, **prior})
+
+    return JsonResponse({'found': True, 'gridSection': job.grid_section, 'useCase': job.use_case, 'assets': job.assets})
 
 
 @login_required

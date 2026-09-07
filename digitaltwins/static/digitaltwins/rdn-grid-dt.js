@@ -53,14 +53,20 @@
     var exportJsonBtn        = document.getElementById('export-json-btn');
     var saveOpenJupyterBtn   = document.getElementById('save-open-jupyterhub-btn');
 
+    var recentJobsPanel      = document.getElementById('recent-jobs-panel');
+    var recentJobsList       = document.getElementById('recent-jobs-list');
+
+    var loadingPanelTitle    = document.getElementById('loading-panel-title');
+    var loadingPanelSubtitle = document.getElementById('loading-panel-subtitle');
+
     // ── State ─────────────────────────────────────────────────────────────────
     var selectedUseCase   = useCaseSelect ? useCaseSelect.value : null;
     var setpointTimestamps = [];       // ISO strings, new-request mode
     var followSetpointTimestamps = []; // ISO strings, follow mode
     var followResolved     = null;     // { gridSection, useCase, assets }
     var lastApiResponse    = null;
-    var lastRequestMeta    = null;     // { gridSection, useCaseLabel, assets: [{id, type}] }
-    var activeController   = null;
+    var lastRequestMeta    = null;     // { gridSection }
+    var recentJobs         = (window.RDN_GRID_CONFIG.recentJobs || []).slice(0, 10);
     var powerChartRoot     = null;
     var freqChartRoot      = null;
 
@@ -369,26 +375,64 @@
         setTimeout(function () { if (alertEl.parentNode) alertEl.remove(); }, 8000);
     }
 
-    function submitRequest(payload, meta, btn) {
+    var POLL_INTERVAL_MS = 10000;
+
+    function setLoadingMessage(requestId) {
+        if (!loadingPanelTitle) return;
+        loadingPanelTitle.textContent = 'Request #' + requestId + ' submitted to RDN…';
+        if (loadingPanelSubtitle) {
+            loadingPanelSubtitle.textContent = 'This can take several minutes to over an hour, depending on RDN’s queue. '
+                + 'You can leave this page and come back later — your request will appear under "Your recent RDN runs".';
+        }
+    }
+
+    function pollJobStatus(jobId, gridSection, btn) {
+        fetch(window.RDN_GRID_CONFIG.jobStatusUrl + '?job=' + encodeURIComponent(jobId))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.status === 'completed') {
+                    lastApiResponse = data.result;
+                    lastRequestMeta = { gridSection: gridSection };
+                    loadingPanel.classList.add('d-none');
+                    if (btn) runningState(btn, false);
+                    populateResults();
+                    resultsSection.classList.remove('d-none');
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    refreshRecentJob(jobId, 'completed', null);
+                    return;
+                }
+                if (data.status === 'failed') {
+                    loadingPanel.classList.add('d-none');
+                    if (btn) runningState(btn, false);
+                    showRunError(data.error);
+                    refreshRecentJob(jobId, 'failed', data.error);
+                    return;
+                }
+                setTimeout(function () { pollJobStatus(jobId, gridSection, btn); }, POLL_INTERVAL_MS);
+            })
+            .catch(function () {
+                // Transient network blip - keep polling rather than surfacing a spurious error
+                // for a job that may still be legitimately running on RDN's side.
+                setTimeout(function () { pollJobStatus(jobId, gridSection, btn); }, POLL_INTERVAL_MS);
+            });
+    }
+
+    function submitRequest(payload, btn) {
         runningState(btn, true);
         loadingPanel.classList.remove('d-none');
         resultsSection.classList.add('d-none');
         var existingErrorAlert = document.getElementById('rdn-error-alert');
         if (existingErrorAlert) existingErrorAlert.remove();
 
-        if (activeController) activeController.abort();
-        activeController = new AbortController();
-
         fetch(window.RDN_GRID_CONFIG.simulateUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
             body: JSON.stringify(payload),
-            signal: activeController.signal,
         })
         .then(function (resp) {
             if (!resp.ok) {
                 return resp.text().then(function (body) {
-                    var msg = 'Simulation failed.';
+                    var msg = 'Could not submit the request to RDN.';
                     try { msg = JSON.parse(body).error || msg; } catch (_) {}
                     throw new Error(msg);
                 });
@@ -396,18 +440,11 @@
             return resp.json();
         })
         .then(function (data) {
-            activeController = null;
-            lastApiResponse = data;
-            lastRequestMeta = meta;
-            loadingPanel.classList.add('d-none');
-            runningState(btn, false);
-            populateResults();
-            resultsSection.classList.remove('d-none');
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setLoadingMessage(data.requestId);
+            prependRecentJob(data.jobId, payload.useCase, payload.inputData.gridSection);
+            pollJobStatus(data.jobId, payload.inputData.gridSection, btn);
         })
         .catch(function (err) {
-            if (err.name === 'AbortError') return;
-            activeController = null;
             loadingPanel.classList.add('d-none');
             runningState(btn, false);
             showRunError(err.message);
@@ -419,7 +456,6 @@
         if (!assets) return;
 
         var assetInput = {};
-        var assetsMeta = [];
         Object.keys(assets).forEach(function (assetId) {
             assetInput[assetId] = {
                 assetType: assets[assetId].assetType,
@@ -427,26 +463,16 @@
                     return Object.assign({ timestamp_UTC: ts }, assets[assetId].__points[idx]);
                 }),
             };
-            assetsMeta.push({ id: assetId, type: assets[assetId].assetType });
         });
 
-        var requestId = Date.now();
         var payload = {
-            userId: window.RDN_GRID_CONFIG.userId,
-            userOrganisation: window.RDN_GRID_CONFIG.userOrganisation,
             useCase: selectedUseCase,
-            requestId: requestId,
-            requestTimestamp_UTC: new Date().toISOString(),
             inputData: {
                 gridSection: gridSectionSelect.value,
                 asset: assetInput,
             },
         };
-        submitRequest(payload, {
-            gridSection: gridSectionSelect.value,
-            useCaseLabel: USE_CASE_LABELS[selectedUseCase] || selectedUseCase,
-            assets: assetsMeta,
-        }, runBtn);
+        submitRequest(payload, runBtn);
     });
 
     runFollowBtn.addEventListener('click', function () {
@@ -455,7 +481,6 @@
         if (!assets) return;
 
         var assetInput = {};
-        var assetsMeta = [];
         // collectAssets() assigns fresh asset_001... ids in DOM order; re-key them onto
         // the real resolved asset ids, which were used to build the rows in that same order.
         var resolvedIds = Object.keys(followResolved.assets).sort();
@@ -468,33 +493,27 @@
                     return Object.assign({ timestamp_UTC: ts }, collected.__points[idx]);
                 }),
             };
-            assetsMeta.push({ id: assetId, type: followResolved.assets[assetId] });
         });
 
-        var requestId = Date.now();
         var payload = {
-            userId: window.RDN_GRID_CONFIG.userId,
-            userOrganisation: window.RDN_GRID_CONFIG.userOrganisation,
             useCase: followResolved.useCase,
-            requestId: requestId,
-            requestTimestamp_UTC: new Date().toISOString(),
             followsRequestId: parseInt(followRequestIdInput.value, 10),
             inputData: {
                 gridSection: followResolved.gridSection,
                 asset: assetInput,
             },
         };
-        submitRequest(payload, {
-            gridSection: followResolved.gridSection,
-            useCaseLabel: USE_CASE_LABELS[followResolved.useCase] || followResolved.useCase,
-            assets: assetsMeta,
-        }, runFollowBtn);
+        submitRequest(payload, runFollowBtn);
     });
 
     // ── Results ───────────────────────────────────────────────────────────────
     function populateResults() {
         var data = lastApiResponse;
-        var meta = lastRequestMeta;
+        var gridSection = lastRequestMeta && lastRequestMeta.gridSection;
+        var firstEntry = data.outputData[0] || {};
+        var assetsMeta = Object.keys(firstEntry.grid || {}).sort().map(function (busId) {
+            return { id: busId, type: firstEntry.grid[busId].BusType };
+        });
 
         document.getElementById('res-request-id').textContent = data.requestId;
 
@@ -503,9 +522,9 @@
             now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
             + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-        document.getElementById('sum-grid-section').textContent = meta.gridSection;
-        document.getElementById('sum-use-case').textContent = meta.useCaseLabel;
-        document.getElementById('sum-assets-list').textContent = meta.assets.map(function (a) {
+        document.getElementById('sum-grid-section').textContent = gridSection || '—';
+        document.getElementById('sum-use-case').textContent = USE_CASE_LABELS[data.useCase] || data.useCase;
+        document.getElementById('sum-assets-list').textContent = assetsMeta.map(function (a) {
             return a.id + ' (' + a.type + ')';
         }).join(', ');
 
@@ -701,9 +720,101 @@
         });
     });
 
+    // ── Recent runs ───────────────────────────────────────────────────────────
+    var STATUS_BADGES = {
+        pending: 'bg-warning-subtle text-warning-emphasis',
+        running: 'bg-warning-subtle text-warning-emphasis',
+        completed: 'bg-success-subtle text-success-emphasis',
+        failed: 'bg-danger-subtle text-danger-emphasis',
+    };
+
+    function gridSectionLabel(section) {
+        return section === 'All' ? 'Full grid' : 'Section ' + section;
+    }
+
+    function formatJobTimestamp(isoString) {
+        var d = new Date(isoString);
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+            + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderRecentJobs() {
+        if (!recentJobsPanel || !recentJobsList) return;
+        recentJobsPanel.classList.toggle('d-none', recentJobs.length === 0);
+        recentJobsList.innerHTML = '';
+        recentJobs.slice(0, 10).forEach(function (job) {
+            var row = document.createElement('div');
+            row.className = 'd-flex align-items-center justify-content-between gap-3 p-2 rounded-2 border';
+            row.dataset.jobId = job.id;
+            if (job.status === 'completed' || job.status === 'running' || job.status === 'pending') {
+                row.style.cursor = 'pointer';
+            }
+
+            var info = document.createElement('div');
+            info.className = 'fs-9';
+            info.innerHTML = '<span class="fw-semibold text-body-emphasis">Request #' + job.id + '</span>'
+                + '<span class="text-body-tertiary"> &middot; ' + (USE_CASE_LABELS[job.use_case] || job.use_case)
+                + ' &middot; ' + gridSectionLabel(job.grid_section)
+                + ' &middot; ' + formatJobTimestamp(job.created_at) + '</span>';
+
+            var badge = document.createElement('span');
+            badge.className = 'badge ' + (STATUS_BADGES[job.status] || 'bg-secondary-subtle text-secondary-emphasis');
+            badge.textContent = job.status;
+
+            row.appendChild(info);
+            row.appendChild(badge);
+            row.addEventListener('click', function () { handleRecentJobClick(job); });
+            recentJobsList.appendChild(row);
+        });
+    }
+
+    function handleRecentJobClick(job) {
+        if (job.status === 'failed') {
+            showRunError(job.error_message);
+            return;
+        }
+        if (job.status === 'pending' || job.status === 'running') {
+            loadingPanel.classList.remove('d-none');
+            resultsSection.classList.add('d-none');
+            setLoadingMessage(job.id);
+            pollJobStatus(job.id, job.grid_section, null);
+            return;
+        }
+        if (job.status === 'completed') {
+            fetch(window.RDN_GRID_CONFIG.jobStatusUrl + '?job=' + encodeURIComponent(job.id))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.status !== 'completed') return;
+                    lastApiResponse = data.result;
+                    lastRequestMeta = { gridSection: job.grid_section };
+                    populateResults();
+                    resultsSection.classList.remove('d-none');
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                })
+                .catch(function () { showRunError('Could not load that result.'); });
+        }
+    }
+
+    function prependRecentJob(jobId, useCase, gridSection) {
+        recentJobs.unshift({
+            id: jobId, status: 'running', use_case: useCase, grid_section: gridSection,
+            created_at: new Date().toISOString(), error_message: null,
+        });
+        renderRecentJobs();
+    }
+
+    function refreshRecentJob(jobId, status, errorMessage) {
+        var job = recentJobs.filter(function (j) { return j.id === jobId; })[0];
+        if (!job) return;
+        job.status = status;
+        job.error_message = errorMessage;
+        renderRecentJobs();
+    }
+
     // ── Initial state ─────────────────────────────────────────────────────────
     setMode('new');
     addAssetRow();
+    renderRecentJobs();
 
     if (startInput && !startInput.value) {
         var pad = function (n) { return String(n).padStart(2, '0'); };
