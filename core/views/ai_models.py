@@ -113,9 +113,9 @@ AI_MODELS = [
         'description': 'Deep learning-based time series forecasting for energy data.',
         'category': 'forecasting',
         'color': 'dark',
-        'image': 'assets/img/ai-models/logo-deeptsf.png',
+        'image': 'assets/img/ai-models/DeepTSF.png',
         'request_access': True,
-        'compact': True,
+        'detail_url_name': 'deeptsf_detail',
     },
     {
         'slug': 'tirex',
@@ -130,20 +130,6 @@ AI_MODELS = [
         'cta_label': 'View API Docs',
         'cta_external': True,
     },
-    {
-        'slug': 'chronos',
-        'name': 'Chronos-2',
-        'description': 'Time series foundation model for probabilistic forecasting.',
-        'category': 'forecasting',
-        'details': 'A FastAPI service exposing Amazon Chronos-2, a time series foundation model, to generate '
-                   'probabilistic forecasts over multiple time series with optional past and future '
-                   'covariates and configurable quantile levels.',
-        'color': 'warning',
-        'cta_url': 'https://github.com/epu-ntua/Chronos2-inference-server',
-        'cta_label': 'View on GitHub',
-        'cta_external': True,
-    },
-
 ]
 
 
@@ -191,7 +177,17 @@ def ai_models(request):
                     model['slug'], cta_url_name,
                 )
 
-        model['has_modal'] = bool(model.get('cta_url') or model.get('request_access'))
+        detail_url_name = model.pop('detail_url_name', None)
+        if detail_url_name:
+            try:
+                model['detail_url'] = reverse(detail_url_name)
+            except NoReverseMatch:
+                logger.exception(
+                    "AI model '%s' references an unknown URL name '%s'; hiding its detail page link",
+                    model['slug'], detail_url_name,
+                )
+
+        model['has_modal'] = not model.get('detail_url') and bool(model.get('cta_url') or model.get('request_access'))
         model.setdefault('compact', False)
         models.append(model)
 
@@ -199,6 +195,14 @@ def ai_models(request):
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
         'ai_models': models,
+    })
+
+
+@login_required
+def deeptsf_detail(request):
+    return render(request, 'core/deeptsf-detail.html', {
+        'show_sidebar': True,
+        'active_navbar_page': 'ai_models',
     })
 
 

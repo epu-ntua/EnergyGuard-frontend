@@ -1,0 +1,119 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}DeepTSF | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'ai_models' %}">AI Models</a></li>
+        <li class="breadcrumb-item active">DeepTSF</li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <h2 class="text-body-emphasis fw-bolder mb-3">DeepTSF</h2>
+
+    <div class="row g-0  border-bottom py-3 mb-5">
+      <div class="col-6 col-md-3 border-end pe-3">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Developed by</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">ICCS</span>
+      </div>
+      <div class="col-6 col-md-3 border-end px-3">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Interface</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">Codeless UI</span>
+      </div>
+      <div class="col-6 col-md-3 border-end px-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Tooling</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">MLflow &amp; Dagster</span>
+      </div>
+      <div class="col-6 col-md-3 ps-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Models</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">10 built-in</span>
+      </div>
+    </div>
+
+    <div class="row g-5">
+      <div class="col-12 col-lg-8">
+
+        <p class="text-body-emphasis fs-8-5 mb-5">
+          DeepTSF, developed by ICCS, enables the development and deployment of time series forecasts using
+          highly accurate, state-of-the-art AI models. DeepTSF empowers business stakeholders, domain experts,
+          and forecasters from the industry to develop, monitor, and deploy large-scale machine learning and
+          deep learning forecasting experiments without coding. This allows them to effortlessly train and
+          evaluate a wide range of forecasting models with diverse machine learning techniques, deep learning
+          architectures, and hyperparameter configurations.
+        </p>
+
+        <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-1" style="letter-spacing:.04em;">Main functionalities</h6>
+        <div class="mb-5">
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">1</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Codeless Forecasting Pipeline</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">You can train your Machine Learning models via a user intuitive UI.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">2</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Experiment tracking and model evaluation</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Evaluate your Machine Learning models and visualise Actual vs Forecasted values. It is mainly focused on users with limited modeling expertise and aims to offer them a brief high-level overview of the results.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">3</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Model Deployment</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Deploy your best Machine Learning models in an easy manner.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">4</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">System Monitoring</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Monitor the system's current status through a user interface that showcases real-time data pertaining to the overall resources including memory, GPU, and CPU utilization of the deployed infrastructure.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">5</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Features for advanced users</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Ability to further develop, configurate, tweak any parameter using advanced tools (through MLflow &amp; Dagster).</p>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-3" style="letter-spacing:.04em;">Featured AI models</h6>
+        <p class="text-body-tertiary fs-8-5 mb-0">
+          DeepTSF provides out-of-the-box state-of-the-art forecasting models, including N-BEATS, Transformer,
+          NHiTS, temporal convolutional networks, (block) recurrent neural networks, temporal fusion
+          transformers, LightGBM, ARIMA, random forest, and seasonal na&iuml;ve.
+        </p>
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+          <img src="{% static 'assets/img/ai-models/DeepTSF.png' %}" alt="DeepTSF interface" class="card-img-top">
+          <div class="card-body p-4">
+            <p class="text-body-tertiary fs-8-5 mb-3">Train, evaluate, and monitor forecasting experiments through the DeepTSF codeless interface.</p>
+            <form method="post" action="{% url 'ai_model_request_access' %}">
+              {% csrf_token %}
+              <input type="hidden" name="model_slug" value="deeptsf">
+              <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                Request access to DeepTSF
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "core/footer.html" %}
+  </div>
+</div>
+{% endblock content %}

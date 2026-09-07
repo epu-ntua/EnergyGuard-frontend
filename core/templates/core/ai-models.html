@@ -15,7 +15,8 @@
     <div class="row g-3 mb-9">
       {% for model in ai_models %}
       <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
-        <div class="ai-model-card position-relative rounded-3 overflow-hidden p-4 d-flex flex-column justify-content-between" style="height: 200px; {% if model.has_modal %}cursor: pointer;{% endif %} background: linear-gradient(135deg, rgba(0,0,0,.15), rgba(0,0,0,.6)), {% if model.image %}url('{% static model.image %}') center/contain{% else %}var(--phoenix-{{ model.color }}){% endif %};" {% if model.has_modal %}data-bs-toggle="modal" data-bs-target="#aiModelModal-{{ model.slug }}" role="button" tabindex="0" aria-haspopup="dialog"{% endif %}>
+        {% if model.detail_url %}<a href="{{ model.detail_url }}" class="text-decoration-none">{% endif %}
+        <div class="ai-model-card position-relative rounded-3 overflow-hidden p-4 d-flex flex-column justify-content-between" style="height: 200px; {% if model.has_modal or model.detail_url %}cursor: pointer;{% endif %} background: linear-gradient(135deg, rgba(0,0,0,.15), rgba(0,0,0,.6)), {% if model.image %}url('{% static model.image %}') center/contain{% else %}var(--phoenix-{{ model.color }}){% endif %};" {% if model.has_modal %}data-bs-toggle="modal" data-bs-target="#aiModelModal-{{ model.slug }}" role="button" tabindex="0" aria-haspopup="dialog"{% endif %}>
           <div class="d-flex justify-content-between align-items-start">
             {% if model.cta_url %}
             <span class="badge badge-phoenix badge-phoenix-success fs-10" data-bs-theme="light">Available</span>
@@ -30,6 +31,7 @@
             <p class="text-white text-opacity-75 fs-8-5 mb-0">{{ model.description }}</p>
           </div>
         </div>
+        {% if model.detail_url %}</a>{% endif %}
       </div>
       {% endfor %}
     </div>
