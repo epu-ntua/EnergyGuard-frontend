@@ -5,9 +5,6 @@
 
 {% block head %}
 <meta name="csrf-token" content="{{ csrf_token }}">
-<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
-<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
-<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
 <style>
     .rdn-asset-row {
         border: 1px solid var(--phoenix-border-color);
@@ -44,6 +41,7 @@
             <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The RDN node provides a <strong class="text-body-emphasis">Digital Twin of a large-scale electricity grid</strong> with a high share of renewables, capable of RMS and EMT simulations as well as hardware-in-the-loop simulation with IEDs. Configure a use case, a grid section, and power setpoints for each asset, and the Digital Twin returns instantaneous voltage, current and frequency curves for every bus in the selected section.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
                 <a href="#request-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a request <span class="fas fa-arrow-right"></span></a>
+                <a href="{% url 'rdn-grid-runs' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">View runs <span class="fas fa-arrow-right"></span></a>
             </div>
 
             <div class="row mt-4">
@@ -143,16 +141,6 @@
 
         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
             <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Configuration</h3>
-        </div>
-
-        <!-- ── Recent runs ─────────────────────────────────────────────────── -->
-        <div id="recent-jobs-panel" class="mb-4 d-none">
-            <div class="card">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-body-emphasis fs-8 mb-3">Your recent RDN runs</h6>
-                    <div id="recent-jobs-list" class="d-flex flex-column gap-2"></div>
-                </div>
-            </div>
         </div>
 
         <!-- ── Mode toggle ─────────────────────────────────────────────────── -->
@@ -376,87 +364,10 @@
                     </div>
                     <div>
                         <h6 class="fw-bold text-body-emphasis mb-0" id="loading-panel-title">Submitting to the RDN Digital Twin&hellip;</h6>
-                        <p class="text-body-tertiary fs-9 mb-0" id="loading-panel-subtitle">This can take several minutes to over an hour, depending on RDN's queue. You can leave this page and come back later &mdash; your request will appear under "Your recent RDN runs".</p>
+                        <p class="text-body-tertiary fs-9 mb-0" id="loading-panel-subtitle">This can take several minutes to over an hour, depending on RDN's queue.</p>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- ── Results section ─────────────────────────────────────────────── -->
-        <div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
-
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-                <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Simulation Results</h5>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
-                        <span class="fas fa-file-code"></span>Download JSON
-                    </button>
-                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
-                        <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
-                <span><span class="fas fa-hashtag me-1 text-body-tertiary"></span>Request ID: <span class="fw-semibold text-body-emphasis" id="res-request-id">&mdash;</span></span>
-                <span class="text-body-tertiary">&middot;</span>
-                <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run at: <span class="fw-semibold text-body-emphasis" id="res-timestamp">&mdash;</span></span>
-            </div>
-
-            <!-- Selectors -->
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-semibold" for="setpoint-selector">Setpoint</label>
-                    <select class="form-select" id="setpoint-selector"></select>
-                </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-semibold" for="bus-selector">Bus</label>
-                    <select class="form-select" id="bus-selector"></select>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-12">
-                    <div class="card h-100">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-body-emphasis mb-1">Instantaneous Power</h6>
-                            <p class="text-body-tertiary fs-9 mb-3">Total instantaneous power at the selected bus, derived from voltage and current across all three phases.</p>
-                            <div id="power-chart" style="width:100%;height:260px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="card h-100">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-body-emphasis mb-3">Grid Frequency</h6>
-                            <div id="frequency-chart" style="width:100%;height:260px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuration Used -->
-            <div class="card">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
-                        <span class="fas fa-list-ul text-body-tertiary"></span>Configuration Used
-                    </h6>
-                    <div class="row g-3 fs-9">
-                        <div class="col-12 col-md-4">
-                            <dl class="row mb-0">
-                                <dt class="col-6 text-body-tertiary fw-normal">Grid Section</dt>
-                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-grid-section">&mdash;</dd>
-                                <dt class="col-6 text-body-tertiary fw-normal">Use Case</dt>
-                                <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="sum-use-case">&mdash;</dd>
-                            </dl>
-                        </div>
-                        <div class="col-12 col-md-8">
-                            <span class="text-body-tertiary fw-bold d-block mb-2 text-uppercase fs-10 fw-semibold">Assets</span>
-                            <div id="sum-assets-list" class="fs-9 text-body-secondary">&mdash;</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
     </div>
@@ -465,16 +376,13 @@
 {% endblock content %}
 
 {% block scripts %}
-{{ rdn_recent_jobs|json_script:"rdn-recent-jobs-data" }}
 <script>
 window.RDN_GRID_CONFIG = {
     simulateUrl: "{% url 'rdn-grid-simulate' %}",
-    jobStatusUrl: "{% url 'rdn-grid-job-status' %}",
     followLookupUrl: "{% url 'rdn-grid-follow' %}",
-    saveResultUrl: "{% url 'dt-save-result' %}",
+    resultsUrlTemplate: "{% url 'rdn-grid-results' 0 %}",
     maxAssets: {{ max_assets }},
-    maxSetpoints: {{ max_setpoints }},
-    recentJobs: JSON.parse(document.getElementById('rdn-recent-jobs-data').textContent)
+    maxSetpoints: {{ max_setpoints }}
 };
 </script>
 <script src="{% static 'digitaltwins/rdn-grid-dt.js' %}" defer></script>

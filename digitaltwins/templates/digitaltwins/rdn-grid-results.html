@@ -1,0 +1,129 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Request #{{ job.rdn_request_id }} - Grid Simulation - RDN - Digital Twins{% endblock %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
+{% endblock head %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'rdn-grid' %}">Transmission Grid</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'rdn-grid-dt' %}">Grid Simulation</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'rdn-grid-runs' %}">Runs</a></li>
+                <li class="breadcrumb-item active">Request #{{ job.rdn_request_id }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <h3 class="fw-bolder text-body-emphasis mb-1">Request #{{ job.rdn_request_id }} &middot; {{ use_case_label }}</h3>
+                <p class="text-body-tertiary mb-0">Section {{ job.grid_section }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" id="export-json-btn" style="white-space:nowrap;" {% if job.status != 'completed' %}disabled{% endif %}>
+                    <span class="fas fa-file-code"></span>Download JSON
+                </button>
+                <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" id="save-open-jupyterhub-btn" style="white-space:nowrap;" {% if job.status != 'completed' %}disabled{% endif %}>
+                    <span class="fas fa-arrow-up-right-from-square"></span>Open in JupyterHub
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Running / pending state ─────────────────────────────────────── -->
+        <div id="running-panel" class="card mb-4 {% if job.status != 'running' and job.status != 'pending' %}d-none{% endif %}">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-body-emphasis mb-3">Running on RDN &mdash; <span id="elapsed-time">0s</span> elapsed</h6>
+                <div class="progress mb-3" style="height:.5rem;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width:100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="text-body-tertiary fs-9 mb-4">RDN simulations typically take a few minutes to over an hour, depending on RDN's queue. You don't need to keep this page open &mdash; it's safe to close it and come back later, this run will be waiting for you under Runs.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'rdn-grid-dt' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <span class="fas fa-arrow-left"></span>Back to Grid Simulation
+                    </a>
+                    <a href="{% url 'rdn-grid-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        View all runs<span class="fas fa-arrow-right"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Failed state ─────────────────────────────────────────────────── -->
+        {% if job.status == 'failed' %}
+        <div class="alert alert-subtle-danger rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <span class="fas fa-circle-xmark flex-shrink-0"></span><span>{{ job.error_message }}</span>
+        </div>
+        {% include "digitaltwins/partials/rdn_configuration_used.html" %}
+        {% endif %}
+
+        <!-- ── Completed state (also the swap target once a running job finishes) ── -->
+        {% if job.status != 'failed' %}
+        <div id="results-section" class="{% if job.status != 'completed' %}d-none{% endif %}">
+
+            <!-- Selectors -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold" for="setpoint-selector">Setpoint</label>
+                    <select class="form-select" id="setpoint-selector"></select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold" for="bus-selector">Bus</label>
+                    <select class="form-select" id="bus-selector"></select>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis mb-1">Instantaneous Power</h6>
+                            <p class="text-body-tertiary fs-9 mb-3">Total instantaneous power at the selected bus, derived from voltage and current across all three phases.</p>
+                            <div id="power-chart" style="width:100%;height:260px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-body-emphasis mb-3">Grid Frequency</h6>
+                            <div id="frequency-chart" style="width:100%;height:260px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include "digitaltwins/partials/rdn_configuration_used.html" %}
+
+        </div>
+        {% endif %}
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{% if job.status == 'completed' %}{{ job.result|json_script:"job-result-data" }}{% endif %}
+<script>
+window.RDN_GRID_RESULTS = {
+    jobId: {{ job.pk }},
+    requestId: {{ job.rdn_request_id }},
+    status: "{{ job.status }}",
+    createdAtIso: "{{ job.created_at|date:'c' }}",
+    jobStatusUrl: "{% url 'rdn-grid-job-status' %}",
+    saveResultUrl: "{% url 'dt-save-result' %}",
+    initialResult: document.getElementById('job-result-data') ? JSON.parse(document.getElementById('job-result-data').textContent) : null
+};
+</script>
+<script src="{% static 'digitaltwins/rdn-grid-results.js' %}" defer></script>
+{% endblock scripts %}

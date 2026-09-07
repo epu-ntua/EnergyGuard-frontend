@@ -40,16 +40,19 @@ def poll_rdn_job(job_id):
         except RdnApiError as exc:
             logger.exception('Failed to download RDN result for request %s', job.rdn_request_id)
             RdnSimulationJob.objects.filter(pk=job_id).update(
-                status=RdnSimulationJob.Status.FAILED, error_message=str(exc),
+                status=RdnSimulationJob.Status.FAILED, error_message=str(exc), updated_at=timezone.now(),
             )
             return
-        RdnSimulationJob.objects.filter(pk=job_id).update(status=RdnSimulationJob.Status.COMPLETED, result=result)
+        RdnSimulationJob.objects.filter(pk=job_id).update(
+            status=RdnSimulationJob.Status.COMPLETED, result=result, updated_at=timezone.now(),
+        )
         return
 
     if rdn_status == 'failed':
         RdnSimulationJob.objects.filter(pk=job_id).update(
             status=RdnSimulationJob.Status.FAILED,
             error_message=status_payload.get('errorMessage') or 'RDN reported the job as failed.',
+            updated_at=timezone.now(),
         )
         return
 
@@ -57,6 +60,7 @@ def poll_rdn_job(job_id):
         RdnSimulationJob.objects.filter(pk=job_id).update(
             status=RdnSimulationJob.Status.FAILED,
             error_message=f'Timed out after {_RDN_JOB_MAX_WAIT} waiting for RDN.',
+            updated_at=timezone.now(),
         )
         return
 
@@ -85,6 +89,7 @@ def reconcile_stale_rdn_jobs():
     ).update(
         status=RdnSimulationJob.Status.FAILED,
         error_message='Job lost - no result was ever recorded.',
+        updated_at=timezone.now(),
     )
     if count:
         logger.warning('Reconciled %s stale RDN job(s)', count)

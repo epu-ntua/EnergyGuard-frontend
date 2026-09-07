@@ -12,8 +12,9 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 from django_q.tasks import async_task
 
@@ -890,9 +891,59 @@ def rdn_grid_dt(request):
         asset_types=RDN_ASSET_TYPES,
         max_assets=_RDN_MAX_ASSETS,
         max_setpoints=_RDN_MAX_SETPOINTS,
-        rdn_recent_jobs=list(RdnSimulationJob.objects.filter(user=request.user).order_by('-created_at')[:10].values(
-            'id', 'status', 'use_case', 'grid_section', 'created_at', 'error_message',
-        )),
+    )
+
+
+_RDN_RUNS_PAGE_SIZE = 20
+
+
+def _rdn_job_duration_label(job):
+    end = job.updated_at if job.status in (RdnSimulationJob.Status.COMPLETED, RdnSimulationJob.Status.FAILED) else datetime.now(timezone.utc)
+    if job.status in (RdnSimulationJob.Status.COMPLETED, RdnSimulationJob.Status.FAILED) and (end - job.created_at).total_seconds() < 1:
+        # updated_at was only ever refreshed on terminal transitions starting with this
+        # feature - a job that finished before that fix has updated_at == created_at,
+        # so treat a sub-second "duration" as unknown rather than showing a false 0s.
+        return '—'
+    return _format_duration((end - job.created_at).total_seconds())
+
+
+@login_required
+def rdn_grid_runs(request):
+    jobs = RdnSimulationJob.objects.filter(user=request.user).order_by('-created_at')
+    paginator = Paginator(jobs, _RDN_RUNS_PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    for job in page_obj:
+        job.duration_label = _rdn_job_duration_label(job)
+        job.use_case_label = RDN_USE_CASES.get(job.use_case, job.use_case)
+
+    return _dt_render(request, 'digitaltwins/rdn-grid-runs.html', page_obj=page_obj)
+
+
+def _rdn_assets_breakdown(assets_items):
+    counts = {}
+    for _, asset_type in assets_items:
+        counts[asset_type] = counts.get(asset_type, 0) + 1
+    return ' · '.join(f'{count} {asset_type}' for asset_type, count in counts.items())
+
+
+@login_required
+def rdn_grid_results(request, rdn_request_id):
+    job = get_object_or_404(RdnSimulationJob, rdn_request_id=rdn_request_id, user=request.user)
+    # job.assets is the asset_NNN -> assetType mapping the user actually submitted (set at
+    # creation, unrelated to run status). RDN's own output (job.result[...]['grid']) is a
+    # different thing - the full bus list of the section's fixed topology (RDN simulates
+    # every bus in the section, not just the ones the user supplied setpoints for), so it
+    # is NOT used here even for completed runs - "Configuration Used" means what was
+    # submitted, not what RDN internally modeled.
+    assets_items = sorted(job.assets.items())
+    return _dt_render(
+        request, 'digitaltwins/rdn-grid-results.html',
+        job=job,
+        use_case_label=RDN_USE_CASES.get(job.use_case, job.use_case),
+        duration_label=_rdn_job_duration_label(job),
+        assets_items=assets_items,
+        assets_breakdown=_rdn_assets_breakdown(assets_items),
     )
 
 
@@ -937,7 +988,7 @@ def rdn_grid_simulate(request):
     except RdnApiError as exc:
         logger.exception('RDN upload failed for job %s', job.pk)
         RdnSimulationJob.objects.filter(pk=job.pk).update(
-            status=RdnSimulationJob.Status.FAILED, error_message=str(exc),
+            status=RdnSimulationJob.Status.FAILED, error_message=str(exc), updated_at=datetime.now(timezone.utc),
         )
         return JsonResponse({'error': 'Could not submit the request to RDN.'}, status=502)
 

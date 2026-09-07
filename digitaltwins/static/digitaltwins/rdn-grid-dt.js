@@ -1,13 +1,10 @@
 (function () {
     'use strict';
 
-    var USE_CASE_LABELS = {};
-    document.querySelectorAll('#use-case-select option').forEach(function (option) {
-        USE_CASE_LABELS[option.value] = option.textContent.trim();
-    });
+    var toggleNewRequest    = document.getElementById('toggle-new-request');
+    if (!toggleNewRequest) return;
 
     // ── DOM references ────────────────────────────────────────────────────────
-    var toggleNewRequest    = document.getElementById('toggle-new-request');
     var toggleFollowRequest = document.getElementById('toggle-follow-request');
     var newRequestPanel     = document.getElementById('new-request-panel');
     var followRequestPanel  = document.getElementById('follow-request-panel');
@@ -45,16 +42,6 @@
     var runFollowBtn          = document.getElementById('run-rdn-follow-btn');
 
     var loadingPanel        = document.getElementById('loading-panel');
-    var resultsSection      = document.getElementById('results-section');
-
-    var setpointSelector    = document.getElementById('setpoint-selector');
-    var busSelector         = document.getElementById('bus-selector');
-
-    var exportJsonBtn        = document.getElementById('export-json-btn');
-    var saveOpenJupyterBtn   = document.getElementById('save-open-jupyterhub-btn');
-
-    var recentJobsPanel      = document.getElementById('recent-jobs-panel');
-    var recentJobsList       = document.getElementById('recent-jobs-list');
 
     var loadingPanelTitle    = document.getElementById('loading-panel-title');
     var loadingPanelSubtitle = document.getElementById('loading-panel-subtitle');
@@ -64,11 +51,6 @@
     var setpointTimestamps = [];       // ISO strings, new-request mode
     var followSetpointTimestamps = []; // ISO strings, follow mode
     var followResolved     = null;     // { gridSection, useCase, assets }
-    var lastApiResponse    = null;
-    var lastRequestMeta    = null;     // { gridSection }
-    var recentJobs         = (window.RDN_GRID_CONFIG.recentJobs || []).slice(0, 10);
-    var powerChartRoot     = null;
-    var freqChartRoot      = null;
 
     // ── CSRF helper ───────────────────────────────────────────────────────────
     function getCsrfToken() {
@@ -375,52 +357,13 @@
         setTimeout(function () { if (alertEl.parentNode) alertEl.remove(); }, 8000);
     }
 
-    var POLL_INTERVAL_MS = 10000;
-
-    function setLoadingMessage(requestId) {
-        if (!loadingPanelTitle) return;
-        loadingPanelTitle.textContent = 'Request #' + requestId + ' submitted to RDN…';
-        if (loadingPanelSubtitle) {
-            loadingPanelSubtitle.textContent = 'This can take several minutes to over an hour, depending on RDN’s queue. '
-                + 'You can leave this page and come back later — your request will appear under "Your recent RDN runs".';
-        }
-    }
-
-    function pollJobStatus(jobId, gridSection, btn) {
-        fetch(window.RDN_GRID_CONFIG.jobStatusUrl + '?job=' + encodeURIComponent(jobId))
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.status === 'completed') {
-                    lastApiResponse = data.result;
-                    lastRequestMeta = { gridSection: gridSection };
-                    loadingPanel.classList.add('d-none');
-                    if (btn) runningState(btn, false);
-                    populateResults();
-                    resultsSection.classList.remove('d-none');
-                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    refreshRecentJob(jobId, 'completed', null);
-                    return;
-                }
-                if (data.status === 'failed') {
-                    loadingPanel.classList.add('d-none');
-                    if (btn) runningState(btn, false);
-                    showRunError(data.error);
-                    refreshRecentJob(jobId, 'failed', data.error);
-                    return;
-                }
-                setTimeout(function () { pollJobStatus(jobId, gridSection, btn); }, POLL_INTERVAL_MS);
-            })
-            .catch(function () {
-                // Transient network blip - keep polling rather than surfacing a spurious error
-                // for a job that may still be legitimately running on RDN's side.
-                setTimeout(function () { pollJobStatus(jobId, gridSection, btn); }, POLL_INTERVAL_MS);
-            });
+    function goToResults(requestId) {
+        window.location.href = window.RDN_GRID_CONFIG.resultsUrlTemplate.replace('/0/', '/' + requestId + '/');
     }
 
     function submitRequest(payload, btn) {
         runningState(btn, true);
         loadingPanel.classList.remove('d-none');
-        resultsSection.classList.add('d-none');
         var existingErrorAlert = document.getElementById('rdn-error-alert');
         if (existingErrorAlert) existingErrorAlert.remove();
 
@@ -440,9 +383,7 @@
             return resp.json();
         })
         .then(function (data) {
-            setLoadingMessage(data.requestId);
-            prependRecentJob(data.jobId, payload.useCase, payload.inputData.gridSection);
-            pollJobStatus(data.jobId, payload.inputData.gridSection, btn);
+            goToResults(data.requestId);
         })
         .catch(function (err) {
             loadingPanel.classList.add('d-none');
@@ -506,315 +447,9 @@
         submitRequest(payload, runFollowBtn);
     });
 
-    // ── Results ───────────────────────────────────────────────────────────────
-    function populateResults() {
-        var data = lastApiResponse;
-        var gridSection = lastRequestMeta && lastRequestMeta.gridSection;
-        var firstEntry = data.outputData[0] || {};
-        var assetsMeta = Object.keys(firstEntry.grid || {}).sort().map(function (busId) {
-            return { id: busId, type: firstEntry.grid[busId].BusType };
-        });
-
-        document.getElementById('res-request-id').textContent = data.requestId;
-
-        var now = new Date();
-        document.getElementById('res-timestamp').textContent =
-            now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-            + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-        document.getElementById('sum-grid-section').textContent = gridSection || '—';
-        document.getElementById('sum-use-case').textContent = USE_CASE_LABELS[data.useCase] || data.useCase;
-        document.getElementById('sum-assets-list').textContent = assetsMeta.map(function (a) {
-            return a.id + ' (' + a.type + ')';
-        }).join(', ');
-
-        setpointSelector.innerHTML = '';
-        data.outputData.forEach(function (entry, idx) {
-            var opt = document.createElement('option');
-            opt.value = idx;
-            opt.textContent = entry.InputTimestamp_UTC;
-            setpointSelector.appendChild(opt);
-        });
-
-        populateBusSelector();
-        renderCharts();
-    }
-
-    function populateBusSelector() {
-        var idx = parseInt(setpointSelector.value, 10) || 0;
-        var entry = lastApiResponse.outputData[idx];
-        var busIds = Object.keys(entry.grid || {}).sort();
-        var previousValue = busSelector.value;
-        busSelector.innerHTML = '';
-        busIds.forEach(function (busId) {
-            var opt = document.createElement('option');
-            opt.value = busId;
-            opt.textContent = busId + ' (' + entry.grid[busId].BusType + ')';
-            busSelector.appendChild(opt);
-        });
-        if (busIds.indexOf(previousValue) !== -1) busSelector.value = previousValue;
-    }
-
-    setpointSelector.addEventListener('change', function () { populateBusSelector(); renderCharts(); });
-    busSelector.addEventListener('change', renderCharts);
-
-    // ── Charts (amCharts 5) ───────────────────────────────────────────────────
-    function themeColor(varName) {
-        var styles = getComputedStyle(document.documentElement);
-        return am5.color(styles.getPropertyValue(varName).trim());
-    }
-
-    function buildLineChart(containerId, seriesDefs, opts) {
-        opts = opts || {};
-        var textColor = am5.color(0x31374a);
-
-        var root = am5.Root.new(containerId);
-        root.setThemes([am5themes_Animated.new(root)]);
-
-        var chart = root.container.children.push(am5xy.XYChart.new(root, {
-            panX: false, panY: false, wheelX: 'zoomX', wheelY: 'none', pinchZoomX: true,
-            layout: root.verticalLayout,
-        }));
-
-        var xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 60 });
-        xRenderer.labels.template.setAll({ fill: textColor, fontSize: 11 });
-
-        var xAxis = chart.xAxes.push(am5xy.ValueAxis.new(root, {
-            renderer: xRenderer,
-            numberFormat: "0.00' s'",
-            tooltip: am5.Tooltip.new(root, {}),
-        }));
-
-        function labelAxis(axis, unitSuffix, rotation, prepend) {
-            axis.set('numberFormat', "#,###.### '" + unitSuffix + "'");
-            var label = am5.Label.new(root, {
-                text: unitSuffix, rotation: rotation, y: am5.p50, centerX: am5.p50,
-                fill: textColor, fontSize: 11,
-            });
-            if (prepend) axis.children.unshift(label); else axis.children.push(label);
-        }
-
-        var yRenderer = am5xy.AxisRendererY.new(root, { minGridDistance: 50 });
-        yRenderer.labels.template.setAll({ fill: textColor, fontSize: 11 });
-        var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, { renderer: yRenderer, extraMax: 0.1, extraMin: 0.1 }));
-        labelAxis(yAxis, opts.yUnit || '', -90, true);
-
-        var yAxis2 = null;
-        if (opts.secondAxisUnit) {
-            var yRenderer2 = am5xy.AxisRendererY.new(root, { opposite: true });
-            yRenderer2.labels.template.setAll({ fill: textColor, fontSize: 11 });
-            yAxis2 = chart.yAxes.push(am5xy.ValueAxis.new(root, { renderer: yRenderer2, extraMax: 0.1, extraMin: 0.1 }));
-            labelAxis(yAxis2, opts.secondAxisUnit, 90, false);
-        }
-
-        var seriesList = [];
-        seriesDefs.forEach(function (def) {
-            var series = chart.series.push(am5xy.LineSeries.new(root, {
-                name: def.name, xAxis: xAxis, yAxis: def.axis === 'right' ? yAxis2 : yAxis,
-                valueXField: 't', valueYField: 'value',
-                stroke: def.color, fill: def.color,
-                tooltip: am5.Tooltip.new(root, { labelText: '{name}: {valueY.formatNumber("#,###.0000")} ' + def.unit }),
-            }));
-            series.strokes.template.setAll({ strokeWidth: 2 });
-            series.data.setAll(def.data);
-            series.appear(400);
-            seriesList.push(series);
-        });
-
-        var cursor = chart.set('cursor', am5xy.XYCursor.new(root, { xAxis: xAxis, behavior: 'zoomX' }));
-        cursor.lineY.set('visible', false);
-        cursor.set('snapToSeries', seriesList);
-
-        chart.appear(400, 100);
-        return root;
-    }
-
-    function seriesToChartData(values) {
-        return values.map(function (v, k) { return { t: k * 0.002, value: v }; });
-    }
-
-    // Instantaneous power per phase is Voltage_kV * Current_kA (= MW); total power
-    // at the bus is the sum of the three phases at each timestamp, per RDN's guidance.
-    function computeTotalInstantaneousPower(bus) {
-        var phases = ['phase_a', 'phase_b', 'phase_c'];
-        var length = 0;
-        phases.forEach(function (phase) {
-            if (bus[phase]) length = Math.max(length, bus[phase].Voltage_kV.length);
-        });
-        var total = new Array(length).fill(0);
-        phases.forEach(function (phase) {
-            if (!bus[phase]) return;
-            var voltage = bus[phase].Voltage_kV;
-            var current = bus[phase].Current_kA;
-            var phaseLength = Math.min(voltage.length, current.length);
-            for (var k = 0; k < phaseLength; k++) {
-                total[k] += voltage[k] * current[k];
-            }
-        });
-        return total;
-    }
-
-    function renderCharts() {
-        if (!lastApiResponse) return;
-        var setpointIdx = parseInt(setpointSelector.value, 10) || 0;
-        var entry = lastApiResponse.outputData[setpointIdx];
-        var busId = busSelector.value;
-        if (!entry || !busId) return;
-        var bus = entry.grid[busId];
-
-        if (powerChartRoot) { powerChartRoot.dispose(); powerChartRoot = null; }
-        if (bus) {
-            powerChartRoot = buildLineChart('power-chart', [
-                { name: 'Total power', data: seriesToChartData(computeTotalInstantaneousPower(bus)), color: themeColor('--phoenix-primary'), unit: 'MW' },
-            ], { yUnit: 'MW' });
-        }
-
-        if (freqChartRoot) { freqChartRoot.dispose(); freqChartRoot = null; }
-        if (entry.GridFrequency_Hz) {
-            freqChartRoot = buildLineChart('frequency-chart', [
-                { name: 'Grid frequency', data: seriesToChartData(entry.GridFrequency_Hz), color: themeColor('--phoenix-primary'), unit: 'Hz' },
-            ], { yUnit: 'Hz' });
-        }
-    }
-
-    // ── Export ────────────────────────────────────────────────────────────────
-    function triggerDownload(content, filename, mimeType) {
-        var blob = new Blob([content], { type: mimeType });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    exportJsonBtn.addEventListener('click', function () {
-        if (!lastApiResponse) return;
-        triggerDownload(JSON.stringify(lastApiResponse, null, 2), 'rdn-grid-result-' + lastApiResponse.requestId + '.json', 'application/json');
-    });
-
-    saveOpenJupyterBtn.addEventListener('click', function () {
-        if (!lastApiResponse) return;
-        var originalHtml = saveOpenJupyterBtn.innerHTML;
-        saveOpenJupyterBtn.disabled = true;
-        saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
-
-        fetch(window.RDN_GRID_CONFIG.saveResultUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-            body: JSON.stringify({ twin_slug: 'rdn-grid', data: lastApiResponse }),
-        })
-        .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Could not save the result.';
-                    try { msg = JSON.parse(body).error || msg; } catch (_) {}
-                    throw new Error(msg);
-                });
-            }
-            return resp.json();
-        })
-        .then(function (data) { window.open(data.redirect_url, '_blank'); })
-        .catch(function (err) { alert(err.message || 'Could not save the result.'); })
-        .finally(function () {
-            saveOpenJupyterBtn.disabled = false;
-            saveOpenJupyterBtn.innerHTML = originalHtml;
-        });
-    });
-
-    // ── Recent runs ───────────────────────────────────────────────────────────
-    var STATUS_BADGES = {
-        pending: 'bg-warning-subtle text-warning-emphasis',
-        running: 'bg-warning-subtle text-warning-emphasis',
-        completed: 'bg-success-subtle text-success-emphasis',
-        failed: 'bg-danger-subtle text-danger-emphasis',
-    };
-
-    function gridSectionLabel(section) {
-        return section === 'All' ? 'Full grid' : 'Section ' + section;
-    }
-
-    function formatJobTimestamp(isoString) {
-        var d = new Date(isoString);
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-            + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function renderRecentJobs() {
-        if (!recentJobsPanel || !recentJobsList) return;
-        recentJobsPanel.classList.toggle('d-none', recentJobs.length === 0);
-        recentJobsList.innerHTML = '';
-        recentJobs.slice(0, 10).forEach(function (job) {
-            var row = document.createElement('div');
-            row.className = 'd-flex align-items-center justify-content-between gap-3 p-2 rounded-2 border';
-            row.dataset.jobId = job.id;
-            if (job.status === 'completed' || job.status === 'running' || job.status === 'pending') {
-                row.style.cursor = 'pointer';
-            }
-
-            var info = document.createElement('div');
-            info.className = 'fs-9';
-            info.innerHTML = '<span class="fw-semibold text-body-emphasis">Request #' + job.id + '</span>'
-                + '<span class="text-body-tertiary"> &middot; ' + (USE_CASE_LABELS[job.use_case] || job.use_case)
-                + ' &middot; ' + gridSectionLabel(job.grid_section)
-                + ' &middot; ' + formatJobTimestamp(job.created_at) + '</span>';
-
-            var badge = document.createElement('span');
-            badge.className = 'badge ' + (STATUS_BADGES[job.status] || 'bg-secondary-subtle text-secondary-emphasis');
-            badge.textContent = job.status;
-
-            row.appendChild(info);
-            row.appendChild(badge);
-            row.addEventListener('click', function () { handleRecentJobClick(job); });
-            recentJobsList.appendChild(row);
-        });
-    }
-
-    function handleRecentJobClick(job) {
-        if (job.status === 'failed') {
-            showRunError(job.error_message);
-            return;
-        }
-        if (job.status === 'pending' || job.status === 'running') {
-            loadingPanel.classList.remove('d-none');
-            resultsSection.classList.add('d-none');
-            setLoadingMessage(job.id);
-            pollJobStatus(job.id, job.grid_section, null);
-            return;
-        }
-        if (job.status === 'completed') {
-            fetch(window.RDN_GRID_CONFIG.jobStatusUrl + '?job=' + encodeURIComponent(job.id))
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.status !== 'completed') return;
-                    lastApiResponse = data.result;
-                    lastRequestMeta = { gridSection: job.grid_section };
-                    populateResults();
-                    resultsSection.classList.remove('d-none');
-                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                })
-                .catch(function () { showRunError('Could not load that result.'); });
-        }
-    }
-
-    function prependRecentJob(jobId, useCase, gridSection) {
-        recentJobs.unshift({
-            id: jobId, status: 'running', use_case: useCase, grid_section: gridSection,
-            created_at: new Date().toISOString(), error_message: null,
-        });
-        renderRecentJobs();
-    }
-
-    function refreshRecentJob(jobId, status, errorMessage) {
-        var job = recentJobs.filter(function (j) { return j.id === jobId; })[0];
-        if (!job) return;
-        job.status = status;
-        job.error_message = errorMessage;
-        renderRecentJobs();
-    }
-
     // ── Initial state ─────────────────────────────────────────────────────────
     setMode('new');
     addAssetRow();
-    renderRecentJobs();
 
     if (startInput && !startInput.value) {
         var pad = function (n) { return String(n).padStart(2, '0'); };

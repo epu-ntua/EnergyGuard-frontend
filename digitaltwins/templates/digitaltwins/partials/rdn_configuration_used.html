@@ -1,0 +1,40 @@
+<!-- Configuration Used -->
+<div class="card">
+    <div class="card-body p-4">
+        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
+            <span class="fas fa-list-ul text-body-tertiary"></span>Configuration Used
+        </h6>
+        <div class="row g-3 border-bottom pb-2 mb-4">
+            <div class="col-6 col-md-3 border-end">
+                <span class="text-body-tertiary text-uppercase fs-10 fw-semibold d-block mb-1">Grid Section</span>
+                <span class="fs-9 fw-semibold text-body-emphasis" id="sum-grid-section">{{ job.grid_section }}</span>
+            </div>
+            <div class="col-6 col-md-3 border-end">
+                <span class="text-body-tertiary text-uppercase fs-10 fw-semibold d-block mb-1">Use Case</span>
+                <span class="fs-9 fw-semibold text-body-emphasis" id="sum-use-case">{{ use_case_label }}</span>
+            </div>
+            <div class="col-6 col-md-3 border-end">
+                <span class="text-body-tertiary text-uppercase fs-10 fw-semibold d-block mb-1">Submitted</span>
+                <span class="fs-9 fw-semibold text-body-emphasis d-block">{{ job.created_at|date:"d M Y, H:i" }} UTC</span>
+            </div>
+            <div class="col-6 col-md-3">
+                <span class="text-body-tertiary text-uppercase fs-10 fw-semibold d-block mb-1">Duration</span>
+                <span class="fs-9 fw-semibold text-body-emphasis" id="sum-duration">{{ duration_label }}</span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+            <span class="text-body-tertiary text-uppercase fs-10 fw-semibold">Assets</span>
+            <span class="badge rounded-pill bg-primary-subtle text-primary" id="sum-assets-count">{{ assets_items|length }}</span>
+            <span class="text-body-tertiary fs-9" id="sum-assets-breakdown">{{ assets_breakdown }}</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2" id="sum-assets-list">
+            {% for asset_id, asset_type in assets_items %}
+            <span class="border rounded-3 px-3 py-2 fs-9">
+                <span class="fw-semibold text-body-emphasis">{{ asset_id }}</span>
+                <span class="text-body-tertiary ms-1">{{ asset_type }}</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
