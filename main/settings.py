@@ -389,3 +389,7 @@ RDN_API_EMAIL = env('RDN_API_EMAIL', default='')
 RDN_API_PASSWORD = env('RDN_API_PASSWORD', default='')
 RDN_API_USER_ID = env('RDN_API_USER_ID', default='')
 RDN_API_ORGANISATION = env('RDN_API_ORGANISATION', default='')
+
+# BER PEM Electrolyzer node - notified by email of new experiment requests, since
+# there is no automated API integration (BER runs experiments manually).
+BER_EMAIL = env('BER_EMAIL', default='')

@@ -16,6 +16,23 @@ class DtResult(TimeStampedModel):
         verbose_name_plural = 'DT Results'
 
 
+class BerExperimentRequest(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        COMPLETED = 'completed', 'Completed'
+        REJECTED = 'rejected', 'Rejected'
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ber_experiment_requests')
+    experiment_json = models.JSONField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+
+    class Meta:
+        db_table = 'ber_experiment_request'
+        ordering = ['-created_at']
+        verbose_name = 'BER Experiment Request'
+        verbose_name_plural = 'BER Experiment Requests'
+
+
 class RdnSimulationJob(TimeStampedModel):
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'

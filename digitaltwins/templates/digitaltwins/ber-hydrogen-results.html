@@ -1,7 +1,7 @@
 {% extends "core/authenticated-base.html" %}
 {% load static %}
 
-{% block title %}BER Experiment Results - Digital Twins{% endblock %}
+{% block title %}Request #{{ experiment_request.pk }} - Experiment Request - BER - Digital Twins{% endblock %}
 
 {% block head %}
 <meta name="csrf-token" content="{{ csrf_token }}">
@@ -51,7 +51,8 @@
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
             <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
             <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
-            <li class="breadcrumb-item active">Experiment Results</li>
+            <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-runs' %}">Requests</a></li>
+            <li class="breadcrumb-item active">Request #{{ experiment_request.pk }}</li>
           </ol>
         </nav>
 

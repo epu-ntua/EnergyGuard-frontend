@@ -1,4 +1,5 @@
 import bisect
+import hashlib
 import json
 import logging
 import re
@@ -21,8 +22,8 @@ from django_q.tasks import async_task
 from core.services.object_storage import MinioUploadError
 from datasets.services import provision_user_datasets
 
-from .models import RdnSimulationJob
-from .services import save_simulation_result, RdnApiError, upload_rdn_input
+from .models import BerExperimentRequest, RdnSimulationJob
+from .services import save_simulation_result, RdnApiError, upload_rdn_input, validate_ber_experiment
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +170,21 @@ BER_SAMPLE_JSON = """[
         "value": "40"
     }
 ]"""
+
+# Lower than the default: each submission notifies the real BER lab team by email,
+# unlike a typical simulate call.
+_BER_SUBMIT_RATE_LIMIT = 5
+_BER_SUBMIT_RATE_WINDOW = 60
+
+# A client retry (lost/ambiguous response) within this window, with the exact same
+# validated content from the same user, returns the original request instead of
+# creating a duplicate row and a duplicate BER notification email.
+_BER_SUBMIT_DEDUP_WINDOW_SECONDS = 30
+
+
+def _ber_submit_dedup_key(user_id, cleaned):
+    digest = hashlib.sha256(json.dumps(cleaned, sort_keys=True).encode()).hexdigest()
+    return f'ber_submit_dedup_{user_id}_{digest}'
 
 
 # ── RDN Grid DT ──────────────────────────────────────────────────────────────
@@ -429,8 +445,7 @@ def _power_chart_axis_range(peak_total_power, step=2):
     return {'min': 0, 'max': axis_max}
 
 
-@login_required
-def ber_hydrogen_results(request):
+def _render_ber_experiment_results(request, experiment_request):
     series = _parse_ber_power_signals()
 
     all_timestamps = [ts for points in series.values() for ts, _ in points]
@@ -460,6 +475,7 @@ def ber_hydrogen_results(request):
 
     return _dt_render(
         request, 'digitaltwins/ber-hydrogen-results.html',
+        experiment_request=experiment_request,
         experiment_id=_BER_EXPERIMENT_ID,
         serial_number=_BER_SERIAL_NUMBER,
         run_timestamp=run_timestamp,
@@ -560,6 +576,68 @@ def ber_hydrogen_dt(request):
 @login_required
 def ber_hydrogen_documentation(request):
     return _dt_render(request, 'digitaltwins/ber-hydrogen-documentation.html', sample_json=BER_SAMPLE_JSON)
+
+
+@login_required
+@require_POST
+def ber_experiment_submit(request):
+    if not _check_simulate_rate_limit(request.user.pk, 'ber_experiment', _BER_SUBMIT_RATE_LIMIT, _BER_SUBMIT_RATE_WINDOW):
+        return JsonResponse({'error': 'Too many requests. Please wait before submitting another experiment.'}, status=429)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    cleaned, error = validate_ber_experiment(body)
+    if error:
+        return JsonResponse({'error': error}, status=400)
+
+    dedup_key = _ber_submit_dedup_key(request.user.pk, cleaned)
+    existing_id = cache.get(dedup_key)
+    if existing_id is not None:
+        existing_request = BerExperimentRequest.objects.filter(pk=existing_id).first()
+        if existing_request is not None:
+            return JsonResponse(
+                {'requestId': existing_request.pk, 'status': existing_request.status}, status=202,
+            )
+
+    experiment_request = BerExperimentRequest.objects.create(user=request.user, experiment_json=cleaned)
+    cache.set(dedup_key, experiment_request.pk, timeout=_BER_SUBMIT_DEDUP_WINDOW_SECONDS)
+
+    if settings.BER_EMAIL:
+        async_task('digitaltwins.tasks.send_ber_notification_email', experiment_request.pk)
+
+    return JsonResponse(
+        {'requestId': experiment_request.pk, 'status': experiment_request.status}, status=202,
+    )
+
+
+_BER_RUNS_PAGE_SIZE = 20
+
+
+@login_required
+def ber_hydrogen_runs(request):
+    experiment_requests = BerExperimentRequest.objects.filter(user=request.user).order_by('-created_at')
+    paginator = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return _dt_render(request, 'digitaltwins/ber-hydrogen-runs.html', page_obj=page_obj)
+
+
+@login_required
+def ber_hydrogen_request_detail(request, request_id):
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
+    if experiment_request.status == BerExperimentRequest.Status.COMPLETED:
+        return _render_ber_experiment_results(request, experiment_request)
+    return _dt_render(
+        request, 'digitaltwins/ber-hydrogen-request-detail.html', experiment_request=experiment_request,
+    )
+
+
+@login_required
+def ber_hydrogen_request_status(request, request_id):
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
+    return JsonResponse({'status': experiment_request.status})
 
 
 @login_required

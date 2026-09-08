@@ -1,9 +1,11 @@
 import logging
 from datetime import timedelta
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.utils import timezone
 
-from .models import RdnSimulationJob
+from .models import BerExperimentRequest, RdnSimulationJob
 from .services import RdnApiError, get_rdn_job_status, download_rdn_result
 
 logger = logging.getLogger(__name__)
@@ -76,6 +78,30 @@ def _reschedule_poll(job_id):
         schedule_type=Schedule.ONCE,
         next_run=timezone.now() + timedelta(seconds=_RDN_JOB_POLL_INTERVAL_SECONDS),
     )  # repeats left at its default (-1) so this row self-deletes once it fires
+
+
+def send_ber_notification_email(experiment_request_id):
+    """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
+    server must never stall the user's submit request (see ber_experiment_submit)."""
+    experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).first()
+    if experiment_request is None or not settings.BER_EMAIL:
+        return
+
+    try:
+        send_mail(
+            subject=f'New BER experiment request #{experiment_request.pk} — EnergyGuard',
+            message=(
+                f'A new PEM electrolyzer experiment request has been submitted on EnergyGuard.\n\n'
+                f'Request ID: {experiment_request.pk}\n'
+                f'Submitted by: {experiment_request.user.email}\n'
+                f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
+                f'Please review the request in the EnergyGuard admin.'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.BER_EMAIL],
+        )
+    except Exception:
+        logger.exception('Failed to send BER notification email for request %s', experiment_request.pk)
 
 
 def reconcile_stale_rdn_jobs():

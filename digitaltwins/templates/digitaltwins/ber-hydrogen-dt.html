@@ -3,6 +3,10 @@
 
 {% block title %}BER Node Workspace - Digital Twins{% endblock %}
 
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock head %}
+
 {% block content %}
 <div class="content">
     <div class="px-4 px-lg-6 pt-6 pb-9">
@@ -25,6 +29,7 @@
             <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">Submit a custom experiment to the <strong class="text-body-emphasis">BER laboratory</strong> and receive high-quality operational data from a real PEM electrolyzer. You define the operating conditions; the BER team handles the physical execution and delivers the resulting dataset to the EnergyGuard platform.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
                 <a href="#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
+                <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">View requests <span class="fas fa-arrow-right"></span></a>
             </div>
 
             <div class="row">
@@ -242,24 +247,32 @@
 
 {% block scripts %}
 <script>
+window.BER_HYDROGEN_CONFIG = {
+    submitUrl: "{% url 'ber-hydrogen-submit' %}",
+    requestDetailUrlTemplate: "{% url 'ber-hydrogen-request-detail' 0 %}"
+};
+</script>
+<script>
 (function () {
+    'use strict';
+
     // JSON experiment dropzone
     var jsonFileInput = document.getElementById('experiment-json-file');
     var jsonDropzone = document.getElementById('json-dropzone');
     var jsonFilePill = document.getElementById('json-file-pill');
     var submitBtn = document.getElementById('submit-request-btn');
-    var submissionCardBody = document.getElementById('submission-card-body');
+    var submitBtnDefaultHtml = submitBtn.innerHTML;
 
-    var submissionCardBodyDefault = submissionCardBody.innerHTML;
+    function getCsrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
 
     function updateJsonFileState(file) {
-        if (!file) {
-            jsonFilePill.textContent = 'Accepted format: .json · Max size: 10 MB';
-            submitBtn.disabled = true;
-            return;
+        if (jsonFilePill) {
+            jsonFilePill.textContent = file ? (file.name + ' selected') : 'Accepted format: .json · Max size: 10 MB';
         }
-        jsonFilePill.textContent = file.name + ' selected';
-        submitBtn.disabled = false;
+        submitBtn.disabled = !file;
     }
 
     if (jsonFileInput) {
@@ -289,43 +302,80 @@
         });
     }
 
-    function showSuccessState() {
-        submissionCardBody.innerHTML =
-            '<div class="alert alert-subtle-success rounded-3 d-flex align-items-center gap-2 mb-3 fs-9 py-2" role="alert">' +
-                '<span class="fas fa-circle-check"></span>' +
-                '<span class="fw-semibold">Experiment request submitted successfully</span>' +
-            '</div>' +
-            '<dl class="row fs-9 mb-3">' +
-                '<dt class="col-5 text-body-tertiary">Request ID</dt><dd class="col-7 fw-semibold text-body-emphasis mb-1">BER-2026-000123</dd>' +
-                '<dt class="col-5 text-body-tertiary">Status</dt><dd class="col-7 fw-semibold text-body-emphasis mb-0">Submitted</dd>' +
-            '</dl>' +
-            '<p class="text-body-tertiary fs-9 mb-3">An email notification will be sent when the experiment is completed.</p>' +
-            '<div class="d-flex gap-2">' +
-                '<a href="#" class="btn btn-outline-primary w-50">View Requests</a>' +
-                '<button type="button" class="btn btn-primary w-50" id="submit-another-btn">Submit Another Request</button>' +
-            '</div>';
+    function showSubmitError(message) {
+        var existing = document.getElementById('ber-submit-error');
+        if (existing) existing.remove();
+        var alertEl = document.createElement('div');
+        alertEl.id = 'ber-submit-error';
+        alertEl.className = 'alert alert-subtle-danger rounded-3 mb-3 d-flex align-items-center gap-2 fs-9 py-2';
+        alertEl.setAttribute('role', 'alert');
+        alertEl.innerHTML = '<span class="fas fa-circle-xmark flex-shrink-0"></span><span></span>';
+        alertEl.querySelector('span:last-child').textContent = message || 'Could not submit the experiment request.';
+        submitBtn.insertAdjacentElement('beforebegin', alertEl);
+    }
 
-        var submitAnotherBtn = document.getElementById('submit-another-btn');
-        if (submitAnotherBtn) {
-            submitAnotherBtn.addEventListener('click', function () {
-                submissionCardBody.innerHTML = submissionCardBodyDefault;
-                jsonFileInput.value = '';
-                updateJsonFileState(null);
-                bindSubmitButton();
-            });
+    function resetSubmitButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = submitBtnDefaultHtml;
+    }
+
+    var MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+
+    submitBtn.addEventListener('click', function () {
+        var file = jsonFileInput.files && jsonFileInput.files[0];
+        if (!file) return;
+
+        var existingError = document.getElementById('ber-submit-error');
+        if (existingError) existingError.remove();
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            showSubmitError('The selected file exceeds the 10 MB size limit.');
+            return;
         }
-    }
 
-    function bindSubmitButton() {
-        submitBtn = document.getElementById('submit-request-btn');
-        submitBtn.addEventListener('click', function () {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
-            setTimeout(showSuccessState, 800);
-        });
-    }
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
 
-    bindSubmitButton();
+        var reader = new FileReader();
+        reader.onerror = function () {
+            resetSubmitButton();
+            showSubmitError('Could not read the selected file.');
+        };
+        reader.onload = function () {
+            var payload;
+            try {
+                payload = JSON.parse(reader.result);
+            } catch (e) {
+                resetSubmitButton();
+                showSubmitError('The uploaded file is not valid JSON.');
+                return;
+            }
+
+            fetch(window.BER_HYDROGEN_CONFIG.submitUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                body: JSON.stringify(payload),
+            })
+            .then(function (resp) {
+                if (!resp.ok) {
+                    return resp.text().then(function (body) {
+                        var msg = 'Could not submit the experiment request.';
+                        try { msg = JSON.parse(body).error || msg; } catch (_) {}
+                        throw new Error(msg);
+                    });
+                }
+                return resp.json();
+            })
+            .then(function (data) {
+                window.location.href = window.BER_HYDROGEN_CONFIG.requestDetailUrlTemplate.replace('/0/', '/' + data.requestId + '/');
+            })
+            .catch(function (err) {
+                resetSubmitButton();
+                showSubmitError(err.message);
+            });
+        };
+        reader.readAsText(file);
+    });
 
     // Download example JSON
     var downloadExampleBtn = document.getElementById('download-example-json');

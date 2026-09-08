@@ -1,0 +1,87 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Requests - Experiment Request - BER - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
+                <li class="breadcrumb-item active">Requests</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <h2 class="fw-bolder text-body-emphasis mb-0">BER requests</h2>
+            <a href="{% url 'ber-hydrogen-dt' %}#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
+        </div>
+
+        {% if page_obj.object_list %}
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+            <div class="table-responsive mx-n1 px-1" style="overflow: visible;">
+                <table class="table table-sm table-hover fs-9 mb-0" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col">REQUEST</th>
+                            <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
+                            <th class="align-middle text-end fs-9 pe-2" scope="col">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for experiment_request in page_obj %}
+                        <tr class="position-relative" style="cursor:pointer;">
+                            <td class="align-middle py-3 ps-2">
+                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
+                            </td>
+                            <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ experiment_request.created_at|date:"d M, H:i" }}</td>
+                            <td class="align-middle py-3 fs-9 text-end pe-2">
+                                {% if experiment_request.status == 'completed' %}
+                                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
+                                {% elif experiment_request.status == 'rejected' %}
+                                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Rejected</span><span class="ms-1 fas fa-xmark"></span></span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis">pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="mt-4" aria-label="Requests pagination">
+            <ul class="pagination">
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    {% if page_obj.has_previous %}
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% else %}
+                    <span class="page-link" tabindex="-1" aria-disabled="true">Previous</span>
+                    {% endif %}
+                </li>
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    {% if page_obj.has_next %}
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    {% else %}
+                    <span class="page-link" tabindex="-1" aria-disabled="true">Next</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <p class="text-body-tertiary my-4">No requests yet.</p>
+        {% endif %}
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

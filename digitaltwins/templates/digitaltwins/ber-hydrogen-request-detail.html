@@ -1,0 +1,90 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Request #{{ experiment_request.pk }} - Experiment Request - BER - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-runs' %}">Requests</a></li>
+                <li class="breadcrumb-item active">Request #{{ experiment_request.pk }}</li>
+            </ol>
+        </nav>
+
+        <div class="mb-4">
+            <h3 class="fw-bolder text-body-emphasis mb-1">Request #{{ experiment_request.pk }}</h3>
+            <p class="text-body-tertiary mb-0">Submitted {{ experiment_request.created_at|date:"d M Y, H:i" }} UTC</p>
+        </div>
+
+        {% if experiment_request.status == 'rejected' %}
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="alert alert-subtle-danger rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+                    <span class="fas fa-circle-xmark flex-shrink-0"></span>
+                    <span>This experiment request was rejected by the BER laboratory team.</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'ber-hydrogen-dt' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <span class="fas fa-arrow-left"></span>Back to Experiment Request
+                    </a>
+                    <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        View all requests<span class="fas fa-arrow-right"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-body-emphasis mb-3 d-flex align-items-center gap-2">
+                    <span class="fas fa-paper-plane text-primary"></span>Waiting for the BER laboratory
+                </h6>
+                <p class="text-body-tertiary fs-9 mb-4">BER has been notified for your request. Once the experiment is completed you will be able to view the results here. You can close this window &mdash; this request will be waiting for you under Requests.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'ber-hydrogen-dt' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <span class="fas fa-arrow-left"></span>Back to Experiment Request
+                    </a>
+                    <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        View all requests<span class="fas fa-arrow-right"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{% if experiment_request.status == 'pending' %}
+<script>
+(function () {
+    'use strict';
+    var POLL_INTERVAL_MS = 10000;
+    var statusUrl = "{% url 'ber-hydrogen-request-status' experiment_request.pk %}";
+
+    function poll() {
+        fetch(statusUrl)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.status !== 'pending') {
+                    window.location.reload();
+                    return;
+                }
+                setTimeout(poll, POLL_INTERVAL_MS);
+            })
+            .catch(function () { setTimeout(poll, POLL_INTERVAL_MS); });
+    }
+    setTimeout(poll, POLL_INTERVAL_MS);
+})();
+</script>
+{% endif %}
+{% endblock scripts %}
