@@ -16,7 +16,7 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
-        "status",
+        # "status",
         "id",
     ]
     order_columns = [
@@ -26,7 +26,7 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
-        "status",
+        # "status",
     ]
     max_display_length = 25
 
@@ -67,23 +67,23 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
             return row.get_source_display()
         if column == "size_gb":
             return row.size_gb
-        if column == "status":
-            scope = self.request.GET.get("scope", "public")
-            if scope == "public":
-                return row.projects_count
+        # if column == "status":
+        #     scope = self.request.GET.get("scope", "public")
+        #     if scope == "public":
+        #         return row.projects_count
 
-            status = row.status.replace("_", " ").title()
-            status_badge_map = {
-                "approved": "badge-phoenix-success",
-                "under_review": "badge-phoenix-primary",
-                "rejected": "badge-phoenix-danger",
-            }
-            badge_class = status_badge_map.get(row.status, "badge-phoenix-secondary")
-            return (
-                '<div class="text-end"><span class="badge badge-phoenix '
-                f'{badge_class} fs-11"><span class="badge-label">{status}'
-                "</span></span></div>"
-            )
+        #     status = row.status.replace("_", " ").title()
+        #     status_badge_map = {
+        #         "approved": "badge-phoenix-success",
+        #         "under_review": "badge-phoenix-primary",
+        #         "rejected": "badge-phoenix-danger",
+        #     }
+        #     badge_class = status_badge_map.get(row.status, "badge-phoenix-secondary")
+        #     return (
+        #         '<div class="text-end"><span class="badge badge-phoenix '
+        #         f'{badge_class} fs-11"><span class="badge-label">{status}'
+        #         "</span></span></div>"
+        #     )
         return super().render_column(row, column)
 
 
