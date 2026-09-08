@@ -1,4 +1,4 @@
-from .ai_models import ai_models, deeptsf_detail, request_ai_model_access
+from .ai_models import ai_models, deeptsf_detail, request_ai_model_access, tirex_detail
 from .dashboard import dashboard
 from .hpc import hpc
 from .public import (
@@ -14,6 +14,7 @@ __all__ = [
     "ai_models",
     "deeptsf_detail",
     "request_ai_model_access",
+    "tirex_detail",
     "BaseWizardView",
     "collaboration_hub",
     "contact_form",

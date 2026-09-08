@@ -119,16 +119,14 @@ AI_MODELS = [
     },
     {
         'slug': 'tirex',
-        'name': 'Tirex',
-        'description': 'Time series forecasting API server for energy data.',
+        'name': 'TiRex',
+        'description': 'Zero-shot time series forecasting model built on the xLSTM architecture.',
         'category': 'forecasting',
-        'details': 'Tirex is a forecasting model server hosted on EnergyGuard, exposing a REST API with '
-                   'endpoints for mean and quantile time series forecasts, used internally by other '
-                   'EnergyGuard AI models.',
         'color': 'primary',
         'cta_url': 'https://tirex.energy-guard.eu/docs',
         'cta_label': 'View API Docs',
         'cta_external': True,
+        'detail_url_name': 'tirex_detail',
     },
 ]
 
@@ -203,6 +201,17 @@ def deeptsf_detail(request):
     return render(request, 'core/deeptsf-detail.html', {
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
+    })
+
+
+@login_required
+def tirex_detail(request):
+    model = next(m for m in AI_MODELS if m['slug'] == 'tirex')
+    return render(request, 'core/tirex-detail.html', {
+        'show_sidebar': True,
+        'active_navbar_page': 'ai_models',
+        'cta_url': model['cta_url'],
+        'cta_label': model['cta_label'],
     })
 
 

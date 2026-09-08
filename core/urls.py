@@ -12,5 +12,6 @@ urlpatterns = [
     path('hpc/', views.hpc, name='hpc'),
     path('ai-models/', views.ai_models, name='ai_models'),
     path('ai-models/deeptsf/', views.deeptsf_detail, name='deeptsf_detail'),
+    path('ai-models/tirex/', views.tirex_detail, name='tirex_detail'),
     path('ai-models/request-access/', views.request_ai_model_access, name='ai_model_request_access'),
 ]

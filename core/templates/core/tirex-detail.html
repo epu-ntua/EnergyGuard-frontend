@@ -1,0 +1,114 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}TiRex | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'ai_models' %}">AI Models</a></li>
+        <li class="breadcrumb-item active">TiRex</li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <h2 class="text-body-emphasis fw-bolder mb-3">TiRex</h2>
+
+    <div class="row g-0  border-bottom py-3 mb-5">
+      <div class="col-6 col-md-3 border-end pe-3">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Developed by</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">NXAI</span>
+      </div>
+      <div class="col-6 col-md-3 border-end px-3">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Architecture</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">xLSTM</span>
+      </div>
+      <div class="col-6 col-md-3 border-end px-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Parameters</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">35M</span>
+      </div>
+      <div class="col-6 col-md-3 ps-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Forecasting</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">Zero-Shot</span>
+      </div>
+    </div>
+
+    <div class="row g-5">
+      <div class="col-12 col-lg-8">
+
+        <p class="text-body-emphasis fs-8-5 mb-5">
+          TiRex is a 35 million parameter time series forecasting model built on the xLSTM architecture by
+          NXAI, introduced in the paper <em>TiRex: Zero-Shot Forecasting Across Long and Short Horizons with
+          Enhanced In-Context Learning</em>. It forecasts zero-shot, so it needs no training, no fitting, and
+          no hyperparameter tuning on your data. You upload a history in the single time series format
+          described in the <a href="https://github.com/epu-ntua/DeepTSF/wiki/Input-format" target="_blank"
+          rel="noopener noreferrer">DeepTSF input format guide</a>, and TiRex returns the continuation,
+          drawing on the general temporal patterns it learned while being pretrained on a large corpus of
+          time series.
+        </p>
+
+        <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-1" style="letter-spacing:.04em;">Main functionalities</h6>
+        <div class="mb-5">
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">1</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Zero-Shot Forecasting</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Generates forecasts directly from your uploaded history, with no training, fitting, or hyperparameter tuning required.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">2</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Cross-Domain, Cross-Resolution</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Works across domains and sampling rates, without being tied to a specific data source or frequency.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">3</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Short and Long Horizon Coverage</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Covers both short and long forecasting horizons from the same model.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">4</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Missing Value Tolerance</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">Tolerates missing values in the uploaded history without requiring pre-imputation.</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 py-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">5</span>
+            <div>
+              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Single Time Series per File</h6>
+              <p class="text-body-tertiary fs-8-5 mb-0">For now, each request takes a single time series, uploaded in the DeepTSF input format.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <p class="text-body-tertiary fs-8-5 mb-3">TiRex is available as a REST API on EnergyGuard. Consult the API docs to submit a forecast request.</p>
+            <a href="{{ cta_url }}" target="_blank" rel="noopener noreferrer"
+               class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 mb-2">
+              {{ cta_label }} <span class="fas fa-arrow-up-right-from-square"></span>
+            </a>
+            <button type="button" class="btn btn-turquoise w-100 d-inline-flex align-items-center justify-content-center gap-2" disabled>
+              <span class="fas fa-arrow-up-right-from-square"></span>Open in Jupyter
+            </button>
+            <p class="text-body-tertiary fs-9 mt-2 mb-0">Example notebook coming soon.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "core/footer.html" %}
+  </div>
+</div>
+{% endblock content %}
