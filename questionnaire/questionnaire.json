@@ -188,11 +188,39 @@
           "step_label": "Step 2.3 · Becoming a Provider?",
           "track": "ai_system",
           "type": "branching",
-          "question": "Does any of the following apply to AI systems already marketed or put into service (narrowed down only to the most likely to energy sector) ? \n(a)Have you put your company's name/brand on a third-party high-risk AI system,\n(b) Have you substantially changed how it works so that it remains high-risk,\n(c) Have you changed its intended purpose so it now falls into high-risk category?",
+          "question": "Does any of the following apply to AI systems already marketed or put into service (narrowed down only to the most likely to energy sector)?",
           "more_info": "Distributors, importers, deployers or other third parties may be considered providers under certain circumstances. Already marketed means that this high-risk AI system is already placed on the market.Substantial modification means a change to an AI system after its placing on the market or putting into service, not foreseen or planned in the initial conformity assessment of the provider, resulting the compliance of the system being affected or modification of the intended purpose for which the AI system was assessed.",
           "example": "e.g. Repurposing a Al system that has not been classified as high-risk to make automated hiring decisions modifying a GPAI system such as ChatGPT in a high risk setting for example for critical infrastructure use cases.",
           "more_info_example": null,
-          "sub_items": [],
+          "sub_items": [
+            {
+              "label": "a",
+              "text": "Have you put your company's name/brand on a third-party high-risk AI system",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "label": "b",
+              "text": "Have you substantially changed how it works so that it remains high-risk",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            },
+            {
+              "label": "c",
+              "text": "Have you changed its intended purpose so it now falls into high-risk category?",
+              "more_info": null,
+              "example": null,
+              "more_info_example": null,
+              "article_links": [],
+              "guideline_links": []
+            }
+          ],
           "answer_options": [
             {
               "value": "YES",
@@ -230,7 +258,7 @@
           "sub_items": [
             {
               "label": "*",
-              "text": "Is this AI system being placed on the EU market or put into service in the EU (only for providers)",
+              "text": "Is this AI system being placed on the EU market or put into service in the EU?",
               "more_info": null,
               "example": "e.g. development and provision via an application programming interface in Germany and France of an AI system that turns on and off devices or systems based on grid signals to balance supply loads→ YES.",
               "more_info_example": null,
@@ -245,7 +273,7 @@
             },
             {
               "label": "*",
-              "text": "Is the AI system's output being used in the EU (both for providers and deployers)",
+              "text": "Is the AI system's output being used in the EU?",
               "more_info": null,
               "example": "e.g a system used by an entity with no establishment in the EU, only outside the EU with no EU impact (output is not used in the Union)→ likely NO. A participant of the electricity market located within EU that procures an AI system from a developer outside the EU, but uses it within EU market → YES",
               "more_info_example": null,
@@ -259,7 +287,7 @@
             },
             {
               "label": "*",
-              "text": "Do you have your place of establishment or are you located within the EU (only for deployers)",
+              "text": "Do you have your place of establishment or are you located within the EU?",
               "more_info": null,
               "example": null,
               "more_info_example": null,
@@ -718,7 +746,7 @@
           "step_label": "Step 4.3 · Derogations Check",
           "track": "ai_system",
           "type": "branching",
-          "question": "Does your high risk AI system included in Annex III of the AI Act (cases a-d above) fall into any of these exhaustive cases and the system neither materially influence the outcome of the decision nor perform profiling?",
+          "question": "Does your high risk AI system included in Annex III of the AI Act (cases a-d bellow) fall into any of these exhaustive cases and the system neither materially influence the outcome of the decision nor perform profiling?",
           "more_info": "AI systems included in Annex III of AI Act may exempt from high-risk classification if specific conditions are fulfilled.",
           "example": null,
           "more_info_example": null,
@@ -861,7 +889,7 @@
             {
               "item_id": "AI-5.1",
               "number": "5.1",
-              "text": "Risk management system (ongoing, documented)",
+              "text": "Risk management system",
               "more_info": "Risk management system should be associated with each high-risk AI system. It can be understood as a system which aims at identifying and analysing the risk and implementing mitigation measures. It consists a continuous process that covers all stages of lifecycle of the system, subject to regular review and updates and is documented throughout the lifecycle. It shall comprise the steps referred in article 9 par. 2 (a)-(d) of the AI Act.Testing procedures for high-risk AI systems should be adopted to identify appropriate risk management measures, to ensure system’s consistent performance with its intended purpose and its compliance with the requirements of Chapter III Section 2 of AI Act, prior to system being placed on the market or put into service, against prior defined metrics, and probalistic thresholds and effectiveness indicators e.g through testing in real-world conditions.",
               "example": "For an AI system to be used for demand forecasts and automatic control of the supply of renewable energy to grid if classified as high risk, a risk management system should be implemented containing continuous monitoring of the performance of the AI system, simulations of failure scenarios and activation of a manual back up process that can be activated in case of emergency to address the risk of blackout in case of failure in demand forecasting.",
               "more_info_example": null,

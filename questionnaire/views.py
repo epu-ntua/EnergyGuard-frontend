@@ -491,11 +491,10 @@ def submit_checklist(request, track, step_id):
             # No high-risk category (Step 4.2) and no transparency trigger
             # (Step 7) applies - detour through Step 7.5 to check for an
             # open-source scope exemption before continuing to Step 8.
-            track_state['risk_category'] = 'minimal_risk'
+            # Transparency answers never change risk_category themselves;
+            # only Step 7.5's own answer (a distinct Article 2 exemption)
+            # can do that.
             track_state['current_step'] = 'AI-7.5'
-        elif step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
-            track_state['risk_category'] = 'minimal_risk'
-            _finish_current_step(track_state)
         else:
             _finish_current_step(track_state)
 
