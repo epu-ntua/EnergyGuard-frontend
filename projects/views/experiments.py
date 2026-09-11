@@ -51,8 +51,18 @@ def _user_can_access_project(user, project: Project) -> bool:
 
 
 def _get_accessible_project_or_404(user, project_id: int) -> Project:
+    """READ access only. Any view that writes must additionally call
+    `project.can_edit(user)` - a public project is readable by everyone."""
     project = get_object_or_404(Project.objects.select_related("creator"), pk=project_id)
     if not _user_can_access_project(user, project):
+        raise Http404("Project not found")
+    return project
+
+
+def _get_editable_project_or_404(user, project_id: int) -> Project:
+    project = _get_accessible_project_or_404(user, project_id)
+    if not project.can_edit(user):
+        logger.warning("User %s denied write access to project %s", user.id, project.id)
         raise Http404("Project not found")
     return project
 
@@ -145,7 +155,9 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
 @login_required
 @require_POST
 def create_experiment_modal(request, project_id: int):
-    project = _get_accessible_project_or_404(request.user, project_id)
+    # Creating an experiment provisions an MLflow experiment, so it is a write:
+    # read access to a public project must not be enough to trigger it.
+    project = _get_editable_project_or_404(request.user, project_id)
     form = ExperimentGeneralInfoForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Invalid experiment data. Please try again.")
@@ -199,7 +211,7 @@ def create_experiment_modal(request, project_id: int):
 @require_POST
 def delete_project(request, project_id: int):
     project = _get_accessible_project_or_404(request.user, project_id)
-    if project.creator_id != request.user.id:
+    if not project.can_delete(request.user):
         messages.error(request, "Only project owner can delete this project.")
         return redirect("project_details", project_id=project.id)
 
@@ -232,7 +244,7 @@ def delete_project(request, project_id: int):
 @login_required
 @require_POST
 def delete_experiment(request, project_id: int, experiment_id: int):
-    project = _get_accessible_project_or_404(request.user, project_id)
+    project = _get_editable_project_or_404(request.user, project_id)
     experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
 
     if request.user.id not in {project.creator_id, experiment.creator_id}:

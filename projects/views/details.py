@@ -65,10 +65,14 @@ def project_details(request, project_id):
     user = request.user
     is_creator = project.creator == user
 
-    is_collaborator = project.collaborators.filter(pk=user.pk).exists()
-    can_manage_experiments = is_creator or is_collaborator
+    # Write permission, not mere membership: a public project is readable by
+    # everyone, and read access must not carry the right to rename it.
+    can_manage_experiments = project.can_edit(user)
 
     if request.method == "POST" and request.POST.get("action") == "edit_project":
+        if not can_manage_experiments:
+            messages.error(request, "You do not have permission to edit this project.")
+            return redirect("project_details", project_id=project_id)
         edit_project_form = EditProjectForm(request.POST, instance=project)
         if edit_project_form.is_valid():
             edit_project_form.save()
