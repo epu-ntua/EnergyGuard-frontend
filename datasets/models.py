@@ -1,9 +1,26 @@
 from django.core.validators import MinValueValidator
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from decimal import Decimal
 from projects.models import Project
 from core.models import TimeStampedModel
+
+
+class DatasetQuerySet(models.QuerySet):
+    def visible_to(self, user):
+        """Datasets `user` is allowed to see: public ones, plus their own.
+
+        Every view that resolves a Dataset from a user-supplied id must go
+        through this (or `Dataset.is_accessible_by`) - ids are sequential, so a
+        bare `get_object_or_404(Dataset, pk=...)` is an enumeration hole.
+        """
+        if not user or not getattr(user, 'is_authenticated', False):
+            return self.filter(visibility=True)
+        if user.is_staff:
+            return self
+        return self.filter(Q(visibility=True) | Q(publisher=user))
+
 
 # Create your models here.
 class Dataset(TimeStampedModel):
@@ -33,7 +50,11 @@ class Dataset(TimeStampedModel):
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
 
-    name = models.CharField(max_length=255, unique=True)
+    # Unique per publisher, not globally: a platform-wide unique name meant a
+    # second partner picking "consumption-2025" only found out after their
+    # multi-GB upload had already transferred (the row is created in the
+    # background task, long after the wizard validated).
+    name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
@@ -53,8 +74,25 @@ class Dataset(TimeStampedModel):
     metadata = models.JSONField(blank=True, null=True)
     projects = models.ManyToManyField(Project, blank=True, related_name='datasets') # Projects that have used this dataset
 
+    objects = DatasetQuerySet.as_manager()
+
     def __str__(self):
         return self.name
+
+    def is_accessible_by(self, user) -> bool:
+        """Read access. Public datasets are visible to everyone; a private one
+        only to its publisher (and staff)."""
+        if self.visibility:
+            return True
+        if not user or not getattr(user, 'is_authenticated', False):
+            return False
+        return user.is_staff or self.publisher_id == user.id
+
+    def is_editable_by(self, user) -> bool:
+        """Write access - strictly the publisher. Public visibility never grants it."""
+        if not user or not getattr(user, 'is_authenticated', False):
+            return False
+        return self.publisher_id is not None and self.publisher_id == user.id
 
     @property
     def pilot_partner(self) -> str | None:
@@ -84,6 +122,19 @@ class Dataset(TimeStampedModel):
         verbose_name_plural = 'Datasets'
         ordering = ['-created_at']
         indexes = []
+        constraints = [
+            models.UniqueConstraint(
+                fields=['publisher', 'name'],
+                name='unique_dataset_name_per_publisher',
+            ),
+            # publisher IS NULL is platform-owned data; NULLs do not collide under a
+            # plain unique constraint, so those need their own partial index.
+            models.UniqueConstraint(
+                fields=['name'],
+                condition=models.Q(publisher__isnull=True),
+                name='unique_platform_dataset_name',
+            ),
+        ]
 
 class DatasetUserDownload(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

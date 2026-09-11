@@ -25,7 +25,11 @@ urlpatterns = [
     path('projects/', include('projects.urls')),
     path('datasets/', include('datasets.urls')),
     path('accounts/', include('accounts.urls')),
-    path('billing/', include('billing.urls')),
+    # Unrouted: billing is not in use yet (payments come much later in the
+    # project). Models, migrations and templates are kept as reference for when
+    # it is picked up - only the URLs are off, so nothing serves the leftover
+    # template scaffolding in the meantime.
+    # path('billing/', include('billing.urls')),
     path('digitaltwins/', include('digitaltwins.urls')),
     path('dataspace/', include('dataspace.urls')),
     path('trustworthiness/', include('trustworthiness.urls', namespace='trustworthiness')),

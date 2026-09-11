@@ -4,9 +4,21 @@ import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, SimpleTestCase
 
 from datasets.models import Dataset
+
+
+def _anonymous_request(path="/"):
+    """A GET request carrying a user, as the real middleware stack would.
+
+    The dataset views scope their lookup with `Dataset.objects.visible_to(request.user)`,
+    so a request without `.user` no longer resembles anything the view can receive.
+    """
+    request = RequestFactory().get(path)
+    request.user = AnonymousUser()
+    return request
 from datasets.services.datalake import PARTNER_DATABASES, UnknownPartnerError, resolve_partner
 from datasets.services.pilot import PILOT_PARTNERS, pilot_object_key
 
@@ -87,7 +99,7 @@ class GzipPreviewTests(SimpleTestCase):
                  return_value=self._client_returning(payload),
              ):
             response = preview_view.dataset_preview.__wrapped__(
-                RequestFactory().get("/"), 7
+                _anonymous_request(), 7
             )
 
         body = json.loads(response.content)
@@ -110,7 +122,7 @@ class GzipPreviewTests(SimpleTestCase):
                  return_value=self._client_returning(payload),
              ):
             response = preview_view.dataset_preview.__wrapped__(
-                RequestFactory().get("/"), 7
+                _anonymous_request(), 7
             )
 
         body = json.loads(response.content)
@@ -139,7 +151,7 @@ class GzipDownloadTests(SimpleTestCase):
                 "Body": body, "ContentType": "binary/octet-stream", "ContentLength": 10,
             }
             response = download_view.dataset_download.__wrapped__(
-                RequestFactory().get("/"), 7
+                _anonymous_request(), 7
             )
 
         self.assertEqual(response["Content-Type"], "application/gzip")
@@ -155,7 +167,8 @@ class PilotProvisioningTests(SimpleTestCase):
             name="RDN Pilot Data", size_gb=1, metadata={"pilot_partner": "RDN"}
         )
         dataset.id = 7
-        project = SimpleNamespace(id=3)
+        # dataset_run now requires write access on the target project.
+        project = SimpleNamespace(id=3, can_edit=lambda user: True)
         request = RequestFactory().post(
             "/", data=json.dumps({"project_id": 3}), content_type="application/json"
         )

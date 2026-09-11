@@ -1,0 +1,26 @@
+# Server-only overlay: attach the web container to the nginx-proxy network.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
+#
+# This exists so the server needs NO local edits to a tracked file. Until now
+# docker-compose.yml was modified in place on the server to uncomment these
+# networks, which means every `git pull` that touches that file conflicts.
+#
+# It is a genuine overlay, not a second copy of the stack: networks are additive
+# under Compose's merge rules, so there is nothing to duplicate. (Volumes are
+# not additive in the same useful way - an overlay cannot *remove* the `.:/app`
+# bind mount, which is why there is no separate full production file.)
+#
+# The external network is created by the nginx-proxy stack, so `up` fails here
+# if that stack has not been started.
+
+services:
+  web:
+    networks:
+      - default
+      - energyguard_net
+
+networks:
+  energyguard_net:
+    external: true
+    name: nginxproxy_energyguard_net

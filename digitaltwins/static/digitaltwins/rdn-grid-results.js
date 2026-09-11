@@ -12,7 +12,7 @@
     var exportJsonBtn      = document.getElementById('export-json-btn');
     var saveOpenJupyterBtn = document.getElementById('save-open-jupyterhub-btn');
 
-    var lastApiResponse = cfg.initialResult;
+    var lastApiResponse = null;
     var powerChartRoot  = null;
     var freqChartRoot   = null;
     var elapsedTimer    = null;
@@ -242,6 +242,28 @@
     // ── Poll job status while running/pending ────────────────────────────────
     var POLL_INTERVAL_MS = 10000;
 
+    // ── Result loading ───────────────────────────────────────────────────────
+    // The payload lives in object storage, so it arrives over its own request
+    // instead of being embedded in the page.
+    function fetchResult() {
+        return fetch(cfg.resultUrl)
+            .then(function (r) {
+                if (!r.ok) throw new Error('Could not load the simulation result.');
+                return r.json();
+            });
+    }
+
+    function showResultLoadError() {
+        if (runningPanel) runningPanel.classList.add('d-none');
+        if (resultsSection) resultsSection.classList.add('d-none');
+        var container = document.getElementById('result-load-error');
+        if (container) {
+            container.classList.remove('d-none');
+        } else {
+            alert('The simulation result could not be loaded. Please refresh the page.');
+        }
+    }
+
     function completeFromPoll(result) {
         lastApiResponse = result;
         if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
@@ -264,7 +286,9 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.status === 'completed') {
-                    completeFromPoll(data.result);
+                    fetchResult()
+                        .then(completeFromPoll)
+                        .catch(showResultLoadError);
                     return;
                 }
                 if (data.status === 'failed') {
@@ -283,8 +307,13 @@
     }
 
     // ── Init ─────────────────────────────────────────────────────────────────
-    if (cfg.status === 'completed' && lastApiResponse) {
-        populateResults();
+    if (cfg.status === 'completed' && cfg.hasResult) {
+        fetchResult()
+            .then(function (result) {
+                lastApiResponse = result;
+                populateResults();
+            })
+            .catch(showResultLoadError);
     } else if (cfg.status === 'running' || cfg.status === 'pending') {
         tickElapsed();
         elapsedTimer = setInterval(tickElapsed, 1000);

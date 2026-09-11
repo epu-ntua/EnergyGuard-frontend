@@ -1,5 +1,6 @@
 import csv
 import io
+import logging
 import zipfile
 import zlib
 
@@ -10,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from core.services.object_storage import MinioUploadError, build_minio_client
 
 from ..models import Dataset
+
+logger = logging.getLogger(__name__)
 
 PREVIEW_MAX_ROWS = 50
 PREVIEW_CHUNK_BYTES = 256 * 1024  # 256 KB
@@ -124,7 +127,7 @@ def _inflate_prefix(raw: bytes) -> bytes:
 
 @login_required
 def dataset_preview(request, dataset_id):
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    dataset = get_object_or_404(Dataset.objects.visible_to(request.user), pk=dataset_id)
 
     if not dataset.data_file:
         return JsonResponse({"error": "No data file available for this dataset."}, status=404)
@@ -183,7 +186,11 @@ def dataset_preview(request, dataset_id):
             headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
             return JsonResponse({"headers": headers, "rows": rows})
 
-    except MinioUploadError as exc:
-        return JsonResponse({"error": str(exc)}, status=500)
-    except Exception as exc:
-        return JsonResponse({"error": f"{type(exc).__name__}: {exc}"}, status=500)
+    except MinioUploadError:
+        logger.exception("Storage error building preview for dataset %s", dataset_id)
+        return JsonResponse({"error": "The dataset preview could not be loaded."}, status=502)
+    except Exception:
+        # Never echo the exception back: it carries bucket names, object keys and
+        # botocore internals. Log it instead, so the operator sees more than the client.
+        logger.exception("Failed to build preview for dataset %s", dataset_id)
+        return JsonResponse({"error": "The dataset preview could not be loaded."}, status=500)

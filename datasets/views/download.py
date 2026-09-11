@@ -16,7 +16,9 @@ CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
 
 @login_required
 def dataset_download(request, dataset_id):
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    # visible_to(), not pk alone: dataset ids are sequential, so scoping the
+    # lookup is what stops enumeration of other partners' private data.
+    dataset = get_object_or_404(Dataset.objects.visible_to(request.user), pk=dataset_id)
 
     if not dataset.data_file:
         raise Http404("No data file available for this dataset.")

@@ -25,11 +25,38 @@ class Project(TimeStampedModel):
         return self.name
 
     def is_accessible_by(self, user):
+        """READ access. A public project is readable by everyone.
+
+        This must not be used to gate writes - see `can_edit`. Kept under its
+        original name because other apps call it as a read check.
+        """
         if self.visibility:
             return True
         if self.creator_id == user.id:
             return True
         return self.collaborators.filter(pk=user.pk).exists()
+
+    # Alias that says what it actually means, for new call sites.
+    can_view = is_accessible_by
+
+    def can_edit(self, user):
+        """WRITE access: the creator, or a collaborator granted EDIT.
+
+        Public visibility deliberately grants nothing here - it makes a project
+        readable, not writable. `ProjectCollaborator.permission_level` was
+        declared but never enforced anywhere; this is where it takes effect.
+        """
+        if not user or not getattr(user, 'is_authenticated', False):
+            return False
+        if self.creator_id == user.id:
+            return True
+        return ProjectCollaborator.objects.filter(
+            project=self, collaborator=user, permission_level=ProjectCollaborator.Permission.EDIT,
+        ).exists()
+
+    def can_delete(self, user):
+        """Only the creator may delete a project or its experiments wholesale."""
+        return bool(user and getattr(user, 'is_authenticated', False) and self.creator_id == user.id)
 
     class Meta:
         db_table = 'project'

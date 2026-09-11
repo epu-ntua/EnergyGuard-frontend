@@ -15,7 +15,7 @@ from ..models import Dataset
 @login_required
 @require_POST
 def dataset_run(request, dataset_id):
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    dataset = get_object_or_404(Dataset.objects.visible_to(request.user), pk=dataset_id)
 
     try:
         body = json.loads(request.body)
@@ -26,7 +26,12 @@ def dataset_run(request, dataset_id):
     if not project_id:
         return JsonResponse({"error": "project_id is required."}, status=400)
 
+    # dataset.projects.add() below writes to the project, so read access to a
+    # public project is not enough - without this any user could attach any
+    # dataset to anyone's project.
     project = get_object_or_404(Project, pk=project_id)
+    if not project.can_edit(request.user):
+        return JsonResponse({"error": "You do not have permission to use this project."}, status=403)
 
     # JupyterHub identifies users by email (OAuth), so the provision server
     # must use the email as the username to land files in the right directory.

@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 
 from .models import BerExperimentRequest, RdnSimulationJob
-from .services import RdnApiError, get_rdn_job_status, download_rdn_result
+from .services import RdnApiError, get_rdn_job_status, download_rdn_result, store_result
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +45,14 @@ def poll_rdn_job(job_id):
                 status=RdnSimulationJob.Status.FAILED, error_message=str(exc), updated_at=timezone.now(),
             )
             return
+        # Straight to object storage. Only if that fails does the payload land in
+        # the JSONB column, so an hour-long run is never lost to a storage blip.
+        result_key = store_result(job.rdn_request_id, result)
         RdnSimulationJob.objects.filter(pk=job_id).update(
-            status=RdnSimulationJob.Status.COMPLETED, result=result, updated_at=timezone.now(),
+            status=RdnSimulationJob.Status.COMPLETED,
+            result_key=result_key or '',
+            result=None if result_key else result,
+            updated_at=timezone.now(),
         )
         return
 

@@ -1,9 +1,11 @@
 import logging
+import time
 from datetime import timedelta
 
 import requests
 from django.conf import settings
 from django.contrib.auth import logout
+from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils import timezone
 
@@ -13,6 +15,15 @@ logger = logging.getLogger(__name__)
 
 # Refresh the token a bit before it actually expires to avoid race conditions
 _REFRESH_MARGIN = timedelta(seconds=30)
+
+# Only one request may refresh a given token at a time. The platform polls
+# (notifications, job status, RDN status), so several requests routinely arrive
+# inside the refresh window at once. With Keycloak refresh-token rotation the
+# first refresh invalidates the token the others are holding, so without this
+# lock the losers get a non-200 and the user is logged out mid-task.
+_REFRESH_LOCK_TIMEOUT = 15   # seconds a refresh is allowed to hold the lock
+_REFRESH_WAIT_TIMEOUT = 10   # seconds a loser waits for the winner's result
+_REFRESH_WAIT_INTERVAL = 0.2
 
 
 def _get_keycloak_token(user):
@@ -35,10 +46,61 @@ def _get_keycloak_token(user):
     return social_account, social_token
 
 
+def _token_is_fresh(social_token):
+    return bool(
+        social_token.expires_at
+        and social_token.expires_at - _REFRESH_MARGIN > timezone.now()
+    )
+
+
+def _await_concurrent_refresh(social_token):
+    """Another request holds the refresh lock. Wait for it, then re-read the row.
+
+    Returns True if that refresh produced a usable token, False if it never did.
+    """
+    deadline = time.monotonic() + _REFRESH_WAIT_TIMEOUT
+    while time.monotonic() < deadline:
+        time.sleep(_REFRESH_WAIT_INTERVAL)
+        social_token.refresh_from_db()
+        if _token_is_fresh(social_token):
+            return True
+        if not cache.get(_refresh_lock_key(social_token)):
+            # The winner finished without producing a fresh token.
+            return False
+    logger.warning("Timed out waiting for a concurrent Keycloak refresh of token %s", social_token.pk)
+    return False
+
+
+def _refresh_lock_key(social_token):
+    return f"keycloak_token_refresh_{social_token.pk}"
+
+
+def refresh_access_token(social_token):
+    """Refresh `social_token`, ensuring only one request per token does so.
+
+    Returns True if the token is usable afterwards, False if the session is over.
+    """
+    lock_key = _refresh_lock_key(social_token)
+    # cache.add is atomic on the DatabaseCache backend, so exactly one caller wins.
+    if not cache.add(lock_key, 1, timeout=_REFRESH_LOCK_TIMEOUT):
+        return _await_concurrent_refresh(social_token)
+
+    try:
+        # Re-read inside the lock: another process may have refreshed between our
+        # expiry check and acquiring it, in which case there is nothing to do.
+        social_token.refresh_from_db()
+        if _token_is_fresh(social_token):
+            return True
+        return _refresh_access_token(social_token)
+    finally:
+        cache.delete(lock_key)
+
+
 def _refresh_access_token(social_token):
     """Use the refresh token to obtain a new access token from Keycloak.
 
     Returns True on success, False on failure (refresh token expired / revoked).
+    Callers must hold the refresh lock - use `refresh_access_token` instead.
     """
     refresh_token = (social_token.token_secret or "").strip()
     if not refresh_token:
@@ -123,7 +185,7 @@ class KeycloakTokenExpiryMiddleware:
                 and social_token.expires_at
                 and social_token.expires_at - _REFRESH_MARGIN <= timezone.now()
             ):
-                if not _refresh_access_token(social_token):
+                if not refresh_access_token(social_token):
                     # Refresh token is also expired – session is truly over
                     logout(request)
                     return redirect("account_login")
