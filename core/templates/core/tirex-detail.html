@@ -32,7 +32,7 @@
       </div>
       <div class="col-6 col-md-3 ps-3 mt-3 mt-md-0">
         <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Forecasting</span>
-        <span class="fw-bold text-body-emphasis fs-8-5">Zero-Shot</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">Foundation Models</span>
       </div>
     </div>
 
@@ -41,8 +41,8 @@
 
         <p class="text-body-emphasis fs-8-5 mb-5">
           TiRex is a 35 million parameter time series forecasting model built on the xLSTM architecture by
-          NXAI, introduced in the paper <em>TiRex: Zero-Shot Forecasting Across Long and Short Horizons with
-          Enhanced In-Context Learning</em>. It forecasts zero-shot, so it needs no training, no fitting, and
+          NXAI, introduced in the paper <em><a href="https://arxiv.org/abs/2505.23719" target="_blank">TiRex: Zero-Shot Forecasting Across Long and Short Horizons with
+          Enhanced In-Context Learning</a></em>. It forecasts zero-shot, so it needs no training, no fitting, and
           no hyperparameter tuning on your data. You upload a history in the single time series format
           described in the <a href="https://github.com/epu-ntua/DeepTSF/wiki/Input-format" target="_blank"
           rel="noopener noreferrer">DeepTSF input format guide</a>, and TiRex returns the continuation,
@@ -71,13 +71,6 @@
             <div>
               <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Short and Long Horizon Coverage</h6>
               <p class="text-body-tertiary fs-8-5 mb-0">Covers both short and long forecasting horizons from the same model.</p>
-            </div>
-          </div>
-          <div class="d-flex align-items-start gap-3 py-3 border-bottom">
-            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;">4</span>
-            <div>
-              <h6 class="fw-bold text-body-emphasis mb-1 fs-8-5">Missing Value Tolerance</h6>
-              <p class="text-body-tertiary fs-8-5 mb-0">Tolerates missing values in the uploaded history without requiring pre-imputation.</p>
             </div>
           </div>
           <div class="d-flex align-items-start gap-3 py-3">

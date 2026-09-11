@@ -211,8 +211,8 @@ def tirex_detail(request):
     return render(request, 'core/tirex-detail.html', {
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
-        'cta_url': model['cta_url'],
-        'cta_label': model['cta_label'],
+        'cta_url': model.get('cta_url'),
+        'cta_label': model.get('cta_label'),
     })
 
 
