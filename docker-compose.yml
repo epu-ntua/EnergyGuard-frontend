@@ -1,14 +1,37 @@
-# version: "3.9" --> obsolete
+# One stack for both machines. Deployment is `git pull` + restart, so the source
+# tree is bind-mounted everywhere and the only difference is which server runs.
+#
+# Locally: nothing to set. `docker compose up` gives you Django's auto-reloading
+# development server.
+#
+# On the server: set WEB_SERVER_CMD in .env so the production server runs instead
+# of runserver, which is single-process, auto-reloading and explicitly not
+# security-audited:
+#
+#   WEB_SERVER_CMD=gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 1 --threads 8 --timeout 120
+#
+# Keep --workers at 1. code_analysis and robustness hold background-job state in
+# module-level dicts (SCAN_JOBS / EVAL_JOBS), which is per-process, so extra
+# worker processes make the status poll miss the job. --threads still gives real
+# concurrency, so one slow download no longer blocks the site. Raise the worker
+# count only once those two apps keep job state in the database.
+#
+# The server also needs the nginx-proxy network. That lives in
+# docker-compose.server.yml rather than being edited in here, so this tracked
+# file stays identical on both machines and `git pull` never conflicts:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 
 services:
   web:
     build: .
+    # exec, so signals reach the server process instead of the wrapping shell.
     command: >
       sh -c "
       python manage.py migrate &&
       python manage.py createcachetable &&
       python manage.py collectstatic --noinput &&
-      python manage.py runserver 0.0.0.0:8000
+      exec ${WEB_SERVER_CMD:-python manage.py runserver 0.0.0.0:8000}
       "
     volumes:
       - .:/app
@@ -20,9 +43,6 @@ services:
     depends_on:
       - db
     restart: always
-    # networks:
-    #   - default
-    #   - energyguard_net
 
   db:
     image: postgres:16
@@ -32,6 +52,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: always
 
   qcluster:
@@ -62,9 +87,3 @@ volumes:
   postgres_data:
   pgadmin_data:
   static_volume:
-
-# networks:
-#   default: {}
-#   energyguard_net:
-#     external: true
-#     name: nginxproxy_energyguard_net
