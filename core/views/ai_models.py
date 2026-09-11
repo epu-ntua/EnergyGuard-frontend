@@ -123,6 +123,7 @@ AI_MODELS = [
         'description': 'Zero-shot time series forecasting model built on the xLSTM architecture.',
         'category': 'forecasting',
         'color': 'primary',
+        'image': 'assets/img/ai-models/tirex.png',
         'cta_url': 'https://tirex.energy-guard.eu/docs',
         'cta_label': 'View API Docs',
         'cta_external': True,
