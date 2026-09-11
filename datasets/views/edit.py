@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def dataset_edit(request, dataset_id):
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    if request.user != dataset.publisher:
+    if not dataset.is_editable_by(request.user):
         messages.error(request, "You do not have permission to edit this dataset.")
         return redirect("dataset_details", dataset_id=dataset_id)
 
@@ -53,7 +53,7 @@ def dataset_edit(request, dataset_id):
 def dataset_delete(request, dataset_id):
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    if request.user != dataset.publisher:
+    if not dataset.is_editable_by(request.user):
         messages.error(request, "You do not have permission to delete this dataset.")
         return redirect("dataset_details", dataset_id=dataset_id)
 

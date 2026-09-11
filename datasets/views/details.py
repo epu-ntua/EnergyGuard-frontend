@@ -11,8 +11,10 @@ from ..models import Dataset
 @login_required
 def dataset_details(request, dataset_id):
     try:
-        dataset = Dataset.objects.get(pk=dataset_id)
+        dataset = Dataset.objects.visible_to(request.user).get(pk=dataset_id)
     except Dataset.DoesNotExist:
+        # Deliberately indistinguishable from "does not exist" so the response
+        # does not confirm that a private dataset with this id is out there.
         messages.error(request, "Dataset not found")
         return redirect("home")
 
