@@ -25,6 +25,7 @@ urlpatterns = [
     path('rdn-grid/rdn-grid-dt/', views.rdn_grid_dt, name='rdn-grid-dt'),
     path('rdn-grid/rdn-grid-dt/runs/', views.rdn_grid_runs, name='rdn-grid-runs'),
     path('rdn-grid/rdn-grid-dt/runs/<int:rdn_request_id>/', views.rdn_grid_results, name='rdn-grid-results'),
+    path('rdn-grid/rdn-grid-dt/runs/<int:rdn_request_id>/result.json', views.rdn_grid_result_data, name='rdn-grid-result-data'),
     path('rdn-grid/rdn-grid-dt/simulate/', views.rdn_grid_simulate, name='rdn-grid-simulate'),
     path('rdn-grid/rdn-grid-dt/status/', views.rdn_grid_job_status, name='rdn-grid-job-status'),
     path('rdn-grid/rdn-grid-dt/follow/', views.rdn_grid_follow_lookup, name='rdn-grid-follow'),

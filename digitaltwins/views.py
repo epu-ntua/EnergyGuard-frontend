@@ -14,8 +14,9 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django_q.tasks import async_task
 
@@ -23,7 +24,13 @@ from core.services.object_storage import MinioUploadError
 from datasets.services import provision_user_datasets
 
 from .models import BerExperimentRequest, RdnSimulationJob
-from .services import save_simulation_result, RdnApiError, upload_rdn_input, validate_ber_experiment
+from .services import (
+    save_simulation_result,
+    RdnApiError,
+    open_result_stream,
+    upload_rdn_input,
+    validate_ber_experiment,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1022,7 +1029,49 @@ def rdn_grid_results(request, rdn_request_id):
         duration_label=_rdn_job_duration_label(job),
         assets_items=assets_items,
         assets_breakdown=_rdn_assets_breakdown(assets_items),
+        # The payload is fetched separately rather than inlined into the page:
+        # an RDN result can run to hundreds of megabytes, which is not something
+        # to embed in HTML.
+        result_url=reverse('rdn-grid-result-data', args=[job.rdn_request_id]),
+        has_result=job.has_result,
     )
+
+
+_RESULT_STREAM_CHUNK = 64 * 1024
+
+
+@login_required
+def rdn_grid_result_data(request, rdn_request_id):
+    """Stream a completed run's result JSON, scoped to its owner."""
+    job = get_object_or_404(RdnSimulationJob, rdn_request_id=rdn_request_id, user=request.user)
+
+    if job.status != RdnSimulationJob.Status.COMPLETED or not job.has_result:
+        return JsonResponse({'error': 'This run has no result yet.'}, status=404)
+
+    if not job.result_key:
+        # Completed before results moved to object storage - still in the column.
+        return JsonResponse(job.result, safe=False)
+
+    try:
+        body, content_length = open_result_stream(job.result_key)
+    except MinioUploadError:
+        logger.exception('Could not read RDN result for request %s', rdn_request_id)
+        return JsonResponse({'error': 'The result could not be retrieved.'}, status=502)
+
+    def _stream():
+        try:
+            while True:
+                chunk = body.read(_RESULT_STREAM_CHUNK)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            body.close()
+
+    response = StreamingHttpResponse(_stream(), content_type='application/json')
+    if content_length is not None:
+        response['Content-Length'] = content_length
+    return response
 
 
 @login_required
@@ -1092,7 +1141,9 @@ def rdn_grid_job_status(request):
 
     payload = {'status': job.status, 'requestId': job.rdn_request_id}
     if job.status == RdnSimulationJob.Status.COMPLETED:
-        payload['result'] = job.result
+        # A URL, not the payload: this endpoint is polled every 10s, and
+        # re-serialising a multi-hundred-megabyte result each time is pure waste.
+        payload['resultUrl'] = reverse('rdn-grid-result-data', args=[job.rdn_request_id])
     elif job.status == RdnSimulationJob.Status.FAILED:
         payload['error'] = job.error_message
     return JsonResponse(payload)

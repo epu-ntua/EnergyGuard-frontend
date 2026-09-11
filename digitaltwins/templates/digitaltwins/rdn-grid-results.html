@@ -66,6 +66,17 @@
         {% include "digitaltwins/partials/rdn_configuration_used.html" %}
         {% endif %}
 
+        <!-- ── Result could not be loaded ───────────────────────────────────── -->
+        <!-- Shown only if the separate fetch of the result payload fails; the run
+             itself succeeded, so this is a retry, not a failure. -->
+        <div id="result-load-error" class="alert alert-subtle-warning rounded-3 mb-4 d-none" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fas fa-triangle-exclamation flex-shrink-0"></span>
+                <span>The simulation finished, but its results could not be loaded.</span>
+            </div>
+            <a href="" class="btn btn-sm btn-phoenix-warning mt-3">Try again</a>
+        </div>
+
         <!-- ── Completed state (also the swap target once a running job finishes) ── -->
         {% if job.status != 'failed' %}
         <div id="results-section" class="{% if job.status != 'completed' %}d-none{% endif %}">
@@ -113,8 +124,9 @@
 {% endblock content %}
 
 {% block scripts %}
-{% if job.status == 'completed' %}{{ job.result|json_script:"job-result-data" }}{% endif %}
 <script>
+// The result is fetched from resultUrl rather than inlined here: an RDN payload
+// can run to hundreds of megabytes, which has no business inside the HTML.
 window.RDN_GRID_RESULTS = {
     jobId: {{ job.pk }},
     requestId: {{ job.rdn_request_id }},
@@ -122,7 +134,8 @@ window.RDN_GRID_RESULTS = {
     createdAtIso: "{{ job.created_at|date:'c' }}",
     jobStatusUrl: "{% url 'rdn-grid-job-status' %}",
     saveResultUrl: "{% url 'dt-save-result' %}",
-    initialResult: document.getElementById('job-result-data') ? JSON.parse(document.getElementById('job-result-data').textContent) : null
+    resultUrl: "{{ result_url }}",
+    hasResult: {% if has_result %}true{% else %}false{% endif %}
 };
 </script>
 <script src="{% static 'digitaltwins/rdn-grid-results.js' %}" defer></script>
