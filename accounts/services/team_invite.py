@@ -1,10 +1,9 @@
 import uuid
 from datetime import timedelta
 
-from django.conf import settings
-from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils import timezone
+from django_q.tasks import async_task
 
 from accounts.models import Notification, Profile, TeamInvite, User
 
@@ -44,19 +43,7 @@ def send_team_invite(request, team, email, invited_by):
     platform_url = request.build_absolute_uri(reverse('team_management'))
     inviter_name = invited_by.get_full_name() or invited_by.email
 
-    send_mail(
-        subject=f"You've been invited to join {team.name} on EnergyGuard",
-        message=(
-            f"Hi,\n\n"
-            f"{inviter_name} has invited you to join the team '{team.name}' on EnergyGuard.\n\n"
-            f"To accept or decline the invitation, sign in to EnergyGuard and go to Team Management:\n{platform_url}\n\n"
-            f"If you don't have an account yet, sign in with Keycloak at the link above to get started.\n\n"
-            f"This invitation expires in {INVITE_EXPIRY_DAYS} days.\n\n"
-            f"Best regards,\nThe EnergyGuard Team"
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-    )
+    async_task('accounts.tasks.send_team_invite_email', invite.pk, platform_url, inviter_name)
 
     invited_user = User.objects.filter(email=email).first()
     if invited_user:
