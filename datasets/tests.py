@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -6,7 +7,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, SimpleTestCase
 from django.urls import reverse
 
-from datasets.forms import FileUploadDatasetForm, MetadataDatasetForm
+from datasets import forms as forms_module
+from datasets.forms import FileUploadPlaceholderForm, MetadataDatasetForm
+from datasets.tasks import finalize_dataset_upload
 from datasets.views import AddDatasetView
 
 
@@ -61,56 +64,68 @@ class MetadataDatasetFormTests(SimpleTestCase):
         )
 
 
-class FileUploadDatasetFormTests(SimpleTestCase):
-    def test_csv_with_ms_excel_content_type_is_valid(self):
-        form = FileUploadDatasetForm(
-            files={
-                "data_file": SimpleUploadedFile(
-                    "dataset.csv",
-                    b"distance,temperature\n10,20\n",
-                    content_type="application/vnd.ms-excel",
-                )
-            }
-        )
+class FileUploadPlaceholderFormTests(SimpleTestCase):
+    """Step 2 of the wizard.
 
+    The browser now PUTs straight to MinIO with a presigned URL, so this form
+    carries the resulting object key rather than the file itself. It replaced
+    FileUploadDatasetForm; this module still imported that removed class, so the
+    whole file failed to import and none of its tests ever ran.
+    """
+
+    def _payload(self, **overrides):
+        data = {
+            "upload_key": "pending/demo/abc123/dataset.csv",
+            "bucket_name": "energyguard-datasets",
+            "file_size_bytes": 1024,
+            "original_filename": "dataset.csv",
+            "content_type": "text/csv",
+        }
+        data.update(overrides)
+        return data
+
+    def test_valid_presigned_upload_metadata_is_accepted(self):
+        form = FileUploadPlaceholderForm(data=self._payload())
         self.assertTrue(form.is_valid(), form.errors)
+
+    def test_missing_upload_key_is_rejected(self):
+        form = FileUploadPlaceholderForm(data=self._payload(upload_key="   "))
+        self.assertFalse(form.is_valid())
+        self.assertIn("upload_key", form.errors)
+
+    def test_oversized_file_is_rejected(self):
+        oversized = (forms_module._MAX_DATA_FILE_SIZE_MB * 1024 * 1024) + 1
+        form = FileUploadPlaceholderForm(data=self._payload(file_size_bytes=oversized))
+        self.assertFalse(form.is_valid())
+        self.assertIn("file_size_bytes", form.errors)
 
 
 class AddDatasetViewDoneTests(SimpleTestCase):
+    """The wizard's final step.
+
+    The upload itself no longer happens here: the browser PUTs to MinIO with a
+    presigned URL, and `done()` only hands the object key to a background task.
+    These tests replaced ones written against the old synchronous flow, which
+    patched `upload_dataset_objects` / `delete_dataset_objects` - symbols this
+    module removed, so the tests could not even be collected.
+    """
+
     def setUp(self):
         self.factory = RequestFactory()
 
-    @patch("datasets.views.upload.transaction.atomic")
-    @patch("datasets.views.upload.Dataset.objects.create")
-    @patch("datasets.views.upload.upload_dataset_objects")
-    def test_done_passes_manual_metadata_to_dataset_create(
-        self,
-        mock_upload_dataset_objects,
-        mock_dataset_create,
-        mock_transaction_atomic,
-    ):
-        data_file = SimpleUploadedFile(
-            "dataset.csv",
-            b"distance,temperature\n10,20\n",
-            content_type="text/csv",
-        )
-        manual_metadata = {"distance": ["m", "distance between 2 points"]}
-        mock_transaction_atomic.return_value.__enter__.return_value = None
-        mock_transaction_atomic.return_value.__exit__.return_value = None
-
-        mock_upload_dataset_objects.return_value = {
-            "bucket_name": "datasets",
-            "data_file_key": "user_demo/dataset_demo/data.csv",
-            "metadata_file_key": "user_demo/dataset_demo/metadata.json",
-        }
-
+    def _request(self):
         request = self.factory.post("/datasets/dataset-upload/")
-        request.user = SimpleNamespace(username="demo", pk=1)
+        request.user = SimpleNamespace(
+            pk=1,
+            username="demo",
+            email="demo@example.com",
+            get_full_name=lambda: "Demo User",
+        )
+        request.session = {}
+        return request
 
-        view = AddDatasetView()
-        view.request = request
-
-        step_data = {
+    def _step_data(self, *, file_size_bytes=2 * 1024 ** 3):
+        return {
             "general_info": {
                 "name": "Demo dataset",
                 "description": "Demo",
@@ -118,94 +133,55 @@ class AddDatasetViewDoneTests(SimpleTestCase):
                 "visibility": True,
             },
             "upload_files": {
-                "data_file": data_file,
+                "upload_key": "pending/demo/abc123/dataset.csv",
+                "bucket_name": "energyguard-datasets",
+                "file_size_bytes": file_size_bytes,
             },
             "metadata": {
-                "metadata_file": None,
-                "metadata": manual_metadata,
+                "metadata": {"distance": ["m", "distance between 2 points"]},
             },
         }
 
-        with patch.object(
-            AddDatasetView,
-            "get_cleaned_data_for_step",
-            side_effect=lambda step: step_data[step],
-        ):
+    def _run_done(self, step_data):
+        view = AddDatasetView()
+        view.request = self._request()
+        with patch("datasets.views.upload.async_task") as mock_async_task,              patch.object(
+                 AddDatasetView,
+                 "get_cleaned_data_for_step",
+                 side_effect=lambda step: step_data[step],
+             ):
             response = view.done(form_list=[])
+        return response, mock_async_task, view.request
+
+    def test_done_enqueues_finalisation_instead_of_uploading_inline(self):
+        step_data = self._step_data()
+        response, mock_async_task, request = self._run_done(step_data)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("dataset-upload-success"))
-        self.assertEqual(mock_dataset_create.call_count, 1)
+        self.assertTrue(request.session["dataset_upload_success"])
+
+        mock_async_task.assert_called_once()
+        args, kwargs = mock_async_task.call_args
+        self.assertIs(args[0], finalize_dataset_upload)
+        self.assertEqual(kwargs["object_key"], "pending/demo/abc123/dataset.csv")
+        self.assertEqual(kwargs["bucket_name"], "energyguard-datasets")
+        self.assertEqual(kwargs["user_id"], 1)
+        self.assertEqual(kwargs["user_email"], "demo@example.com")
+        self.assertEqual(kwargs["dataset_name"], "Demo dataset")
+        self.assertEqual(kwargs["dataset_visibility"], True)
         self.assertEqual(
-            mock_dataset_create.call_args.kwargs["metadata"],
-            manual_metadata,
+            kwargs["dataset_metadata"],
+            {"distance": ["m", "distance between 2 points"]},
         )
 
-    @patch("datasets.views.upload.messages.error")
-    @patch("datasets.views.upload.transaction.atomic")
-    @patch("datasets.views.upload.delete_dataset_objects")
-    @patch("datasets.views.upload.Dataset.objects.create")
-    @patch("datasets.views.upload.upload_dataset_objects")
-    def test_done_rolls_back_uploaded_objects_when_dataset_create_fails(
-        self,
-        mock_upload_dataset_objects,
-        mock_dataset_create,
-        mock_delete_dataset_objects,
-        mock_transaction_atomic,
-        mock_messages_error,
-    ):
-        data_file = SimpleUploadedFile(
-            "dataset.csv",
-            b"distance,temperature\n10,20\n",
-            content_type="text/csv",
-        )
-        manual_metadata = {"distance": ["m", "distance between 2 points"]}
-        mock_transaction_atomic.return_value.__enter__.return_value = None
-        mock_transaction_atomic.return_value.__exit__.return_value = None
+    def test_done_converts_byte_size_to_gigabytes(self):
+        step_data = self._step_data(file_size_bytes=2 * 1024 ** 3)
+        _, mock_async_task, _ = self._run_done(step_data)
+        self.assertEqual(mock_async_task.call_args.kwargs["dataset_size_gb"], Decimal("2.00"))
 
-        mock_upload_dataset_objects.return_value = {
-            "bucket_name": "datasets",
-            "data_file_key": "user_demo/dataset_demo/data.csv",
-            "metadata_file_key": "user_demo/dataset_demo/metadata.json",
-        }
-        mock_dataset_create.side_effect = Exception("foreign key constraint fails")
-
-        request = self.factory.post("/datasets/dataset-upload/")
-        request.user = SimpleNamespace(username="demo", pk=1)
-
-        view = AddDatasetView()
-        view.request = request
-
-        step_data = {
-            "general_info": {
-                "name": "Demo dataset",
-                "description": "Demo",
-                "label": "renewable_energy",
-                "visibility": True,
-            },
-            "upload_files": {
-                "data_file": data_file,
-            },
-            "metadata": {
-                "metadata_file": None,
-                "metadata": manual_metadata,
-            },
-        }
-
-        with patch.object(
-            AddDatasetView,
-            "get_cleaned_data_for_step",
-            side_effect=lambda step: step_data[step],
-        ):
-            response = view.done(form_list=[])
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("dataset_upload"))
-        mock_delete_dataset_objects.assert_called_once_with(
-            bucket_name="datasets",
-            data_file_key="user_demo/dataset_demo/data.csv",
-            metadata_file_key="user_demo/dataset_demo/metadata.json",
-        )
-        mock_messages_error.assert_called_once()
-
-
+    def test_done_floors_tiny_uploads_to_the_minimum_recorded_size(self):
+        # size_gb has a MinValueValidator of 0.01, so a 1 KB file must not round to 0.
+        step_data = self._step_data(file_size_bytes=1024)
+        _, mock_async_task, _ = self._run_done(step_data)
+        self.assertEqual(mock_async_task.call_args.kwargs["dataset_size_gb"], Decimal("0.01"))
