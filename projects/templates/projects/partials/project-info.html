@@ -41,11 +41,11 @@
       <a class="flex-grow-2" href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
         <button class="btn btn-purple px-4 w-100" type="button">Open in MLFlow</button>
       </a>
-      {% if not project_details.visibility %}
+      <!-- {% if not project_details.visibility %}
       <a class="flex-grow-2">
         <button class="btn btn-purple-blue w-100" type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">+ Add Experiment</button>
       </a>
-      {% endif %}
+      {% endif %} -->
     </div>
   </div>
 
