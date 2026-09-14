@@ -1,0 +1,137 @@
+{% extends "core/authenticated-base.html" %}
+{% load static %}
+
+{% block title %}Request #{{ experiment_request.pk }} - BER Management - Digital Twins{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <nav class="mb-3" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'ber-management-list' %}">Management</a></li>
+                <li class="breadcrumb-item active">Request #{{ experiment_request.pk }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <h3 class="fw-bolder text-body-emphasis mb-1">Request #{{ experiment_request.pk }}</h3>
+                <p class="text-body-tertiary mb-0">
+                    Submitted by <span class="fw-semibold text-body-emphasis">{{ experiment_request.user.email }}</span>
+                    on {{ experiment_request.created_at|date:"d M Y, H:i" }} UTC
+                </p>
+            </div>
+            <div>
+                {% if experiment_request.status == 'completed' %}
+                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
+                {% elif experiment_request.status == 'rejected' %}
+                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Rejected</span><span class="ms-1 fas fa-xmark"></span></span>
+                {% else %}
+                <span class="badge bg-warning-subtle text-warning-emphasis">pending</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-subtle-danger rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <span class="fas fa-circle-xmark flex-shrink-0"></span><span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                            <span class="fas fa-file-code text-body-tertiary"></span>Submitted Experiment JSON
+                        </h6>
+                        <pre class="bg-dark text-light rounded-3 p-3 mb-0 fs-9" style="max-height:420px;overflow:auto;">{{ experiment_request.experiment_json|pprint }}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                {% if experiment_request.status == 'pending' %}
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis mb-3">Mark Completed</h6>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="complete">
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold" for="actual-start">Actual start (UTC)</label>
+                                    <input type="datetime-local" class="form-control" id="actual-start" name="actual_start" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold" for="actual-end">Actual end (UTC)</label>
+                                    <input type="datetime-local" class="form-control" id="actual-end" name="actual_end" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="result-file">Result file</label>
+                                <input type="file" class="form-control" id="result-file" name="result_file" required>
+                                <span class="form-text fs-9">Max 50 MB.</span>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                                <span class="fas fa-circle-check"></span>Mark Completed &amp; Notify User
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis mb-3">Mark Rejected</h6>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="rejection-reason">Reason</label>
+                                <textarea class="form-control" id="rejection-reason" name="rejection_reason" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-outline-danger w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                                <span class="fas fa-circle-xmark"></span>Mark Rejected &amp; Notify User
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {% elif experiment_request.status == 'completed' %}
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
+                            <span class="fas fa-list-ul text-body-tertiary"></span>Execution Details
+                        </h6>
+                        <dl class="row fs-9 mb-4">
+                            <dt class="col-5 text-body-tertiary fw-normal">Actual start</dt>
+                            <dd class="col-7 fw-semibold text-body-emphasis mb-1">{{ experiment_request.actual_start|date:"d M Y, H:i" }} UTC</dd>
+                            <dt class="col-5 text-body-tertiary fw-normal">Actual end</dt>
+                            <dd class="col-7 fw-semibold text-body-emphasis mb-0">{{ experiment_request.actual_end|date:"d M Y, H:i" }} UTC</dd>
+                        </dl>
+                        <a href="{% url 'ber-management-download' experiment_request.pk %}" class="btn btn-outline-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <span class="fas fa-download"></span>Download Result File
+                        </a>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                            <span class="fas fa-circle-xmark text-body-tertiary"></span>Rejection Reason
+                        </h6>
+                        <p class="text-body-tertiary fs-9 mb-0">{{ experiment_request.rejection_reason }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock content %}

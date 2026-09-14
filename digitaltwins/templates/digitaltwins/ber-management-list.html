@@ -1,7 +1,7 @@
 {% extends "core/authenticated-base.html" %}
 {% load static %}
 
-{% block title %}Requests - Experiment Request - BER - Digital Twins{% endblock %}
+{% block title %}BER Management - Digital Twins{% endblock %}
 
 {% block content %}
 <div class="content">
@@ -11,18 +11,14 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'ber-hydrogen-dt' %}">Experiment Request</a></li>
-                <li class="breadcrumb-item active">Requests</li>
+                <li class="breadcrumb-item active">Management</li>
             </ol>
         </nav>
 
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-            <h2 class="fw-bolder text-body-emphasis mb-0">BER requests</h2>
-            <div class="d-flex flex-wrap gap-2">
-                {% if perms.digitaltwins.manage_ber_requests %}
-                <a href="{% url 'ber-management-list' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">BER management <span class="fas fa-arrow-right"></span></a>
-                {% endif %}
-                <a href="{% url 'ber-hydrogen-dt' %}#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
+            <div>
+                <h2 class="fw-bolder text-body-emphasis mb-1">BER experiment requests</h2>
+                <p class="text-body-tertiary mb-0">All experiment requests submitted across EnergyGuard, for the BER laboratory team to action.</p>
             </div>
         </div>
 
@@ -33,6 +29,7 @@
                     <thead>
                         <tr>
                             <th class="white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col">REQUEST</th>
+                            <th class="align-middle text-start fs-9" scope="col">SUBMITTED BY</th>
                             <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
                             <th class="align-middle text-end fs-9 pe-2" scope="col">STATUS</th>
                         </tr>
@@ -41,8 +38,9 @@
                         {% for experiment_request in page_obj %}
                         <tr class="position-relative" style="cursor:pointer;">
                             <td class="align-middle py-3 ps-2">
-                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
+                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'ber-management-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
                             </td>
+                            <td class="align-middle py-3 fs-9">{{ experiment_request.user.email }}</td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ experiment_request.created_at|date:"d M, H:i" }}</td>
                             <td class="align-middle py-3 fs-9 text-end pe-2">
                                 {% if experiment_request.status == 'completed' %}

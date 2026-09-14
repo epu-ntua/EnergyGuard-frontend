@@ -3,7 +3,10 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.urls import reverse
 from django.utils import timezone
+
+from accounts.models import Notification
 
 from .models import BerExperimentRequest, RdnSimulationJob
 from .services import RdnApiError, get_rdn_job_status, download_rdn_result, store_result
@@ -86,12 +89,14 @@ def _reschedule_poll(job_id):
     )  # repeats left at its default (-1) so this row self-deletes once it fires
 
 
-def send_ber_notification_email(experiment_request_id):
+def send_ber_notification_email(experiment_request_id, platform_url):
     """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
     server must never stall the user's submit request (see ber_experiment_submit)."""
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).first()
     if experiment_request is None or not settings.BER_EMAIL:
         return
+
+    management_path = reverse('ber-management-detail', args=[experiment_request.pk])
 
     try:
         send_mail(
@@ -101,13 +106,53 @@ def send_ber_notification_email(experiment_request_id):
                 f'Request ID: {experiment_request.pk}\n'
                 f'Submitted by: {experiment_request.user.email}\n'
                 f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                f'Please review the request in the EnergyGuard admin.'
+                f'Review it here:\n{platform_url.rstrip("/")}{management_path}'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.BER_EMAIL],
         )
     except Exception:
         logger.exception('Failed to send BER notification email for request %s', experiment_request.pk)
+
+
+def notify_ber_request_decision(experiment_request_id, platform_url):
+    """Runs in the qcluster worker - notifies the requester once BER staff marks
+    their request completed or rejected (see ber_management_detail)."""
+    experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
+    if experiment_request is None:
+        return
+
+    if experiment_request.status == BerExperimentRequest.Status.COMPLETED:
+        subject_verb, body_line, icon = 'is complete', 'Your experiment results are now available.', 'circle-check'
+    elif experiment_request.status == BerExperimentRequest.Status.REJECTED:
+        subject_verb, body_line, icon = 'was rejected', 'Reason: ' + (experiment_request.rejection_reason or 'No reason given.'), 'circle-xmark'
+    else:
+        return  # not a terminal decision - nothing to notify about
+
+    detail_path = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
+
+    Notification.objects.create(
+        recipient=experiment_request.user,
+        message=f'Your BER experiment request #{experiment_request.pk} {subject_verb}',
+        url=detail_path,
+        icon=icon,
+    )
+
+    try:
+        send_mail(
+            subject=f'Your BER experiment request #{experiment_request.pk} {subject_verb} — EnergyGuard',
+            message=(
+                f'Hi,\n\n'
+                f'Your BER PEM electrolyzer experiment request #{experiment_request.pk} {subject_verb}.\n\n'
+                f'{body_line}\n\n'
+                f'View it here:\n{platform_url.rstrip("/")}{detail_path}\n\n'
+                f'Best regards,\nThe EnergyGuard Team'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[experiment_request.user.email],
+        )
+    except Exception:
+        logger.exception('Failed to send BER decision email for request %s', experiment_request.pk)
 
 
 def reconcile_stale_rdn_jobs():

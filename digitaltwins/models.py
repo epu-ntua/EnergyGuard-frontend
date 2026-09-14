@@ -25,12 +25,23 @@ class BerExperimentRequest(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ber_experiment_requests')
     experiment_json = models.JSONField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    # Set by BER staff when marking a request completed - the actual execution window,
+    # distinct from created_at/updated_at which only track the request row itself.
+    actual_start = models.DateTimeField(null=True, blank=True)
+    actual_end = models.DateTimeField(null=True, blank=True)
+    # Object-storage key of the result file BER uploads when marking completed.
+    # Explicit per-request upload, not timestamp-based retrieval from the Data Lake.
+    result_key = models.CharField(max_length=1024, blank=True, default='')
+    rejection_reason = models.TextField(blank=True, default='')
 
     class Meta:
         db_table = 'ber_experiment_request'
         ordering = ['-created_at']
         verbose_name = 'BER Experiment Request'
         verbose_name_plural = 'BER Experiment Requests'
+        permissions = [
+            ('manage_ber_requests', 'Can manage BER experiment requests'),
+        ]
 
 
 class RdnSimulationJob(TimeStampedModel):

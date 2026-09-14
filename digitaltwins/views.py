@@ -11,11 +11,11 @@ from pathlib import Path
 
 import requests
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django_q.tasks import async_task
@@ -30,6 +30,7 @@ from .services import (
     open_result_stream,
     upload_rdn_input,
     validate_ber_experiment,
+    store_result_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -613,7 +614,10 @@ def ber_experiment_submit(request):
     cache.set(dedup_key, experiment_request.pk, timeout=_BER_SUBMIT_DEDUP_WINDOW_SECONDS)
 
     if settings.BER_EMAIL:
-        async_task('digitaltwins.tasks.send_ber_notification_email', experiment_request.pk)
+        async_task(
+            'digitaltwins.tasks.send_ber_notification_email',
+            experiment_request.pk, request.build_absolute_uri('/'),
+        )
 
     return JsonResponse(
         {'requestId': experiment_request.pk, 'status': experiment_request.status}, status=202,
@@ -645,6 +649,136 @@ def ber_hydrogen_request_detail(request, request_id):
 def ber_hydrogen_request_status(request, request_id):
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
     return JsonResponse({'status': experiment_request.status})
+
+
+# ── BER management (staff-only) ──────────────────────────────────────────────
+# Gated by the 'digitaltwins.manage_ber_requests' permission - grant it via a
+# Group (e.g. "BER Team") assigned to the BER staff's own EnergyGuard accounts.
+
+_BER_RESULT_FILE_MAX_SIZE_MB = 50  # real .lp signal logs, not the JSON request itself
+
+
+def _parse_ber_management_datetime(raw):
+    try:
+        return datetime.strptime(raw, '%Y-%m-%dT%H:%M').replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_list(request):
+    experiment_requests = BerExperimentRequest.objects.select_related('user').order_by('-created_at')
+    paginator = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return _dt_render(request, 'digitaltwins/ber-management-list.html', page_obj=page_obj)
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_detail(request, request_id):
+    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
+
+    if request.method != 'POST':
+        return _dt_render(
+            request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
+        )
+
+    if experiment_request.status != BerExperimentRequest.Status.PENDING:
+        return _dt_render(
+            request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
+            error='This request has already been decided.',
+        )
+
+    action = request.POST.get('action')
+
+    if action == 'complete':
+        result_file = request.FILES.get('result_file')
+        actual_start = _parse_ber_management_datetime(request.POST.get('actual_start', ''))
+        actual_end = _parse_ber_management_datetime(request.POST.get('actual_end', ''))
+
+        error = None
+        if actual_start is None or actual_end is None:
+            error = 'Provide a valid start and end time.'
+        elif actual_end <= actual_start:
+            error = 'End time must be after start time.'
+        elif not result_file:
+            error = 'A result file is required to mark this request completed.'
+        elif result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
+            error = f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.'
+
+        if error:
+            return _dt_render(
+                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
+                error=error,
+            )
+
+        try:
+            result_key = store_result_file(experiment_request.pk, result_file)
+        except MinioUploadError:
+            logger.exception('Failed to store BER result file for request %s', experiment_request.pk)
+            return _dt_render(
+                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
+                error='Could not store the result file. Please try again.',
+            )
+
+        experiment_request.actual_start = actual_start
+        experiment_request.actual_end = actual_end
+        experiment_request.result_key = result_key
+        experiment_request.status = BerExperimentRequest.Status.COMPLETED
+        experiment_request.save(update_fields=['actual_start', 'actual_end', 'result_key', 'status', 'updated_at'])
+
+    elif action == 'reject':
+        reason = request.POST.get('rejection_reason', '').strip()
+        if not reason:
+            return _dt_render(
+                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
+                error='A rejection reason is required.',
+            )
+        experiment_request.rejection_reason = reason
+        experiment_request.status = BerExperimentRequest.Status.REJECTED
+        experiment_request.save(update_fields=['rejection_reason', 'status', 'updated_at'])
+
+    else:
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+    async_task(
+        'digitaltwins.tasks.notify_ber_request_decision',
+        experiment_request.pk, request.build_absolute_uri('/'),
+    )
+    return redirect('ber-management-detail', request_id=experiment_request.pk)
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_download(request, request_id):
+    """Stream a completed request's uploaded result file."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+    if not experiment_request.result_key:
+        return JsonResponse({'error': 'This request has no result file.'}, status=404)
+
+    try:
+        body, content_length = open_result_stream(experiment_request.result_key)
+    except MinioUploadError:
+        logger.exception('Could not read BER result file for request %s', experiment_request.pk)
+        return JsonResponse({'error': 'The result file could not be retrieved.'}, status=502)
+
+    def _stream():
+        try:
+            while True:
+                chunk = body.read(_RESULT_STREAM_CHUNK)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            body.close()
+
+    filename = experiment_request.result_key.rsplit('/', 1)[-1]
+    response = StreamingHttpResponse(_stream(), content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    if content_length is not None:
+        response['Content-Length'] = content_length
+    return response
 
 
 @login_required
