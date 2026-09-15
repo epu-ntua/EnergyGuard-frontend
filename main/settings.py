@@ -309,8 +309,9 @@ LOGGING = {
 }
 
 # Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'  # For development: prints emails to the console
+# DEBUG (dev) prints emails to the console instead of sending real SMTP mail, so local
+# testing errors and admin-error-report emails don't land in the production ADMINS inbox.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
