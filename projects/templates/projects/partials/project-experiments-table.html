@@ -1,14 +1,24 @@
 <!-- Experiments Table -->
-<div class="d-flex flex-between-center align-items-center mb-3 mt-6">
-  <div class="d-flex align-items-center gap-4 mb-2">
-    <h3 class="text-body-emphasis">Experiments</h3>
+<div class="d-flex flex-between-center align-items-center mb-3 mt-6 flex-wrap gap-3">
+  <div>
+    <p class="text-body-tertiary fw-semibold text-uppercase fs-10 mb-1 ls-2 d-flex align-items-center gap-1">
+      <span class="fas fa-flask"></span>MLflow Tracking
+    </p>
+    <h3 class="text-body-emphasis mb-0">Experiments</h3>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <div class="search-box" style="width: 14rem;">
+      <form class="position-relative" onsubmit="return false;">
+        <input id="experimentsSearch" class="form-control search-input search fs-9" type="search" placeholder="Search experiments" aria-label="Search">
+        <span class="fas fa-search search-box-icon fs-9"></span>
+      </form>
+    </div>
     {% if not project_details.visibility %}
-      <a class="flex-grow-2">
-        <button class="btn btn-purple-blue w-100" type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">+ Add Experiment</button>
-      </a>
+      <button class="btn btn-purple-blue d-inline-flex align-items-center gap-1 text-nowrap" type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">
+        <span class="fas fa-plus"></span>New experiment
+      </button>
     {% endif %}
   </div>
-  <input id="experimentsSearch" type="search" class="form-control form-control-sm w-auto fs-9" placeholder="Search...">
 </div>
 <div class="table-responsive" style="overflow: visible;">
   <table id="experimentsTable" class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
