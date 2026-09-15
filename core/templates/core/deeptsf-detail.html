@@ -101,7 +101,7 @@
           <img src="{% static 'assets/img/ai-models/DeepTSF.png' %}" alt="DeepTSF interface" class="card-img-top">
           <div class="card-body p-4">
             <p class="text-body-tertiary fs-8-5 mb-3">Train, evaluate, and monitor forecasting experiments through the DeepTSF codeless interface.</p>
-            <form method="post" action="{% url 'ai_model_request_access' %}">
+            <form method="post" action="{% url 'ai_model_request_access' %}" class="js-ai-model-access-form">
               {% csrf_token %}
               <input type="hidden" name="model_slug" value="deeptsf">
               <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
@@ -116,4 +116,6 @@
     {% include "core/footer.html" %}
   </div>
 </div>
+
+<script src="{% static 'assets/js/ai-model-access-request.js' %}"></script>
 {% endblock content %}

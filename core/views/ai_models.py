@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import mail_admins
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
@@ -12,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 # Phoenix theme colors used by the AI model cards/badges (var(--phoenix-<color>)).
 ALLOWED_COLORS = {'primary', 'secondary', 'success', 'info', 'warning', 'danger', 'dark'}
+
+ALLOWED_BADGES = {'available', 'request_access', 'coming_soon'}
 
 # What each model does, for the AI Models Inventory chart on the dashboard. One category per model.
 CATEGORY_LABELS = {
@@ -33,6 +36,8 @@ AI_MODELS = [
                    "baseline, and optimistic clear-sky forecasts.",
         'color': 'primary',
         'image': 'assets/img/ai-models/thumbs/pv-generation-forecasting.webp',
+        'badge': 'available',
+        'modal': True,
         'cta_url_name': 'engreen-antrodoco-dt',
         'getting_started': [
             'Select an existing REC station or define a new hypothetical plant (panels, power, tilt, orientation).',
@@ -65,6 +70,8 @@ AI_MODELS = [
                    'that evaluates the multilag wind model against the base models.',
         'color': 'secondary',
         'image': 'assets/img/ai-models/renewable-focecast.jpg',
+        'badge': 'available',
+        'modal': True,
         'cta_url_name': 'ciemat-forecasting-dt',
         'getting_started': [
             'Choose a generation type: wind power (NED100 turbine model) or photovoltaic (Afrisol reference plant).',
@@ -95,6 +102,8 @@ AI_MODELS = [
                    'behavioural strategies may affect REC performance.',
         'color': 'info',
         'image': 'assets/img/ai-models/thumbs/fair-dynamic-pricing.webp',
+        'badge': 'coming_soon',
+        'modal': False,
     },
     {
         'slug': 'predictive-maintenance-monitoring',
@@ -106,6 +115,8 @@ AI_MODELS = [
                    'battery-related effects.',
         'color': 'success',
         'image': 'assets/img/ai-models/thumbs/predictive-maintenance-monitoring.webp',
+        'badge': 'coming_soon',
+        'modal': False,
     },
     {
         'slug': 'deeptsf',
@@ -114,6 +125,7 @@ AI_MODELS = [
         'category': 'forecasting',
         'color': 'dark',
         'image': 'assets/img/ai-models/DeepTSF.png',
+        'badge': 'request_access',
         'request_access': True,
         'detail_url_name': 'deeptsf_detail',
     },
@@ -124,6 +136,7 @@ AI_MODELS = [
         'category': 'forecasting',
         'color': 'primary',
         'image': 'assets/img/ai-models/tirex.png',
+        'badge': 'coming_soon',
         'cta_url': 'https://tirex.energy-guard.eu/docs',
         'cta_label': 'View API Docs',
         'cta_external': True,
@@ -153,9 +166,45 @@ def _validate_ai_models(models):
                 f"must be one of {sorted(CATEGORY_LABELS)}"
             )
 
+        badge = model.get('badge')
+        if badge not in ALLOWED_BADGES:
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] has an invalid badge {badge!r}; must be one of {sorted(ALLOWED_BADGES)}"
+            )
+
+        # The badge is a hand-set label - keep it honest about what the card actually does.
+        if model.get('request_access') and badge != 'request_access':
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] sets request_access=True but badge is {badge!r}, not 'request_access'"
+            )
+        if badge == 'request_access' and not model.get('request_access'):
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] has badge='request_access' but request_access is not set"
+            )
+        # Having a cta_url_name/cta_url alone isn't enough: without 'modal' or 'detail_url_name'
+        # the card renders as an inert div (see ai-models.html) - nothing ever surfaces the link.
+        has_detail_link = bool(model.get('detail_url_name'))
+        has_modal_cta = bool(model.get('modal')) and bool(model.get('cta_url_name') or model.get('cta_url'))
+        if badge == 'available' and not (has_detail_link or has_modal_cta):
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] has badge='available' but isn't actually reachable: "
+                f"needs detail_url_name, or modal=True plus cta_url_name/cta_url"
+            )
+        if badge == 'request_access' and not (has_detail_link or model.get('modal')):
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] has badge='request_access' but isn't actually reachable: "
+                f"needs detail_url_name (with a hand-built request form) or modal=True"
+            )
+
         cta_url = model.get('cta_url')
         if cta_url and not cta_url.startswith('http'):
             raise ImproperlyConfigured(f"AI_MODELS['{slug}'] has a malformed cta_url: {cta_url!r}")
+
+        if model.get('modal') and model.get('detail_url_name'):
+            raise ImproperlyConfigured(
+                f"AI_MODELS['{slug}'] sets both 'modal' and 'detail_url_name'; a card can only do one "
+                f"of these on click, and detail_url_name silently wins - pick one"
+            )
 
 
 _validate_ai_models(AI_MODELS)
@@ -186,7 +235,8 @@ def ai_models(request):
                     model['slug'], detail_url_name,
                 )
 
-        model['has_modal'] = not model.get('detail_url') and bool(model.get('cta_url') or model.get('request_access'))
+        # detail_url takes priority: a card either opens a modal or links to a page, not both.
+        model['has_modal'] = bool(model.get('modal')) and not model.get('detail_url')
         model.setdefault('compact', False)
         models.append(model)
 
@@ -221,8 +271,11 @@ def tirex_detail(request):
 def request_ai_model_access(request):
     slug = request.POST.get('model_slug', '')
     model = next((m for m in AI_MODELS if m['slug'] == slug), None)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-    if model is None:
+    if model is None or not model.get('request_access'):
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': "Unknown AI model."}, status=400)
         messages.error(request, "Unknown AI model.")
         return redirect('ai_models')
 
@@ -236,9 +289,15 @@ def request_ai_model_access(request):
                 f"Team: {getattr(getattr(request.user, 'profile', None), 'team', None) or 'N/A'}"
             ),
         )
-        messages.success(request, f"Your request for access to {model['name']} has been sent to the admins.")
+        success_message = f"Your request for access to {model['name']} has been sent to the admins."
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': success_message})
+        messages.success(request, success_message)
     except Exception:
         logger.exception("Failed to send access request email for model %s from user %s", slug, request.user.email)
-        messages.error(request, "Could not send your access request. Please try again later.")
+        error_message = "Could not send your access request. Please try again later."
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': error_message}, status=502)
+        messages.error(request, error_message)
 
     return redirect('ai_models')
