@@ -364,7 +364,7 @@ DATALAKE_CONNECT_TIMEOUT = env.int('DATALAKE_CONNECT_TIMEOUT', default=10)
 PILOT_DATASETS_PREFIX = env('PILOT_DATASETS_PREFIX', default='pilot_datasets')
 # EnergyGuard Data Space gateway (colleague's FastAPI proxy over EnPower/True Connector).
 # Called directly from the browser (see dataspace app), not proxied through this backend.
-DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='http://energyguard.epu.ntua.gr:8000')
+DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='https://dashboard.energy-guard.eu/dataspace-api')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
