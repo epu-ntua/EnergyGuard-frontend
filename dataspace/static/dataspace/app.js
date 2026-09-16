@@ -9,6 +9,17 @@
     return div.innerHTML;
   }
 
+  function formatRequestedBy(raw) {
+    const str = raw == null ? "" : String(raw);
+    // The gateway sends "<org> <i class=\"fa fa-caret-right\"></i> <username>" as one
+    // string. Only the literal separator below is trusted; org/username are escaped.
+    const parts = str.split(/\s*<i\s+class=["']fa fa-caret-right["']\s*>\s*<\/i>\s*/i);
+    if (parts.length === 2) {
+      return `${escapeHtml(parts[0])} <i class="fa fa-caret-right"></i> ${escapeHtml(parts[1])}`;
+    }
+    return escapeHtml(str);
+  }
+
   function showToast(message, variant) {
     const container = document.getElementById("toast-container");
     const el = document.createElement("div");
@@ -354,7 +365,7 @@
       <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center mb-2" data-request-row="${escapeHtml(r.request_id)}">
         <div>
           <div class="fw-semibold text-body-emphasis">${escapeHtml(r.title)}</div>
-          <div class="fs-9 text-body-tertiary">Requested by ${escapeHtml(r.user_requesting)}</div>
+          <div class="fs-9 text-body-tertiary">Requested by ${formatRequestedBy(r.user_requesting)}</div>
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>
