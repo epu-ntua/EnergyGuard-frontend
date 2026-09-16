@@ -216,7 +216,7 @@ RDN_ASSET_TYPES = ['PV', 'Wind', 'SmallHydro', 'Biomass', 'LargeHydro', 'Gas', '
 
 _RDN_MAX_ASSETS = 25          # well under the schema's 1000, kept usable in a hand-built form
 _RDN_MAX_SETPOINTS = 100      # == schema max
-_RDN_MAX_OUTPUT_SAMPLES = 4_000_000  # guards response size/CPU for pathological requests
+_RDN_MAX_OUTPUT_SAMPLES = 75_500_000  # matches the worst case allowed by _RDN_MAX_ASSETS/_RDN_MAX_SETPOINTS/_RDN_MAX_SPAN_MS
 
 _RDN_STEP_MS = 2
 _RDN_MAX_SPAN_MS = 10_000            # output covers at most 10s per setpoint
@@ -309,7 +309,10 @@ def _validate_rdn_grid_input(body):
     total_points = sum(_rdn_n_points_for_resolution(r) for r in resolutions_ms)
     total_samples = len(cleaned_assets) * 3 * 2 * total_points + total_points
     if total_samples > _RDN_MAX_OUTPUT_SAMPLES:
-        return None, 'Request too large — reduce setpoints, assets, or resolution.'
+        return None, (
+            f'Request too large: computed {total_samples:,} output samples, exceeding the '
+            f'{_RDN_MAX_OUTPUT_SAMPLES:,}-sample limit. Reduce setpoints, assets, or resolution.'
+        )
 
     cleaned = {
         'useCase': use_case,

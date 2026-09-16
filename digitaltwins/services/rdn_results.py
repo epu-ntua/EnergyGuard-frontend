@@ -1,6 +1,6 @@
 """Storage for completed RDN grid simulation results.
 
-An RDN result is bounded only by `_RDN_MAX_OUTPUT_SAMPLES` (4,000,000 samples),
+An RDN result is bounded only by `_RDN_MAX_OUTPUT_SAMPLES` (75,500,000 samples),
 so keeping it in a Postgres JSONB column meant rows of hundreds of megabytes,
 TOAST pressure, backups that grow without limit, and a status-polling endpoint
 that re-serialised the whole payload on every poll after completion.
