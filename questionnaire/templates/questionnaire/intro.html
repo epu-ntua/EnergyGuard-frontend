@@ -12,7 +12,6 @@
 {% endblock head %}
 
 {% block questionnaire_content %}
-<div class="container">
     <div class="row g-4">
 
         <div class="col-lg-8">
@@ -98,7 +97,7 @@
                             {% endif %}
 
                             <a href="{% if has_existing %}{% url 'questionnaire:restart' %}{% else %}{% url 'questionnaire:start_track' track='ai_system' %}{% endif %}"
-                               class="btn rounded-pill py-2 {% if has_existing %}btn-primary{% else %}btn-outline-secondary shadow-sm{% endif %}">
+                               class="btn rounded-pill py-2 btn-primary">
                                 Start Assessment <i class="fa-solid fa-play ms-2"></i>
                             </a>
                         </div>
@@ -123,5 +122,4 @@
         </div>
 
     </div>
-</div>
 {% endblock questionnaire_content %}
