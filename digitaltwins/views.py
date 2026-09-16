@@ -997,7 +997,10 @@ def _rdn_job_duration_label(job):
 
 @login_required
 def rdn_grid_runs(request):
-    jobs = RdnSimulationJob.objects.filter(user=request.user).order_by('-created_at')
+    # .defer('result'): legacy runs still carry their full payload inline in this column
+    # (see RdnSimulationJob.result) - hundreds of MB for old large runs - which this listing
+    # never displays, so fetching it here would be pure wasted I/O.
+    jobs = RdnSimulationJob.objects.filter(user=request.user).defer('result').order_by('-created_at')
     paginator = Paginator(jobs, _RDN_RUNS_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
 
