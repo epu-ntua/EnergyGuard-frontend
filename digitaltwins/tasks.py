@@ -10,10 +10,9 @@ from .services import RdnApiError, get_rdn_job_status, download_rdn_result, stor
 
 logger = logging.getLogger(__name__)
 
-_RDN_JOB_MAX_WAIT = timedelta(hours=1)  # judgment call: our one real run exceeded 14 min with no RDN-documented ceiling
 _RDN_JOB_POLL_INTERVAL_SECONDS = 15
 
-STALE_RUNNING_THRESHOLD = timedelta(hours=2)
+STALE_RUNNING_THRESHOLD = timedelta(days=7)
 
 
 def poll_rdn_job(job_id):
@@ -64,15 +63,9 @@ def poll_rdn_job(job_id):
         )
         return
 
-    if timezone.now() - job.created_at > _RDN_JOB_MAX_WAIT:
-        RdnSimulationJob.objects.filter(pk=job_id).update(
-            status=RdnSimulationJob.Status.FAILED,
-            error_message=f'Timed out after {_RDN_JOB_MAX_WAIT} waiting for RDN.',
-            updated_at=timezone.now(),
-        )
-        return
-
-    _reschedule_poll(job_id)  # still pending/running on RDN's side
+    _reschedule_poll(job_id)  # still pending/running on RDN's side - RDN confirmed this can
+    # legitimately last a long time (e.g. their DT worker being temporarily unavailable),
+    # so we keep polling indefinitely rather than giving up on our own schedule.
 
 
 def _reschedule_poll(job_id):
