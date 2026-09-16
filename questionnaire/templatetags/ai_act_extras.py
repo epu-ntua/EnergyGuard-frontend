@@ -10,16 +10,16 @@ _OF_THE_AI_ACT_RE = re.compile(r'\s*of(?: the)? AI Act\s*', re.IGNORECASE)
 _PAR_RE = re.compile(r'\bpar\.\s*', re.IGNORECASE)
 
 _GUIDELINE_BADGE_META = {
-    'commission_guidelines': ('bg-primary', 'bi-bank2'),
-    'draft_commission_guidelines': ('bg-primary bg-opacity-75', 'bi-bank'),
-    'draft_guidelines': ('bg-info text-dark', 'bi-file-earmark-text'),
-    'code_of_practice': ('bg-success', 'bi-clipboard-check'),
-    'explanatory_notice_template': ('bg-warning text-dark', 'bi-file-earmark-ruled'),
-    'incident_reporting_guidance': ('bg-danger', 'bi-exclamation-triangle'),
-    'incident_report': ('bg-success', 'bi-file-earmark-text'),
-    'other_guidance': ('bg-secondary', 'bi-info-circle'),
+    'commission_guidelines': ('bg-primary', 'fa-building-columns'),
+    'draft_commission_guidelines': ('bg-primary bg-opacity-75', 'fa-building-columns'),
+    'draft_guidelines': ('bg-info text-dark', 'fa-file-lines'),
+    'code_of_practice': ('bg-success', 'fa-clipboard-check'),
+    'explanatory_notice_template': ('bg-warning text-dark', 'fa-file-pen'),
+    'incident_reporting_guidance': ('bg-danger', 'fa-triangle-exclamation'),
+    'incident_report': ('bg-success', 'fa-file-lines'),
+    'other_guidance': ('bg-secondary', 'fa-circle-info'),
 }
-_DEFAULT_BADGE = ('bg-secondary', 'bi-link-45deg')
+_DEFAULT_BADGE = ('bg-secondary', 'fa-link')
 
 _STATUS_BADGE_CLASS = {
     'COMPLETE': 'bg-success',

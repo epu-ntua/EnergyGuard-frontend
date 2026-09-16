@@ -202,12 +202,16 @@ def intro(request):
         entry_action = 'start'
         entry_track = 'ai_system'
 
+    metadata = engine.get_metadata()
+
     return render(request, 'questionnaire/intro.html', {
-        'metadata': engine.get_metadata(),
+        'metadata': metadata,
         'entry_action': entry_action,
         'entry_track': entry_track,
         'entry_step': entry_state['current_step'],
         'has_existing': entry_action != 'start',
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -256,6 +260,8 @@ def step_view(request, track, step_id):
         'other_track': other_track,
         'other_track_label': engine.get_track_label(other_track),
         'other_track_started': state['tracks'][other_track]['started'],
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     }
 
     if step['type'] == 'checklist':
@@ -411,6 +417,8 @@ def not_sure_notice(request, track):
         'continue_step_label': engine.get_step(track, track_state['current_step'])['step_label'],
         'restart_step_label': engine.get_step(track, first_step_id)['step_label'],
         'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -434,6 +442,8 @@ def consult_restart_notice(request, track):
         'track_label': engine.get_track_label(track),
         'message': message,
         'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -451,6 +461,8 @@ def no_role_notice(request, track):
         'track': track,
         'track_label': engine.get_track_label(track),
         'message': track_state.get('terminal_note'),
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -563,6 +575,8 @@ def results(request):
         'roles': display_roles,
         'has_snapshot': bool(request.session.session_key and AIActAssessment.objects.filter(
             session_key=request.session.session_key).exists()),
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 

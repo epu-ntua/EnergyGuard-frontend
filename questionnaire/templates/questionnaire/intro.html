@@ -1,62 +1,127 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 
+{% block disclaimer %}{% endblock disclaimer %}
+
+{% block head %}
+{{ block.super }}
+<style>
+    @media (min-width: 768px) {
+        .intro-stats > div:not(:last-child) { border-right: 1px solid var(--phoenix-border-color); }
+    }
+</style>
+{% endblock head %}
+
 {% block questionnaire_content %}
-<div class="container mt-5" style="max-width: 1100px;">
-    <div class="card shadow border-0">
-        <div class="card-body p-5">
+<div class="container">
+    <div class="row g-4">
 
-            <h1 class="mb-4 text-center">{{ metadata.title }}</h1>
-            <hr>
+        <div class="col-lg-8">
+            <h2 class="mb-4 pe-6">{{ metadata.title }}</h2>
 
-            <div class="my-4" style="font-size: 1.15rem; line-height: 1.7; text-align: justify; color: #333;">
-                <p>
-                    This questionnaire supports organisations in understanding the maturity of their compliance
-                    with regards to <strong>AI Act</strong>. It will guide you through a short assessment to
-                    determine your <strong>role</strong> (such as provider or deployer), the <strong>risk
-                    category/classification</strong> that applies to your AI system or general-purpose AI model,
-                    and the specific <strong>obligations</strong> that follow from that classification. The
-                    questionnaire is an ongoing project, subject to review and update to align with regulatory
-                    developments, thus amendments of Digital Omnibus on AI have not yet been incorporated.
-                </p>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="bi bi-clock me-2 text-primary"></i><strong>Duration:</strong> 10-15 minutes.</li>
-                    <li class="mb-2"><i class="bi bi-gear me-2 text-primary"></i><strong>Process:</strong> Answer questions about your technology's nature and intended use.</li>
-                    <li class="mb-2"><i class="bi bi-file-earmark-check me-2 text-primary"></i><strong>Outcome:</strong> A risk classification and a checklist of outstanding vs. fulfilled obligations based on the answers provided.</li>
-                </ul>
+            <p class="text-body-secondary pe-6">
+                This questionnaire supports organisations in understanding the maturity of their compliance
+                with regards to <strong>AI Act</strong>. It will guide you through a short assessment to
+                determine your <strong>role</strong> (such as provider or deployer), the <strong>risk
+                category/classification</strong> that applies to your AI system or general-purpose AI model,
+                and the specific <strong>obligations</strong> that follow from that classification. The
+                questionnaire is an ongoing project, subject to review and update to align with regulatory
+                developments, thus amendments of Digital Omnibus on AI have not yet been incorporated.
+            </p>
 
-                <p class="mt-4">For the proper completion of the questionnaire, kindly note the following:</p>
-                <ol>
-                    <li class="mb-2">Not all roles covered by AI Act are included in the questionnaire. The roles examined are provider and deployer for AI systems and providers for GPAI models.</li>
-                    <li class="mb-2">In case your entity has more than one roles, repeat questionnaire for each role separately.</li>
-                    <li class="mb-2">The questionnaire should be answered separately for each system or model. If your AI system embeds your own AI model, complete the questionnaire once for the AI system and once for the AI model.</li>
-                    <li class="mb-2">The list of obligations is not exhaustive. Since the questionnaire mainly focuses on the development phase, more obligations can apply after the system is marketed or upon requested by the competent authorities.</li>
-                    <li class="mb-2">The questionnaire is adapted to uses cases most likely in the energy sector, thus not all provisions of AI Act (e.g not all cases of prohibited practices or high-risk) are included.</li>
-                    <li class="mb-2">The information provided is based on Consortium's understanding. AI Act provisions may be interpreted differently.</li>
-                    <li class="mb-2">National legislation should be also checked.</li>
-                </ol>
+            <div class="row g-3 my-7 text-start border-bottom border-top pt-2 pb-3 me-6">
+                <div class="col-md-4 border-end px-4">
+                    <div class="text-body-tertiary text-uppercase fw-bold mb-1 " style="font-size: 0.72rem; letter-spacing: 2px;">Duration</div>
+                    <div class="fs-8">10-15 min</div>
+                </div>
+                <div class="col-md-4 border-end px-4">
+                    <div class="text-body-tertiary text-uppercase fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 2px;">Process</div>
+                    <div class="fs-8-5">Answer questions about your technology's nature and intended use</div>
+                </div>
+                <div class="col-md-4 px-4">
+                    <div class="text-body-tertiary text-uppercase fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 2px;">Outcome</div>
+                    <div class="fs-8-5">A risk classification and a checklist of obligations</div>
+                </div>
             </div>
 
-            <div class="mt-5 text-center d-flex flex-wrap justify-content-center gap-3">
-                {% if entry_action == 'resume' %}
-                    <a href="{% url 'questionnaire:step' track=entry_track step_id=entry_step %}"
-                       class="btn btn-dark btn-lg px-5 shadow" style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
-                        Resume Assessment <i class="bi bi-arrow-right-circle ms-2"></i>
-                    </a>
-                {% elif entry_action == 'results' %}
-                    <a href="{% url 'questionnaire:results' %}"
-                       class="btn btn-dark btn-lg px-5 shadow" style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
-                        View Results <i class="bi bi-clipboard-data ms-2"></i>
-                    </a>
-                {% endif %}
-
-                <a href="{% if has_existing %}{% url 'questionnaire:restart' %}{% else %}{% url 'questionnaire:start_track' track='ai_system' %}{% endif %}"
-                   class="btn {% if has_existing %}btn-outline-dark{% else %}btn-dark{% endif %} btn-lg px-5 shadow"
-                   style="border-radius: 12px; font-weight: 600; padding: 15px 40px;">
-                    Start Assessment <i class="bi bi-play-fill ms-2"></i>
-                </a>
+            <h5 class="fw-bold mb-1 text-body-emphasis mb-3">For the proper completion of the questionnaire, kindly note the following:</h5>
+            <div class="px-4 overflow-hidden">
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">01</span>
+                    <span class="text-body-secondary">Not all roles covered by AI Act are included in the questionnaire. The roles examined are provider and deployer for AI systems and providers for GPAI models.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">02</span>
+                    <span class="text-body-secondary">In case your entity has more than one roles, repeat questionnaire for each role separately.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">03</span>
+                    <span class="text-body-secondary">The questionnaire should be answered separately for each system or model. If your AI system embeds your own AI model, complete the questionnaire once for the AI system and once for the AI model.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">04</span>
+                    <span class="text-body-secondary">The list of obligations is not exhaustive. Since the questionnaire mainly focuses on the development phase, more obligations can apply after the system is marketed or upon requested by the competent authorities.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">05</span>
+                    <span class="text-body-secondary">The questionnaire is adapted to uses cases most likely in the energy sector, thus not all provisions of AI Act (e.g not all cases of prohibited practices or high-risk) are included.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 border-bottom fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">06</span>
+                    <span class="text-body-secondary">The information provided is based on Consortium's understanding. AI Act provisions may be interpreted differently.</span>
+                </div>
+                <div class="d-flex gap-3 p-3 fs-8-5">
+                    <span class="text-body-tertiary fw-bold flex-shrink-0">07</span>
+                    <span class="text-body-secondary">National legislation should be also checked.</span>
+                </div>
             </div>
-
         </div>
+
+        <div class="col-lg-4">
+            <div class="position-sticky" style="top: 1rem;">
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-2 text-body-emphasis">Ready to assess</h5>
+                        <p class="text-body-secondary small">One questionnaire per role, per AI system or model.</p>
+
+                        <div class="d-flex flex-column gap-2 mt-3">
+                            {% if entry_action == 'resume' %}
+                                <a href="{% url 'questionnaire:step' track=entry_track step_id=entry_step %}"
+                                   class="btn btn-outline-secondary rounded-pill py-2 shadow-sm">
+                                    Resume Assessment <i class="fa-solid fa-angle-right ms-2"></i>
+                                </a>
+                            {% elif entry_action == 'results' %}
+                                <a href="{% url 'questionnaire:results' %}"
+                                   class="btn btn-outline-secondary rounded-pill py-2 shadow-sm">
+                                    View Results <i class="fa-solid fa-clipboard-list ms-2"></i>
+                                </a>
+                            {% endif %}
+
+                            <a href="{% if has_existing %}{% url 'questionnaire:restart' %}{% else %}{% url 'questionnaire:start_track' track='ai_system' %}{% endif %}"
+                               class="btn rounded-pill py-2 {% if has_existing %}btn-primary{% else %}btn-outline-secondary shadow-sm{% endif %}">
+                                Start Assessment <i class="fa-solid fa-play ms-2"></i>
+                            </a>
+                        </div>
+
+                        <p class="text-body-tertiary small text-center mb-0 mt-3">Progress is saved as you go.</p>
+                    </div>
+                </div>
+
+                <div class="px-3 py-1 border-start border-2 border-tertiary ">
+                    <div class="text-body-tertiary text-uppercase fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 1px;">Disclaimer</div>
+                    <p class="text-body-tertiary small mb-0 fst-italic">
+                        Any compliance-related insights, assessments, guidance, results and reports generated are
+                        preliminary, non-exhaustive, and intended strictly for informational use. They do not
+                        constitute regulatory approval, accreditation, formal conformity assessment, legally binding
+                        compliance determination or presumption of any type that the AI applications are in
+                        conformity with applicable requirements or legal advice, nor should they be relied upon as a
+                        substitute for professional legal consultation.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock questionnaire_content %}

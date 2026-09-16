@@ -2,24 +2,16 @@
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
-    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     /* Desktop-first: this wraps every page's own (narrower) container below,
        so it must stay at least as wide as the widest of those or it silently
        clips them back down to phone-width regardless of their own max-width. */
     .survey-container { max-width: 1200px; margin: 0 auto 30px; padding: 20px; }
-    .card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .btn-primary { background-color: #2c3e50; border: none; }
-    .btn-primary:hover { background-color: #1a252f; }
-    .popover { max-width: 400px; border-radius: 10px; border: none; shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .popover-header { background-color: #2c3e50; color: white; border-radius: 10px 10px 0 0; }
 
     /* Shared across the EU AI Act questionnaire templates */
-    .ai-act-info-btn { width: 28px; height: 28px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+    .ai-act-info-btn { width: 18px; height: 18px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; border-width: 1px; }
     .ai-act-link-badge { font-size: 0.75rem; font-weight: 500; padding: 0.4em 0.7em; }
-    .ai-act-eu-badge { background-color: #003399; }
-    .ai-act-eu-flag { width: 14px; height: auto; vertical-align: -1px; border-radius: 2px; }
+    .ai-act-eu-flag { width: 18px; height: auto; vertical-align: -2px; border-radius: 2px; }
     .ai-act-info-wrap { position: relative; display: inline-flex; }
     .ai-act-popover-content {
         display: none;
@@ -29,10 +21,10 @@
         z-index: 1060;
         width: max-content;
         max-width: 340px;
-        background-color: #fff;
-        color: #333;
-        border-radius: 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        background-color: var(--phoenix-body-bg);
+        color: var(--phoenix-body-color);
+        border-radius: var(--phoenix-border-radius-lg);
+        box-shadow: var(--phoenix-box-shadow-lg);
         padding: 12px 14px;
         font-size: 0.85rem;
         font-weight: 400;
@@ -44,35 +36,42 @@
     .ai-act-info-wrap:focus-within .ai-act-popover-content {
         display: block;
     }
-    .ai-act-example { border-left: 3px solid #4fd1ed; padding-left: 12px; }
+    .ai-act-example { border-left: 3px solid var(--phoenix-primary); padding-left: 12px; }
     .custom-option-label {
-        border: 2px solid #edf2f7 !important;
-        border-radius: 16px !important;
+        border: 2px solid var(--phoenix-border-color) !important;
+        border-radius: var(--phoenix-border-radius-xl) !important;
         transition: all 0.2s;
-        background-color: #fff;
+        background-color: var(--phoenix-body-bg);
         cursor: pointer;
     }
-    .custom-option-label:hover { border-color: #cbd5e0 !important; }
+    .custom-option-label:hover { border-color: var(--phoenix-border-color-translucent) !important; }
     .btn-check:checked + .custom-option-label {
-        border-color: #1a202c !important;
-        background-color: #f7fafc !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        border-color: var(--phoenix-primary) !important;
+        box-shadow: var(--phoenix-box-shadow-sm) !important;
     }
     .custom-checkbox {
-        width: 22px; height: 22px; border: 2px solid #cbd5e0; border-radius: 6px;
+        width: 22px; height: 22px; border: 2px solid var(--phoenix-border-color-translucent); border-radius: var(--phoenix-border-radius);
         display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.2s;
     }
-    .btn-check:checked + .custom-option-label .custom-checkbox { background-color: #1a202c; border-color: #1a202c; color: #fff; }
-    .ai-act-progress { height: 6px; border-radius: 4px; }
-    .ai-act-progress .progress-bar { background-color: #4fd1ed; }
+    .btn-check:checked + .custom-option-label .custom-checkbox { background-color: var(--phoenix-primary); border-color: var(--phoenix-primary); color: var(--phoenix-body-bg); }
+    .ai-act-progress { height: 6px; border-radius: var(--phoenix-border-radius-sm); }
 </style>
 {% endblock head %}
 
 {% block content %}
 <div class="content">
-  <div class="container survey-container">
+  <div class="container survey-container px-4 px-lg-6 pt-6 pb-9">
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'trustworthiness:trustworthiness' %}">Trustworthiness Assessments</a></li>
+        {% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">EU AI Act Compliance Questionnaire</li>
+        {% endblock breadcrumb %}
+      </ol>
+    </nav>
     {% block questionnaire_content %}
     {% endblock questionnaire_content %}
+    {% block disclaimer %}
     <p class="small text-muted text-center fst-italic mt-4 mx-auto" style="max-width: 900px;">
         *Any compliance-related insights, assessments, guidance, results and reports generated are
         preliminary, non-exhaustive, and intended strictly for informational use. They do not
@@ -81,6 +80,7 @@
         conformity with applicable requirements or legal advice, nor should they be relied upon as a
         substitute for professional legal consultation.
     </p>
+    {% endblock disclaimer %}
   </div>
   {% include "core/footer.html" %}
 </div>

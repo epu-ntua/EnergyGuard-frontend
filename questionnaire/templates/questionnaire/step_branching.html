@@ -1,29 +1,34 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 {% load ai_act_extras %}
 
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'questionnaire:intro' %}">EU AI Act Compliance Questionnaire</a></li>
+<li class="breadcrumb-item active" aria-current="page">{{ track_label }}</li>
+{% endblock breadcrumb %}
+
 {% block questionnaire_content %}
 <div class="container" style="max-width: 1100px;">
-    <div class="card border-0 shadow-lg" style="border-radius: 24px;">
+    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4 p-lg-5">
 
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #e2e8f0; color: #4a5568;">
+                <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-3 px-3 py-2">
                     {{ track_label }} &middot; {{ step.step_label }}
                 </span>
                 <div class="d-flex align-items-center gap-2">
                     {% if track_state.role %}
-                        <span class="badge px-3 py-2 shadow-sm" style="border-radius: 8px; background-color: #4fd1ed; color: #fff;">
+                        <span class="badge bg-primary rounded-3 px-3 py-2">
                             {{ track_state.role|humanize_label }}
                         </span>
                     {% endif %}
-                    <span class="text-muted small">Step {{ progress_index }} of {{ progress_total }}</span>
+                    <span class="text-body-secondary small">Step {{ progress_index }} of {{ progress_total }}</span>
                 </div>
             </div>
             <div class="progress ai-act-progress mb-4">
                 <div class="progress-bar" role="progressbar" style="width: {% widthratio progress_index progress_total 100 %}%"></div>
             </div>
 
-            <h4 class="fw-bold mb-1" style="color: #1a202c;">
+            <h4 class="fw-bold mb-1 text-body-emphasis">
                 {{ step.question }}
                 {% include "questionnaire/partials/_info_circle.html" with obj=step show_extras=True %}
             </h4>
@@ -32,7 +37,7 @@
 
             {% if combined_warning %}
                 <div class="alert alert-warning d-flex align-items-start gap-2 mt-3 mb-0" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                    <i class="fa-solid fa-triangle-exclamation mt-1"></i>
                     <span>{{ combined_warning }}</span>
                 </div>
             {% endif %}
@@ -47,8 +52,8 @@
                                        value="{{ sub_item.label }}"
                                        {% if sub_item.label in selected_sub_items %}checked{% endif %}>
                                 <label class="btn custom-option-label d-flex align-items-start p-3 w-100 text-start" for="sub-{{ sub_item.label }}">
-                                    <span class="custom-checkbox me-3 flex-shrink-0 mt-1"><i class="bi bi-check-lg"></i></span>
-                                    <span class="fw-medium text-dark">
+                                    <span class="custom-checkbox me-3 flex-shrink-0 mt-1"><i class="fa-solid fa-check"></i></span>
+                                    <span class="fw-medium text-body-emphasis">
                                         <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
                                         {% include "questionnaire/partials/_info_circle.html" with obj=sub_item show_extras=True %}
                                         {% include "questionnaire/partials/_info_example.html" with obj=sub_item %}
@@ -58,7 +63,7 @@
                         {% endfor %}
                     </div>
 
-                    <p class="text-muted small mb-2">If none of the above apply, or you're not sure:</p>
+                    <p class="text-body-secondary small mb-2">If none of the above apply, or you're not sure:</p>
                     <div class="d-flex flex-column gap-3 mb-4">
                         {% for opt in step.answer_options %}
                             <div>
@@ -66,19 +71,19 @@
                                        value="{{ opt.value }}"
                                        {% if selected_answer == opt.value %}checked{% endif %}>
                                 <label class="btn custom-option-label d-flex align-items-center p-3 w-100 text-start" for="opt-{{ forloop.counter }}">
-                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="bi bi-check-lg"></i></span>
-                                    <span class="fw-medium text-dark">{{ opt.value }}</span>
+                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="fa-solid fa-check"></i></span>
+                                    <span class="fw-medium text-body-emphasis">{{ opt.value }}</span>
                                 </label>
                             </div>
                         {% endfor %}
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
-                            <i class="bi bi-arrow-left me-2"></i>Back
+                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-body-secondary fw-bold p-0">
+                            <i class="fa-solid fa-angle-left me-2"></i>Back
                         </a>
-                        <button type="submit" class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
-                            Continue <i class="bi bi-arrow-right ms-2"></i>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-lg px-5 py-2 ">
+                            Continue <i class="fa-solid fa-angle-right ms-2"></i>
                         </button>
                     </div>
                 </form>
@@ -107,7 +112,7 @@
                 </script>
             {% else %}
                 {% if step.sub_items %}
-                    <ul class="list-unstyled mt-3 mb-4">
+                    <ul class="list-unstyled mt-3 mb-4" style="font-size: 0.9375rem;">
                         {% for sub_item in step.sub_items|filter_by_role:track_state.role %}
                             <li class="mb-2 ps-1">
                                 <span class="fw-semibold">({{ sub_item.label }})</span> {{ sub_item.text }}
@@ -127,19 +132,19 @@
                                        value="{{ opt.value }}" required
                                        {% if selected_answer == opt.value %}checked{% endif %}>
                                 <label class="btn custom-option-label d-flex align-items-center p-3 w-100 text-start" for="opt-{{ forloop.counter }}">
-                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="bi bi-check-lg"></i></span>
-                                    <span class="fw-medium text-dark">{{ opt.value }}</span>
+                                    <span class="custom-checkbox me-3 flex-shrink-0"><i class="fa-solid fa-check"></i></span>
+                                    <span class="fw-medium text-body-emphasis">{{ opt.value }}</span>
                                 </label>
                             </div>
                         {% endfor %}
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-muted fw-bold p-0">
-                            <i class="bi bi-arrow-left me-2"></i>Back
+                        <a href="{% url 'questionnaire:back' track=track %}" class="btn btn-link text-decoration-none text-body-secondary fw-bold p-0">
+                            <i class="fa-solid fa-angle-left me-2"></i>Back
                         </a>
-                        <button type="submit" class="btn btn-lg px-5 py-2 shadow" style="border-radius: 16px; font-weight: 600; background-color: #4fd1ed; border: none; color: #fff;">
-                            Continue <i class="bi bi-arrow-right ms-2"></i>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-lg px-5 py-2">
+                            Continue <i class="fa-solid fa-angle-right ms-2"></i>
                         </button>
                     </div>
                 </form>

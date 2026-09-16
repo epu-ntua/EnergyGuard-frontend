@@ -1,23 +1,28 @@
 {% extends "questionnaire/base_questionnaire.html" %}
 {% load ai_act_extras %}
 
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'questionnaire:intro' %}">EU AI Act Compliance Questionnaire</a></li>
+<li class="breadcrumb-item active" aria-current="page">Results</li>
+{% endblock breadcrumb %}
+
 {% block questionnaire_content %}
 <div class="container" style="max-width: 1100px;">
-    <div class="card border-0 shadow-lg mb-4" style="border-radius: 24px;">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4 p-lg-5">
             <div class="text-center mb-4">
-                <div class="display-6 text-success mb-2"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="display-6 text-success mb-2"><i class="fa-solid fa-circle-check"></i></div>
                 <h3 class="fw-bold mb-1">Your Assessment Results</h3>
-                <p class="text-muted small mb-0">Based on your answers, it is likely that the following applies:</p>
+                <p class="text-body-secondary small mb-0">Based on your answers, it is likely that the following applies:</p>
             </div>
 
             {% if roles %}
                 <div class="text-center mb-4">
-                    <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Your Role(s)</span>
+                    <span class="text-body-secondary text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Your Role(s)</span>
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         {% for role in roles %}
-                            <span class="badge rounded-pill px-4 py-2 shadow-sm" style="background-color: #1a202c; color:#fff; font-size: 1rem;">
-                                <i class="bi bi-person-badge me-2"></i>{{ role|humanize_label }}
+                            <span class="badge text-bg-dark rounded-pill px-4 py-2" style="font-size: 1rem;">
+                                <i class="fa-solid fa-id-badge me-2"></i>{{ role|humanize_label }}
                             </span>
                         {% endfor %}
                     </div>
@@ -27,20 +32,20 @@
             {% for track_name, data in tracks_data.items %}
                 <div class="p-4 mb-4 border rounded-4">
                     {% if data.risk_category != 'out_of_scope' %}
-                    <h5 class="fw-bold mb-3"><i class="bi bi-signpost-split me-2"></i>{{ data.label }}</h5>
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-signs-post me-2"></i>{{ data.label }}</h5>
 
 
                     <div class="mb-3">
-                        <span class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
-                        <span class="d-inline-block px-4 py-2 shadow-sm" style="background:#1a202c; color:#fff; border-radius: 12px;">
-                            <i class="bi bi-shield-check me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
+                        <span class="text-body-secondary text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
+                        <span class="d-inline-block px-4 py-2 rounded-3 text-bg-dark">
+                            <i class="fa-solid fa-shield-halved me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
                         </span>
                     </div>
                     {% endif %}
 
                     {% if not data.completed %}
                         <div class="alert alert-secondary border-0 mb-0">
-                            <i class="bi bi-hourglass-split me-2"></i>This track is still in progress.
+                            <i class="fa-solid fa-hourglass-half me-2"></i>This track is still in progress.
                             <a href="{% url 'questionnaire:step' track=track_name step_id=data.current_step %}">Resume it</a>.
                         </div>
                     {% elif data.is_terminal %}
@@ -49,9 +54,9 @@
                             {% if data.risk_category != 'out_of_scope' %}
                             <h6 class="fw-bold">
                                 {% if data.risk_category == 'prohibited' %}
-                                    <i class="bi bi-x-octagon-fill me-2"></i>Prohibited
+                                    <i class="fa-solid fa-ban me-2"></i>Prohibited
                                 {% else %}
-                                    <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|risk_category_label }}
+                                    <i class="fa-solid fa-circle-info me-2"></i>{{ data.risk_category|risk_category_label }}
                                 {% endif %}
                             </h6>
                             {% endif %}
@@ -59,15 +64,15 @@
                         </div>
                     {% else %}
                         {% if data.terminal_note %}
-                            <p class="text-muted small fst-italic mb-3">{{ data.terminal_note }}</p>
+                            <p class="text-body-secondary small fst-italic mb-3">{{ data.terminal_note }}</p>
                         {% endif %}
                         {% if data.obligations %}
                             {% for group in data.obligations %}
                                 <div class="mb-3">
-                                    <h6 class="fw-bold small text-uppercase text-muted">{{ group.step_label }}</h6>
+                                    <h6 class="fw-bold small text-uppercase text-body-secondary">{{ group.step_label }}</h6>
                                     {% if group.fulfilled %}
                                         <div class="mb-2">
-                                            <span class="badge bg-success-subtle text-success mb-1"><i class="bi bi-check-circle me-1"></i>Fulfilled</span>
+                                            <span class="badge bg-success-subtle text-success-emphasis mb-1"><i class="fa-solid fa-circle-check me-1"></i>Fulfilled</span>
                                             <ul class="list-unstyled mb-0 small">
                                                 {% for item in group.fulfilled %}
                                                     <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
@@ -77,7 +82,7 @@
                                     {% endif %}
                                     {% if group.outstanding %}
                                         <div>
-                                            <span class="badge bg-danger-subtle text-danger mb-1"><i class="bi bi-exclamation-circle me-1"></i>Outstanding</span>
+                                            <span class="badge bg-danger-subtle text-danger-emphasis mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Outstanding</span>
                                             <ul class="list-unstyled mb-0 small">
                                                 {% for item in group.outstanding %}
                                                     <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
@@ -88,17 +93,17 @@
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <p class="text-muted small mb-0">No specific obligations checklist applies for this outcome.</p>
+                            <p class="text-body-secondary small mb-0">No specific obligations checklist applies for this outcome.</p>
                         {% endif %}
                         {% if data.literacy %}
                             <div class="mt-3">
-                                <h6 class="fw-bold small text-uppercase text-muted">AI Literacy</h6>
+                                <h6 class="fw-bold small text-uppercase text-body-secondary">AI Literacy</h6>
                                 {% if data.literacy.confirmed %}
-                                    <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                                    <span class="badge bg-success-subtle text-success-emphasis"><i class="fa-solid fa-circle-check me-1"></i>Confirmed</span>
                                 {% else %}
-                                    <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-circle me-1"></i>{{ data.literacy.answer }}</span>
+                                    <span class="badge bg-danger-subtle text-danger-emphasis"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ data.literacy.answer }}</span>
                                     {% if data.literacy.next_step_raw %}
-                                        <p class="text-muted small mb-0 mt-1">{{ data.literacy.next_step_raw }}</p>
+                                        <p class="text-body-secondary small mb-0 mt-1">{{ data.literacy.next_step_raw }}</p>
                                     {% endif %}
                                 {% endif %}
                             </div>
@@ -107,24 +112,24 @@
                 </div>
             {% endfor %}
 
-            <p class="text-muted small fst-italic text-center mt-4">
-                <i class="bi bi-exclamation-triangle me-1"></i>
+            <p class="text-body-secondary small fst-italic text-center mt-4">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i>
                 Kindly note that this does not constitute legal advice and can be used only for informational purposes.
             </p>
 
             <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
                 {% if has_snapshot %}
-                    <a href="{% url 'questionnaire:download_json' %}" class="btn btn-outline-dark px-4 py-2" style="border-radius: 12px;">
-                        <i class="bi bi-download me-2"></i>Download Assessment JSON
+                    <a href="{% url 'questionnaire:download_json' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                        <i class="fa-solid fa-download me-2"></i>Download Assessment JSON
                     </a>
                 {% endif %}
-                <a href="{% url 'questionnaire:restart' %}" class="btn btn-dark px-4 py-2" style="border-radius: 12px;">
-                    <i class="bi bi-arrow-counterclockwise me-2"></i>Restart Assessment
+                <a href="{% url 'questionnaire:restart' %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                    <i class="fa-solid fa-rotate-left me-2"></i>Restart Assessment
                 </a>
             </div>
             <div class="d-flex gap-3 mt-4">
-                <a class="btn btn-outline-primary px-4 py-2 mx-auto" style="border-radius: 12px;" href="{% url 'trustworthiness:trustworthiness' %}">
-                    <span class="fas fa-arrow-left me-1"></span>Back to Trustworthiness Assessments
+                <a class="btn btn-outline-primary rounded-pill px-4 py-2 mx-auto" href="{% url 'trustworthiness:trustworthiness' %}">
+                    <i class="fa-solid fa-arrow-left me-1"></i>Back to Trustworthiness Assessments
                 </a>
             </div>
         </div>
