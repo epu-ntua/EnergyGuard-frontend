@@ -5,6 +5,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"/>
 <link rel="stylesheet" href="{% static 'digitaltwins/styles.css' %}"/>
 {% endblock %}
 
@@ -64,6 +65,8 @@
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script>
   window.RIGA_BUILDINGS_API_URL = "{% url 'rea-riga-buildings-api' %}";
   window.RIGA_DATA_BASE_URL = "{% static 'digitaltwins/data/' %}";
