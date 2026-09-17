@@ -202,10 +202,7 @@ def intro(request):
         entry_action = 'start'
         entry_track = 'ai_system'
 
-    metadata = engine.get_metadata()
-
     return render(request, 'questionnaire/intro.html', {
-        'metadata': metadata,
         'entry_action': entry_action,
         'entry_track': entry_track,
         'entry_step': entry_state['current_step'],
