@@ -590,6 +590,7 @@ function exportBuildingData(btn) {
   const safeCode = String(payload.cadastral_number || "building").replace(/[^a-zA-Z0-9_-]+/g, "_");
   downloadJSON(`building-${safeCode}.json`, payload);
 }
+window.exportBuildingData = exportBuildingData;
 
 function parseHeatingIndicator(v) {
   if (v === null || v === undefined || String(v).trim() === "") return null;
@@ -1232,6 +1233,7 @@ function toggleAqLevelsHelp(btn) {
   panel.style.right = (window.innerWidth - rect.right) + "px";
   panel.classList.add("open");
 }
+window.toggleAqLevelsHelp = toggleAqLevelsHelp;
 
 // Close the portal whenever any popup closes, so it never sits open and
 // orphaned after the station popup it belongs to has gone away.
@@ -2000,6 +2002,7 @@ function meteoSelectMetric(btn, metric) {
   card.querySelectorAll(".meteo-metric-btn").forEach(b => b.classList.toggle("active", b === btn));
   card.querySelectorAll(".meteo-metric-plot").forEach(p => { p.hidden = p.getAttribute("data-metric") !== metric; });
 }
+window.meteoSelectMetric = meteoSelectMetric;
 
 /* Same visual language as the building popup's heat-consumption line chart
    (bezier curve, gradient area, hover dots/tooltips), generalized to:
