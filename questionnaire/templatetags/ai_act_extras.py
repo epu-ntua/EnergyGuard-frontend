@@ -46,6 +46,8 @@ def humanize_label(value):
 
 _RISK_CATEGORY_LABELS = {
     'minimal_risk': 'Minimal or No Risk',
+    'prohibited': 'Unacceptable Risk - Prohibited Practices',
+    'transparency_risk': 'Transparency (Limited) Risk',
 }
 
 

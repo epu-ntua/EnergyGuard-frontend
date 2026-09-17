@@ -49,7 +49,7 @@
                             {% if data.risk_category != 'out_of_scope' %}
                             <h6 class="fw-bold">
                                 {% if data.risk_category == 'prohibited' %}
-                                    <i class="bi bi-x-octagon-fill me-2"></i>Prohibited
+                                    <i class="bi bi-x-octagon-fill me-2"></i>{{ data.risk_category|risk_category_label }}
                                 {% else %}
                                     <i class="bi bi-info-circle-fill me-2"></i>{{ data.risk_category|risk_category_label }}
                                 {% endif %}
