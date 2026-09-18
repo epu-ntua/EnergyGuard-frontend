@@ -20,7 +20,7 @@
                     <span class="text-body-secondary text-uppercase fw-bold d-block mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Your Role(s)</span>
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         {% for role in roles %}
-                            <span class="badge text-bg-dark rounded-pill px-4 py-2" style="font-size: 1rem;">
+                            <span class="badge text-bg-primary rounded-pill px-4 py-2" style="font-size: 1rem;">
                                 <i class="fa-solid fa-id-badge me-2"></i>{{ role|humanize_label }}
                             </span>
                         {% endfor %}
@@ -31,13 +31,14 @@
             {% for track_name, data in tracks_data.items %}
                 <div class="p-1 mb-4">
                     {% if data.risk_category != 'out_of_scope' %}
-                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-signs-post me-2"></i>{{ data.label }}</h5>
-
-                    <div class="mb-3">
-                        <span class="text-body-secondary text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">AI Act Classification</span>
-                        <span class="d-inline-block px-4 py-2 rounded-3 text-bg-dark">
-                            <i class="fa-solid fa-shield-halved me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
-                        </span>
+                    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 pb-3 mb-3 border-bottom">
+                        <h5 class="fw-bold text-uppercase mb-0">{{ data.label }}</h5>
+                        <div class="text-end">
+                            <span class="text-body-secondary text-uppercase d-block mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">AI Act Classification</span>
+                            <span class="d-inline-block px-3 py-1 rounded-3 text-bg-dark">
+                                <i class="fa-solid fa-shield-halved me-2"></i>{{ data.risk_category|risk_category_label|default:"Not yet determined" }}
+                            </span>
+                        </div>
                     </div>
                     {% endif %}
 
@@ -62,49 +63,61 @@
                         </div>
                     {% else %}
                         {% if data.terminal_note %}
-                            <p class="text-body-secondary small fst-italic mb-3">{{ data.terminal_note }}</p>
+                            <div class="border-start border-4 border-success ps-4 py-2 mb-7">
+                                <p class="mb-0 fs-8-5">{{ data.terminal_note }}</p>
+                            </div>
                         {% endif %}
                         {% if data.obligations %}
                             {% for group in data.obligations %}
-                                <div class="mb-3">
-                                    <h6 class="fw-bold small text-uppercase text-body-secondary">{{ group.step_label }}</h6>
-                                    {% if group.fulfilled %}
-                                        <div class="mb-2">
-                                            <span class="badge bg-success-subtle text-success-emphasis mb-1"><i class="fa-solid fa-circle-check me-1"></i>Fulfilled</span>
-                                            <ul class="list-unstyled mb-0 small">
+                                <div class="mb-4">
+                                    <h6 class="fw-bold small text-uppercase text-body-secondary mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">{{ group.step_label }}</h6>
+                                    <div class="table-responsive ps-4">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead>
+                                                <tr class="text-body-secondary text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                                    <th class="fw-medium" style="width: 6%;">Ref</th>
+                                                    <th class="fw-medium">Obligation</th>
+                                                    <th class="fw-medium" style="width: 10%;">Status</th>
+                                                    <th class="fw-medium" style="width: 10%;">Progress</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                                 {% for item in group.fulfilled %}
-                                                    <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
+                                                    <tr class="fs-8-5 fw-light">
+                                                        <td class="text-body-secondary ps-1">{{ item.number }}</td>
+                                                        <td class="pe-4">{{ item.text }}</td>
+                                                        <td><span class="badge bg-success-subtle text-success-emphasis">Fulfilled</span></td>
+                                                        <td class="text-body-secondary">{{ item.status|humanize_label }}</td>
+                                                    </tr>
                                                 {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
-                                    {% if group.outstanding %}
-                                        <div>
-                                            <span class="badge bg-danger-subtle text-danger-emphasis mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Outstanding</span>
-                                            <ul class="list-unstyled mb-0 small">
                                                 {% for item in group.outstanding %}
-                                                    <li class="mb-1"><span class="badge {{ item.status|status_badge_class }} me-2">{{ item.status|humanize_label }}</span>{{ item.number }} {{ item.text }}</li>
+                                                    <tr class="fs-8-5 fw-light">
+                                                        <td class="text-body-secondary ps-1">{{ item.number }}</td>
+                                                        <td class="pe-4">{{ item.text }}</td>
+                                                        <td><span class="badge bg-danger-subtle text-danger-emphasis">Outstanding</span></td>
+                                                        <td class="text-body-secondary">{{ item.status|humanize_label }}</td>
+                                                    </tr>
                                                 {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             {% endfor %}
                         {% else %}
                             <p class="text-body-secondary small mb-0">No specific obligations checklist applies for this outcome.</p>
                         {% endif %}
                         {% if data.literacy %}
-                            <div class="mt-3">
-                                <h6 class="fw-bold small text-uppercase text-body-secondary">AI Literacy</h6>
+                            <div class="d-flex align-items-center gap-2 mt-3 pt-3 ">
+                                <span class="text-body-secondary text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">AI Literacy</span>
                                 {% if data.literacy.confirmed %}
                                     <span class="badge bg-success-subtle text-success-emphasis"><i class="fa-solid fa-circle-check me-1"></i>Confirmed</span>
                                 {% else %}
                                     <span class="badge bg-danger-subtle text-danger-emphasis"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ data.literacy.answer }}</span>
-                                    {% if data.literacy.next_step_raw %}
-                                        <p class="text-body-secondary small mb-0 mt-1">{{ data.literacy.next_step_raw }}</p>
-                                    {% endif %}
                                 {% endif %}
                             </div>
+                            {% if not data.literacy.confirmed and data.literacy.next_step_raw %}
+                                <p class="text-body-secondary small mb-0 mt-1">{{ data.literacy.next_step_raw }}</p>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>
