@@ -44,6 +44,7 @@ class Dataset(TimeStampedModel):
         AI4EU = "ai4eu", "AI4EU Platform"
         EUROPEAN_DATA_PORTAL = "european_data_portal", "European Data Portal"
         OWN_DS = "your_own_DS", "Your Own Data Space"
+        RIGA_ENERGY_AGENCY = "riga_energy_agency", "RIGA Energy Agency"
 
     class Status(models.TextChoices):
         UNDER_REVIEW = "under_review", "Under Review"
