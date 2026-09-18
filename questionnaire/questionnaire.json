@@ -97,7 +97,7 @@
             },
             {
               "value": "NO",
-              "next_step_raw": "The AI Act does not impose obligations for providers of AI models that do not qualify as General Purpose AI models.",
+              "next_step_raw": "The AI Act does not apply for solutions that not AI systems according to criteria defined and does not impose obligations for AI models that do not qualify as General Purpose AI models.",
               "derived_hints": {
                 "risk_category": "out_of_scope"
               }
