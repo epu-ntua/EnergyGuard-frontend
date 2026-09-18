@@ -36,7 +36,7 @@
           "track": "ai_system",
           "type": "branching",
           "question": "Does your solution qualify as an AI system according to the definition of AI Act?",
-          "more_info": "AI Act kicks in for a system that include all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infer from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems.",
+          "more_info": "AI Act kicks in for a system that includes all of the following elements:\n1) machine-based system (developed with and operate in machines),\n2) designed to operate with varying levels of autonomy (some degree of independence of actions from human involvement),\n3) can exhibit adaptiveness after deployment (self-learning enabling modification- optional requirement),\n4) can, for explicit (explicitly defined goals) or implicit (extracted from underlining assumptions) objectives\n5) infers from the input it receives, how to generate outputs (not including automatic execution of operations) \n6) such as predictions, content, recommendations, or decisions (type of outputs produced)\n7) that can influence physical or virtual environments (active interaction with the environment)\nIf you have an AI system into which you have integrated your AI model, complete questionnaire once for the system and once for the model.Obligations for GPAI models apply in addition to those applicable in AI systems.",
           "example": "e.g. Simple prediction systems such as a system that uses the average temperature of a certain period’s temperature to predict temperature when only estimating averages and not achieving the performance of more complicated time-series forecasting may non constitute an AI system according to AI Act’s definition.",
           "more_info_example": "AI system that balances supply and demand on the grid may be considered as AI system if it complies with the provided criteria, while traditional software systems that are based on rules solely defined by natural persons to execute operations are not considered AI systems. For Transmission System Operators (TSOs) special attention should be paid to identify AI within existing systems as well as intergate AI within existing systems",
           "sub_items": [],
@@ -358,7 +358,7 @@
             },
             {
               "label": "b",
-              "text": "Specifically developped and put into service purely for scientific research and development",
+              "text": "Specifically developed and put into service purely for scientific research and development",
               "more_info": null,
               "example": "e.g. a system specifically developed for the exclusive purpose of research in a university lab → likely excluded.",
               "more_info_example": null,
@@ -430,7 +430,7 @@
               "label": "a",
               "text": "harmful manipulation and deception",
               "more_info": "Harmful manipulation and deception: use of subliminal or purposefully manipulative or deceptive techniques aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
-              "example": "e.g AI system for the management of customers’ energy consumption data and offering of personalized recommendations for reduced energy use when this system uses practices that can manipulate of user's behaviour such as pressuring users to adopt certain consumption habits through highly persuasive messages based on individual's personal data → PROHIBITED",
+              "example": "e.g. AI system for the management of customers’ energy consumption data and offering of personalized recommendations for reduced energy use when this system uses practices that can manipulate user's behaviour such as pressuring users to adopt certain consumption habits through highly persuasive messages based on individual's personal data → PROHIBITED",
               "more_info_example": null,
               "article_links": [
                 {
@@ -443,7 +443,7 @@
             {
               "label": "b",
               "text": "harmful exploitation of vulnerabilities",
-              "more_info": "Harmful exploitation of vulnerabilities: exploit vulnerabilities of a person or group of persons (due to age, disability,or specific social or economic situation) aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
+              "more_info": "Harmful exploitation of vulnerabilities: exploit vulnerabilities of a person or group of persons (due to age, disability or specific social or economic situation) aiming at or resulting in distorting behaviour, causing or reasonably likely to cause significant harm",
               "example": "e.g. An AI system targeting vulnerable consumers on the basis of energy poverty situation for predatory energy products, exploiting their susceptibility, causing significant financial harm.",
               "more_info_example": null,
               "article_links": [
@@ -665,7 +665,7 @@
               "label": "e",
               "text": "AI systems intended to be used as safety components of products or the system itself is a product covered by EU product safety legislation listed in Annex I of AI Act and the product is subject to third party conformity assessment",
               "more_info": "Annex I list of Union harmonisation legislation (indicative list narrowed down to use cases most likely to energy sector- see full list of Annex I): \nmachinery, equipment and protective systems inteded for use in potentially explosive atmospheres, radio equipment, pressure equipment, appliance burning gaseous fuels etc.",
-              "example": "AI system in a smart thermostat covered by the Radio Equipment Directive, if constitutes a safety component (fulfil safety function where a failure could endager health and safety) and is required to undergo a thrid party conformity assessment →likely HIGH RISK.",
+              "example": "AI system in a smart thermostat covered by the Radio Equipment Directive, if constitutes a safety component (fulfil safety function where a failure could endager health and safety) and is required to undergo a third party conformity assessment →likely HIGH RISK.",
               "more_info_example": null,
               "combined_selection_warning": "This question does not apply to AI systems intended to be used as safety components.",
               "article_links": [
@@ -746,7 +746,7 @@
           "step_label": "Step 4.3 · Derogations Check",
           "track": "ai_system",
           "type": "branching",
-          "question": "Does your high risk AI system included in Annex III of the AI Act (cases a-d bellow) fall into any of these exhaustive cases and the system neither materially influence the outcome of the decision nor perform profiling?",
+          "question": "Does your high risk AI system included in Annex III of the AI Act (cases a-d of the previous question) fall into any of these exhaustive cases and the system neither materially influences the outcome of the decision nor performs profiling?",
           "more_info": "AI systems included in Annex III of AI Act may exempt from high-risk classification if specific conditions are fulfilled.",
           "example": null,
           "more_info_example": null,
@@ -1178,7 +1178,7 @@
               "item_id": "AI-5.10-dup1",
               "number": "5.17",
               "text": "Accessibility requirements",
-              "more_info": "The provider of the high-risk AI system should comply with national accessibility requirements in accordance with Directives on the accessibility of the websites and mobile applications of public sector bodies (EU) 2016/2102 and on the accessibility requirements for products and services to the extent applicable to energy sector (EU) 2019/882 (e.g expected to be included smart meters and other devices used by consumers), and self-service terminals for payment)",
+              "more_info": "The provider of the high-risk AI system should comply with national accessibility requirements in accordance with Directives on the accessibility of the websites and mobile applications of public sector bodies (EU) 2016/2102 and on the accessibility requirements for products and services to the extent applicable to energy sector (EU) 2019/882 (e.g energy related e-commerce services meaning energy related services provided at a distance, through websites and mobile device-based services by electronic means and at the individual request of a consumer with a view to concluding a consumer contract), and self-service terminals for payment)",
               "example": null,
               "more_info_example": null,
               "data_note": "Duplicate item number '5.10' in source spreadsheet (row 60)",
@@ -1193,7 +1193,7 @@
             {
               "item_id": "AI-5.11-dup1",
               "number": "5.18",
-              "text": "Appointment of an authorised represenative (if your entity is established in third countries)",
+              "text": "Appointment of an authorised representative (if your entity is established in third countries)",
               "more_info": "The provider of the high-risk AI system, established in third countries, should appoint an authorized representative established in the Union, by written mandate, prior to making the AI system available on the Union Market. The mandate should be drafted in accordance with the provisions of article 22 par. 3 of the AI Act",
               "example": null,
               "more_info_example": null,
@@ -2163,7 +2163,7 @@
               "number": "4.4",
               "required_even_if_full_adherence": true,
               "text": "Training data summary — publicly available summary of content used for training (using the EU mandatory template)",
-              "more_info": "Information included in the Summary should extend to all stages of the model training, from pre-training to post training, covering all data sources and data categories. To achive transparency and enable parties to exercise their rights, information should be comprehensive and detailed. The tempate provides a minimum baseline for the information to be provided. \nThe EU template for the public summary of the training content for General- Purpose AI models that should be filledprior to their placing on the Union Market is available at https://digital-strategy.ec.europa.eu. https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models. This summary is required for all providers, including those following the Code of Practice.",
+              "more_info": "Information included in the Summary should extend to all stages of the model training, from pre-training to post training, covering all data sources and data categories. To achive transparency and enable parties to exercise their rights, information should be comprehensive and detailed. The template provides a minimum baseline for the information to be provided. \nThe EU template for the public summary of the training content for General- Purpose AI models that should be filled prior to their placing on the Union Market is available at https://digital-strategy.ec.europa.eu. https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models. This summary is required for all providers, including those following the Code of Practice.",
               "example": null,
               "more_info_example": null,
               "article_links": [
