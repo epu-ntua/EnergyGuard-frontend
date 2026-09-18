@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
@@ -9,7 +10,12 @@ from django.shortcuts import redirect, render
 from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 
+from accounts.services.tokens import user_has_realm_role
+
 logger = logging.getLogger(__name__)
+
+# Keycloak realm role that grants access to the DeepTSF instance itself.
+DEEPTSF_ACCESS_ROLE = 'inergy_admin'
 
 # Phoenix theme colors used by the AI model cards/badges (var(--phoenix-<color>)).
 ALLOWED_COLORS = {'primary', 'secondary', 'success', 'info', 'warning', 'danger', 'dark'}
@@ -240,6 +246,9 @@ def ai_models(request):
         model.setdefault('compact', False)
         models.append(model)
 
+    # TODO: the DeepTSF card badge always shows "Request access" here even for users who
+    # already hold DEEPTSF_ACCESS_ROLE (see deeptsf_detail below). Needs a decision with the
+    # team on whether/how to surface access state on this list before wiring it up.
     return render(request, 'core/ai-models.html', {
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
@@ -252,6 +261,8 @@ def deeptsf_detail(request):
     return render(request, 'core/deeptsf-detail.html', {
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
+        'has_deeptsf_access': user_has_realm_role(request.user, DEEPTSF_ACCESS_ROLE),
+        'deeptsf_url': settings.DEEPTSF_URL,
     })
 
 
