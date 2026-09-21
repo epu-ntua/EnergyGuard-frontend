@@ -97,7 +97,7 @@
             },
             {
               "value": "NO",
-              "next_step_raw": "The AI Act does not apply for solutions that not AI systems according to criteria defined and does not impose obligations for AI models that do not qualify as General Purpose AI models.",
+              "next_step_raw": "The AI Act does not apply for solutions that are not AI systems according to criteria defined and does not impose obligations for AI models that do not qualify as General Purpose AI models.",
               "derived_hints": {
                 "risk_category": "out_of_scope"
               }
@@ -119,7 +119,7 @@
           "track": "ai_system",
           "type": "branching",
           "question": "Does your organisation develop and place this AI system on the market or put it into service under your organisation's name or trademark - even if you used a third-party vendor to build it?",
-          "more_info": "Place on the market means the first making available of an AI system on the Union market, meaning the supply of an AI system for distribution or use on the Union market in the course of a commercial activity and can take place in return or payment or for free.\nPut into service means the supply of an AI system for first use directlty to the deployer or for own use in the Union for its intended purpose.",
+          "more_info": "Place on the market means the first making available of an AI system on the Union market, meaning the supply of an AI system for distribution or use on the Union market in the course of a commercial activity and can take place in return or payment or for free.\nPut into service means the supply of an AI system for first use directly to the deployer or for own use in the Union for its intended purpose.",
           "example": "e.g. you contracted a software house to build a demand forecasting system that you then marketed in the Union market under your own brand",
           "more_info_example": null,
           "sub_items": [],
@@ -1588,6 +1588,7 @@
               "value": "NO",
               "next_step_raw": "Step 8 · AI Literacy",
               "derived_hints": {
+                "risk_category": "minimal_risk",
                 "goes_to_step_hint": "Step 8"
               }
             }
