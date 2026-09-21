@@ -50,9 +50,10 @@
             <div class="d-flex align-items-center"><span class="fs-4 lh-1 uil  uil-notebooks text-primary-dark"></span>
               <div class="ms-2">
                 <div class="d-flex align-items-end">
-                  <h2 class="mb-0 me-2">{{ projects_count }}</h2><span class="fs-7 fw-semibold text-body">Projects</span>
+                  <h2 class="mb-0 me-2">{{ projects_count }}</h2><span class="fs-7 fw-semibold text-body">Your {% if team %} Team's {% endif %} Projects</span>
                 </div>
-                <p class="text-body-secondary fs-9 mb-0">Created in the platform</p>
+                <p class="text-body-secondary fs-9 mb-0">you have created</p>
+                <p class="text-body-tertiary fs-9 mb-0"> {{ public_projects_count }} public project{% if public_projects_count > 1 %}s{% endif %}</p>
               </div>
             </div>
           </a>
@@ -65,7 +66,8 @@
                 <div class="d-flex align-items-end">
                   <h2 class="mb-0 me-2">{{ datasets_count }}</h2><span class="fs-7 fw-semibold text-body">Datasets</span>
                 </div>
-                <p class="text-body-secondary fs-9 mb-0">Ready to explore</p>
+                <p class="text-body-secondary fs-9 mb-0">public datasets</p>
+                <p class="text-body-tertiary fs-9 mb-0">{{ user_datasets_count }} private uploaded by you</p>
               </div>
             </div>
           </a>
@@ -78,7 +80,10 @@
                 <div class="d-flex align-items-center">
                   <h2 class="mb-0 me-2">{{ ai_models_count }}</h2><span class="fs-7 fw-semibold text-body">AI Models & Services</span>
                 </div>
-                <p class="text-body-secondary fs-9 mb-0">Registered & deployable</p>
+                <p class="text-body-secondary fs-9 mb-0">available now</p>
+                {% if ai_models_on_request_count or ai_models_coming_soon_count %}
+                <p class="text-body-tertiary fs-9 mb-0">+ {{ ai_models_on_request_count }} on request · {{ ai_models_coming_soon_count }} coming soon</p>
+                {% endif %}
               </div>
             </div>
           </a>
@@ -91,7 +96,8 @@
                 <div class="d-flex align-items-end">
                   <h2 class="mb-0 me-2">{{ digital_twins_count }}</h2><span class="fs-7 fw-semibold text-body">Digital Twins</span>
                 </div>
-                <p class="text-body-secondary fs-9 mb-0">Configured & accessible</p>
+                <p class="text-body-secondary fs-9 mb-0">available of {{ digital_twins_total }}</p>
+                {% if digital_twins_in_preparation_count %}<p class="text-body-tertiary fs-9 mb-0">{{ digital_twins_in_preparation_count }} in preparation</p>{% endif %}
               </div>
             </div>
           </a>
@@ -101,7 +107,7 @@
 
     <div class="col-12 col-xl-6 col-xxl-5">
       <h3 class="text-body-emphasis mb-1">Datasets Coverage by Domain</h3>
-      <div class="fs-8">Distribution of datasets currently available on the platform</div>
+      <div class="fs-8">Distribution of available datasets (public and approved) by domain</div>
       <div id="sortedBarChart" style="height: 420px;"></div>
       <div class="border-0 "><a class="fw-bold fs-9 mt-3" href="{% url 'datasets_list' %}">Explore Datasets<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
     </div>
@@ -163,7 +169,7 @@
           <div class="row h-100">
             <div class="col-12 col-md-6">
               <h3 class="text-body-emphasis text-nowrap">AI Models Inventory</h3>
-              <p class="text-body-tertiary mb-md-7">How registered models are distributed by category</p>
+              <p class="text-body-tertiary mb-md-7">How available models are distributed by category</p>
               <!-- LEGEND -->
               <div id="donutLegend" style="width: 100%; min-height: 220px;"></div>
               <div class="border-0"><a class="fw-bold fs-9 mt-3" href="{% url 'ai_models' %}">Browse AI Models<span class="fas fa-angle-right ms-2 fs-10 text-center"></span></a></div>
@@ -183,7 +189,7 @@
           <h3 class="mb-4">Digital Twins</h3>
           <p class="text-body-tertiary mb-3 mb-xl-5">Digital Twins enable simulation, monitoring and AI-driven optimization across energy systems.</p>
           <ul>
-            <li class="mb-2">{{ digital_twins_count }} Configured Twins</li>
+            <li class="mb-2">{{ digital_twins_count }} of {{ digital_twins_total }} Twins available</li>
             <li class="mb-2">Model & Dataset Integration</li>
             <li class="mb-2">Simulation & Scenario Testing</li>
           </ul>
