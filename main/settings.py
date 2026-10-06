@@ -309,8 +309,9 @@ LOGGING = {
 }
 
 # Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'  # For development: prints emails to the console
+# DEBUG (dev) prints emails to the console instead of sending real SMTP mail, so local
+# testing errors and admin-error-report emails don't land in the production ADMINS inbox.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
@@ -363,10 +364,13 @@ DATALAKE_CONNECT_TIMEOUT = env.int('DATALAKE_CONNECT_TIMEOUT', default=10)
 PILOT_DATASETS_PREFIX = env('PILOT_DATASETS_PREFIX', default='pilot_datasets')
 # EnergyGuard Data Space gateway (colleague's FastAPI proxy over EnPower/True Connector).
 # Called directly from the browser (see dataspace app), not proxied through this backend.
-DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='http://energyguard.epu.ntua.gr:8000')
+DATASPACE_GATEWAY_URL = env('DATASPACE_GATEWAY_URL', default='https://dashboard.energy-guard.eu/dataspace-api')
 
 # Code Analysis (Semgrep backend)
 SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
+
+# DeepTSF codeless forecasting UI, gated behind the inergy_admin Keycloak realm role.
+DEEPTSF_URL = env('DEEPTSF_URL', default='https://deeptsf.energy-guard.eu/')
 
 REPORTS_DIR = str(BASE_DIR / 'robustness_reports')
 ROBUSTNESS_API_URL = env('ROBUSTNESS_API_URL', default='')

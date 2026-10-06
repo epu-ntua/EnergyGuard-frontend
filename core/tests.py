@@ -90,6 +90,24 @@ class RequestAIModelAccessTests(TestCase):
         self.assertRedirects(response, reverse("ai_models"))
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_existing_slug_without_request_access_shows_error_and_sends_no_mail(self):
+        response = self.client.post(
+            reverse("ai_model_request_access"), {"model_slug": "smart-energy-optimiser"}
+        )
+        self.assertRedirects(response, reverse("ai_models"))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_ajax_existing_slug_without_request_access_returns_json_error(self):
+        response = self.client.post(
+            reverse("ai_model_request_access"),
+            {"model_slug": "smart-energy-optimiser"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertFalse(data["success"])
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_valid_slug_emails_admins(self):
         response = self.client.post(
             reverse("ai_model_request_access"), {"model_slug": "deeptsf"}
@@ -98,3 +116,37 @@ class RequestAIModelAccessTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("DeepTSF", mail.outbox[0].subject)
         self.assertIn(self.user.email, mail.outbox[0].body)
+
+    def test_ajax_valid_slug_returns_json_success_and_emails_admins(self):
+        response = self.client.post(
+            reverse("ai_model_request_access"),
+            {"model_slug": "deeptsf"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.assertIn("DeepTSF", data["message"])
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_ajax_unknown_slug_returns_json_error_and_sends_no_mail(self):
+        response = self.client.post(
+            reverse("ai_model_request_access"),
+            {"model_slug": "does-not-exist"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertFalse(data["success"])
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_ajax_mail_failure_returns_json_error(self):
+        with patch("core.views.ai_models.mail_admins", side_effect=Exception("smtp down")):
+            response = self.client.post(
+                reverse("ai_model_request_access"),
+                {"model_slug": "deeptsf"},
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            )
+        self.assertEqual(response.status_code, 502)
+        data = json.loads(response.content)
+        self.assertFalse(data["success"])

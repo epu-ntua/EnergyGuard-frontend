@@ -102,6 +102,7 @@
 <script>
 (function () {
     // ── Upload state ──────────────────────────────────────────────────────────────
+    var MAX_DATA_FILE_SIZE_MB = 500; // Keep in sync with datasets/forms.py _MAX_DATA_FILE_SIZE_MB
     var uploadXhr = null;
     var uploadDone = false;
     var selectedFile = null;
@@ -127,9 +128,23 @@
         return match ? decodeURIComponent(match[1]) : '';
     }
 
+    // ── Error banners — show, then auto-dismiss after a few seconds ────────────────
+    var ERROR_AUTO_HIDE_MS = 6000;
+    var errorAutoHideTimers = new WeakMap();
+    function flashError(el, msg) {
+        if (!el) return;
+        el.textContent = msg;
+        el.style.display = '';
+        var existingTimer = errorAutoHideTimers.get(el);
+        if (existingTimer) clearTimeout(existingTimer);
+        errorAutoHideTimers.set(el, setTimeout(function () {
+            el.style.display = 'none';
+            errorAutoHideTimers.delete(el);
+        }, ERROR_AUTO_HIDE_MS));
+    }
+
     function showError(msg) {
-        errorMsg.textContent = msg;
-        errorMsg.style.display = '';
+        flashError(errorMsg, msg);
     }
 
     // ── Popovers ──────────────────────────────────────────────────────────────────
@@ -158,6 +173,10 @@
         var ext = (file.name.split('.').pop() || '').toLowerCase();
         if (ext !== 'csv' && ext !== 'zip') {
             showError('Only .csv or .zip files are allowed.');
+            return;
+        }
+        if (file.size > MAX_DATA_FILE_SIZE_MB * 1024 * 1024) {
+            showError('File size must not exceed ' + MAX_DATA_FILE_SIZE_MB + ' MB.');
             return;
         }
         // Reset state for re-selection
@@ -263,6 +282,11 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.redirect) { window.location.href = data.redirect; return; }
+            if (data.errors) {
+                showError(data.errors.join(' '));
+                nextBtn.disabled = false; nextSpinner.style.display = 'none';
+                return;
+            }
             if (!data.html) {
                 showError('Unexpected server response. Please try again.');
                 nextBtn.disabled = false; nextSpinner.style.display = 'none';
@@ -451,7 +475,7 @@
                     });
                 });
                 if (hasIncomplete) {
-                    if (manualError) manualError.style.display = '';
+                    if (manualError) flashError(manualError, manualError.textContent);
                     return;
                 }
             }
@@ -482,10 +506,15 @@
             })
             .then(function (r) { return r.json(); })
             .then(function (data) {
+                if (data.errors) {
+                    // Validation failed — the step 3 form is still on screen
+                    if (submitBtn) submitBtn.disabled = false;
+                    flashError(document.getElementById('step3-upload-error'), data.errors.join(' '));
+                    return;
+                }
                 if (!data.html) {
                     if (submitBtn) submitBtn.disabled = false;
-                    var errDiv = document.getElementById('step3-upload-error');
-                    if (errDiv) { errDiv.textContent = 'Something went wrong. Please try again.'; errDiv.style.display = ''; }
+                    flashError(document.getElementById('step3-upload-error'), 'Something went wrong. Please try again.');
                     return;
                 }
 
@@ -504,8 +533,7 @@
             })
             .catch(function () {
                 if (submitBtn) submitBtn.disabled = false;
-                var errDiv = document.getElementById('step3-upload-error');
-                if (errDiv) { errDiv.textContent = 'Something went wrong. Please try again.'; errDiv.style.display = ''; }
+                flashError(document.getElementById('step3-upload-error'), 'Something went wrong. Please try again.');
             });
         });
 

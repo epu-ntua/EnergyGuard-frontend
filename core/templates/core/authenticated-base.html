@@ -127,6 +127,34 @@
     {% if request.user.is_authenticated %}
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100; margin-top:70px;"></div>
     <script>
+    window.EnergyGuardToast = (function () {
+      function escapeHtml(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      return {
+        escapeHtml: escapeHtml,
+        // iconClass: one or more "fa-*"/text-color classes, e.g. "fa-check-circle text-success".
+        show: function (iconClass, message) {
+          var container = document.getElementById("toast-container");
+          if (!container) return;
+          var el = document.createElement("div");
+          el.className = "toast align-items-center border-0 mb-2";
+          el.setAttribute("role", "alert");
+          el.innerHTML =
+            '<div class="d-flex">' +
+              '<div class="toast-body d-flex align-items-center gap-2">' +
+                '<span class="fas ' + escapeHtml(iconClass) + '"></span>' +
+                '<span>' + escapeHtml(message) + '</span>' +
+              '</div>' +
+              '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
+            '</div>';
+          container.appendChild(el);
+          new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+        }
+      };
+    })();
     (function () {
       var POLL_URL = "{% url 'poll_notifications' %}";
       var READ_URL_BASE = "{% url 'read_notification' 0 %}";
@@ -137,12 +165,7 @@
       var POLL_INTERVAL = 15000;
       // Notifications already rendered server-side on this page load must not be re-toasted/duplicated by the first poll().
       var shown = new Set();
-
-      function escapeHtml(value) {
-        return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
-          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-        });
-      }
+      var escapeHtml = window.EnergyGuardToast.escapeHtml;
 
       function readUrlFor(id) {
         return READ_URL_BASE.replace("/0/", "/" + id + "/");
@@ -233,20 +256,7 @@
       }
 
       function showToast(n) {
-        var container = document.getElementById("toast-container");
-        var el = document.createElement("div");
-        el.className = "toast align-items-center border-0 mb-2";
-        el.setAttribute("role", "alert");
-        el.innerHTML =
-          '<div class="d-flex">' +
-            '<div class="toast-body d-flex align-items-center gap-2">' +
-              '<span class="fas fa-' + escapeHtml(n.icon) + '"></span>' +
-              '<span>' + escapeHtml(n.message) + '</span>' +
-            '</div>' +
-            '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
-          '</div>';
-        container.appendChild(el);
-        new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+        window.EnergyGuardToast.show("fa-" + n.icon, n.message);
 
         addToDropdown(n);
 
@@ -340,19 +350,7 @@
         } else if (toastContainer) {
           var icon = iconMap[level] || "info-circle";
           var color = colorMap[level] || "";
-          var el = document.createElement("div");
-          el.className = "toast align-items-center border-0 mb-2";
-          el.setAttribute("role", "alert");
-          el.innerHTML =
-            '<div class="d-flex">' +
-              '<div class="toast-body d-flex align-items-center gap-2">' +
-                '<span class="fas fa-' + icon + ' ' + color + '"></span>' +
-                '<span>' + m.text + '</span>' +
-              '</div>' +
-              '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>' +
-            '</div>';
-          toastContainer.appendChild(el);
-          new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
+          window.EnergyGuardToast.show("fa-" + icon + (color ? " " + color : ""), m.text);
         }
       });
     });

@@ -152,7 +152,10 @@
                             </div>
     
                             {% if mode != "view" %}
-                            <!-- Authentication section -->
+                            {% comment %}
+                            Authentication section - private repository support (PAT input) is not
+                            wired up on the backend yet. Commented out rather than just disabled so it
+                            doesn't show as a half-built control; re-enable once supported.
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Authentication</h6>
@@ -169,7 +172,7 @@
                                             <input class="form-check-input" type="checkbox" role="switch" id="is-private" name="is_private">
                                         </div>
                                     </div>
-    
+
                                     <div id="private-fields" class="d-none mt-3">
                                         <div class="mb-1">
                                             <label class="form-label fw-semibold" for="pat">
@@ -197,6 +200,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {% endcomment %}
                             {% endif %}
 
                             <!-- Actions -->

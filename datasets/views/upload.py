@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from django_q.tasks import async_task
@@ -56,11 +57,25 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
         response = super().post(*args, **kwargs)
         if not is_ajax:
             return response
+        if isinstance(response, JsonResponse):
+            # done() already built its own ajax response.
+            return response
         if isinstance(response, HttpResponseRedirect):
             return JsonResponse({"redirect": response["Location"]})
+
+        # Surface validation errors without re-rendering the current step.  
+        form = getattr(response, "context_data", {}).get("form")
+        if form is not None and form.errors:
+            errors = [str(err) for err in form.non_field_errors()]
+            for field_name, field_errors in form.errors.items():
+                if field_name == "__all__":
+                    continue
+                errors.extend(str(err) for err in field_errors)
+            return JsonResponse({"errors": errors, "step": self.steps.current}, status=400)
+
         if hasattr(response, "render"):
             response.render()
-        return JsonResponse({"html": response.content.decode("utf-8")})
+        return JsonResponse({"html": response.content.decode("utf-8"), "step": self.steps.current})
 
     def done(self, form_list, **kwargs):
         upload_data = self.get_cleaned_data_for_step("upload_files")
@@ -96,9 +111,12 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
         )
 
         if self.request.headers.get("X-Wizard-Ajax") == "1":
-            return render(self.request, "datasets/upload-dataset-success-fragment.html", {
-                "wizard_steps": DATASET_STEP_METADATA.values(),
-            })
+            html = render_to_string(
+                "datasets/upload-dataset-success-fragment.html",
+                {"wizard_steps": DATASET_STEP_METADATA.values()},
+                request=self.request,
+            )
+            return JsonResponse({"html": html, "step": "done"})
 
         self.request.session["dataset_upload_success"] = True
         return redirect("dataset-upload-success")

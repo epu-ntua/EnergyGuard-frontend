@@ -272,12 +272,30 @@ function setupSearchControl() {
 var map = L.map('map', { zoomControl: true, preferCanvas: true }).setView([56.9496, 24.1052], 15);
 var geoJsonRenderer = L.canvas({ padding: 0.5 });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-  attribution: '&copy; CARTO'
+const basemap = L.maplibreGL({
+  style: 'https://tiles.openfreemap.org/styles/bright',
+  attribution: '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+basemap.getContainer().style.filter = 'saturate(0.6) brightness(1.08) contrast(0.9)';
+const glMap = basemap.getMaplibreMap();
+
+glMap.once('load', () => {
+  glMap.getStyle().layers.forEach(layer => {
+    const isRoadShield =
+      layer['source-layer'] === 'transportation_name' &&
+      layer.layout && layer.layout['icon-image'];
+
+    if (layer['source-layer'] === 'poi' ||
+        layer['source-layer'] === 'aerodrome_label' ||
+        isRoadShield) {
+      glMap.setLayoutProperty(layer.id, 'visibility', 'none');
+    }
+  });
+});
+
 /* ═══════════════════════════════════════════════════
-   MINI MAP  
+   MINI MAP
 ═══════════════════════════════════════════════════ */
 var miniMap = L.map('minimap', {
   zoomControl:       false,
@@ -290,7 +308,25 @@ var miniMap = L.map('minimap', {
   keyboard:          false
 }).setView([56.9496, 24.1052], 11);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png').addTo(miniMap);
+const miniBasemap = L.maplibreGL({
+  style: 'https://tiles.openfreemap.org/styles/bright',
+  attribution: '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(miniMap);
+
+miniBasemap.getContainer().style.filter = 'saturate(0.6) brightness(1.08) contrast(0.9)';
+const miniGlMap = miniBasemap.getMaplibreMap();
+
+miniGlMap.once('load', () => {
+  miniGlMap.getStyle().layers.forEach(layer => {
+    const isRoadShield =
+      layer['source-layer'] === 'transportation_name' &&
+      layer.layout && layer.layout['icon-image'];
+
+    if (layer['source-layer'] === 'poi' || layer['source-layer'] === 'aerodrome_label' || isRoadShield) {
+      miniGlMap.setLayoutProperty(layer.id, 'visibility', 'none');
+    }
+  });
+});
 
 /* ── Viewport rectangle overlay ── */
 var viewportEl = document.getElementById('viewport-rect');
@@ -554,6 +590,7 @@ function exportBuildingData(btn) {
   const safeCode = String(payload.cadastral_number || "building").replace(/[^a-zA-Z0-9_-]+/g, "_");
   downloadJSON(`building-${safeCode}.json`, payload);
 }
+window.exportBuildingData = exportBuildingData;
 
 function parseHeatingIndicator(v) {
   if (v === null || v === undefined || String(v).trim() === "") return null;
@@ -843,7 +880,7 @@ function buildPopupContent(feature) {
   const annualUsagePerArea = computeAnnualStats(p).perArea;
   const annualUsagePerAreaText = annualUsagePerArea !== null ? `${annualUsagePerArea.toFixed(0)} kWh/m²` : "-";
   const annualRangeText = months.length ? `${formatMonthYear(months[0])} - ${formatMonthYear(months[months.length - 1])}` : "-";
-  const apiUrl = p.api_url || p.open_api_url || p.api || "";
+  const apiUrl = "http://energyguard.epu.ntua.gr:9007/docs";
   const safeApiUrl = String(apiUrl).replace(/'/g, "%27");
   const heatIndicator = parseHeatingIndicator(p.heating_indicator);
   const { indicatorClass, indicatorWidth, indicatorPointPos, indicatorEdgeClass, indicatorValueText } = computeIndicatorVisual(heatIndicator);
@@ -1196,6 +1233,7 @@ function toggleAqLevelsHelp(btn) {
   panel.style.right = (window.innerWidth - rect.right) + "px";
   panel.classList.add("open");
 }
+window.toggleAqLevelsHelp = toggleAqLevelsHelp;
 
 // Close the portal whenever any popup closes, so it never sits open and
 // orphaned after the station popup it belongs to has gone away.
@@ -1964,6 +2002,7 @@ function meteoSelectMetric(btn, metric) {
   card.querySelectorAll(".meteo-metric-btn").forEach(b => b.classList.toggle("active", b === btn));
   card.querySelectorAll(".meteo-metric-plot").forEach(p => { p.hidden = p.getAttribute("data-metric") !== metric; });
 }
+window.meteoSelectMetric = meteoSelectMetric;
 
 /* Same visual language as the building popup's heat-consumption line chart
    (bezier curve, gradient area, hover dots/tooltips), generalized to:
@@ -3490,7 +3529,7 @@ function initCityOverviewPanel() {
     </div>
 
     <div class="cf-actions-row">
-      <button class="api-btn" disabled>Open API</button>
+      <!-- <button class="api-btn" disabled>Open API</button> -->
       <button type="button" class="export-btn" data-action="cf-export">Export data</button>
     </div>
   `;

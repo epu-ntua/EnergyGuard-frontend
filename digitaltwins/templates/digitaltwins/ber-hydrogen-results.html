@@ -10,8 +10,8 @@
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
 <style>
     :root {
-        --ber-chart-height: 60vh;
-        --ber-chart-min-height: 300px;
+        --ber-chart-height: 30vh;
+        --ber-chart-min-height: 200px;
     }
     .ber-chart-wrapper {
         width: 100%;
@@ -84,7 +84,7 @@
             <!-- KPI cards -->
             <div class="row g-3 mb-4">
                 {% for card in kpi_cards %}
-                <div class="col-6 col-md-4 col-xl col-xxl-1">
+                <div class="col-6 col-md-4 col-xl">
                     <div class="bg-body border rounded-3 p-3 h-100">
                         <span class="text-body-tertiary fs-9 d-block mb-1">{{ card.label }}</span>
                         <span class="fw-bolder {{ card.value_class }} fs-7">{{ card.value|floatformat:2 }}</span>

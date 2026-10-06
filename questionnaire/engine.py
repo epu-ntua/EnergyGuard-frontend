@@ -349,8 +349,11 @@ def ai7_all_not_applicable(item_statuses):
     disclosure, synthetic content labelling, emotion recognition disclosure,
     deepfake disclosure). If every item the user actually answered is
     NOT_APPLICABLE, none of Article 50's transparency triggers apply to
-    their system, so the track is reclassified as minimal risk regardless of
-    how it was classified going into this step.
+    their system - but that says nothing about the system's Article 6/Annex
+    III risk classification, which is independent and must not be touched
+    here. This is used only as a building block for
+    ai7_open_source_check_applies, to decide whether the open-source scope
+    exemption question is worth asking.
     """
     statuses = list((item_statuses or {}).values())
     return bool(statuses) and all(s == 'NOT_APPLICABLE' for s in statuses)

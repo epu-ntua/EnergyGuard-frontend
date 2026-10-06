@@ -203,11 +203,12 @@ def intro(request):
         entry_track = 'ai_system'
 
     return render(request, 'questionnaire/intro.html', {
-        'metadata': engine.get_metadata(),
         'entry_action': entry_action,
         'entry_track': entry_track,
         'entry_step': entry_state['current_step'],
         'has_existing': entry_action != 'start',
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -256,6 +257,8 @@ def step_view(request, track, step_id):
         'other_track': other_track,
         'other_track_label': engine.get_track_label(other_track),
         'other_track_started': state['tracks'][other_track]['started'],
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     }
 
     if step['type'] == 'checklist':
@@ -411,6 +414,8 @@ def not_sure_notice(request, track):
         'continue_step_label': engine.get_step(track, track_state['current_step'])['step_label'],
         'restart_step_label': engine.get_step(track, first_step_id)['step_label'],
         'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -434,6 +439,8 @@ def consult_restart_notice(request, track):
         'track_label': engine.get_track_label(track),
         'message': message,
         'back_step_label': engine.get_step(track, back_step_id)['step_label'] if back_step_id else None,
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -451,6 +458,8 @@ def no_role_notice(request, track):
         'track': track,
         'track_label': engine.get_track_label(track),
         'message': track_state.get('terminal_note'),
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 
@@ -491,11 +500,10 @@ def submit_checklist(request, track, step_id):
             # No high-risk category (Step 4.2) and no transparency trigger
             # (Step 7) applies - detour through Step 7.5 to check for an
             # open-source scope exemption before continuing to Step 8.
-            track_state['risk_category'] = 'minimal_risk'
+            # Transparency answers never change risk_category themselves;
+            # only Step 7.5's own answer (a distinct Article 2 exemption)
+            # can do that.
             track_state['current_step'] = 'AI-7.5'
-        elif step_id == 'AI-7' and engine.ai7_all_not_applicable(statuses):
-            track_state['risk_category'] = 'minimal_risk'
-            _finish_current_step(track_state)
         else:
             _finish_current_step(track_state)
 
@@ -564,6 +572,8 @@ def results(request):
         'roles': display_roles,
         'has_snapshot': bool(request.session.session_key and AIActAssessment.objects.filter(
             session_key=request.session.session_key).exists()),
+        'show_sidebar': True,
+        'active_navbar_page': 'trustworthiness',
     })
 
 

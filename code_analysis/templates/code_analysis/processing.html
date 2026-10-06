@@ -230,7 +230,7 @@
                                         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                             <div>
                                                 <span class="small text-uppercase fw-bold text-body-tertiary d-block">Current job</span>
-                                                <h5 class="fw-bold text-body-emphasis mt-1 mb-0">Trustworthiness benchmark scan</h5>
+                                                <h5 class="fw-bold text-body-emphasis mt-1 mb-0">Trustworthiness assessment scan</h5>
                                             </div>
                                             <span class="fs-4 fw-bold text-success flex-shrink-0" id="progress-percent">12%</span>
                                         </div>
@@ -265,8 +265,8 @@
                                                 <div class="card-body py-3 d-flex align-items-start gap-3">
                                                     <span class="fas fa-circle text-body-tertiary mt-1 flex-shrink-0" data-stage-icon></span>
                                                     <div>
-                                                        <strong class="text-body-emphasis d-block">Run benchmark checks</strong>
-                                                        <span class="text-body-tertiary fs-9">Execute static checks and trustworthiness benchmark rules.</span>
+                                                        <strong class="text-body-emphasis d-block">Run assessment checks</strong>
+                                                        <span class="text-body-tertiary fs-9">Execute static checks and trustworthiness assessment rules.</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -340,7 +340,7 @@
     var steps = [
         { percent: 18, caption: 'Preparing analysis workspace and validating submitted input.',       status: 'Initializing environment' },
         { percent: 42, caption: 'Inspecting repository structure, dependencies, and entry points.',   status: 'Extracting code structure' },
-        { percent: 73, caption: 'Running code quality and trustworthiness benchmark checks.',         status: 'Executing benchmark checks' },
+        { percent: 73, caption: 'Running code quality and trustworthiness assessment checks.',         status: 'Executing assessment checks' },
         { percent: 92, caption: 'Waiting for the backend to finish and publish the analysis report.', status: 'Finalizing analysis' }
     ];
 

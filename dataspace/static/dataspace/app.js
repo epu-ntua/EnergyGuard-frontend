@@ -9,6 +9,17 @@
     return div.innerHTML;
   }
 
+  function formatRequestedBy(raw) {
+    const str = raw == null ? "" : String(raw);
+    // The gateway sends "<org> <i class=\"fa fa-caret-right\"></i> <username>" as one
+    // string. Only the literal separator below is trusted; org/username are escaped.
+    const parts = str.split(/\s*<i\s+class=["']fa fa-caret-right["']\s*>\s*<\/i>\s*/i);
+    if (parts.length === 2) {
+      return `${escapeHtml(parts[0])} <i class="fa fa-caret-right"></i> ${escapeHtml(parts[1])}`;
+    }
+    return escapeHtml(str);
+  }
+
   function showToast(message, variant) {
     const container = document.getElementById("toast-container");
     const el = document.createElement("div");
@@ -256,24 +267,102 @@
     return offerings;
   }
 
+  // Prevent the browser's default "navigate to dropped file" behavior for a
+  // drop that misses the dropzone - the dropzone's own handlers still run first.
+  ["dragover", "drop"].forEach((evt) => {
+    document.addEventListener(evt, (e) => e.preventDefault());
+  });
+
+  const DEFAULT_UPLOAD_FILE_LABEL = 'Drag &amp; drop a file here, or <span class="text-primary">browse</span>';
+  const MAX_UPLOAD_FILE_SIZE = 50 * 1024 * 1024;
+
   function openUploadModal(offeringId, offeringTitle) {
     document.getElementById("uploadTargetId").value = offeringId;
     document.getElementById("uploadTargetTitle").textContent = offeringTitle;
+    document.getElementById("uploadFileInput").value = "";
+    document.getElementById("uploadFileLabel").innerHTML = DEFAULT_UPLOAD_FILE_LABEL;
     document.getElementById("uploadError").classList.add("d-none");
     bootstrap.Modal.getOrCreateInstance(document.getElementById("uploadDataModal")).show();
+  }
+
+  (function setUpUploadDropzone() {
+    const dropzone = document.getElementById("uploadDropzone");
+    const fileInput = document.getElementById("uploadFileInput");
+    const fileLabel = document.getElementById("uploadFileLabel");
+    if (!dropzone || !fileInput) return;
+
+    function showSelectedFile(file) {
+      fileLabel.textContent = file ? file.name : "";
+      if (!file) fileLabel.innerHTML = DEFAULT_UPLOAD_FILE_LABEL;
+    }
+
+    fileInput.addEventListener("change", () => {
+      showSelectedFile(fileInput.files && fileInput.files[0]);
+    });
+
+    // <label> doesn't natively activate its control on Enter/Space when
+    // focused via tabindex, so wire that up for keyboard users.
+    dropzone.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      fileInput.click();
+    });
+
+    ["dragenter", "dragover"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add("border-primary");
+      });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("border-primary");
+      });
+    });
+    dropzone.addEventListener("drop", (e) => {
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (!files || !files.length) return;
+      fileInput.files = files;
+      showSelectedFile(files[0]);
+    });
+  })();
+
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        const commaIdx = result.indexOf(",");
+        resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
+      };
+      reader.onerror = () => reject(new Error("Could not read the selected file"));
+      reader.readAsDataURL(file);
+    });
   }
 
   document.getElementById("uploadSubmitBtn").addEventListener("click", async () => {
     const errorEl = document.getElementById("uploadError");
     errorEl.classList.add("d-none");
-    const payload = {
-      title: document.getElementById("uploadTitleInput").value.trim() || "Untitled upload",
-      description: document.getElementById("uploadDescInput").value.trim() || null,
-      filename: document.getElementById("uploadFilenameInput").value.trim() || "message.txt",
-      file: document.getElementById("uploadContentInput").value,
-      data_offering_id: document.getElementById("uploadTargetId").value,
-    };
+    const selectedFile = document.getElementById("uploadFileInput").files[0];
+    if (!selectedFile) {
+      errorEl.textContent = "Select a file to upload";
+      errorEl.classList.remove("d-none");
+      return;
+    }
+    if (selectedFile.size > MAX_UPLOAD_FILE_SIZE) {
+      errorEl.textContent = "File is too large (max 50 MB)";
+      errorEl.classList.remove("d-none");
+      return;
+    }
     try {
+      const payload = {
+        title: document.getElementById("uploadTitleInput").value.trim() || "Untitled upload",
+        description: document.getElementById("uploadDescInput").value.trim() || null,
+        filename: selectedFile.name,
+        file: await readFileAsBase64(selectedFile),
+        data_offering_id: document.getElementById("uploadTargetId").value,
+      };
       await Api.provideData(payload);
       bootstrap.Modal.getOrCreateInstance(document.getElementById("uploadDataModal")).hide();
       showToast("Uploaded to " + document.getElementById("uploadTargetTitle").textContent);
@@ -354,7 +443,7 @@
       <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center mb-2" data-request-row="${escapeHtml(r.request_id)}">
         <div>
           <div class="fw-semibold text-body-emphasis">${escapeHtml(r.title)}</div>
-          <div class="fs-9 text-body-tertiary">Requested by ${escapeHtml(r.user_requesting)}</div>
+          <div class="fs-9 text-body-tertiary">Requested by ${formatRequestedBy(r.user_requesting)}</div>
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>

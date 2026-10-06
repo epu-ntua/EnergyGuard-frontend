@@ -204,17 +204,17 @@
               <table class="table table-sm mb-0">
                 <thead>
                   <tr class="text-body-tertiary fs-9-5 text-uppercase" style="letter-spacing:0.06em;">
-                    <th class="border-0 pb-2 ps-0 fw-semibold">Feature Name</th>
-                    <th class="border-0 pb-2 fw-semibold">Unit</th>
-                    <th class="border-0 pb-2 fw-semibold">Description</th>
+                    <th class="border-0 pb-2 ps-0 pe-2 fw-semibold" style="width:20%;">Feature Name</th>
+                    <th class="border-0 pb-2 px-2 fw-semibold" style="width:20%;">Unit</th>
+                    <th class="border-0 pb-2 px-2 fw-semibold " style="width:60%;">Description</th>
                   </tr>
                 </thead>
                 <tbody id="metadataTableBody">
                   {% for key, value in dt.metadata.items %}
                   <tr class="fs-9{% if forloop.counter > 5 %} metadata-extra d-none{% endif %}">
-                    <td class="fw-semibold py-2 border-0">{{ key }}</td>
-                    <td class="py-2 border-0 text-body-secondary">{{ value.0 }}</td>
-                    <td class="py-2 border-0 text-body-secondary">{{ value.1 }}</td>
+                    <td class="fw-semibold py-2 border-0 pe-2" style="width:20%;">{{ key }}</td>
+                    <td class="py-2 border-0 text-body-secondary px-2" style="width:20%;">{{ value.0 }}</td>
+                    <td class="py-2 border-0 text-body-secondary px-2" style="width:60%;">{{ value.1 }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

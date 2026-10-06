@@ -281,13 +281,16 @@
           <label class="form-label fs-9" for="uploadDescInput">Description</label>
           <textarea class="form-control" id="uploadDescInput" rows="2" placeholder="Optional description"></textarea>
         </div>
-        <div class="mb-3">
-          <label class="form-label fs-9" for="uploadFilenameInput">Filename</label>
-          <input type="text" class="form-control" id="uploadFilenameInput" value="message.txt">
-        </div>
         <div class="mb-2">
-          <label class="form-label fs-9" for="uploadContentInput">File content</label>
-          <textarea class="form-control" id="uploadContentInput" rows="3">hello from EnergyGuard</textarea>
+          <label class="form-label fs-9" for="uploadFileInput">File</label>
+          <label class="d-flex flex-column align-items-center justify-content-center gap-1 rounded-3 border text-center w-100 p-4"
+                 for="uploadFileInput" id="uploadDropzone" tabindex="0" role="button" aria-label="Upload file"
+                 style="min-height:120px;border-style:dashed !important;cursor:pointer;">
+            <input id="uploadFileInput" type="file" hidden>
+            <span class="fas fa-cloud-arrow-up fs-3 text-body-tertiary"></span>
+            <span class="fw-semibold text-body-emphasis fs-9" id="uploadFileLabel">Drag &amp; drop a file here, or <span class="text-primary">browse</span></span>
+            <span class="text-body-tertiary fs-9-5 mt-1">Max size: 50 MB</span>
+          </label>
         </div>
         <div class="text-danger fs-9 d-none" id="uploadError"></div>
       </div>

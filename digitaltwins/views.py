@@ -217,7 +217,7 @@ RDN_ASSET_TYPES = ['PV', 'Wind', 'SmallHydro', 'Biomass', 'LargeHydro', 'Gas', '
 
 _RDN_MAX_ASSETS = 25          # well under the schema's 1000, kept usable in a hand-built form
 _RDN_MAX_SETPOINTS = 100      # == schema max
-_RDN_MAX_OUTPUT_SAMPLES = 4_000_000  # guards response size/CPU for pathological requests
+_RDN_MAX_OUTPUT_SAMPLES = 75_500_000  # matches the worst case allowed by _RDN_MAX_ASSETS/_RDN_MAX_SETPOINTS/_RDN_MAX_SPAN_MS
 
 _RDN_STEP_MS = 2
 _RDN_MAX_SPAN_MS = 10_000            # output covers at most 10s per setpoint
@@ -310,7 +310,10 @@ def _validate_rdn_grid_input(body):
     total_points = sum(_rdn_n_points_for_resolution(r) for r in resolutions_ms)
     total_samples = len(cleaned_assets) * 3 * 2 * total_points + total_points
     if total_samples > _RDN_MAX_OUTPUT_SAMPLES:
-        return None, 'Request too large — reduce setpoints, assets, or resolution.'
+        return None, (
+            f'Request too large: computed {total_samples:,} output samples, exceeding the '
+            f'{_RDN_MAX_OUTPUT_SAMPLES:,}-sample limit. Reduce setpoints, assets, or resolution.'
+        )
 
     cleaned = {
         'useCase': use_case,
@@ -1128,7 +1131,10 @@ def _rdn_job_duration_label(job):
 
 @login_required
 def rdn_grid_runs(request):
-    jobs = RdnSimulationJob.objects.filter(user=request.user).order_by('-created_at')
+    # .defer('result'): legacy runs still carry their full payload inline in this column
+    # (see RdnSimulationJob.result) - hundreds of MB for old large runs - which this listing
+    # never displays, so fetching it here would be pure wasted I/O.
+    jobs = RdnSimulationJob.objects.filter(user=request.user).defer('result').order_by('-created_at')
     paginator = Paginator(jobs, _RDN_RUNS_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
 

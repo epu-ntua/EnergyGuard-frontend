@@ -146,8 +146,41 @@
         return root;
     }
 
+    // RDN series can run into the hundreds of thousands of samples (see the
+    // 75,500,000-sample request ceiling in _validate_rdn_grid_input), far more than
+    // amCharts can render smoothly. Above the budget, each series is cut into
+    // buckets and only the min and max sample of each bucket is kept - unlike plain
+    // stride sampling, this can never hide a spike/dip, only the smooth parts between
+    // them. The two picks are emitted in their original chronological order (not
+    // always min-then-max) so the line still traces the real rising/falling shape.
+    var _CHART_MAX_POINTS = 4000;
+
     function seriesToChartData(values) {
-        return values.map(function (v, k) { return { t: k * 0.002, value: v }; });
+        var n = values.length;
+        if (n <= _CHART_MAX_POINTS) {
+            return values.map(function (v, k) { return { t: k * 0.002, value: v }; });
+        }
+
+        var bucketCount = Math.floor(_CHART_MAX_POINTS / 2);
+        var bucketSize = n / bucketCount;
+        var data = [];
+        for (var b = 0; b < bucketCount; b++) {
+            var start = Math.floor(b * bucketSize);
+            var end = (b === bucketCount - 1) ? n : Math.floor((b + 1) * bucketSize);
+            if (end <= start) continue;
+
+            var minIdx = start, maxIdx = start;
+            for (var k = start + 1; k < end; k++) {
+                if (values[k] < values[minIdx]) minIdx = k;
+                if (values[k] > values[maxIdx]) maxIdx = k;
+            }
+
+            var firstIdx = Math.min(minIdx, maxIdx);
+            var secondIdx = Math.max(minIdx, maxIdx);
+            data.push({ t: firstIdx * 0.002, value: values[firstIdx] });
+            if (secondIdx !== firstIdx) data.push({ t: secondIdx * 0.002, value: values[secondIdx] });
+        }
+        return data;
     }
 
     // Instantaneous power per phase is Voltage_kV * Current_kA (= MW); total power

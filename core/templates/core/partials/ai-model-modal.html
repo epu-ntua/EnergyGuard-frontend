@@ -87,7 +87,7 @@
           {{ model.cta_label|default:"Open Workspace" }} <span class="fas fa-arrow-right"></span>
         </a>
         {% elif model.request_access %}
-        <form method="post" action="{% url 'ai_model_request_access' %}">
+        <form method="post" action="{% url 'ai_model_request_access' %}" class="js-ai-model-access-form">
           {% csrf_token %}
           <input type="hidden" name="model_slug" value="{{ model.slug }}">
           <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
