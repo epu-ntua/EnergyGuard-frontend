@@ -16,6 +16,14 @@
 # concurrency, so one slow download no longer blocks the site. Raise the worker
 # count only once those two apps keep job state in the database.
 #
+# Also set BIND_ADDR=127.0.0.1 in the server's .env so the published ports
+# (web 8080, pgadmin 5051) are reachable only from the VM itself. Nginx Proxy
+# Manager reaches web over the docker network, not through 8080. With 8080 open
+# to the internet, scanners connected straight to gunicorn, never finished their
+# requests, and held all 8 gthread threads until the site hung with a 504. Nginx
+# buffers the full request before forwarding it, so slow clients only reach
+# gunicorn by bypassing it.
+#
 # The server also needs the nginx-proxy network. That lives in
 # docker-compose.server.yml rather than being edited in here, so this tracked
 # file stays identical on both machines and `git pull` never conflicts:
@@ -37,7 +45,7 @@ services:
       - .:/app
       - static_volume:/app/staticfiles
     ports:
-      - "${PORT:-8080}:8000"
+      - "${BIND_ADDR:-0.0.0.0}:${PORT:-8080}:8000"
     env_file:
       - .env
     depends_on:
@@ -73,7 +81,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     ports:
-      - "5051:80"
+      - "${BIND_ADDR:-0.0.0.0}:5051:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
