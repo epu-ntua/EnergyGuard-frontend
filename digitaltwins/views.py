@@ -14,9 +14,11 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.http import Http404, JsonResponse, StreamingHttpResponse
+from django.db.models import Count, Q
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 from django_q.tasks import async_task
 
@@ -31,6 +33,7 @@ from .services import (
     upload_rdn_input,
     validate_ber_experiment,
     store_result_file,
+    delete_result_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -668,88 +671,199 @@ def _parse_ber_management_datetime(raw):
         return None
 
 
+def _ber_management_filters(params):
+    """Status tab + page the staff member is on, carried through GET links and
+    the panel's POST forms so a decision returns them to the same list view."""
+    status = params.get('status', '')
+    if status not in BerExperimentRequest.Status.values:
+        status = ''
+    return status, params.get('page', '')
+
+
+def _ber_management_list_url(status, page, selected_id=None):
+    query = {key: value for key, value in (('status', status), ('page', page), ('request', selected_id)) if value}
+    url = reverse('ber-management-list')
+    return f'{url}?{urlencode(query)}' if query else url
+
+
+def _ber_request_summary(experiment_request):
+    commands = experiment_request.experiment_json or []
+    duration = max((command.get('time', 0) for command in commands), default=0)
+    json_size = len(json.dumps(commands, indent=2).encode())
+    return {
+        'command_count': len(commands),
+        'duration_label': _format_duration(duration),
+        'json_filename': f'experiment_{experiment_request.pk}.json',
+        'json_size_label': f'{json_size / 1024:.1f} KB',
+    }
+
+
+def _ber_management_panel_context(experiment_request, status, page, error=None):
+    return {
+        'selected': experiment_request,
+        'selected_summary': _ber_request_summary(experiment_request),
+        'status_filter': status,
+        'page_number': page,
+        'error': error,
+    }
+
+
+def _render_ber_management(request, params, selected=None, error=None):
+    status, page = _ber_management_filters(params)
+
+    experiment_requests = BerExperimentRequest.objects.select_related('user').order_by('-created_at')
+    counts = BerExperimentRequest.objects.aggregate(
+        total=Count('pk'),
+        **{value: Count('pk', filter=Q(status=value)) for value in BerExperimentRequest.Status.values},
+    )
+    status_tabs = [{'value': '', 'label': 'All', 'count': counts['total']}] + [
+        {'value': value, 'label': label, 'count': counts[value]}
+        for value, label in BerExperimentRequest.Status.choices
+    ]
+    for tab in status_tabs:
+        tab['url'] = _ber_management_list_url(tab['value'], '')
+
+    if status:
+        experiment_requests = experiment_requests.filter(status=status)
+    page_obj = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE).get_page(page)
+
+    context = {'page_obj': page_obj, 'status_tabs': status_tabs}
+    if selected is not None:
+        context.update(_ber_management_panel_context(selected, status, page_obj.number, error))
+    else:
+        context.update({'status_filter': status, 'page_number': page_obj.number})
+    return _dt_render(request, 'digitaltwins/ber-management-list.html', **context)
+
+
 @login_required
 @permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
 def ber_management_list(request):
-    experiment_requests = BerExperimentRequest.objects.select_related('user').order_by('-created_at')
-    paginator = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE)
-    page_obj = paginator.get_page(request.GET.get('page'))
-    return _dt_render(request, 'digitaltwins/ber-management-list.html', page_obj=page_obj)
+    selected = None
+    selected_id = request.GET.get('request', '')
+    if selected_id.isdigit():
+        selected = BerExperimentRequest.objects.select_related('user').filter(pk=selected_id).first()
+    return _render_ber_management(request, request.GET, selected=selected)
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_panel(request, request_id):
+    """Side-panel fragment fetched by the list page when a row is clicked."""
+    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
+    status, page = _ber_management_filters(request.GET)
+    return render(
+        request, 'digitaltwins/partials/ber-management-panel.html',
+        _ber_management_panel_context(experiment_request, status, page),
+    )
 
 
 @login_required
 @permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
 def ber_management_detail(request, request_id):
+    """GET (e.g. the link in the BER notification email) opens the list with this
+    request's panel; POST marks the request completed or rejected."""
     experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
 
     if request.method != 'POST':
-        return _dt_render(
-            request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
-        )
+        return redirect(_ber_management_list_url('', '', experiment_request.pk))
+
+    status, page = _ber_management_filters(request.POST)
+
+    def _error(message):
+        return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
 
     if experiment_request.status != BerExperimentRequest.Status.PENDING:
-        return _dt_render(
-            request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
-            error='This request has already been decided.',
-        )
+        return _error('This request has already been decided.')
 
     action = request.POST.get('action')
+    now = datetime.now(timezone.utc)
+    pending = BerExperimentRequest.objects.filter(pk=experiment_request.pk, status=BerExperimentRequest.Status.PENDING)
 
     if action == 'complete':
         result_file = request.FILES.get('result_file')
         actual_start = _parse_ber_management_datetime(request.POST.get('actual_start', ''))
         actual_end = _parse_ber_management_datetime(request.POST.get('actual_end', ''))
 
-        error = None
         if actual_start is None or actual_end is None:
-            error = 'Provide a valid start and end time.'
-        elif actual_end <= actual_start:
-            error = 'End time must be after start time.'
-        elif not result_file:
-            error = 'A result file is required to mark this request completed.'
-        elif result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
-            error = f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.'
-
-        if error:
-            return _dt_render(
-                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
-                error=error,
-            )
+            return _error('Provide a valid start and end time.')
+        if actual_end <= actual_start:
+            return _error('End time must be after start time.')
+        if not result_file:
+            return _error('A result file is required to mark this request completed.')
+        if result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
+            return _error(f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.')
 
         try:
             result_key = store_result_file(experiment_request.pk, result_file)
         except MinioUploadError:
             logger.exception('Failed to store BER result file for request %s', experiment_request.pk)
-            return _dt_render(
-                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
-                error='Could not store the result file. Please try again.',
-            )
+            return _error('Could not store the result file. Please try again.')
 
-        experiment_request.actual_start = actual_start
-        experiment_request.actual_end = actual_end
-        experiment_request.result_key = result_key
-        experiment_request.status = BerExperimentRequest.Status.COMPLETED
-        experiment_request.save(update_fields=['actual_start', 'actual_end', 'result_key', 'status', 'updated_at'])
+        # Conditional update: two staff members deciding the same request at once
+        # must not both succeed (and both notify the requester).
+        updated = pending.update(
+            actual_start=actual_start, actual_end=actual_end, result_key=result_key,
+            status=BerExperimentRequest.Status.COMPLETED, updated_at=now,
+        )
+        if not updated:
+            logger.warning('BER request %s was decided concurrently; result file %s is unused', experiment_request.pk, result_key)
 
     elif action == 'reject':
         reason = request.POST.get('rejection_reason', '').strip()
         if not reason:
-            return _dt_render(
-                request, 'digitaltwins/ber-management-detail.html', experiment_request=experiment_request,
-                error='A rejection reason is required.',
-            )
-        experiment_request.rejection_reason = reason
-        experiment_request.status = BerExperimentRequest.Status.REJECTED
-        experiment_request.save(update_fields=['rejection_reason', 'status', 'updated_at'])
+            return _error('A rejection reason is required.')
+        updated = pending.update(
+            rejection_reason=reason, status=BerExperimentRequest.Status.REJECTED, updated_at=now,
+        )
 
     else:
         return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+    if not updated:
+        experiment_request.refresh_from_db()
+        return _error('This request has already been decided.')
 
     async_task(
         'digitaltwins.tasks.notify_ber_request_decision',
         experiment_request.pk, request.build_absolute_uri('/'),
     )
-    return redirect('ber-management-detail', request_id=experiment_request.pk)
+    return redirect(_ber_management_list_url(status, page, experiment_request.pk))
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+@require_POST
+def ber_management_delete(request, request_id):
+    """Permanently delete a request and its uploaded result file. The requester is not notified."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+    status, page = _ber_management_filters(request.POST)
+
+    if experiment_request.result_key:
+        try:
+            delete_result_file(experiment_request.result_key)
+        except MinioUploadError:
+            # The row is still deleted: an orphaned object is harmless, a request
+            # staff cannot remove is not. The key is logged for manual cleanup.
+            logger.exception(
+                'Could not delete result file %s for BER request %s; deleting the request anyway',
+                experiment_request.result_key, experiment_request.pk,
+            )
+
+    logger.info('BER request %s deleted by user %s', experiment_request.pk, request.user.pk)
+    experiment_request.delete()
+    return redirect(_ber_management_list_url(status, page))
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_experiment_download(request, request_id):
+    """Download the experiment JSON the requester submitted."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+    response = HttpResponse(
+        json.dumps(experiment_request.experiment_json, indent=2), content_type='application/json',
+    )
+    response['Content-Disposition'] = f'attachment; filename="experiment_{experiment_request.pk}.json"'
+    return response
 
 
 @login_required

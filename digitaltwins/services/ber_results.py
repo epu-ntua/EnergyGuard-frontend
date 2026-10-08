@@ -7,7 +7,7 @@ from the Data Lake. The row keeps only the object key, mirroring rdn_results.py.
 
 from django.conf import settings
 
-from core.services.object_storage import put_object
+from core.services.object_storage import delete_object, put_object
 
 
 def result_object_key(experiment_request_id, filename):
@@ -29,3 +29,8 @@ def store_result_file(experiment_request_id, uploaded_file):
         content_type=uploaded_file.content_type or 'application/octet-stream',
     )
     return object_key
+
+
+def delete_result_file(object_key):
+    """Remove a request's result file from object storage. Raises MinioUploadError on failure."""
+    delete_object(bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key)

@@ -77,3 +77,14 @@ def put_object(*, bucket_name: str, object_key: str, body: bytes, content_type: 
         client.put_object(Bucket=bucket_name, Key=object_key, Body=body, ContentType=content_type)
     except (ClientError, BotoCoreError) as exc:
         raise MinioUploadError(str(exc)) from exc
+
+
+def delete_object(*, bucket_name: str, object_key: str) -> None:
+    """Delete an object from MinIO. Deleting a missing key is not an error (S3 semantics)."""
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = build_minio_client()
+    try:
+        client.delete_object(Bucket=bucket_name, Key=object_key)
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc

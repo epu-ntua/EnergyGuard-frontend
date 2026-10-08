@@ -3,6 +3,27 @@
 
 {% block title %}BER Management - Digital Twins{% endblock %}
 
+{% block head %}
+<style>
+    @media (min-width: 992px) {
+        .ber-panel-sticky {
+            position: sticky;
+            top: calc(var(--phoenix-navbar-top-height, 4rem) + 1.5rem);
+            max-height: calc(100vh - var(--phoenix-navbar-top-height, 4rem) - 3rem);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: .75rem;
+        }
+    }
+    .ber-row-active > td {
+        --phoenix-table-bg-state: var(--phoenix-primary-bg-subtle);
+    }
+    .ber-row-active > td:first-child {
+        box-shadow: inset 3px 0 0 var(--phoenix-primary), inset 0 0 0 9999px var(--phoenix-primary-bg-subtle);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="content">
     <div class="px-4 px-lg-6 pt-6 pb-9">
@@ -15,76 +36,208 @@
             </ol>
         </nav>
 
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-            <div>
-                <h2 class="fw-bolder text-body-emphasis mb-1">BER experiment requests</h2>
-                <p class="text-body-tertiary mb-0">All experiment requests submitted across EnergyGuard, for the BER laboratory team to action.</p>
+        <h2 class="fw-bolder text-body-emphasis mb-9">BER experiment requests</h2>
+
+        <div class="row g-4">
+            <div id="ber-panel-col" class="col-12 col-lg-4 {% if not selected %}d-none{% endif %}">
+                <div id="ber-panel" class="ber-panel-sticky">
+                    {% if selected %}{% include "digitaltwins/partials/ber-management-panel.html" %}{% endif %}
+                </div>
+            </div>
+
+            <div id="ber-list-col" class="col-12 {% if selected %}col-lg-8 ps-lg-9{% endif %}">
+                <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
+                    {% for tab in status_tabs %}
+                    <li class="nav-item"><a class="nav-link fs-9 {% if tab.value == status_filter %}active{% endif %}" {% if tab.value == status_filter %}aria-current="page"{% endif %} href="{{ tab.url }}"><span>{{ tab.label }} </span><span class="text-body-tertiary fw-semibold">({{ tab.count }})</span></a></li>
+                    {% endfor %}
+                </ul>
+
+                <div id="ber-table-wrap" class="mx-n4 px-4 me-lg-n6 pe-lg-6 {% if not selected %}ms-lg-n6 ps-lg-6{% endif %} bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                    <div class="table-responsive mx-n1 px-1">
+                        <table class="table table-sm table-hover fs-9 mb-0" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th class="white-space-nowrap align-middle pe-3 ps-2 fs-9" scope="col" style="width:12%;">REQUEST</th>
+                                    <th class="align-middle text-start fs-9" scope="col">SUBMITTED BY</th>
+                                    <th class="align-middle text-end fs-9" scope="col">SUBMITTED</th>
+                                    <th class="align-middle text-end fs-9" scope="col">STATUS</th>
+                                    <th class="align-middle text-end fs-9 pe-2" scope="col">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for experiment_request in page_obj %}
+                                <tr class="{% if selected and selected.pk == experiment_request.pk %}ber-row-active{% endif %}"
+                                    data-ber-row="{{ experiment_request.pk }}"
+                                    data-panel-url="{% url 'ber-management-panel' experiment_request.pk %}?status={{ status_filter }}&page={{ page_obj.number }}"
+                                    style="cursor:pointer;">
+                                    <td class="align-middle py-3 ps-2">
+                                        <a class="fw-semibold fs-9" data-ber-row-link
+                                           href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.number }}&request={{ experiment_request.pk }}">#{{ experiment_request.pk }}</a>
+                                    </td>
+                                    <td class="align-middle py-3 fs-9">{{ experiment_request.user.email }}</td>
+                                    <td class="align-middle py-3 fs-9 text-end">{{ experiment_request.created_at|date:"d M Y, H:i" }}</td>
+                                    <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/partials/ber-status-badge.html" %}</td>
+                                    <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-ber-row-ignore>
+                                        <div class="btn-reveal-trigger">
+                                            <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                                                    data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-haspopup="true" aria-expanded="false"
+                                                    aria-label="Actions for request #{{ experiment_request.pk }}"><span class="fas fa-ellipsis-h fs-10"></span></button>
+                                            <div class="dropdown-menu dropdown-menu-end py-2">
+                                                <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#berDeleteModal"
+                                                        data-request-id="{{ experiment_request.pk }}"
+                                                        data-delete-url="{% url 'ber-management-delete' experiment_request.pk %}">Delete</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5"class="text-center text-body-tertiary py-4 fs-9">No requests{% if status_filter %} with this status{% endif %}.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% if page_obj.paginator.count %}
+                <div class="row align-items-center">
+                    <div class="col-sm-12 col-md-7 fs-9 mt-4">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</div>
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="col-sm-12 col-md-5 mt-4 d-flex justify-content-end">
+                        <ul class="pagination mb-0">
+                            <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                                <a class="page-link" {% if page_obj.has_previous %}href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.previous_page_number }}"{% endif %} aria-label="Previous"><span class="fas fa-chevron-left"></span></a>
+                            </li>
+                            {% for number in page_obj.paginator.page_range %}
+                            <li class="page-item {% if number == page_obj.number %}active{% endif %}">
+                                <a class="page-link" href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ number }}">{{ number }}</a>
+                            </li>
+                            {% endfor %}
+                            <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                                <a class="page-link" {% if page_obj.has_next %}href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.next_page_number }}"{% endif %} aria-label="Next"><span class="fas fa-chevron-right"></span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </div>
-
-        {% if page_obj.object_list %}
-        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
-            <div class="table-responsive mx-n1 px-1" style="overflow: visible;">
-                <table class="table table-sm table-hover fs-9 mb-0" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th class="white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col">REQUEST</th>
-                            <th class="align-middle text-start fs-9" scope="col">SUBMITTED BY</th>
-                            <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
-                            <th class="align-middle text-end fs-9 pe-2" scope="col">STATUS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for experiment_request in page_obj %}
-                        <tr class="position-relative" style="cursor:pointer;">
-                            <td class="align-middle py-3 ps-2">
-                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'ber-management-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
-                            </td>
-                            <td class="align-middle py-3 fs-9">{{ experiment_request.user.email }}</td>
-                            <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ experiment_request.created_at|date:"d M, H:i" }}</td>
-                            <td class="align-middle py-3 fs-9 text-end pe-2">
-                                {% if experiment_request.status == 'completed' %}
-                                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
-                                {% elif experiment_request.status == 'rejected' %}
-                                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Rejected</span><span class="ms-1 fas fa-xmark"></span></span>
-                                {% else %}
-                                <span class="badge bg-warning-subtle text-warning-emphasis">pending</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {% if page_obj.paginator.num_pages > 1 %}
-        <nav class="mt-4" aria-label="Requests pagination">
-            <ul class="pagination">
-                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-                    {% if page_obj.has_previous %}
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                    {% else %}
-                    <span class="page-link" tabindex="-1" aria-disabled="true">Previous</span>
-                    {% endif %}
-                </li>
-                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-                    {% if page_obj.has_next %}
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                    {% else %}
-                    <span class="page-link" tabindex="-1" aria-disabled="true">Next</span>
-                    {% endif %}
-                </li>
-            </ul>
-        </nav>
-        {% endif %}
-
-        {% else %}
-        <p class="text-body-tertiary my-4">No requests yet.</p>
-        {% endif %}
 
     </div>
     {% include "core/footer.html" %}
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="berDeleteModal" tabindex="-1" aria-labelledby="berDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" class="modal-content" id="berDeleteForm">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="hidden" name="page" value="{{ page_number }}">
+            <div class="modal-header border-bottom border-translucent">
+                <h5 class="modal-title" id="berDeleteModalLabel">Delete request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to delete request <strong>#<span id="berDeleteRequestId"></span></strong>? Its submitted file and any uploaded result file will be removed. This cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-top border-translucent">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm"><span class="fas fa-trash me-1"></span>Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock content %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+(function () {
+    const panelCol = document.getElementById('ber-panel-col');
+    const listCol = document.getElementById('ber-list-col');
+    const panel = document.getElementById('ber-panel');
+    const tableWrap = document.getElementById('ber-table-wrap');
+    const rows = Array.from(document.querySelectorAll('[data-ber-row]'));
+    const lgBreakpoint = 992;
+
+    document.getElementById('berDeleteModal').addEventListener('show.bs.modal', event => {
+        const trigger = event.relatedTarget;
+        document.getElementById('berDeleteForm').action = trigger.dataset.deleteUrl;
+        document.getElementById('berDeleteRequestId').textContent = trigger.dataset.requestId;
+    });
+
+    function markActive(requestId) {
+        rows.forEach(row => row.classList.toggle('ber-row-active', row.dataset.berRow === String(requestId)));
+    }
+
+    function showPanel() {
+        panelCol.classList.remove('d-none');
+        listCol.classList.add('col-lg-8', 'ps-lg-9');
+        // The table band bleeds to the page edges; with the panel open it may only bleed right.
+        tableWrap.classList.remove('ms-lg-n6', 'ps-lg-6');
+    }
+
+    function hidePanel() {
+        panelCol.classList.add('d-none');
+        listCol.classList.remove('col-lg-8', 'ps-lg-9');
+        tableWrap.classList.add('ms-lg-n6', 'ps-lg-6');
+        panel.innerHTML = '';
+        markActive(null);
+    }
+
+    async function openRow(row, pushHistory) {
+        const href = row.querySelector('a').href;
+        try {
+            const resp = await fetch(row.dataset.panelUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            // A redirect here means the session expired (login page) - let a full navigation handle it.
+            if (!resp.ok || resp.redirected) throw new Error('panel request failed');
+            panel.innerHTML = await resp.text();
+        } catch (err) {
+            window.location.href = href;
+            return;
+        }
+        showPanel();
+        markActive(row.dataset.berRow);
+        panel.scrollTop = 0;
+        if (pushHistory) history.pushState({ berRequest: row.dataset.berRow }, '', href);
+        if (window.innerWidth < lgBreakpoint) panelCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    rows.forEach(row => {
+        // Whole-row click opens the panel. Handled here rather than with a
+        // stretched-link overlay, which would sit on top of the actions dropdown.
+        row.addEventListener('click', event => {
+            if (event.target.closest('[data-ber-row-ignore]')) return;
+            if (event.target.closest('[data-ber-row-link]')) {
+                // Keep ctrl/cmd/shift-click on the ID link working as "open in new tab".
+                if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+                event.preventDefault();
+            }
+            openRow(row, true);
+        });
+    });
+
+    panel.addEventListener('click', event => {
+        if (!event.target.closest('[data-ber-panel-close]')) return;
+        hidePanel();
+        const url = new URL(window.location.href);
+        url.searchParams.delete('request');
+        history.pushState({}, '', url);
+    });
+
+    window.addEventListener('popstate', () => {
+        const requestId = new URL(window.location.href).searchParams.get('request');
+        if (!requestId) {
+            hidePanel();
+            return;
+        }
+        const row = rows.find(r => r.dataset.berRow === requestId);
+        if (row) openRow(row, false);
+        else window.location.reload();
+    });
+})();
+</script>
+{% endblock scripts %}
