@@ -276,7 +276,9 @@
         }
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', form.action);
+        // getAttribute, not form.action: the complete form has an <input name="action">,
+        // which shadows the form's action property.
+        xhr.open('POST', form.getAttribute('action'));
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
         xhr.upload.addEventListener('progress', e => {
