@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 
 urlpatterns = [
@@ -8,24 +8,8 @@ urlpatterns = [
     path('cea-hydrogen/ai-scenario-generation/', views.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
     path('cea-hydrogen/dt-simulation/', views.cea_dt_simulation, name='cea-dt-simulation'),
     path('cea-hydrogen/dt-simulation/documentation/', views.cea_dt_documentation, name='cea-dt-simulation-documentation'),
-    path('ber-hydrogen/ber-hydrogen-dt/', views.ber_hydrogen_dt, name='ber-hydrogen-dt'),
-    path('ber-hydrogen/ber-hydrogen-dt/documentation/', views.ber_hydrogen_documentation, name='ber-hydrogen-documentation'),
-    path('ber-hydrogen/ber-hydrogen-dt/submit/', views.ber_experiment_submit, name='ber-hydrogen-submit'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/', views.ber_hydrogen_runs, name='ber-hydrogen-runs'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/', views.ber_hydrogen_request_detail, name='ber-hydrogen-request-detail'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/cancel/', views.ber_hydrogen_request_cancel, name='ber-hydrogen-request-cancel'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/hide/', views.ber_hydrogen_request_hide, name='ber-hydrogen-request-hide'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/result/', views.ber_hydrogen_request_result_download, name='ber-hydrogen-request-result-download'),
-    path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/status/', views.ber_hydrogen_request_status, name='ber-hydrogen-request-status'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/', views.ber_management_list, name='ber-management-list'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/', views.ber_management_detail, name='ber-management-detail'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/upload-progress/', views.ber_management_upload_progress, name='ber-management-upload-progress'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/replace-result/', views.ber_management_replace_result, name='ber-management-replace-result'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/archive/', views.ber_management_archive, name='ber-management-archive'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/restore/', views.ber_management_restore, name='ber-management-restore'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/panel/', views.ber_management_panel, name='ber-management-panel'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/experiment.json', views.ber_management_experiment_download, name='ber-management-experiment-download'),
-    path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/download/', views.ber_management_download, name='ber-management-download'),
+    # Before the <slug> catch-all below, like every fixed route.
+    path('ber-hydrogen/ber-hydrogen-dt/', include('digitaltwins.ber.urls')),
     path('cartif-hydrogen/cartif-hydrogen-dt/', views.cartif_hydrogen_dt, name='cartif-hydrogen-dt'),
     path('antrodoco/engreen-antrodoco-dt/', views.engreen_antrodoco_dt, name='engreen-antrodoco-dt'),
     path('antrodoco/engreen-antrodoco-dt/simulate/', views.engreen_pv_simulate, name='engreen-pv-simulate'),

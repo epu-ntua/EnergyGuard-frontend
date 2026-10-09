@@ -105,6 +105,21 @@ def upload_fileobj(*, bucket_name: str, object_key: str, fileobj, content_type: 
         raise MinioUploadError(str(exc)) from exc
 
 
+def open_object_stream(*, bucket_name: str, object_key: str):
+    """Return (body, content_length) for an object, for streaming without loading it whole.
+
+    The caller must close `body`. Raises MinioUploadError if the object cannot be read.
+    """
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = build_minio_client()
+    try:
+        response = client.get_object(Bucket=bucket_name, Key=object_key)
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc
+    return response["Body"], response.get("ContentLength")
+
+
 def delete_object(*, bucket_name: str, object_key: str) -> None:
     """Delete an object from MinIO. Deleting a missing key is not an error (S3 semantics)."""
     from botocore.exceptions import BotoCoreError, ClientError

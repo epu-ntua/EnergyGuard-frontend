@@ -106,9 +106,9 @@ class EngreenPvSimulateTests(TestCase):
 
     def test_rate_limit_blocks_after_limit(self):
         from django.core.cache import cache
-        from digitaltwins.views import _SIMULATE_RATE_LIMIT, _SIMULATE_RATE_WINDOW
+        from digitaltwins.common import SIMULATE_RATE_LIMIT, SIMULATE_RATE_WINDOW
         key = f'engreen_simulate_rl_{self.user.pk}'
-        cache.set(key, _SIMULATE_RATE_LIMIT, timeout=_SIMULATE_RATE_WINDOW)
+        cache.set(key, SIMULATE_RATE_LIMIT, timeout=SIMULATE_RATE_WINDOW)
         resp = self._post({
             'mode': 'existing', 'forecast_type': 'short-term', 'station': 'X'
         })
