@@ -5,14 +5,19 @@ management page - an explicit per-request upload, not timestamp-based retrieval
 from the Data Lake. The row keeps only the object key, mirroring rdn_results.py.
 """
 
+from datetime import datetime, timezone
+
 from django.conf import settings
 
 from core.services.object_storage import delete_object, put_object
 
 
 def result_object_key(experiment_request_id, filename):
+    """A fresh key per upload, so replacing a result never overwrites the file the
+    request currently points to (the old one is deleted only after the switch)."""
     ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'lp'
-    return f'ber-hydrogen/{experiment_request_id}/result.{ext}'
+    stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
+    return f'ber-hydrogen/{experiment_request_id}/result-{stamp}.{ext}'
 
 
 def store_result_file(experiment_request_id, uploaded_file):
@@ -32,5 +37,5 @@ def store_result_file(experiment_request_id, uploaded_file):
 
 
 def delete_result_file(object_key):
-    """Remove a request's result file from object storage. Raises MinioUploadError on failure."""
+    """Remove a result file from object storage. Raises MinioUploadError on failure."""
     delete_object(bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key)

@@ -18,12 +18,7 @@
 
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
             <h2 class="fw-bolder text-body-emphasis mb-0">BER requests</h2>
-            <div class="d-flex flex-wrap gap-2">
-                {% if perms.digitaltwins.manage_ber_requests %}
-                <a href="{% url 'ber-management-list' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">BER management <span class="fas fa-arrow-right"></span></a>
-                {% endif %}
-                <a href="{% url 'ber-hydrogen-dt' %}#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
-            </div>
+            <a href="{% url 'ber-hydrogen-dt' %}#experiment-request" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure an experiment <span class="fas fa-arrow-right"></span></a>
         </div>
 
         {% if page_obj.object_list %}
@@ -34,24 +29,39 @@
                         <tr>
                             <th class="white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col">REQUEST</th>
                             <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
-                            <th class="align-middle text-end fs-9 pe-2" scope="col">STATUS</th>
+                            <th class="align-middle text-end fs-9" scope="col">STATUS</th>
+                            <th class="align-middle text-end fs-9 pe-2" scope="col">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for experiment_request in page_obj %}
-                        <tr class="position-relative" style="cursor:pointer;">
+                        <tr data-ber-run-href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}" style="cursor:pointer;">
                             <td class="align-middle py-3 ps-2">
-                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
+                                <a class="fw-semibold fs-9 text-decoration-none" href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
                             </td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ experiment_request.created_at|date:"d M, H:i" }}</td>
-                            <td class="align-middle py-3 fs-9 text-end pe-2">
-                                {% if experiment_request.status == 'completed' %}
-                                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
-                                {% elif experiment_request.status == 'rejected' %}
-                                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Rejected</span><span class="ms-1 fas fa-xmark"></span></span>
-                                {% else %}
-                                <span class="badge bg-warning-subtle text-warning-emphasis">pending</span>
-                                {% endif %}
+                            <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/partials/ber-status-badge.html" %}</td>
+                            <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-ber-row-ignore>
+                                <div class="btn-reveal-trigger">
+                                    <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                                            data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-haspopup="true" aria-expanded="false"
+                                            aria-label="Actions for request #{{ experiment_request.pk }}"><span class="fas fa-ellipsis-h fs-10"></span></button>
+                                    <div class="dropdown-menu dropdown-menu-end py-2">
+                                        {% if experiment_request.status == 'pending' %}
+                                        <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#berConfirmModal"
+                                                data-confirm-url="{% url 'ber-hydrogen-request-cancel' experiment_request.pk %}"
+                                                data-confirm-title="Cancel request #{{ experiment_request.pk }}"
+                                                data-confirm-body="The BER laboratory team will be notified that this experiment no longer needs to be run. This cannot be undone."
+                                                data-confirm-label="Cancel request"><span class="fas fa-ban me-2"></span>Cancel request</button>
+                                        {% else %}
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#berConfirmModal"
+                                                data-confirm-url="{% url 'ber-hydrogen-request-hide' experiment_request.pk %}"
+                                                data-confirm-title="Remove request #{{ experiment_request.pk }}"
+                                                data-confirm-body="The request will no longer appear in your list. This cannot be undone."
+                                                data-confirm-label="Remove"><span class="fas fa-eye-slash me-2"></span>Remove from my list</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -89,4 +99,17 @@
     </div>
     {% include "core/footer.html" %}
 </div>
+{% include "digitaltwins/partials/ber-request-confirm-modal.html" %}
 {% endblock content %}
+
+{% block scripts %}
+<script>
+// Whole-row click opens the request; the actions cell is excluded so the dropdown works.
+document.querySelectorAll('[data-ber-run-href]').forEach(function (row) {
+    row.addEventListener('click', function (event) {
+        if (event.target.closest('[data-ber-row-ignore], a')) return;
+        window.location.href = row.dataset.berRunHref;
+    });
+});
+</script>
+{% endblock scripts %}

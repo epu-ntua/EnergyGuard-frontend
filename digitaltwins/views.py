@@ -343,11 +343,11 @@ def _dt_render(request, template, **extra):
     return render(request, template, {'show_sidebar': True, 'active_navbar_page': 'facilities', **extra})
 
 
-_BER_RESULTS_LP_PATH = Path(__file__).resolve().parent / 'static' / 'digitaltwins' / 'data' / 'ber-hydrogen-sample.lp'
-_BER_EXPERIMENT_ID = 'BER-2026-000123'
-_BER_SERIAL_NUMBER = 6
 _BER_POWER_TAGS = ('JT_3001', 'JT_3002', 'JT_3003', 'ET_1001', 'IT_1101')
 _BER_CHART_MAX_POINTS = 1500
+# A completed request's result file never changes (it can't be re-decided), so the
+# parsed/downsampled chart data is cached instead of re-reading the .lp per view.
+_BER_RESULTS_CACHE_TIMEOUT = 7 * 24 * 3600
 
 BER_SIGNAL_INFO = {
     'JT_3001': {'label': 'Total power',        'unit': 'kW', 'description': "The total electrical power drawn by the whole system, including the stack and all auxiliary equipment (pumps, cooling, controls)."},
@@ -358,28 +358,39 @@ BER_SIGNAL_INFO = {
 }
 
 
-@lru_cache(maxsize=1)
-def _parse_ber_power_signals():
+def _parse_ber_power_signals(lines):
+    """Parse the power signals out of a BER .lp (InfluxDB line protocol) file.
+
+    `lines` yields bytes or str lines, e.g. `power,serialNumber=6 JT_3001=1.23 <ns>`.
+    Returns (series, serial_number); serial_number is None if no power line has one.
+    """
     series = {tag: [] for tag in _BER_POWER_TAGS}
-    with open(_BER_RESULTS_LP_PATH, encoding='utf-8') as f:
-        for line in f:
-            if not line.startswith('power,'):
-                continue
-            parts = line.rstrip('\n').split(' ')
-            if len(parts) != 3:
-                continue
-            tag, sep, raw_value = parts[1].partition('=')
-            if not sep or tag not in series:
-                continue
-            try:
-                value = float(raw_value)
-                ts_seconds = int(parts[2]) / 1_000_000_000
-            except ValueError:
-                continue
-            series[tag].append((ts_seconds, value))
+    serial_number = None
+    for line in lines:
+        if isinstance(line, bytes):
+            line = line.decode('utf-8', errors='replace')
+        if not line.startswith('power,'):
+            continue
+        parts = line.rstrip('\r\n').split(' ')
+        if len(parts) != 3:
+            continue
+        if serial_number is None:
+            for tag_pair in parts[0].split(',')[1:]:
+                key, _, tag_value = tag_pair.partition('=')
+                if key == 'serialNumber' and tag_value:
+                    serial_number = tag_value
+        tag, sep, raw_value = parts[1].partition('=')
+        if not sep or tag not in series:
+            continue
+        try:
+            value = float(raw_value)
+            ts_seconds = int(parts[2]) / 1_000_000_000
+        except ValueError:
+            continue
+        series[tag].append((ts_seconds, value))
     for tag in series:
         series[tag].sort(key=lambda point: point[0])
-    return series
+    return series, serial_number
 
 
 def _downsample(points, max_points=_BER_CHART_MAX_POINTS):
@@ -459,12 +470,35 @@ def _power_chart_axis_range(peak_total_power, step=2):
     return {'min': 0, 'max': axis_max}
 
 
-def _render_ber_experiment_results(request, experiment_request):
-    series = _parse_ber_power_signals()
+class _BerResultUnreadable(Exception):
+    """The stored result file has no usable power signals."""
+
+
+def _ber_experiment_id(experiment_request):
+    return f'BER-{experiment_request.created_at:%Y}-{experiment_request.pk:06d}'
+
+
+def _build_ber_results_context(experiment_request):
+    """Chart/KPI context for a completed request, parsed from its uploaded .lp file.
+
+    Raises MinioUploadError if the file can't be read from object storage, and
+    _BerResultUnreadable if it contains no power signals.
+    """
+    result_key = experiment_request.result_key
+    cache_key = f'ber_results_ctx_{experiment_request.pk}_{hashlib.sha256(result_key.encode()).hexdigest()[:16]}'
+    context = cache.get(cache_key)
+    if context is not None:
+        return context
+
+    body, _ = open_result_stream(result_key)
+    try:
+        series, serial_number = _parse_ber_power_signals(body.iter_lines(chunk_size=_RESULT_STREAM_CHUNK))
+    finally:
+        body.close()
 
     all_timestamps = [ts for points in series.values() for ts, _ in points]
     if not all_timestamps:
-        raise Http404('No BER result data available.')
+        raise _BerResultUnreadable(f'No power signals in {result_key}')
 
     run_start = min(all_timestamps)
     run_end = max(all_timestamps)
@@ -474,33 +508,54 @@ def _render_ber_experiment_results(request, experiment_request):
     def _chart_points(tag):
         return [[round(ts * 1000), round(value, 3)] for ts, value in _downsample(series[tag])]
 
-    chart_power = _aligned_stacked_series(series, ('JT_3002', 'JT_3003'))
-    chart_electrical = {tag: _chart_points(tag) for tag in ('ET_1001', 'IT_1101')}
-    chart_power_axis = _power_chart_axis_range(kpis['peak_total_power'])
-
+    experiment_id = _ber_experiment_id(experiment_request)
+    serial_number = serial_number or '—'
     run_timestamp = datetime.fromtimestamp(run_start, tz=timezone.utc)
     duration_label = _format_duration(run_end - run_start)
-    result_meta = {
-        'experiment_id': _BER_EXPERIMENT_ID,
-        'serial_number': _BER_SERIAL_NUMBER,
-        'run_timestamp': run_timestamp.isoformat(),
+
+    context = {
+        'experiment_id': experiment_id,
+        'serial_number': serial_number,
+        'run_timestamp': run_timestamp,
         'duration_label': duration_label,
+        'kpis': kpis,
+        'kpi_cards': _build_ber_kpi_cards(kpis),
+        'result_meta': {
+            'experiment_id': experiment_id,
+            'serial_number': serial_number,
+            'run_timestamp': run_timestamp.isoformat(),
+            'duration_label': duration_label,
+        },
+        'chart_power': _aligned_stacked_series(series, ('JT_3002', 'JT_3003')),
+        'chart_power_axis': _power_chart_axis_range(kpis['peak_total_power']),
+        'chart_electrical': {tag: _chart_points(tag) for tag in ('ET_1001', 'IT_1101')},
     }
+    cache.set(cache_key, context, timeout=_BER_RESULTS_CACHE_TIMEOUT)
+    return context
+
+
+def _render_ber_experiment_results(request, experiment_request):
+    def _unavailable(message):
+        return _dt_render(
+            request, 'digitaltwins/ber-hydrogen-request-detail.html',
+            experiment_request=experiment_request, result_error=message,
+        )
+
+    if not experiment_request.result_key:
+        return _unavailable('This experiment has been completed, but its result file is not available yet.')
+
+    try:
+        context = _build_ber_results_context(experiment_request)
+    except MinioUploadError:
+        logger.exception('Could not read BER result file for request %s', experiment_request.pk)
+        return _unavailable('The results could not be loaded right now. Please try again later.')
+    except _BerResultUnreadable:
+        logger.exception('BER result file for request %s has no usable data', experiment_request.pk)
+        return _unavailable('The result file for this experiment could not be read. Please contact the BER laboratory team.')
 
     return _dt_render(
         request, 'digitaltwins/ber-hydrogen-results.html',
-        experiment_request=experiment_request,
-        experiment_id=_BER_EXPERIMENT_ID,
-        serial_number=_BER_SERIAL_NUMBER,
-        run_timestamp=run_timestamp,
-        duration_label=duration_label,
-        signal_info=BER_SIGNAL_INFO,
-        kpis=kpis,
-        kpi_cards=_build_ber_kpi_cards(kpis),
-        result_meta=result_meta,
-        chart_power=chart_power,
-        chart_power_axis=chart_power_axis,
-        chart_electrical=chart_electrical,
+        experiment_request=experiment_request, signal_info=BER_SIGNAL_INFO, **context,
     )
 
 
@@ -635,7 +690,7 @@ _BER_RUNS_PAGE_SIZE = 20
 
 @login_required
 def ber_hydrogen_runs(request):
-    experiment_requests = BerExperimentRequest.objects.filter(user=request.user).order_by('-created_at')
+    experiment_requests = BerExperimentRequest.objects.filter(user=request.user, hidden_by_user_at__isnull=True).order_by('-created_at')
     paginator = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
     return _dt_render(request, 'digitaltwins/ber-hydrogen-runs.html', page_obj=page_obj)
@@ -649,6 +704,49 @@ def ber_hydrogen_request_detail(request, request_id):
     return _dt_render(
         request, 'digitaltwins/ber-hydrogen-request-detail.html', experiment_request=experiment_request,
     )
+
+
+@login_required
+def ber_hydrogen_request_result_download(request, request_id):
+    """Stream the requester's own completed result file."""
+    experiment_request = get_object_or_404(
+        BerExperimentRequest, pk=request_id, user=request.user, status=BerExperimentRequest.Status.COMPLETED,
+    )
+    return _stream_ber_result_file(experiment_request)
+
+
+@login_required
+@require_POST
+def ber_hydrogen_request_cancel(request, request_id):
+    """Requester withdraws a pending request; BER staff are notified so they don't run it."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
+    now = datetime.now(timezone.utc)
+
+    # Conditional on PENDING: if BER decided it a moment earlier, the decision stands.
+    cancelled = BerExperimentRequest.objects.filter(
+        pk=experiment_request.pk, status=BerExperimentRequest.Status.PENDING,
+    ).update(status=BerExperimentRequest.Status.CANCELLED, cancelled_at=now, updated_at=now)
+
+    if cancelled and settings.BER_EMAIL:
+        async_task(
+            'digitaltwins.tasks.send_ber_cancellation_email',
+            experiment_request.pk, request.build_absolute_uri('/'),
+        )
+    return redirect('ber-hydrogen-request-detail', request_id=experiment_request.pk)
+
+
+@login_required
+@require_POST
+def ber_hydrogen_request_hide(request, request_id):
+    """Requester removes a finished request from their own list. BER staff still see it."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
+    now = datetime.now(timezone.utc)
+
+    BerExperimentRequest.objects.filter(
+        pk=experiment_request.pk, hidden_by_user_at__isnull=True,
+        status__in=BerExperimentRequest.FINISHED_STATUSES,
+    ).update(hidden_by_user_at=now, updated_at=now)
+    return redirect('ber-hydrogen-runs')
 
 
 @login_required
@@ -671,11 +769,14 @@ def _parse_ber_management_datetime(raw):
         return None
 
 
+_BER_ARCHIVED_TAB = 'archived'
+
+
 def _ber_management_filters(params):
     """Status tab + page the staff member is on, carried through GET links and
     the panel's POST forms so a decision returns them to the same list view."""
     status = params.get('status', '')
-    if status not in BerExperimentRequest.Status.values:
+    if status not in BerExperimentRequest.Status.values and status != _BER_ARCHIVED_TAB:
         status = ''
     return status, params.get('page', '')
 
@@ -695,6 +796,11 @@ def _ber_request_summary(experiment_request):
         'duration_label': _format_duration(duration),
         'json_filename': f'experiment_{experiment_request.pk}.json',
         'json_size_label': f'{json_size / 1024:.1f} KB',
+        # Same name the download is served under (see _stream_ber_result_file).
+        'result_filename': (
+            f'{_ber_experiment_id(experiment_request)}.{experiment_request.result_key.rsplit(".", 1)[-1]}'
+            if experiment_request.result_key else ''
+        ),
     }
 
 
@@ -711,20 +817,26 @@ def _ber_management_panel_context(experiment_request, status, page, error=None):
 def _render_ber_management(request, params, selected=None, error=None):
     status, page = _ber_management_filters(params)
 
-    experiment_requests = BerExperimentRequest.objects.select_related('user').order_by('-created_at')
+    not_archived = Q(archived_at__isnull=True)
     counts = BerExperimentRequest.objects.aggregate(
-        total=Count('pk'),
-        **{value: Count('pk', filter=Q(status=value)) for value in BerExperimentRequest.Status.values},
+        total=Count('pk', filter=not_archived),
+        archived_total=Count('pk', filter=Q(archived_at__isnull=False)),
+        **{value: Count('pk', filter=not_archived & Q(status=value)) for value in BerExperimentRequest.Status.values},
     )
     status_tabs = [{'value': '', 'label': 'All', 'count': counts['total']}] + [
         {'value': value, 'label': label, 'count': counts[value]}
         for value, label in BerExperimentRequest.Status.choices
-    ]
+    ] + [{'value': _BER_ARCHIVED_TAB, 'label': 'Archived', 'count': counts['archived_total']}]
     for tab in status_tabs:
         tab['url'] = _ber_management_list_url(tab['value'], '')
 
-    if status:
-        experiment_requests = experiment_requests.filter(status=status)
+    experiment_requests = BerExperimentRequest.objects.select_related('user')
+    if status == _BER_ARCHIVED_TAB:
+        experiment_requests = experiment_requests.filter(archived_at__isnull=False).order_by('-archived_at')
+    else:
+        experiment_requests = experiment_requests.filter(not_archived).order_by('-created_at')
+        if status:
+            experiment_requests = experiment_requests.filter(status=status)
     page_obj = Paginator(experiment_requests, _BER_RUNS_PAGE_SIZE).get_page(page)
 
     context = {'page_obj': page_obj, 'status_tabs': status_tabs}
@@ -732,7 +844,7 @@ def _render_ber_management(request, params, selected=None, error=None):
         context.update(_ber_management_panel_context(selected, status, page_obj.number, error))
     else:
         context.update({'status_filter': status, 'page_number': page_obj.number})
-    return _dt_render(request, 'digitaltwins/ber-management-list.html', **context)
+    return _dt_render(request, 'digitaltwins/ber-management-list.html', active_navbar_page='ber_management', **context)
 
 
 @login_required
@@ -741,7 +853,7 @@ def ber_management_list(request):
     selected = None
     selected_id = request.GET.get('request', '')
     if selected_id.isdigit():
-        selected = BerExperimentRequest.objects.select_related('user').filter(pk=selected_id).first()
+        selected = BerExperimentRequest.objects.select_related('user', 'archived_by').filter(pk=selected_id).first()
     return _render_ber_management(request, request.GET, selected=selected)
 
 
@@ -749,12 +861,36 @@ def ber_management_list(request):
 @permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
 def ber_management_panel(request, request_id):
     """Side-panel fragment fetched by the list page when a row is clicked."""
-    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
+    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user', 'archived_by'), pk=request_id)
     status, page = _ber_management_filters(request.GET)
     return render(
         request, 'digitaltwins/partials/ber-management-panel.html',
         _ber_management_panel_context(experiment_request, status, page),
     )
+
+
+def _discard_ber_result_file(object_key, request_id, reason):
+    """Best-effort removal of a result file nothing points to any more. A failure
+    only leaves an orphaned object, so it is logged (with the key, for manual
+    cleanup) rather than surfaced to the staff member."""
+    try:
+        delete_result_file(object_key)
+    except MinioUploadError:
+        logger.exception('Could not delete BER result file %s for request %s (%s)', object_key, request_id, reason)
+
+
+def _validate_ber_result_file(result_file):
+    if not result_file:
+        return 'Choose a result file to upload.'
+    if result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
+        return f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.'
+    return None
+
+
+def _ber_not_pending_message(experiment_request):
+    if experiment_request.status == BerExperimentRequest.Status.CANCELLED:
+        return 'The requester cancelled this request.'
+    return 'This request has already been decided.'
 
 
 @login_required
@@ -773,7 +909,7 @@ def ber_management_detail(request, request_id):
         return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
 
     if experiment_request.status != BerExperimentRequest.Status.PENDING:
-        return _error('This request has already been decided.')
+        return _error(_ber_not_pending_message(experiment_request))
 
     action = request.POST.get('action')
     now = datetime.now(timezone.utc)
@@ -788,10 +924,9 @@ def ber_management_detail(request, request_id):
             return _error('Provide a valid start and end time.')
         if actual_end <= actual_start:
             return _error('End time must be after start time.')
-        if not result_file:
-            return _error('A result file is required to mark this request completed.')
-        if result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
-            return _error(f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.')
+        file_error = _validate_ber_result_file(result_file)
+        if file_error:
+            return _error(file_error)
 
         try:
             result_key = store_result_file(experiment_request.pk, result_file)
@@ -806,7 +941,7 @@ def ber_management_detail(request, request_id):
             status=BerExperimentRequest.Status.COMPLETED, updated_at=now,
         )
         if not updated:
-            logger.warning('BER request %s was decided concurrently; result file %s is unused', experiment_request.pk, result_key)
+            _discard_ber_result_file(result_key, experiment_request.pk, 'request was decided concurrently')
 
     elif action == 'reject':
         reason = request.POST.get('rejection_reason', '').strip()
@@ -821,7 +956,7 @@ def ber_management_detail(request, request_id):
 
     if not updated:
         experiment_request.refresh_from_db()
-        return _error('This request has already been decided.')
+        return _error(_ber_not_pending_message(experiment_request))
 
     async_task(
         'digitaltwins.tasks.notify_ber_request_decision',
@@ -833,24 +968,96 @@ def ber_management_detail(request, request_id):
 @login_required
 @permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
 @require_POST
-def ber_management_delete(request, request_id):
-    """Permanently delete a request and its uploaded result file. The requester is not notified."""
-    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+def ber_management_replace_result(request, request_id):
+    """Swap a completed request's result file (e.g. the wrong file was uploaded).
+
+    Order matters: the new file goes to a fresh key, the row is switched to it, and
+    only then is the old file deleted - so the request always points to a complete
+    file. The new key also changes the results cache key, so the requester sees the
+    new data immediately.
+    """
+    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user', 'archived_by'), pk=request_id)
     status, page = _ber_management_filters(request.POST)
 
-    if experiment_request.result_key:
-        try:
-            delete_result_file(experiment_request.result_key)
-        except MinioUploadError:
-            # The row is still deleted: an orphaned object is harmless, a request
-            # staff cannot remove is not. The key is logged for manual cleanup.
-            logger.exception(
-                'Could not delete result file %s for BER request %s; deleting the request anyway',
-                experiment_request.result_key, experiment_request.pk,
-            )
+    def _error(message):
+        return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
 
-    logger.info('BER request %s deleted by user %s', experiment_request.pk, request.user.pk)
-    experiment_request.delete()
+    if experiment_request.status != BerExperimentRequest.Status.COMPLETED:
+        return _error('Only completed requests have a result file to replace.')
+
+    result_file = request.FILES.get('result_file')
+    file_error = _validate_ber_result_file(result_file)
+    if file_error:
+        return _error(file_error)
+
+    old_key = experiment_request.result_key
+    try:
+        new_key = store_result_file(experiment_request.pk, result_file)
+    except MinioUploadError:
+        logger.exception('Failed to store replacement BER result file for request %s', experiment_request.pk)
+        return _error('Could not store the result file. Please try again.')
+
+    # Conditional on the key we read: if another staff member replaced it meanwhile,
+    # theirs stands and this upload is discarded.
+    now = datetime.now(timezone.utc)
+    switched = BerExperimentRequest.objects.filter(
+        pk=experiment_request.pk, status=BerExperimentRequest.Status.COMPLETED, result_key=old_key,
+    ).update(result_key=new_key, updated_at=now)
+
+    if not switched:
+        _discard_ber_result_file(new_key, experiment_request.pk, 'result was replaced concurrently')
+        experiment_request.refresh_from_db()
+        return _error('The result file was changed by someone else in the meantime. Check it and try again.')
+
+    if old_key:
+        _discard_ber_result_file(old_key, experiment_request.pk, 'replaced by a new upload')
+
+    logger.info('BER request %s result file replaced by user %s', experiment_request.pk, request.user.pk)
+    async_task(
+        'digitaltwins.tasks.notify_ber_results_updated',
+        experiment_request.pk, request.build_absolute_uri('/'),
+    )
+    return redirect(_ber_management_list_url(status, page, experiment_request.pk))
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+@require_POST
+def ber_management_archive(request, request_id):
+    """Hide a decided request from the management list. The requester still sees it."""
+    experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
+    status, page = _ber_management_filters(request.POST)
+    now = datetime.now(timezone.utc)
+
+    archived = BerExperimentRequest.objects.filter(
+        pk=experiment_request.pk, archived_at__isnull=True, status__in=BerExperimentRequest.FINISHED_STATUSES,
+    ).update(archived_at=now, archived_by=request.user, updated_at=now)
+
+    if not archived:
+        experiment_request.refresh_from_db()
+        if experiment_request.archived_at:
+            message = 'This request is already archived.'
+        else:
+            message = 'Pending requests cannot be archived. Reject it first so the requester is informed.'
+        return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
+
+    logger.info('BER request %s archived by user %s', experiment_request.pk, request.user.pk)
+    return redirect(_ber_management_list_url(status, page))
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+@require_POST
+def ber_management_restore(request, request_id):
+    """Bring an archived request back into the management list."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+    status, page = _ber_management_filters(request.POST)
+    now = datetime.now(timezone.utc)
+
+    BerExperimentRequest.objects.filter(pk=experiment_request.pk, archived_at__isnull=False).update(
+        archived_at=None, archived_by=None, updated_at=now,
+    )
+    logger.info('BER request %s restored from archive by user %s', experiment_request.pk, request.user.pk)
     return redirect(_ber_management_list_url(status, page))
 
 
@@ -866,11 +1073,8 @@ def ber_management_experiment_download(request, request_id):
     return response
 
 
-@login_required
-@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
-def ber_management_download(request, request_id):
-    """Stream a completed request's uploaded result file."""
-    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+def _stream_ber_result_file(experiment_request):
+    """Stream a request's uploaded result file, named after its experiment ID."""
     if not experiment_request.result_key:
         return JsonResponse({'error': 'This request has no result file.'}, status=404)
 
@@ -890,12 +1094,21 @@ def ber_management_download(request, request_id):
         finally:
             body.close()
 
-    filename = experiment_request.result_key.rsplit('/', 1)[-1]
+    extension = experiment_request.result_key.rsplit('.', 1)[-1]
+    filename = f'{_ber_experiment_id(experiment_request)}.{extension}'
     response = StreamingHttpResponse(_stream(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     if content_length is not None:
         response['Content-Length'] = content_length
     return response
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_download(request, request_id):
+    """Stream any request's uploaded result file (BER staff)."""
+    experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
+    return _stream_ber_result_file(experiment_request)
 
 
 @login_required

@@ -1,0 +1,8 @@
+{% if not experiment_request.hidden_by_user_at %}
+<button type="button" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 ms-auto"
+        data-bs-toggle="modal" data-bs-target="#berConfirmModal"
+        data-confirm-url="{% url 'ber-hydrogen-request-hide' experiment_request.pk %}"
+        data-confirm-title="Remove request #{{ experiment_request.pk }}"
+        data-confirm-body="The request will no longer appear in your list. This cannot be undone."
+        data-confirm-label="Remove"><span class="fas fa-eye-slash"></span>Remove from my list</button>
+{% endif %}

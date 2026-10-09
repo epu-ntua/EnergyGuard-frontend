@@ -1,7 +1,7 @@
 {% extends "core/authenticated-base.html" %}
 {% load static %}
 
-{% block title %}BER Management - Digital Twins{% endblock %}
+{% block title %}BER Experiment Management | EnergyGuard{% endblock %}
 
 {% block head %}
 <style>
@@ -28,15 +28,7 @@
 <div class="content">
     <div class="px-4 px-lg-6 pt-6 pb-9">
 
-        <nav class="mb-3" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' slug='ber-hydrogen' %}">PEM Electrolyzer</a></li>
-                <li class="breadcrumb-item active">Management</li>
-            </ol>
-        </nav>
-
-        <h2 class="fw-bolder text-body-emphasis mb-9">BER experiment requests</h2>
+        <h2 class="text-body-emphasis mb-6">BER Experiment Management</h2>
 
         <div class="row g-4">
             <div id="ber-panel-col" class="col-12 col-lg-4 {% if not selected %}d-none{% endif %}">
@@ -83,16 +75,31 @@
                                                     data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-haspopup="true" aria-expanded="false"
                                                     aria-label="Actions for request #{{ experiment_request.pk }}"><span class="fas fa-ellipsis-h fs-10"></span></button>
                                             <div class="dropdown-menu dropdown-menu-end py-2">
-                                                <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#berDeleteModal"
-                                                        data-request-id="{{ experiment_request.pk }}"
-                                                        data-delete-url="{% url 'ber-management-delete' experiment_request.pk %}">Delete</button>
+                                                {% if experiment_request.archived_at %}
+                                                <form method="post" action="{% url 'ber-management-restore' experiment_request.pk %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="{{ status_filter }}">
+                                                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                                                    <button type="submit" class="dropdown-item"><span class="fas fa-box-open me-2"></span>Restore</button>
+                                                </form>
+                                                {% elif experiment_request.status == 'pending' %}
+                                                <span class="dropdown-item disabled"><span class="fas fa-box-archive me-2"></span>Archive</span>
+                                                <span class="dropdown-item-text fs-10 text-body-tertiary" style="max-width:14rem; white-space:normal;">Pending requests must be completed or rejected first.</span>
+                                                {% else %}
+                                                <form method="post" action="{% url 'ber-management-archive' experiment_request.pk %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="{{ status_filter }}">
+                                                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                                                    <button type="submit" class="dropdown-item"><span class="fas fa-box-archive me-2"></span>Archive</button>
+                                                </form>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5"class="text-center text-body-tertiary py-4 fs-9">No requests{% if status_filter %} with this status{% endif %}.</td>
+                                    <td colspan="5" class="text-center text-body-tertiary py-4 fs-9">{% if status_filter == 'archived' %}No archived requests.{% else %}No requests{% if status_filter %} with this status{% endif %}.{% endif %}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -128,28 +135,6 @@
     </div>
     {% include "core/footer.html" %}
 </div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="berDeleteModal" tabindex="-1" aria-labelledby="berDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form method="post" class="modal-content" id="berDeleteForm">
-            {% csrf_token %}
-            <input type="hidden" name="status" value="{{ status_filter }}">
-            <input type="hidden" name="page" value="{{ page_number }}">
-            <div class="modal-header border-bottom border-translucent">
-                <h5 class="modal-title" id="berDeleteModalLabel">Delete request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0">Are you sure you want to delete request <strong>#<span id="berDeleteRequestId"></span></strong>? Its submitted file and any uploaded result file will be removed. This cannot be undone.</p>
-            </div>
-            <div class="modal-footer border-top border-translucent">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-danger btn-sm"><span class="fas fa-trash me-1"></span>Delete</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock content %}
 
 {% block scripts %}
@@ -162,12 +147,6 @@
     const tableWrap = document.getElementById('ber-table-wrap');
     const rows = Array.from(document.querySelectorAll('[data-ber-row]'));
     const lgBreakpoint = 992;
-
-    document.getElementById('berDeleteModal').addEventListener('show.bs.modal', event => {
-        const trigger = event.relatedTarget;
-        document.getElementById('berDeleteForm').action = trigger.dataset.deleteUrl;
-        document.getElementById('berDeleteRequestId').textContent = trigger.dataset.requestId;
-    });
 
     function markActive(requestId) {
         rows.forEach(row => row.classList.toggle('ber-row-active', row.dataset.berRow === String(requestId)));

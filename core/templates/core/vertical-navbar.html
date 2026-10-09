@@ -74,6 +74,16 @@
                     </div>
                 </li>
 
+                {% if perms.digitaltwins.manage_ber_requests %}
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1 {%if active_navbar_page == 'ber_management' %}active{% endif %}" href="{% url 'ber-management-list' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="clipboard"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">BER Management</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+                {% endif %}
+
             </ul>
         </div>
     </div>

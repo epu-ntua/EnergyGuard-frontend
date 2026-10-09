@@ -9,6 +9,13 @@
     <p class="text-body-tertiary fs-9 mb-4 text-break">{{ selected.user.email }}</p>
     <!-- <p class="text-body-tertiary fs-9 mb-4 text-break">Submitted: {{ selected.created_at|date:"d M" }}</p> -->
 
+    {% if selected.archived_at %}
+    <div class="alert alert-subtle-secondary rounded-3 mb-4 d-flex align-items-center gap-2 fs-9" role="status">
+        <span class="fas fa-box-archive flex-shrink-0"></span>
+        <span>Archived {{ selected.archived_at|date:"d M Y, H:i" }}{% if selected.archived_by %} by {{ selected.archived_by.email }}{% endif %}. Still visible to the requester.</span>
+    </div>
+    {% endif %}
+
     {% if error %}
     <div class="alert alert-subtle-danger rounded-3 mb-4 d-flex align-items-center gap-2 fs-9" role="alert">
         <span class="fas fa-circle-xmark flex-shrink-0"></span><span>{{ error }}</span>
@@ -91,13 +98,46 @@
         <dt class="col-5 text-body-tertiary fw-normal">Actual end</dt>
         <dd class="col-7 fw-semibold text-body-emphasis mb-0">{% if selected.actual_end %}{{ selected.actual_end|date:"d M Y, H:i" }} UTC{% else %}—{% endif %}</dd>
     </dl>
+
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Result file</h6>
     {% if selected.result_key %}
-    <a href="{% url 'ber-management-download' selected.pk %}" class="btn btn-outline-primary d-inline-flex align-items-center justify-content-center gap-2">
-        <span class="fas fa-download"></span>Download result file
+    <a href="{% url 'ber-management-download' selected.pk %}" class="d-flex align-items-center gap-3 border border-translucent rounded-3 p-3 mb-4 text-decoration-none">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-success-subtle text-success fs-10 fw-bold flex-shrink-0" style="width:2rem;height:2rem;"><span class="fas fa-file-lines"></span></span>
+        <span class="flex-grow-1 min-w-0">
+            <span class="d-block fw-semibold text-body-emphasis fs-9 text-truncate">{{ selected_summary.result_filename }}</span>
+            <span class="d-block text-body-tertiary fs-10">Shown to the requester as their results</span>
+        </span>
+        <span class="fas fa-download text-body-tertiary"></span>
     </a>
     {% else %}
-    <p class="text-body-tertiary fs-9 mb-0">No result file was uploaded for this request.</p>
+    <p class="text-body-tertiary fs-9 mb-3">No result file was uploaded for this request, so the requester cannot see any results.</p>
     {% endif %}
+
+    {# Only the replace form can produce an error on a completed request, so reopen it then. #}
+    <button type="button" class="btn px-0 pt-0 pb-2 mb-3 w-100 collapse-indicator d-flex align-items-center gap-2 fs-8 fw-bold text-body-emphasis border-0 border-bottom border-translucent rounded-0 {% if not error %}collapsed{% endif %}"
+            data-bs-toggle="collapse" data-bs-target="#ber-replace-form" aria-expanded="{% if error %}true{% else %}false{% endif %}" aria-controls="ber-replace-form">
+        <span class="fas fa-arrow-up-from-bracket text-primary"></span>{% if selected.result_key %}Replace result file{% else %}Upload result file{% endif %}
+        <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
+    </button>
+    <div id="ber-replace-form" class="collapse {% if error %}show{% endif %}">
+    <form method="post" action="{% url 'ber-management-replace-result' selected.pk %}" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="hidden" name="page" value="{{ page_number }}">
+        <div class="mb-3">
+            <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="replace-result-file">New result file</label>
+            <input type="file" class="form-control" id="replace-result-file" name="result_file" required>
+            <span class="form-text fs-10">Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary btn-sm">{% if selected.result_key %}Replace{% else %}Upload{% endif %} &amp; notify user</button>
+        </div>
+    </form>
+    </div>
+
+    {% elif selected.status == 'cancelled' %}
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Cancelled</h6>
+    <p class="text-body-tertiary fs-9 mb-0">The requester cancelled this request{% if selected.cancelled_at %} on {{ selected.cancelled_at|date:"d M Y, H:i" }} UTC{% endif %}. It does not need to be run.</p>
 
     {% else %}
     <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Rejection reason</h6>

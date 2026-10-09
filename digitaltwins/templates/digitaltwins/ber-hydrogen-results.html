@@ -65,7 +65,7 @@
                     <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Experiment Results</h5>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <a href="{% static 'digitaltwins/data/ber-hydrogen-sample.lp' %}" download="{{ experiment_id }}.lp" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
+                    <a href="{% url 'ber-hydrogen-request-result-download' experiment_request.pk %}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
                         <span class="fas fa-download"></span>Download .lp
                     </a>
                     <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
