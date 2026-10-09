@@ -41,7 +41,7 @@
         <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
     </button>
     <div id="ber-complete-form" class="collapse {% if error and failed_action == 'complete' %}show{% endif %}" data-bs-parent="#ber-decision-actions">
-    <form method="post" action="{% url 'ber-management-detail' selected.pk %}" enctype="multipart/form-data" class="mb-4">
+    <form method="post" action="{% url 'ber-management-detail' selected.pk %}" enctype="multipart/form-data" class="mb-4" data-ber-upload>
         {% csrf_token %}
         <input type="hidden" name="action" value="complete">
         <input type="hidden" name="status" value="{{ status_filter }}">
@@ -60,6 +60,12 @@
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="result-file">Result file</label>
             <input type="file" class="form-control" id="result-file" name="result_file" required>
             <span class="form-text fs-10">Max 50 MB.</span>
+        </div>
+        <div class="d-none mb-3" data-upload-progress>
+            <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width:0%;"></div>
+            </div>
+            <div class="fs-10 text-body-tertiary mt-1" data-upload-status></div>
         </div>
         <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-primary btn-sm">Mark completed &amp; notify user</button>
@@ -120,7 +126,7 @@
         <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
     </button>
     <div id="ber-replace-form" class="collapse {% if error %}show{% endif %}">
-    <form method="post" action="{% url 'ber-management-replace-result' selected.pk %}" enctype="multipart/form-data" class="mb-4">
+    <form method="post" action="{% url 'ber-management-replace-result' selected.pk %}" enctype="multipart/form-data" class="mb-4" data-ber-upload>
         {% csrf_token %}
         <input type="hidden" name="status" value="{{ status_filter }}">
         <input type="hidden" name="page" value="{{ page_number }}">
@@ -128,6 +134,12 @@
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="replace-result-file">New result file</label>
             <input type="file" class="form-control" id="replace-result-file" name="result_file" required>
             <span class="form-text fs-10">Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
+        </div>
+        <div class="d-none mb-3" data-upload-progress>
+            <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width:0%;"></div>
+            </div>
+            <div class="fs-10 text-body-tertiary mt-1" data-upload-status></div>
         </div>
         <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-primary btn-sm">{% if selected.result_key %}Replace{% else %}Upload{% endif %} &amp; notify user</button>

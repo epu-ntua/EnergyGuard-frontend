@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 from django.conf import settings
 
-from core.services.object_storage import delete_object, put_object
+from core.services.object_storage import delete_object, upload_fileobj
 
 
 def result_object_key(experiment_request_id, filename):
@@ -20,18 +20,20 @@ def result_object_key(experiment_request_id, filename):
     return f'ber-hydrogen/{experiment_request_id}/result-{stamp}.{ext}'
 
 
-def store_result_file(experiment_request_id, uploaded_file):
+def store_result_file(experiment_request_id, uploaded_file, progress_callback=None):
     """Upload the BER-provided result file to object storage. Returns the object key.
 
     Raises MinioUploadError on failure - unlike RDN's store_result, there is no
     database fallback here since the raw file has nowhere else to live.
+    `progress_callback(bytes_sent)` is forwarded to the upload (see upload_fileobj).
     """
     object_key = result_object_key(experiment_request_id, uploaded_file.name)
-    put_object(
+    upload_fileobj(
         bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS,
         object_key=object_key,
-        body=uploaded_file.read(),
+        fileobj=uploaded_file,
         content_type=uploaded_file.content_type or 'application/octet-stream',
+        callback=progress_callback,
     )
     return object_key
 

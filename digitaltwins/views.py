@@ -3,6 +3,8 @@ import hashlib
 import json
 import logging
 import re
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -345,8 +347,9 @@ def _dt_render(request, template, **extra):
 
 _BER_POWER_TAGS = ('JT_3001', 'JT_3002', 'JT_3003', 'ET_1001', 'IT_1101')
 _BER_CHART_MAX_POINTS = 1500
-# A completed request's result file never changes (it can't be re-decided), so the
-# parsed/downsampled chart data is cached instead of re-reading the .lp per view.
+# The parsed/downsampled chart data is cached instead of re-reading the .lp per view.
+# The cache key includes the result_key, so replacing the file (which always writes
+# a fresh key) makes the next view rebuild from the new file.
 _BER_RESULTS_CACHE_TIMEOUT = 7 * 24 * 3600
 
 BER_SIGNAL_INFO = {
@@ -478,7 +481,7 @@ def _ber_experiment_id(experiment_request):
     return f'BER-{experiment_request.created_at:%Y}-{experiment_request.pk:06d}'
 
 
-def _build_ber_results_context(experiment_request):
+def build_ber_results_context(experiment_request):
     """Chart/KPI context for a completed request, parsed from its uploaded .lp file.
 
     Raises MinioUploadError if the file can't be read from object storage, and
@@ -545,7 +548,7 @@ def _render_ber_experiment_results(request, experiment_request):
         return _unavailable('This experiment has been completed, but its result file is not available yet.')
 
     try:
-        context = _build_ber_results_context(experiment_request)
+        context = build_ber_results_context(experiment_request)
     except MinioUploadError:
         logger.exception('Could not read BER result file for request %s', experiment_request.pk)
         return _unavailable('The results could not be loaded right now. Please try again later.')
@@ -879,12 +882,68 @@ def _discard_ber_result_file(object_key, request_id, reason):
         logger.exception('Could not delete BER result file %s for request %s (%s)', object_key, request_id, reason)
 
 
+_BER_UPLOAD_ID_RE = re.compile(r'^[A-Za-z0-9-]{8,64}$')
+_BER_UPLOAD_PROGRESS_TIMEOUT = 3600
+_BER_UPLOAD_PROGRESS_WRITE_INTERVAL = 0.5  # seconds; boto3 calls back per chunk, far too often to write each
+
+
+def _ber_upload_progress_key(user_id, upload_id):
+    # Scoped by user so one staff member can't read another's upload by guessing ids.
+    return f'ber_upload_progress_{user_id}_{upload_id}'
+
+
+class _BerUploadProgress:
+    """boto3 upload Callback that publishes how much of the result file has reached
+    MinIO, so the panel's progress bar can keep counting after the browser upload.
+    Called from several threads during multipart uploads, hence the lock."""
+
+    def __init__(self, cache_key, total):
+        self.cache_key = cache_key
+        self.total = total
+        self.sent = 0
+        self._lock = threading.Lock()
+        self._last_write = 0.0
+        cache.set(cache_key, {'sent': 0, 'total': total}, timeout=_BER_UPLOAD_PROGRESS_TIMEOUT)
+
+    def __call__(self, bytes_amount):
+        with self._lock:
+            self.sent += bytes_amount
+            now = time.monotonic()
+            if self.sent < self.total and now - self._last_write < _BER_UPLOAD_PROGRESS_WRITE_INTERVAL:
+                return
+            self._last_write = now
+            cache.set(
+                self.cache_key, {'sent': min(self.sent, self.total), 'total': self.total},
+                timeout=_BER_UPLOAD_PROGRESS_TIMEOUT,
+            )
+
+
+def _ber_upload_progress_callback(request, result_file):
+    """Progress tracker for this upload, or None if the form sent no (valid) upload id."""
+    upload_id = request.POST.get('upload_id', '')
+    if not _BER_UPLOAD_ID_RE.match(upload_id):
+        return None
+    return _BerUploadProgress(_ber_upload_progress_key(request.user.pk, upload_id), result_file.size)
+
+
 def _validate_ber_result_file(result_file):
     if not result_file:
         return 'Choose a result file to upload.'
     if result_file.size > _BER_RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
         return f'Result file exceeds the {_BER_RESULT_FILE_MAX_SIZE_MB} MB limit.'
     return None
+
+
+def _wants_json(request):
+    """The panel's upload forms are sent by XHR (for the progress bar); they get
+    JSON back, while the plain form submit (no JS) keeps the normal page flow."""
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+def _ber_management_done(request, next_url):
+    if _wants_json(request):
+        return JsonResponse({'redirect': next_url})
+    return redirect(next_url)
 
 
 def _ber_not_pending_message(experiment_request):
@@ -906,6 +965,8 @@ def ber_management_detail(request, request_id):
     status, page = _ber_management_filters(request.POST)
 
     def _error(message):
+        if _wants_json(request):
+            return JsonResponse({'error': message}, status=400)
         return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
 
     if experiment_request.status != BerExperimentRequest.Status.PENDING:
@@ -929,7 +990,10 @@ def ber_management_detail(request, request_id):
             return _error(file_error)
 
         try:
-            result_key = store_result_file(experiment_request.pk, result_file)
+            result_key = store_result_file(
+                experiment_request.pk, result_file,
+                progress_callback=_ber_upload_progress_callback(request, result_file),
+            )
         except MinioUploadError:
             logger.exception('Failed to store BER result file for request %s', experiment_request.pk)
             return _error('Could not store the result file. Please try again.')
@@ -958,11 +1022,13 @@ def ber_management_detail(request, request_id):
         experiment_request.refresh_from_db()
         return _error(_ber_not_pending_message(experiment_request))
 
+    if action == 'complete':
+        async_task('digitaltwins.tasks.warm_ber_results_cache', experiment_request.pk)
     async_task(
         'digitaltwins.tasks.notify_ber_request_decision',
         experiment_request.pk, request.build_absolute_uri('/'),
     )
-    return redirect(_ber_management_list_url(status, page, experiment_request.pk))
+    return _ber_management_done(request, _ber_management_list_url(status, page, experiment_request.pk))
 
 
 @login_required
@@ -980,6 +1046,8 @@ def ber_management_replace_result(request, request_id):
     status, page = _ber_management_filters(request.POST)
 
     def _error(message):
+        if _wants_json(request):
+            return JsonResponse({'error': message}, status=400)
         return _render_ber_management(request, request.POST, selected=experiment_request, error=message)
 
     if experiment_request.status != BerExperimentRequest.Status.COMPLETED:
@@ -992,7 +1060,10 @@ def ber_management_replace_result(request, request_id):
 
     old_key = experiment_request.result_key
     try:
-        new_key = store_result_file(experiment_request.pk, result_file)
+        new_key = store_result_file(
+            experiment_request.pk, result_file,
+            progress_callback=_ber_upload_progress_callback(request, result_file),
+        )
     except MinioUploadError:
         logger.exception('Failed to store replacement BER result file for request %s', experiment_request.pk)
         return _error('Could not store the result file. Please try again.')
@@ -1013,11 +1084,23 @@ def ber_management_replace_result(request, request_id):
         _discard_ber_result_file(old_key, experiment_request.pk, 'replaced by a new upload')
 
     logger.info('BER request %s result file replaced by user %s', experiment_request.pk, request.user.pk)
+    async_task('digitaltwins.tasks.warm_ber_results_cache', experiment_request.pk)
     async_task(
         'digitaltwins.tasks.notify_ber_results_updated',
         experiment_request.pk, request.build_absolute_uri('/'),
     )
-    return redirect(_ber_management_list_url(status, page, experiment_request.pk))
+    return _ber_management_done(request, _ber_management_list_url(status, page, experiment_request.pk))
+
+
+@login_required
+@permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
+def ber_management_upload_progress(request):
+    """Polled by the panel while the server copies an uploaded result file to MinIO."""
+    upload_id = request.GET.get('id', '')
+    if not _BER_UPLOAD_ID_RE.match(upload_id):
+        return JsonResponse({'error': 'Invalid upload id.'}, status=400)
+    progress = cache.get(_ber_upload_progress_key(request.user.pk, upload_id))
+    return JsonResponse(progress or {'sent': 0, 'total': 0})
 
 
 @login_required

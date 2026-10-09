@@ -108,6 +108,26 @@ def send_ber_notification_email(experiment_request_id, platform_url):
         logger.exception('Failed to send BER notification email for request %s', experiment_request.pk)
 
 
+def warm_ber_results_cache(experiment_request_id):
+    """Runs in the qcluster worker right after BER uploads a result file: parses the
+    .lp and fills the results cache, so the requester's first view (usually from the
+    notification link) doesn't pay the multi-second parse."""
+    # Imported here: the results builder lives with the views that render it.
+    from .views import build_ber_results_context
+
+    experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).first()
+    if (experiment_request is None or experiment_request.status != BerExperimentRequest.Status.COMPLETED
+            or not experiment_request.result_key):
+        return
+
+    try:
+        build_ber_results_context(experiment_request)
+    except Exception:
+        # The results page retries the same build on first view and shows the
+        # requester a proper message if it fails there too.
+        logger.exception('Could not pre-build BER results for request %s', experiment_request.pk)
+
+
 def send_ber_cancellation_email(experiment_request_id, platform_url):
     """Runs in the qcluster worker - tells BER staff a requester withdrew a pending
     request, so the lab doesn't run it (see ber_hydrogen_request_cancel)."""

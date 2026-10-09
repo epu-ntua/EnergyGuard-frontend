@@ -19,6 +19,7 @@ urlpatterns = [
     path('ber-hydrogen/ber-hydrogen-dt/requests/<int:request_id>/status/', views.ber_hydrogen_request_status, name='ber-hydrogen-request-status'),
     path('ber-hydrogen/ber-hydrogen-dt/management/', views.ber_management_list, name='ber-management-list'),
     path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/', views.ber_management_detail, name='ber-management-detail'),
+    path('ber-hydrogen/ber-hydrogen-dt/management/upload-progress/', views.ber_management_upload_progress, name='ber-management-upload-progress'),
     path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/replace-result/', views.ber_management_replace_result, name='ber-management-replace-result'),
     path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/archive/', views.ber_management_archive, name='ber-management-archive'),
     path('ber-hydrogen/ber-hydrogen-dt/management/<int:request_id>/restore/', views.ber_management_restore, name='ber-management-restore'),

@@ -79,6 +79,32 @@ def put_object(*, bucket_name: str, object_key: str, body: bytes, content_type: 
         raise MinioUploadError(str(exc)) from exc
 
 
+def upload_fileobj(*, bucket_name: str, object_key: str, fileobj, content_type: str, callback=None) -> None:
+    """Stream a file-like object to MinIO, switching to multipart above 16 MB.
+
+    Unlike put_object, the payload is never held in memory as a whole - Django
+    spools large uploads to a temp file, and this reads it from there in chunks.
+    `callback(bytes_sent)` is called as data goes out; with multipart it runs from
+    several threads at once, so it must be thread-safe.
+    """
+    from boto3.s3.transfer import TransferConfig
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = build_minio_client()
+    fileobj.seek(0)
+    try:
+        client.upload_fileobj(
+            Fileobj=fileobj,
+            Bucket=bucket_name,
+            Key=object_key,
+            ExtraArgs={"ContentType": content_type},
+            Config=TransferConfig(multipart_threshold=16 * 1024 * 1024, multipart_chunksize=16 * 1024 * 1024),
+            Callback=callback,
+        )
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc
+
+
 def delete_object(*, bucket_name: str, object_key: str) -> None:
     """Delete an object from MinIO. Deleting a missing key is not an error (S3 semantics)."""
     from botocore.exceptions import BotoCoreError, ClientError
