@@ -12,12 +12,16 @@ from django.conf import settings
 from core.services.object_storage import delete_object, open_object_stream, upload_fileobj
 
 
-def result_object_key(experiment_request_id, filename):
+def result_object_key(experiment_request_id):
     """A fresh key per upload, so replacing a result never overwrites the file the
-    request currently points to (the old one is deleted only after the switch)."""
-    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'lp'
+    request currently points to (the old one is deleted only after the switch).
+
+    Always `.lp`: uploads are checked to be line protocol before they are stored,
+    and the extension ends up in the download's Content-Disposition, so it must
+    not come from the uploaded file's name.
+    """
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
-    return f'ber-hydrogen/{experiment_request_id}/result-{stamp}.{ext}'
+    return f'ber-hydrogen/{experiment_request_id}/result-{stamp}.lp'
 
 
 def store_result_file(experiment_request_id, uploaded_file, progress_callback=None):
@@ -27,12 +31,14 @@ def store_result_file(experiment_request_id, uploaded_file, progress_callback=No
     database fallback here since the raw file has nowhere else to live.
     `progress_callback(bytes_sent)` is forwarded to the upload (see upload_fileobj).
     """
-    object_key = result_object_key(experiment_request_id, uploaded_file.name)
+    object_key = result_object_key(experiment_request_id)
     upload_fileobj(
         bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS,
         object_key=object_key,
         fileobj=uploaded_file,
-        content_type=uploaded_file.content_type or 'application/octet-stream',
+        # Not the browser-supplied type: it is client-controlled and the file is
+        # only ever served as a download.
+        content_type='application/octet-stream',
         callback=progress_callback,
     )
     return object_key

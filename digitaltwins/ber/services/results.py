@@ -39,6 +39,27 @@ def ber_experiment_id(experiment_request):
     return f'BER-{experiment_request.created_at:%Y}-{experiment_request.pk:06d}'
 
 
+def _split_power_line(line):
+    """The three space-separated parts of a `power,...` line, or None for any other line."""
+    if isinstance(line, bytes):
+        line = line.decode('utf-8', errors='replace')
+    if not line.startswith('power,'):
+        return None
+    parts = line.rstrip('\r\n').split(' ')
+    return parts if len(parts) == 3 else None
+
+
+def _power_point(parts):
+    """(tag, ts_seconds, value) from a split power line, or None if it isn't a usable sample."""
+    tag, sep, raw_value = parts[1].partition('=')
+    if not sep or tag not in _BER_POWER_TAGS:
+        return None
+    try:
+        return tag, int(parts[2]) / 1_000_000_000, float(raw_value)
+    except ValueError:
+        return None
+
+
 def _parse_ber_power_signals(lines):
     """Parse the power signals out of a BER .lp (InfluxDB line protocol) file.
 
@@ -48,30 +69,35 @@ def _parse_ber_power_signals(lines):
     series = {tag: [] for tag in _BER_POWER_TAGS}
     serial_number = None
     for line in lines:
-        if isinstance(line, bytes):
-            line = line.decode('utf-8', errors='replace')
-        if not line.startswith('power,'):
-            continue
-        parts = line.rstrip('\r\n').split(' ')
-        if len(parts) != 3:
+        parts = _split_power_line(line)
+        if parts is None:
             continue
         if serial_number is None:
             for tag_pair in parts[0].split(',')[1:]:
                 key, _, tag_value = tag_pair.partition('=')
                 if key == 'serialNumber' and tag_value:
                     serial_number = tag_value
-        tag, sep, raw_value = parts[1].partition('=')
-        if not sep or tag not in series:
+        point = _power_point(parts)
+        if point is None:
             continue
-        try:
-            value = float(raw_value)
-            ts_seconds = int(parts[2]) / 1_000_000_000
-        except ValueError:
-            continue
+        tag, ts_seconds, value = point
         series[tag].append((ts_seconds, value))
     for tag in series:
         series[tag].sort(key=lambda point: point[0])
     return series, serial_number
+
+
+def has_power_signals(lines):
+    """True as soon as one line is a sample the results page can chart.
+
+    The upload check: same rules as _parse_ber_power_signals, but it stops at the
+    first match and keeps nothing, so a valid file costs a few lines to verify.
+    """
+    for line in lines:
+        parts = _split_power_line(line)
+        if parts is not None and _power_point(parts) is not None:
+            return True
+    return False
 
 
 def _downsample(points, max_points=_BER_CHART_MAX_POINTS):

@@ -59,7 +59,7 @@
         <div class="mb-3">
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="result-file">Result file</label>
             <input type="file" class="form-control" id="result-file" name="result_file" required>
-            <span class="form-text fs-10">Max 50 MB.</span>
+            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max 50 MB.</span>
         </div>
         <div class="d-none mb-3" data-upload-progress>
             <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
@@ -133,7 +133,7 @@
         <div class="mb-3">
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="replace-result-file">New result file</label>
             <input type="file" class="form-control" id="replace-result-file" name="result_file" required>
-            <span class="form-text fs-10">Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
+            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
         </div>
         <div class="d-none mb-3" data-upload-progress>
             <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">

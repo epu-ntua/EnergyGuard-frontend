@@ -22,6 +22,7 @@ from core.services.object_storage import MinioUploadError
 from digitaltwins.common import dt_render, format_duration
 from digitaltwins.models import BerExperimentRequest
 
+from ..services.results import BER_SIGNAL_INFO, has_power_signals
 from ..services.storage import delete_result_file, store_result_file
 from ..upload_progress import UPLOAD_ID_RE, progress_callback_for, read_progress
 from .shared import PAGE_SIZE, result_file_response, result_filename
@@ -128,6 +129,15 @@ def _validate_result_file(result_file):
         return 'Choose a result file to upload.'
     if result_file.size > _RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
         return f'Result file exceeds the {_RESULT_FILE_MAX_SIZE_MB} MB limit.'
+    # Checked before anything is stored or the requester is told their results are
+    # ready: a file the results page can't chart would only reach them as an error.
+    readable = has_power_signals(result_file)
+    result_file.seek(0)
+    if not readable:
+        return (
+            'This file has no power signals the results page can show '
+            f'({", ".join(BER_SIGNAL_INFO)}). Upload the .lp result file of this experiment.'
+        )
     return None
 
 

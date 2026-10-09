@@ -205,6 +205,54 @@ class BerDecisionTests(TestCase):
         self.assertEqual(experiment_request.status, Status.PENDING)
         self.assertEqual(queued_task_funcs(), [])
 
+    def test_a_file_without_power_signals_is_refused_before_anything_changes(self):
+        not_results = {
+            'empty': b'',
+            'other measurements only': b'temperature,serialNumber=6 TT_1=55.0 1700000000000000000\n',
+            'unknown power tag': b'power,serialNumber=6 XX_9999=1.0 1700000000000000000\n',
+            'malformed values': b'power,serialNumber=6 JT_3001=abc 1700000000000000000\n',
+            'binary': b'PK\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00\xff\xfe',
+        }
+        for label, data in not_results.items():
+            with self.subTest(label), fake_object_storage() as storage:
+                experiment_request = make_request(self.requester)
+
+                response = self._complete(experiment_request, upload=result_upload(data=data), **XHR)
+
+                self.assertEqual(response.status_code, 400)
+                self.assertIn('no power signals', response.json()['error'])
+                experiment_request.refresh_from_db()
+                self.assertEqual(experiment_request.status, Status.PENDING)
+                self.assertEqual(storage.keys(), [])
+        self.assertEqual(queued_task_funcs(), [])
+
+    def test_crlf_line_endings_are_accepted(self):
+        experiment_request = make_request(self.requester)
+
+        with fake_object_storage() as storage:
+            response = self._complete(
+                experiment_request, upload=result_upload(data=SAMPLE_LP.replace(b'\n', b'\r\n')), **XHR,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        experiment_request.refresh_from_db()
+        self.assertEqual(storage.objects[(BUCKET, experiment_request.result_key)], SAMPLE_LP.replace(b'\n', b'\r\n'))
+
+    def test_stored_file_is_always_lp_whatever_the_uploaded_name(self):
+        """The extension reaches the download's Content-Disposition, so it can't come from the client."""
+        experiment_request = make_request(self.requester)
+
+        with fake_object_storage():
+            self._complete(experiment_request, upload=result_upload(name='run 7.TXT";x=.html'), **XHR)
+            experiment_request.refresh_from_db()
+            response = self.client.get(reverse('ber-management-download', args=[experiment_request.pk]))
+
+        self.assertTrue(experiment_request.result_key.endswith('.lp'))
+        self.assertEqual(
+            response['Content-Disposition'],
+            f'attachment; filename="BER-{experiment_request.created_at:%Y}-{experiment_request.pk:06d}.lp"',
+        )
+
     def test_a_cancelled_request_cannot_be_completed(self):
         experiment_request = make_request(self.requester, status=Status.CANCELLED)
 
@@ -305,6 +353,20 @@ class BerReplaceResultTests(TestCase):
 
             self.client.force_login(self.requester)
             self.assertEqual(self.client.get(detail_url).context['kpis']['peak_total_power'], 7.5)
+
+    def test_replacing_with_an_unreadable_file_keeps_the_current_one(self):
+        with fake_object_storage() as storage:
+            experiment_request = make_completed_request(self.requester, storage, data=SAMPLE_LP)
+            old_key = experiment_request.result_key
+
+            response = self._replace(experiment_request, result_upload(data=b'not a result file\n'))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('no power signals', response.json()['error'])
+        experiment_request.refresh_from_db()
+        self.assertEqual(experiment_request.result_key, old_key)
+        self.assertEqual(storage.keys(), [old_key])
+        self.assertEqual(queued_task_funcs(), [])
 
     def test_only_completed_requests_can_be_replaced(self):
         experiment_request = make_request(self.requester)
