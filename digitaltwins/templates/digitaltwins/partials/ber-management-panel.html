@@ -1,0 +1,158 @@
+<div class="ber-panel" data-request-id="{{ selected.pk }}">
+    <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h3 class="fw-bolder text-body-emphasis mb-0">Request #{{ selected.pk }}</h3>
+            {% include "digitaltwins/partials/ber-status-badge.html" with experiment_request=selected %}
+        </div>
+        <button type="button" class="btn-close flex-shrink-0 mt-1" data-ber-panel-close aria-label="Close"></button>
+    </div>
+    <p class="text-body-tertiary fs-9 mb-4 text-break">{{ selected.user.email }}</p>
+    <!-- <p class="text-body-tertiary fs-9 mb-4 text-break">Submitted: {{ selected.created_at|date:"d M" }}</p> -->
+
+    {% if selected.archived_at %}
+    <div class="alert alert-subtle-secondary rounded-3 mb-4 d-flex align-items-center gap-2 fs-9" role="status">
+        <span class="fas fa-box-archive flex-shrink-0"></span>
+        <span>Archived {{ selected.archived_at|date:"d M Y, H:i" }}{% if selected.archived_by %} by {{ selected.archived_by.email }}{% endif %}. Still visible to the requester.</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-subtle-danger rounded-3 mb-4 d-flex align-items-center gap-2 fs-9" role="alert">
+        <span class="fas fa-circle-xmark flex-shrink-0"></span><span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Submitted file</h6>
+    <a href="{% url 'ber-management-experiment-download' selected.pk %}" class="d-flex align-items-center gap-3 border border-translucent rounded-3 p-3 mb-4 text-decoration-none">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-primary-subtle text-primary fs-10 fw-bold flex-shrink-0" style="width:2rem;height:2rem;">{ }</span>
+        <span class="flex-grow-1 min-w-0">
+            <span class="d-block fw-semibold text-body-emphasis fs-9 text-truncate">{{ selected_summary.json_filename }}</span>
+            <span class="d-block text-body-tertiary fs-10">JSON · {{ selected_summary.json_size_label }}</span>
+        </span>
+        <span class="fas fa-download text-body-tertiary"></span>
+    </a>
+
+    {% if selected.status == 'pending' %}
+    <div id="ber-decision-actions">
+    {% with failed_action=request.POST.action|default:'' %}
+    <button type="button" class="btn px-0 pt-0 pb-2 mb-3 w-100 collapse-indicator d-flex align-items-center gap-2 fs-8 fw-bold text-body-emphasis border-0 border-bottom border-translucent rounded-0 {% if not error or failed_action != 'complete' %}collapsed{% endif %}"
+            data-bs-toggle="collapse" data-bs-target="#ber-complete-form" aria-expanded="{% if error and failed_action == 'complete' %}true{% else %}false{% endif %}" aria-controls="ber-complete-form">
+        <span class="fas fa-check text-success"></span>Mark completed
+        <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
+    </button>
+    <div id="ber-complete-form" class="collapse {% if error and failed_action == 'complete' %}show{% endif %}" data-bs-parent="#ber-decision-actions">
+    <form method="post" action="{% url 'ber-management-detail' selected.pk %}" enctype="multipart/form-data" class="mb-4" data-ber-upload>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="complete">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="hidden" name="page" value="{{ page_number }}">
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="actual-start">Actual start (UTC)</label>
+                <input type="datetime-local" class="form-control" id="actual-start" name="actual_start" required>
+            </div>
+            <div class="col-6">
+                <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="actual-end">Actual end (UTC)</label>
+                <input type="datetime-local" class="form-control" id="actual-end" name="actual_end" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="result-file">Result file</label>
+            <input type="file" class="form-control" id="result-file" name="result_file" required>
+            <span class="form-text fs-10">Max 50 MB.</span>
+        </div>
+        <div class="d-none mb-3" data-upload-progress>
+            <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width:0%;"></div>
+            </div>
+            <div class="fs-10 text-body-tertiary mt-1" data-upload-status></div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary btn-sm">Mark completed &amp; notify user</button>
+        </div>
+    </form>
+    </div>
+
+    <button type="button" class="btn px-0 pt-0 pb-2 mb-3 w-100 collapse-indicator d-flex align-items-center gap-2 fs-8 fw-bold text-body-emphasis border-0 border-bottom border-translucent rounded-0 {% if not error or failed_action != 'reject' %}collapsed{% endif %}"
+            data-bs-toggle="collapse" data-bs-target="#ber-reject-form" aria-expanded="{% if error and failed_action == 'reject' %}true{% else %}false{% endif %}" aria-controls="ber-reject-form">
+        <span class="fas fa-xmark text-danger"></span>Mark rejected
+        <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
+    </button>
+    <div id="ber-reject-form" class="collapse {% if error and failed_action == 'reject' %}show{% endif %}" data-bs-parent="#ber-decision-actions">
+    <form method="post" action="{% url 'ber-management-detail' selected.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reject">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="hidden" name="page" value="{{ page_number }}">
+        <div class="mb-3">
+            <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="rejection-reason">Reason</label>
+            <textarea class="form-control" id="rejection-reason" name="rejection_reason" rows="3" placeholder="Sent to the submitter by email" required></textarea>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-outline-danger btn-sm">Mark rejected &amp; notify user</button>
+        </div>
+    </form>
+    </div>
+    {% endwith %}
+    </div>
+
+    {% elif selected.status == 'completed' %}
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Execution details</h6>
+    <dl class="row g-0 fs-9 mb-3">
+        <dt class="col-5 text-body-tertiary fw-normal">Actual start</dt>
+        <dd class="col-7 fw-semibold text-body-emphasis mb-1">{% if selected.actual_start %}{{ selected.actual_start|date:"d M Y, H:i" }} UTC{% else %}—{% endif %}</dd>
+        <dt class="col-5 text-body-tertiary fw-normal">Actual end</dt>
+        <dd class="col-7 fw-semibold text-body-emphasis mb-0">{% if selected.actual_end %}{{ selected.actual_end|date:"d M Y, H:i" }} UTC{% else %}—{% endif %}</dd>
+    </dl>
+
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Result file</h6>
+    {% if selected.result_key %}
+    <a href="{% url 'ber-management-download' selected.pk %}" class="d-flex align-items-center gap-3 border border-translucent rounded-3 p-3 mb-4 text-decoration-none">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-success-subtle text-success fs-10 fw-bold flex-shrink-0" style="width:2rem;height:2rem;"><span class="fas fa-file-lines"></span></span>
+        <span class="flex-grow-1 min-w-0">
+            <span class="d-block fw-semibold text-body-emphasis fs-9 text-truncate">{{ selected_summary.result_filename }}</span>
+            <span class="d-block text-body-tertiary fs-10">Shown to the requester as their results</span>
+        </span>
+        <span class="fas fa-download text-body-tertiary"></span>
+    </a>
+    {% else %}
+    <p class="text-body-tertiary fs-9 mb-3">No result file was uploaded for this request, so the requester cannot see any results.</p>
+    {% endif %}
+
+    {# Only the replace form can produce an error on a completed request, so reopen it then. #}
+    <button type="button" class="btn px-0 pt-0 pb-2 mb-3 w-100 collapse-indicator d-flex align-items-center gap-2 fs-8 fw-bold text-body-emphasis border-0 border-bottom border-translucent rounded-0 {% if not error %}collapsed{% endif %}"
+            data-bs-toggle="collapse" data-bs-target="#ber-replace-form" aria-expanded="{% if error %}true{% else %}false{% endif %}" aria-controls="ber-replace-form">
+        <span class="fas fa-arrow-up-from-bracket text-primary"></span>{% if selected.result_key %}Replace result file{% else %}Upload result file{% endif %}
+        <span class="fa-solid fa-angle-down toggle-icon text-body-quaternary ms-auto"></span>
+    </button>
+    <div id="ber-replace-form" class="collapse {% if error %}show{% endif %}">
+    <form method="post" action="{% url 'ber-management-replace-result' selected.pk %}" enctype="multipart/form-data" class="mb-4" data-ber-upload>
+        {% csrf_token %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="hidden" name="page" value="{{ page_number }}">
+        <div class="mb-3">
+            <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="replace-result-file">New result file</label>
+            <input type="file" class="form-control" id="replace-result-file" name="result_file" required>
+            <span class="form-text fs-10">Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
+        </div>
+        <div class="d-none mb-3" data-upload-progress>
+            <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width:0%;"></div>
+            </div>
+            <div class="fs-10 text-body-tertiary mt-1" data-upload-status></div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary btn-sm">{% if selected.result_key %}Replace{% else %}Upload{% endif %} &amp; notify user</button>
+        </div>
+    </form>
+    </div>
+
+    {% elif selected.status == 'cancelled' %}
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Cancelled</h6>
+    <p class="text-body-tertiary fs-9 mb-0">The requester cancelled this request{% if selected.cancelled_at %} on {{ selected.cancelled_at|date:"d M Y, H:i" }} UTC{% endif %}. It does not need to be run.</p>
+
+    {% else %}
+    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Rejection reason</h6>
+    <p class="text-body-tertiary fs-9 mb-0">{{ selected.rejection_reason }}</p>
+    {% endif %}
+</div>

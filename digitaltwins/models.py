@@ -21,16 +21,42 @@ class BerExperimentRequest(TimeStampedModel):
         PENDING = 'pending', 'Pending'
         COMPLETED = 'completed', 'Completed'
         REJECTED = 'rejected', 'Rejected'
+        CANCELLED = 'cancelled', 'Cancelled'  # withdrawn by the requester while still pending
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ber_experiment_requests')
+    # Terminal states: nothing more will happen to the request.
+    FINISHED_STATUSES = (Status.COMPLETED, Status.REJECTED, Status.CANCELLED)
+
+    user =models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ber_experiment_requests')
     experiment_json = models.JSONField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    # Set by BER staff when marking a request completed - the actual execution window,
+    # distinct from created_at/updated_at which only track the request row itself.
+    actual_start = models.DateTimeField(null=True, blank=True)
+    actual_end = models.DateTimeField(null=True, blank=True)
+    # Object-storage key of the result file BER uploads when marking completed.
+    # Explicit per-request upload, not timestamp-based retrieval from the Data Lake.
+    result_key = models.CharField(max_length=1024, blank=True, default='')
+    rejection_reason = models.TextField(blank=True, default='')
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    # Two independent soft deletes, so neither side's cleanup changes what the other
+    # sees. Both apply only to finished requests: a pending one must be decided by
+    # BER or cancelled by the requester first, so nobody is left waiting on it.
+    # - archived_*: BER staff hid it from the management list.
+    # - hidden_by_user_at: the requester removed it from their own request list.
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+    )
+    hidden_by_user_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'ber_experiment_request'
         ordering = ['-created_at']
         verbose_name = 'BER Experiment Request'
         verbose_name_plural = 'BER Experiment Requests'
+        permissions = [
+            ('manage_ber_requests', 'Can manage BER experiment requests'),
+        ]
 
 
 class RdnSimulationJob(TimeStampedModel):

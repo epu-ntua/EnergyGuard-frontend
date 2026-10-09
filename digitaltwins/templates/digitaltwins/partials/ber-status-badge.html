@@ -1,0 +1,9 @@
+{% if experiment_request.status == 'completed' %}
+<span class="badge badge-phoenix badge-phoenix-success">Completed</span>
+{% elif experiment_request.status == 'rejected' %}
+<span class="badge badge-phoenix badge-phoenix-danger">Rejected</span>
+{% elif experiment_request.status == 'cancelled' %}
+<span class="badge badge-phoenix badge-phoenix-secondary">Cancelled</span>
+{% else %}
+<span class="badge badge-phoenix badge-phoenix-warning">Pending</span>
+{% endif %}

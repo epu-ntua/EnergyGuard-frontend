@@ -1,3 +1,5 @@
+import math
+
 _BER_CONTROL_MODES = {'amp', 'watt'}
 _BER_REGEN_MODES = {'instant', 'next'}
 _BER_SETPOINT_RANGES = {'amp': (7.5, 145), 'watt': (500, 14000)}
@@ -19,7 +21,9 @@ def validate_ber_experiment(body):
             return None, f'Command at index {i} must be an object with time, command and value.'
 
         time = item.get('time')
-        if not isinstance(time, (int, float)) or isinstance(time, bool) or time < 0:
+        # isfinite: json.loads accepts NaN/Infinity, and NaN slips past every comparison
+        # below, then fails in Postgres (jsonb rejects it).
+        if not isinstance(time, (int, float)) or isinstance(time, bool) or not math.isfinite(time) or time < 0:
             return None, f'Command at index {i} has an invalid time value.'
         if last_time is not None and time <= last_time:
             return None, 'Command times must be strictly increasing.'
