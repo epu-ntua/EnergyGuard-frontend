@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 from django.conf import settings
 
-from core.services.object_storage import delete_object, upload_fileobj
+from core.services.object_storage import delete_object, open_object_stream, upload_fileobj
 
 
 def result_object_key(experiment_request_id, filename):
@@ -36,6 +36,14 @@ def store_result_file(experiment_request_id, uploaded_file, progress_callback=No
         callback=progress_callback,
     )
     return object_key
+
+
+def open_result_file(object_key):
+    """Return (body, content_length) of a stored result file; the caller closes body.
+
+    Raises MinioUploadError if it cannot be read.
+    """
+    return open_object_stream(bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key)
 
 
 def delete_result_file(object_key):

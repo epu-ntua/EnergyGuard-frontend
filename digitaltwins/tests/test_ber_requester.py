@@ -38,7 +38,7 @@ class BerSubmitTests(TestCase):
         experiment_request = BerExperimentRequest.objects.get(pk=response.json()['requestId'])
         self.assertEqual(experiment_request.user, self.user)
         self.assertEqual(experiment_request.status, Status.PENDING)
-        self.assertEqual(queued_task_funcs(), ['digitaltwins.tasks.send_ber_notification_email'])
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.send_ber_notification_email'])
 
     @override_settings(BER_EMAIL='')
     def test_no_notification_without_a_ber_address(self):
@@ -144,7 +144,7 @@ class BerCancelAndHideTests(TestCase):
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.CANCELLED)
         self.assertIsNotNone(experiment_request.cancelled_at)
-        self.assertEqual(queued_task_funcs(), ['digitaltwins.tasks.send_ber_cancellation_email'])
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.send_ber_cancellation_email'])
 
     @override_settings(BER_EMAIL='ber-lab@example.com')
     def test_a_decided_request_cannot_be_cancelled(self):

@@ -155,8 +155,8 @@ class BerDecisionTests(TestCase):
         self.assertTrue(experiment_request.result_key.endswith('.lp'))
         self.assertEqual(storage.objects[(BUCKET, experiment_request.result_key)], SAMPLE_LP)
         self.assertEqual(queued_task_funcs(), [
-            'digitaltwins.tasks.warm_ber_results_cache',
-            'digitaltwins.tasks.notify_ber_request_decision',
+            'digitaltwins.ber.tasks.warm_ber_results_cache',
+            'digitaltwins.ber.tasks.notify_ber_request_decision',
         ])
 
     def test_completing_without_js_redirects(self):
@@ -239,7 +239,7 @@ class BerDecisionTests(TestCase):
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.REJECTED)
         self.assertEqual(experiment_request.rejection_reason, 'Setpoints too aggressive')
-        self.assertEqual(queued_task_funcs(), ['digitaltwins.tasks.notify_ber_request_decision'])
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.notify_ber_request_decision'])
 
     def test_a_decided_request_cannot_be_decided_again(self):
         experiment_request = make_request(self.requester, status=Status.REJECTED)
@@ -288,8 +288,8 @@ class BerReplaceResultTests(TestCase):
         self.assertEqual(storage.keys(), [experiment_request.result_key])
         self.assertEqual(storage.objects[(BUCKET, experiment_request.result_key)], new_data)
         self.assertEqual(queued_task_funcs(), [
-            'digitaltwins.tasks.warm_ber_results_cache',
-            'digitaltwins.tasks.notify_ber_results_updated',
+            'digitaltwins.ber.tasks.warm_ber_results_cache',
+            'digitaltwins.ber.tasks.notify_ber_results_updated',
         ])
 
     def test_requester_sees_the_new_results_after_a_replace(self):

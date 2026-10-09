@@ -17,7 +17,7 @@ from django.conf import settings
 
 from core.services.object_storage import (
     MinioUploadError,
-    build_minio_client,
+    open_object_stream,
     put_object,
 )
 
@@ -59,16 +59,9 @@ def open_result_stream(object_key):
 
     Raises MinioUploadError if the object cannot be read.
     """
-    from botocore.exceptions import BotoCoreError, ClientError
-
-    client = build_minio_client()
-    try:
-        response = client.get_object(
-            Bucket=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, Key=object_key
-        )
-    except (ClientError, BotoCoreError) as exc:
-        raise MinioUploadError(str(exc)) from exc
-    return response["Body"], response.get("ContentLength")
+    return open_object_stream(
+        bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key
+    )
 
 
 def load_result(job):
