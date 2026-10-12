@@ -5,11 +5,11 @@ from datetime import datetime, timezone
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import DatabaseError
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from django_q.tasks import async_task
 
 from core.services.object_storage import MinioUploadError
 from digitaltwins.common import check_rate_limit, dt_render, format_duration, iter_body_chunks
@@ -17,6 +17,7 @@ from digitaltwins.models import RdnSimulationJob
 
 from .services.client import RdnApiError, upload_rdn_input
 from .services.results import open_result_stream
+from .tasks import start_polling
 from .validation import (
     MAX_ASSETS,
     MAX_SETPOINTS,
@@ -174,8 +175,18 @@ def rdn_grid_simulate(request):
         )
         return JsonResponse({'error': 'Could not submit the request to RDN.'}, status=502)
 
-    RdnSimulationJob.objects.filter(pk=job.pk).update(status=RdnSimulationJob.Status.RUNNING)
-    async_task('digitaltwins.rdn.tasks.poll_rdn_job', job.pk)  # enqueued into qcluster, returns immediately
+    try:
+        start_polling(job)
+    except DatabaseError:
+        # RDN already has the input and will run it, so this is not a failed
+        # request: the job stays pending, and the hourly reconcile task starts
+        # polling it (see reconcile_stale_rdn_jobs). The results page treats
+        # pending like running, so the user just waits a little longer.
+        logger.exception('Could not start polling RDN job %s; reconcile will pick it up', job.pk)
+        return JsonResponse(
+            {'jobId': job.pk, 'requestId': job.rdn_request_id, 'status': RdnSimulationJob.Status.PENDING},
+            status=202,
+        )
 
     return JsonResponse(
         {'jobId': job.pk, 'requestId': job.rdn_request_id, 'status': RdnSimulationJob.Status.RUNNING},

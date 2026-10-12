@@ -3,7 +3,9 @@
 import logging
 from datetime import timedelta
 
+from django.db import transaction
 from django.utils import timezone
+from django_q.tasks import async_task
 
 from digitaltwins.models import RdnSimulationJob
 
@@ -15,6 +17,25 @@ logger = logging.getLogger(__name__)
 _RDN_JOB_POLL_INTERVAL_SECONDS = 15
 
 STALE_RUNNING_THRESHOLD = timedelta(days=7)
+# A job is pending only between its creation and the start of polling, a matter of
+# seconds; one still pending after this long had its first poll fail to queue.
+ORPHANED_PENDING_THRESHOLD = timedelta(minutes=10)
+
+
+def start_polling(job):
+    """pending -> running, with the first status check queued in the same transaction.
+
+    Q_CLUSTER uses the ORM broker on the default database, so the status change and
+    the queued poll commit together or not at all: a job is never "running" with
+    nothing polling it. Returns False if the job was no longer pending.
+    """
+    with transaction.atomic():
+        started = RdnSimulationJob.objects.filter(
+            pk=job.pk, status=RdnSimulationJob.Status.PENDING,
+        ).update(status=RdnSimulationJob.Status.RUNNING)
+        if started:
+            async_task('digitaltwins.rdn.tasks.poll_rdn_job', job.pk)
+    return bool(started)
 
 
 def poll_rdn_job(job_id):
@@ -82,10 +103,27 @@ def _reschedule_poll(job_id):
 
 
 def reconcile_stale_rdn_jobs():
-    """Backstop for a broken reschedule chain (e.g. a bug that returns before calling
-    _reschedule_poll) - not the primary safety net, since polling itself survives
-    qcluster/web restarts via persisted Schedule rows."""
+    """Hourly backstop for the poll chain - not the primary safety net, since polling
+    itself survives qcluster/web restarts via persisted Schedule rows.
+
+    - Starts polling jobs left pending after their input reached RDN, because the
+      first poll couldn't be queued (see rdn_grid_simulate).
+    - Fails jobs with no result after a week (e.g. a bug that returns before calling
+      _reschedule_poll, or a job RDN never knew about).
+
+    Returns the number of jobs failed.
+    """
     cutoff = timezone.now() - STALE_RUNNING_THRESHOLD
+
+    orphaned = RdnSimulationJob.objects.filter(
+        status=RdnSimulationJob.Status.PENDING,
+        created_at__lt=timezone.now() - ORPHANED_PENDING_THRESHOLD,
+        created_at__gte=cutoff,
+    )
+    restarted = sum(start_polling(job) for job in orphaned)
+    if restarted:
+        logger.warning('Started polling %s RDN job(s) left pending', restarted)
+
     count = RdnSimulationJob.objects.filter(
         status__in=[RdnSimulationJob.Status.PENDING, RdnSimulationJob.Status.RUNNING],
         created_at__lt=cutoff,

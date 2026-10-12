@@ -11,6 +11,7 @@ from unittest.mock import patch
 import requests
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.db import DatabaseError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.module_loading import import_string
@@ -89,6 +90,18 @@ class RdnSimulateTests(TestCase):
         self.assertEqual(uploaded['requestId'], job.pk)
         self.assertEqual(uploaded['inputData']['gridSection'], 'A')
         self.assertEqual(queued_task_funcs(), [POLL_TASK])
+
+    def test_poll_that_cannot_be_queued_leaves_the_job_pending_for_reconcile(self):
+        """RDN already has the input, so the user isn't told it failed."""
+        with patch('requests.request', return_value=http_response(200, {})), \
+                patch('digitaltwins.rdn.tasks.async_task', side_effect=DatabaseError('broker down')):
+            response = self._simulate(valid_input())
+
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.json()['status'], 'pending')
+        job = RdnSimulationJob.objects.get()
+        self.assertEqual(job.status, Status.PENDING, 'never "running" with nothing polling it')
+        self.assertEqual(queued_task_funcs(), [])
 
     def test_rdn_unreachable_fails_the_job(self):
         with patch('requests.request', side_effect=requests.ConnectionError('down')):
@@ -235,6 +248,29 @@ class RdnPollingTaskTests(TestCase):
             import_string(POLL_TASK)(job.pk)
 
         rdn.assert_not_called()
+
+    def test_reconcile_starts_polling_jobs_left_pending(self):
+        now = datetime.now(timezone.utc)
+        orphaned = make_job(self.user, status=Status.PENDING)
+        just_created = make_job(self.user, status=Status.PENDING)
+        RdnSimulationJob.objects.filter(pk=orphaned.pk).update(created_at=now - timedelta(minutes=15))
+
+        import_string(RECONCILE_TASK)()
+
+        orphaned.refresh_from_db()
+        just_created.refresh_from_db()
+        self.assertEqual(orphaned.status, Status.RUNNING)
+        self.assertEqual(just_created.status, Status.PENDING, 'may still be uploading')
+        self.assertEqual(queued_task_funcs(), [POLL_TASK])
+
+    def test_start_polling_only_once(self):
+        from digitaltwins.rdn.tasks import start_polling
+
+        job = make_job(self.user, status=Status.PENDING)
+
+        self.assertTrue(start_polling(job))
+        self.assertFalse(start_polling(job))
+        self.assertEqual(queued_task_funcs(), [POLL_TASK])
 
     def test_reconcile_fails_jobs_stuck_for_a_week(self):
         stale = make_job(self.user)
