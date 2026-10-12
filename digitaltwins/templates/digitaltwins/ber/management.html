@@ -233,6 +233,29 @@
         alert.lastElementChild.textContent = message;
     }
 
+    // An upload that fails without a JSON {error} is usually the session, not the
+    // file: login_required redirects to Keycloak, a cross-origin redirect the XHR
+    // can't follow, so it surfaces as a network error. Ask the server directly:
+    // the progress endpoint needs the same login and permission as the upload.
+    async function accessProblem() {
+        try {
+            const resp = await fetch(`${progressUrl}?id=access-check`, {
+                redirect: 'manual', headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (resp.type === 'opaqueredirect') return 'Your session has expired. Reload the page and sign in again.';
+            if (resp.status === 403) return 'Your account no longer has access to BER management. Reload the page.';
+        } catch (err) { /* offline too: fall back to the caller's message */ }
+        return null;
+    }
+
+    function httpFailureMessage(status) {
+        if (status === 403) return 'The server refused the upload (HTTP 403). Reload the page and try again.';
+        if (status === 404) return 'The upload address was not found (HTTP 404). Reload the page and try again.';
+        if (status === 413) return 'The file is larger than the server accepts.';
+        if (status >= 500) return `The server ran into an error while saving the file (HTTP ${status}). Please try again later.`;
+        return `The upload failed (HTTP ${status}). Please try again.`;
+    }
+
     panel.addEventListener('submit', event => {
         const form = event.target.closest('form[data-ber-upload]');
         if (!form) return;
@@ -275,6 +298,11 @@
             progress.classList.add('d-none');
         }
 
+        async function fail(fallbackMessage) {
+            finish();
+            showUploadError(form, (await accessProblem()) || fallbackMessage);
+        }
+
         const xhr = new XMLHttpRequest();
         // getAttribute, not form.action: the complete form has an <input name="action">,
         // which shadows the form's action property.
@@ -302,12 +330,16 @@
                 window.location.href = data.redirect;
                 return;
             }
-            finish();
-            showUploadError(form, data.error || 'The upload failed. Please try again.');
+            if (data.error) {
+                // The server's own message, e.g. a validation error.
+                finish();
+                showUploadError(form, data.error);
+                return;
+            }
+            fail(httpFailureMessage(xhr.status));
         });
         xhr.addEventListener('error', () => {
-            finish();
-            showUploadError(form, 'The connection was lost during the upload. Please try again.');
+            fail('The connection was lost during the upload. Please try again.');
         });
 
         uploadInFlight = true;

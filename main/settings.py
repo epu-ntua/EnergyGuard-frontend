@@ -308,6 +308,13 @@ LOGGING = {
     },
 }
 
+if DEBUG:
+    # Locally, also show rejected requests (404, 403, CSRF failures) in
+    # `docker compose logs web`, so a failing XHR can be diagnosed without the
+    # browser's dev tools. In production they would mostly be scanner noise.
+    LOGGING['loggers']['django.request'] = {'handlers': ['console'], 'level': 'WARNING', 'propagate': False}
+    LOGGING['loggers']['django.security.csrf'] = {'handlers': ['console'], 'level': 'WARNING', 'propagate': False}
+
 # Email Settings
 # DEBUG (dev) prints emails to the console instead of sending real SMTP mail, so local
 # testing errors and admin-error-report emails don't land in the production ADMINS inbox.

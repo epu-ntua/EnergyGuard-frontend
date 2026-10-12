@@ -44,7 +44,9 @@ class DashboardAIModelsChartTests(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_donut_data_matches_all_ai_models_including_coming_soon(self):
+    def test_donut_data_counts_only_available_ai_models(self):
+        """Since ef3fc44 the dashboard counts what users can actually use: models
+        that are "request access" or "coming soon" are left out of the donut."""
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
 
@@ -55,13 +57,15 @@ class DashboardAIModelsChartTests(TestCase):
         script_end = content.index("</script>", script_start)
         chart_data = json.loads(content[script_start:script_end])
 
-        expected_counts = Counter(model["category"] for model in AI_MODELS)
+        available = [model for model in AI_MODELS if model["badge"] == "available"]
+        expected_counts = {
+            CATEGORY_LABELS[category_key]: count
+            for category_key, count in Counter(model["category"] for model in available).items()
+        }
         actual_counts = {row["category"]: row["value"] for row in chart_data}
 
-        # Every model must be counted, including "coming soon" ones (no cta_url/request_access).
-        self.assertEqual(sum(actual_counts.values()), len(AI_MODELS))
-        for category_key, expected_count in expected_counts.items():
-            self.assertEqual(actual_counts[CATEGORY_LABELS[category_key]], expected_count)
+        self.assertEqual(actual_counts, expected_counts)
+        self.assertEqual(sum(actual_counts.values()), len(available))
 
 
 @override_settings(ADMINS=[("Admin", "admin@example.com")])
