@@ -3,7 +3,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .models import Profile, User
+from .models import PrivacyRequest, Profile, User
+from .services.privacy_requests import resolve_privacy_request
 
 
 def _send_approval_email(request, user):
@@ -50,3 +51,28 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(Profile)
+
+
+@admin.register(PrivacyRequest)
+class PrivacyRequestAdmin(admin.ModelAdmin):
+    list_display = ('email', 'kind', 'status', 'created_at', 'resolved_at', 'resolved_by')
+    list_filter = ('status', 'kind')
+    search_fields = ('email',)
+    readonly_fields = ('user', 'email', 'kind', 'status', 'message', 'created_at', 'resolved_at', 'resolved_by')
+    fields = ('user', 'email', 'kind', 'status', 'message', 'admin_note', 'created_at', 'resolved_at', 'resolved_by')
+    actions = ['mark_completed', 'mark_rejected']
+
+    def has_add_permission(self, request):
+        return False
+
+    def _resolve(self, request, queryset, status):
+        count = sum(resolve_privacy_request(pr, status, request.user) for pr in queryset)
+        self.message_user(request, f'{count} pending request(s) marked as {status}. The users have been notified.')
+
+    @admin.action(description='Mark selected requests as completed')
+    def mark_completed(self, request, queryset):
+        self._resolve(request, queryset, PrivacyRequest.Status.COMPLETED)
+
+    @admin.action(description='Mark selected requests as rejected')
+    def mark_rejected(self, request, queryset):
+        self._resolve(request, queryset, PrivacyRequest.Status.REJECTED)

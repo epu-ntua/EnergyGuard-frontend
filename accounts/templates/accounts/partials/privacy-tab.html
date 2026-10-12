@@ -1,0 +1,115 @@
+{% load static %}
+<p class="text-body-tertiary fs-9 mb-4">
+    Under the GDPR you can download a copy of the personal data we hold about you at any time, or ask us to delete it.
+    Deletion requests are handled by the EnergyGuard team and answered by email at <strong>{{ request.user.email }}</strong>.
+    See our <a href="{% static 'assets/docs/privacy-policy.pdf' %}" target="_blank" rel="noopener">Privacy Policy</a>
+    and <a href="{% static 'assets/docs/DPA_with_users.pdf' %}" target="_blank" rel="noopener">DPA</a> for details.
+</p>
+
+<div class="row g-3 mb-5">
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="mb-2"><span class="fas fa-cookie-bite me-2 text-body-tertiary"></span>Privacy settings</h5>
+                <p class="text-body-tertiary fs-9 flex-1">Review the cookies EnergyGuard uses. The platform only uses strictly necessary cookies.</p>
+                <div>
+                    <button class="btn btn-phoenix-secondary" type="button" onclick="CookieConsent.showPreferences()">Cookie preferences</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="mb-2"><span class="fas fa-file-export me-2 text-body-tertiary"></span>Copy of your data</h5>
+                <p class="text-body-tertiary fs-9 flex-1">Download your account, profile and activity data as a zip file (JSON plus your profile picture).</p>
+                <div>
+                    <a class="btn btn-phoenix-primary" href="{% url 'download_personal_data' %}"><span class="fas fa-download me-2"></span>Download my data</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="mb-2"><span class="fas fa-trash-alt me-2 text-body-tertiary"></span>Delete your data</h5>
+                <p class="text-body-tertiary fs-9 flex-1">Request the deletion of your account and personal data. This cannot be undone once processed.</p>
+                <div>
+                    {% if 'deletion' in pending_privacy_kinds %}
+                        <button class="btn btn-phoenix-secondary" type="button" disabled>Request pending</button>
+                    {% else %}
+                        <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#privacyDeletionModal">Request deletion</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-3">Your deletion requests</h5>
+{% if privacy_requests %}
+<div class="table-responsive scrollbar border-top border-translucent">
+    <table class="table fs-9 mb-0">
+        <thead>
+            <tr>
+                <th class="align-middle ps-0" scope="col">REQUEST</th>
+                <th class="align-middle" scope="col">SUBMITTED</th>
+                <th class="align-middle" scope="col">STATUS</th>
+                <th class="align-middle" scope="col">NOTE</th>
+                <th class="align-middle pe-0 text-end" scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pr in privacy_requests %}
+            <tr>
+                <td class="align-middle ps-0 fw-semibold text-body-highlight">{{ pr.get_kind_display }}</td>
+                <td class="align-middle text-body-tertiary">{{ pr.created_at|date:"M j, Y" }}</td>
+                <td class="align-middle">
+                    {% if pr.status == 'pending' %}<span class="badge badge-phoenix fs-10 badge-phoenix-warning">Pending</span>
+                    {% elif pr.status == 'completed' %}<span class="badge badge-phoenix fs-10 badge-phoenix-success">Completed</span>
+                    {% elif pr.status == 'rejected' %}<span class="badge badge-phoenix fs-10 badge-phoenix-danger">Rejected</span>
+                    {% else %}<span class="badge badge-phoenix fs-10 badge-phoenix-secondary">Cancelled</span>{% endif %}
+                </td>
+                <td class="align-middle text-body-tertiary">{{ pr.admin_note|default:"-" }}</td>
+                <td class="align-middle pe-0 text-end">
+                    {% if pr.is_pending %}
+                    <form method="post" action="{% url 'cancel_privacy_request' pr.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-link btn-sm text-danger p-0" type="submit">Cancel</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-body-tertiary fs-9">You have not made any deletion requests.</p>
+{% endif %}
+
+<!-- Deletion request modal -->
+<div class="modal fade" id="privacyDeletionModal" tabindex="-1" aria-labelledby="privacyDeletionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="post" action="{% url 'create_privacy_request' %}">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="deletion">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyDeletionModalLabel">Request deletion of your data</h5>
+                <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-body-tertiary lh-lg">
+                    Once processed, your account and the personal data associated with it will be permanently deleted.
+                    We will confirm by email at <strong>{{ request.user.email }}</strong>. You can cancel the request while it is pending.
+                </p>
+                <label class="form-label fs-9 ps-0" for="privacyDeletionMessage">Reason or details (optional)</label>
+                <textarea class="form-control" id="privacyDeletionMessage" name="message" rows="3" maxlength="2000"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-phoenix-danger" type="submit">Request deletion</button>
+                <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

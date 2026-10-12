@@ -217,6 +217,46 @@ class Notification(models.Model):
         return f"Notification for {self.recipient}: {self.message}"
 
 
+class PrivacyRequest(TimeStampedModel):
+    """A user's GDPR request, handled by an admin. Data export is self-service (services/data_export.py)."""
+
+    class Kind(models.TextChoices):
+        DELETION = 'deletion', 'Deletion of personal data'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        COMPLETED = 'completed', 'Completed'
+        REJECTED = 'rejected', 'Rejected'
+        CANCELLED = 'cancelled', 'Cancelled'
+
+    # SET_NULL + email snapshot: the request record must outlive a completed deletion
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='privacy_requests')
+    email = models.EmailField()
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    message = models.TextField(blank=True)
+    admin_note = models.TextField(blank=True, help_text='Shown to the user when the request is resolved.')
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    @property
+    def is_pending(self):
+        return self.status == self.Status.PENDING
+
+    def __str__(self):
+        return f"{self.get_kind_display()} request by {self.email} ({self.status})"
+
+    class Meta:
+        db_table = 'privacy_request'
+        verbose_name = 'Privacy Request'
+        verbose_name_plural = 'Privacy Requests'
+        ordering = ['-created_at']
+        constraints = [
+            # One open request per kind per user, so double submits don't pile up
+            models.UniqueConstraint(fields=['user', 'kind'], condition=Q(status='pending'), name='unique_pending_privacy_request'),
+        ]
+
+
 # ------------------- SIGNALS ------------------- #
 
 # Automatically create a Profile for each new User and save the Profile when the User is saved
