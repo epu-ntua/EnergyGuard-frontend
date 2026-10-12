@@ -3,8 +3,8 @@
 Each twin's overview page is the template digitaltwins/<slug>.html.
 
 `pilot_partner` names the partner whose pilot dataset (seeded per environment by
-`manage.py seed_pilot_datasets`, tagged metadata.pilot_partner) belongs to the
-twin. Pages link to it through the digitaltwins-pilot-dataset URL, never by the
+`manage.py seed_pilot_datasets`; found by metadata.pilot_partner or by its export
+under pilot_datasets/<PARTNER>/) belongs to the twin. Pages link to it through the digitaltwins-pilot-dataset URL, never by the
 dataset's id, which differs between environments.
 """
 

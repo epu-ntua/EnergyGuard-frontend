@@ -131,6 +131,20 @@ class PilotDatasetLinkTests(TestCase):
             fetch_redirect_response=False,
         )
 
+    def test_found_by_its_export_when_the_metadata_lost_the_partner(self):
+        """As on the server: renamed, and metadata replaced by the signal dictionary."""
+        ceder = Dataset.objects.create(
+            name='CEDER-CIEMAT Microgrid — Real-Time DER Operation and Meteorological Dataset',
+            size_gb=Decimal('0.01'), data_file='pilot_datasets/CEDER/CEDER.csv.gz',
+            metadata={'ED09': ['W', 'PV Production']},
+        )
+
+        response = self.client.get(reverse('digitaltwins-pilot-dataset', args=['ciemat-microgrid']))
+
+        self.assertRedirects(
+            response, reverse('dataset_details', kwargs={'dataset_id': ceder.pk}), fetch_redirect_response=False,
+        )
+
     def test_dataset_not_seeded_yet(self):
         response = self.client.get(reverse('digitaltwins-pilot-dataset', args=['cea-hydrogen']))
 

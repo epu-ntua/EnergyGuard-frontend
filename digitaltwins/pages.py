@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
@@ -15,6 +16,7 @@ from django.views.decorators.http import require_POST
 from core.services.object_storage import MinioUploadError
 from datasets.models import Dataset
 from datasets.services import provision_user_datasets
+from datasets.services.pilot import pilot_object_folder
 
 from .catalog import DIGITAL_TWINS, DT_BY_SLUG
 from .common import dt_render
@@ -72,7 +74,13 @@ def digitaltwins_pilot_dataset(request, slug):
     if not partner:
         raise Http404
 
-    dataset = Dataset.objects.filter(metadata__pilot_partner=partner).order_by('pk').only('pk').first()
+    # Two markers, as in datasets.services.pilot.pilot_partner_for: the seeded
+    # metadata key, or the export's MinIO folder. The folder matters because the
+    # metadata of some pilot datasets has since been replaced by their signal
+    # dictionary, dropping the key; the file is still the partner's export.
+    dataset = Dataset.objects.filter(
+        Q(metadata__pilot_partner=partner) | Q(data_file__startswith=f'{pilot_object_folder(partner)}/'),
+    ).order_by('pk').only('pk').first()
     if dataset is None:
         messages.info(request, f"The pilot dataset of {digital_twin['name']} isn't available yet.")
         return redirect('datasets_list')
