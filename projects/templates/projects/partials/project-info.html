@@ -1,52 +1,28 @@
-{% load static %}
-<!-- Info + Actions -->
-<div class="d-flex align-items-end gap-5 mb-8">
-  <!-- Left: info row + buttons -->
-  <div class="flex-grow-1">
-    <!-- Info row -->
-    <div class="d-flex align-items-center flex-wrap gap-3 py-3 mb-6 border-bottom border-top border-translucent fs-8-5 text-body-secondary">
-      <!-- Type -->
-      <span class="d-flex align-items-center gap-2 border-end border-translucent pe-3">
-        <span class="fa-solid fa-tag text-body-tertiary"></span>
-        <span class="fw-semibold text-body-emphasis">Type</span>
-        <span>{{ project_details.type|default:"-" }}</span>
-      </span>
-      <!-- Created -->
-      <span class="d-flex align-items-center gap-2{% if project_details.team %} border-end border-translucent pe-3{% endif %}">
-        <span class="fa-regular fa-calendar-days text-body-tertiary"></span>
-        <span class="fw-semibold text-body-emphasis">Created</span>
-        <span>{{ project_details.start_date|date:"j M, Y" }}</span>
-      </span>
-      <!-- Team -->
-      {% if project_details.team %}
-      <span class="d-flex align-items-center gap-2">
-        <span class="fa-solid fa-user-group text-body-tertiary"></span>
-        <span class="fw-semibold text-body-emphasis">Team</span>
-        <span>{{ project_details.team|default:"-" }}</span>
-      </span>
-      {% endif %}
-    </div>
+<!-- Details + Datasets -->
+<div class="row g-4 mb-8">
+  <!-- Details -->
+  <div class="col-12 col-lg-4 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body p-4">
+        <h6 class="text-uppercase text-body-tertiary fw-bold mb-3" style="letter-spacing:.08em;">Details</h6>
+        <dl class="row gy-2 mb-0 fs-9">
+          <dt class="col-5 fw-normal text-body-tertiary"><span class="fa-solid fa-tag fa-fw me-2"></span>Type</dt>
+          <dd class="col-7 mb-0 fw-semibold text-body-emphasis">{{ project_details.type|default:"-" }}</dd>
 
-    <!-- Description -->
-    <div class="mb-5 w-70">
-      <h4 class="fw-bold mb-2">Project description</h4>
-      <p class="text-body-secondary mb-0">{{ project_details.description|default:"No description available." }}</p>
-    </div>
+          <dt class="col-5 fw-normal text-body-tertiary"><span class="fa-regular fa-calendar-days fa-fw me-2"></span>Created</dt>
+          <dd class="col-7 mb-0 fw-semibold text-body-emphasis">{{ project_details.start_date|date:"j M Y" }}</dd>
 
-    <!-- Action buttons -->
-    <div class="d-flex gap-2 flex-wrap mb-2">
-      <a class="flex-grow-2" href="https://jupyterhub.energy-guard.eu/" target="_blank" rel="noopener noreferrer">
-        <button class="btn btn-primary px-4 w-100" type="button">Open in Jupyter</button>
-      </a>
-      <a class="flex-grow-2" href="{% if project_details.mlflow_experiment_id %}https://mlflow.energy-guard.eu/#/experiments/{{ project_details.mlflow_experiment_id }}{% else %}#{% endif %}" target="_blank">
-        <button class="btn btn-purple px-4 w-100" type="button">Open in MLFlow</button>
-      </a>
-      <!-- {% if not project_details.visibility %}
-      <a class="flex-grow-2">
-        <button class="btn btn-purple-blue w-100" type="button" data-bs-toggle="modal" data-bs-target="#addExperimentModal">+ Add Experiment</button>
-      </a>
-      {% endif %} -->
+          {% if project_details.team %}
+          <dt class="col-5 fw-normal text-body-tertiary"><span class="fa-solid fa-user-group fa-fw me-2"></span>Team</dt>
+          <dd class="col-7 mb-0 fw-semibold text-body-emphasis">{{ project_details.team }}</dd>
+          {% endif %}
+        </dl>
+      </div>
     </div>
   </div>
 
+  <!-- Datasets -->
+  <div class="col-12 col-lg-8 col-xl-9">
+    {% include "projects/partials/project-datasets.html" %}
+  </div>
 </div>
