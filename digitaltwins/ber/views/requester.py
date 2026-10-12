@@ -75,13 +75,13 @@ def _submit_dedup_key(user_id, cleaned):
 
 @login_required
 def ber_hydrogen_dt(request):
-    return dt_render(request, 'digitaltwins/ber-hydrogen-dt.html',
+    return dt_render(request, 'digitaltwins/ber/workspace.html',
                      validation_checks=BER_VALIDATION_CHECKS, sample_json=BER_SAMPLE_JSON)
 
 
 @login_required
 def ber_hydrogen_documentation(request):
-    return dt_render(request, 'digitaltwins/ber-hydrogen-documentation.html', sample_json=BER_SAMPLE_JSON)
+    return dt_render(request, 'digitaltwins/ber/documentation.html', sample_json=BER_SAMPLE_JSON)
 
 
 @login_required
@@ -127,13 +127,13 @@ def ber_hydrogen_runs(request):
     experiment_requests = BerExperimentRequest.objects.filter(user=request.user, hidden_by_user_at__isnull=True).order_by('-created_at')
     paginator = Paginator(experiment_requests, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return dt_render(request, 'digitaltwins/ber-hydrogen-runs.html', page_obj=page_obj)
+    return dt_render(request, 'digitaltwins/ber/requests.html', page_obj=page_obj)
 
 
 def _render_results(request, experiment_request):
     def _unavailable(message):
         return dt_render(
-            request, 'digitaltwins/ber-hydrogen-request-detail.html',
+            request, 'digitaltwins/ber/request-detail.html',
             experiment_request=experiment_request, result_error=message,
         )
 
@@ -150,7 +150,7 @@ def _render_results(request, experiment_request):
         return _unavailable('The result file for this experiment could not be read. Please contact the BER laboratory team.')
 
     return dt_render(
-        request, 'digitaltwins/ber-hydrogen-results.html',
+        request, 'digitaltwins/ber/results.html',
         experiment_request=experiment_request, signal_info=BER_SIGNAL_INFO, **context,
     )
 
@@ -161,7 +161,7 @@ def ber_hydrogen_request_detail(request, request_id):
     if experiment_request.status == BerExperimentRequest.Status.COMPLETED:
         return _render_results(request, experiment_request)
     return dt_render(
-        request, 'digitaltwins/ber-hydrogen-request-detail.html', experiment_request=experiment_request,
+        request, 'digitaltwins/ber/request-detail.html', experiment_request=experiment_request,
     )
 
 

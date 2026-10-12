@@ -103,7 +103,7 @@ class BerManagementListTests(TestCase):
         response = self.client.get(reverse('ber-management-panel', args=[self.completed.pk]), {'status': 'completed'})
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'digitaltwins/partials/ber-management-panel.html')
+        self.assertTemplateUsed(response, 'digitaltwins/ber/partials/management-panel.html')
         self.assertEqual(response.context['status_filter'], 'completed')
 
     def test_detail_get_redirects_to_the_list_with_the_panel_open(self):

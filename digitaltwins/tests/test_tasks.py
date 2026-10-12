@@ -129,7 +129,7 @@ class BerTaskTests(TestCase):
             self.client.force_login(self.requester)
             response = self.client.get(f'/digitaltwins/ber-hydrogen/ber-hydrogen-dt/requests/{experiment_request.pk}/')
 
-        self.assertTemplateUsed(response, 'digitaltwins/ber-hydrogen-results.html')
+        self.assertTemplateUsed(response, 'digitaltwins/ber/results.html')
 
     def test_warming_an_unreadable_file_does_not_raise(self):
         with fake_object_storage() as storage:

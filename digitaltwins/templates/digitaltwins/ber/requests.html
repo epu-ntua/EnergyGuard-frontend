@@ -40,7 +40,7 @@
                                 <a class="fw-semibold fs-9 text-decoration-none" href="{% url 'ber-hydrogen-request-detail' experiment_request.pk %}">#{{ experiment_request.pk }}</a>
                             </td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ experiment_request.created_at|date:"d M, H:i" }}</td>
-                            <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/partials/ber-status-badge.html" %}</td>
+                            <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/ber/partials/status-badge.html" %}</td>
                             <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-ber-row-ignore>
                                 <div class="btn-reveal-trigger">
                                     <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
@@ -99,7 +99,7 @@
     </div>
     {% include "core/footer.html" %}
 </div>
-{% include "digitaltwins/partials/ber-request-confirm-modal.html" %}
+{% include "digitaltwins/ber/partials/request-confirm-modal.html" %}
 {% endblock content %}
 
 {% block scripts %}

@@ -111,7 +111,7 @@ def _render_management(request, params, selected=None, error=None):
         context.update(_panel_context(selected, status, page_obj.number, error))
     else:
         context.update({'status_filter': status, 'page_number': page_obj.number})
-    return dt_render(request, 'digitaltwins/ber-management-list.html', active_navbar_page='ber_management', **context)
+    return dt_render(request, 'digitaltwins/ber/management.html', active_navbar_page='ber_management', **context)
 
 
 def _discard_result_file(object_key, request_id, reason):
@@ -176,7 +176,7 @@ def ber_management_panel(request, request_id):
     experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user', 'archived_by'), pk=request_id)
     status, page = _list_filters(request.GET)
     return render(
-        request, 'digitaltwins/partials/ber-management-panel.html',
+        request, 'digitaltwins/ber/partials/management-panel.html',
         _panel_context(experiment_request, status, page),
     )
 

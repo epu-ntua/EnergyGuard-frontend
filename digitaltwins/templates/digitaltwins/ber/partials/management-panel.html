@@ -2,7 +2,7 @@
     <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
         <div class="d-flex align-items-center flex-wrap gap-2">
             <h3 class="fw-bolder text-body-emphasis mb-0">Request #{{ selected.pk }}</h3>
-            {% include "digitaltwins/partials/ber-status-badge.html" with experiment_request=selected %}
+            {% include "digitaltwins/ber/partials/status-badge.html" with experiment_request=selected %}
         </div>
         <button type="button" class="btn-close flex-shrink-0 mt-1" data-ber-panel-close aria-label="Close"></button>
     </div>

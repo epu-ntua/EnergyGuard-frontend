@@ -192,7 +192,7 @@ class BerResultsPageTests(TestCase):
 
         response = self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
 
-        self.assertTemplateUsed(response, 'digitaltwins/ber-hydrogen-request-detail.html')
+        self.assertTemplateUsed(response, 'digitaltwins/ber/request-detail.html')
         self.assertContains(response, 'Waiting for the BER laboratory')
 
     def test_completed_request_renders_kpis_parsed_from_the_result_file(self):
@@ -200,7 +200,7 @@ class BerResultsPageTests(TestCase):
             experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
             response = self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
 
-        self.assertTemplateUsed(response, 'digitaltwins/ber-hydrogen-results.html')
+        self.assertTemplateUsed(response, 'digitaltwins/ber/results.html')
         kpis = response.context['kpis']
         self.assertEqual(kpis['peak_total_power'], 6.5)
         self.assertEqual(kpis['avg_stack_power'], 4.0)
@@ -223,7 +223,7 @@ class BerResultsPageTests(TestCase):
             storage.fail_reads = True
             response = self.client.get(url)
 
-        self.assertTemplateUsed(response, 'digitaltwins/ber-hydrogen-results.html')
+        self.assertTemplateUsed(response, 'digitaltwins/ber/results.html')
 
     def test_result_file_without_power_signals_shows_a_message(self):
         with fake_object_storage() as storage:

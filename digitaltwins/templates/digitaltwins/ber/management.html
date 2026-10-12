@@ -33,7 +33,7 @@
         <div class="row g-4">
             <div id="ber-panel-col" class="col-12 col-lg-4 {% if not selected %}d-none{% endif %}">
                 <div id="ber-panel" class="ber-panel-sticky">
-                    {% if selected %}{% include "digitaltwins/partials/ber-management-panel.html" %}{% endif %}
+                    {% if selected %}{% include "digitaltwins/ber/partials/management-panel.html" %}{% endif %}
                 </div>
             </div>
 
@@ -68,7 +68,7 @@
                                     </td>
                                     <td class="align-middle py-3 fs-9">{{ experiment_request.user.email }}</td>
                                     <td class="align-middle py-3 fs-9 text-end">{{ experiment_request.created_at|date:"d M Y, H:i" }}</td>
-                                    <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/partials/ber-status-badge.html" %}</td>
+                                    <td class="align-middle py-3 fs-9 text-end">{% include "digitaltwins/ber/partials/status-badge.html" %}</td>
                                     <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-ber-row-ignore>
                                         <div class="btn-reveal-trigger">
                                             <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"

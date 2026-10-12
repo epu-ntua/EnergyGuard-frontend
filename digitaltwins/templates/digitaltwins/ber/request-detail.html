@@ -46,7 +46,7 @@
                     <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
                         View all requests<span class="fas fa-arrow-right"></span>
                     </a>
-                    {% include "digitaltwins/partials/ber-request-hide-button.html" %}
+                    {% include "digitaltwins/ber/partials/request-hide-button.html" %}
                 </div>
             </div>
         </div>
@@ -64,7 +64,7 @@
                     <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
                         View all requests<span class="fas fa-arrow-right"></span>
                     </a>
-                    {% include "digitaltwins/partials/ber-request-hide-button.html" %}
+                    {% include "digitaltwins/ber/partials/request-hide-button.html" %}
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                     <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
                         View all requests<span class="fas fa-arrow-right"></span>
                     </a>
-                    {% include "digitaltwins/partials/ber-request-hide-button.html" %}
+                    {% include "digitaltwins/ber/partials/request-hide-button.html" %}
                 </div>
             </div>
         </div>
@@ -114,7 +114,7 @@
     </div>
     {% include "core/footer.html" %}
 </div>
-{% include "digitaltwins/partials/ber-request-confirm-modal.html" %}
+{% include "digitaltwins/ber/partials/request-confirm-modal.html" %}
 {% endblock content %}
 
 {% block scripts %}

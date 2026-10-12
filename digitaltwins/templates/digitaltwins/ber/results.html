@@ -210,5 +210,5 @@ window.BER_RESULTS_CONFIG = {
 {{ chart_electrical|json_script:"ber-electrical-data" }}
 {{ kpis|json_script:"ber-kpis" }}
 {{ result_meta|json_script:"ber-result-meta" }}
-<script src="{% static 'digitaltwins/ber-results-dt.js' %}" defer></script>
+<script src="{% static 'digitaltwins/ber/results.js' %}" defer></script>
 {% endblock scripts %}
