@@ -14,6 +14,16 @@ from .services.results import build_ber_results_context
 logger = logging.getLogger(__name__)
 
 
+def _notify_in_app(experiment_request, *, message, url, icon):
+    """The bell notification. Its failure is logged, not raised, so the email that
+    follows still goes out: the requester should get at least one of the two."""
+    try:
+        Notification.objects.create(recipient=experiment_request.user, message=message, url=url, icon=icon)
+    except Exception:
+        logger.exception('Failed to create BER notification for request %s', experiment_request.pk)
+
+
+
 def send_ber_notification_email(experiment_request_id, platform_url):
     """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
     server must never stall the user's submit request (see ber_experiment_submit)."""
@@ -93,8 +103,8 @@ def notify_ber_results_updated(experiment_request_id, platform_url):
 
     detail_path = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
 
-    Notification.objects.create(
-        recipient=experiment_request.user,
+    _notify_in_app(
+        experiment_request,
         message=f'The results of your BER experiment request #{experiment_request.pk} were updated',
         url=detail_path,
         icon='rotate',
@@ -133,8 +143,8 @@ def notify_ber_request_decision(experiment_request_id, platform_url):
 
     detail_path = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
 
-    Notification.objects.create(
-        recipient=experiment_request.user,
+    _notify_in_app(
+        experiment_request,
         message=f'Your BER experiment request #{experiment_request.pk} {subject_verb}',
         url=detail_path,
         icon=icon,

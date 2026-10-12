@@ -3,21 +3,19 @@
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from django_q.tasks import async_task
 
 from core.services.object_storage import MinioUploadError
 from digitaltwins.common import check_rate_limit, dt_render
 from digitaltwins.models import BerExperimentRequest
 
+from ..services import requests as ber_requests
 from ..services.results import BER_SIGNAL_INFO, BerResultUnreadable, build_ber_results_context
 from ..services.validation import validate_ber_experiment
 from .shared import PAGE_SIZE, result_file_response
@@ -108,14 +106,10 @@ def ber_experiment_submit(request):
                 {'requestId': existing_request.pk, 'status': existing_request.status}, status=202,
             )
 
-    experiment_request = BerExperimentRequest.objects.create(user=request.user, experiment_json=cleaned)
+    experiment_request = ber_requests.submit_request(
+        request.user, cleaned, platform_url=request.build_absolute_uri('/'),
+    )
     cache.set(dedup_key, experiment_request.pk, timeout=_SUBMIT_DEDUP_WINDOW_SECONDS)
-
-    if settings.BER_EMAIL:
-        async_task(
-            'digitaltwins.ber.tasks.send_ber_notification_email',
-            experiment_request.pk, request.build_absolute_uri('/'),
-        )
 
     return JsonResponse(
         {'requestId': experiment_request.pk, 'status': experiment_request.status}, status=202,
@@ -179,18 +173,8 @@ def ber_hydrogen_request_result_download(request, request_id):
 def ber_hydrogen_request_cancel(request, request_id):
     """Requester withdraws a pending request; BER staff are notified so they don't run it."""
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
-    now = datetime.now(timezone.utc)
-
-    # Conditional on PENDING: if BER decided it a moment earlier, the decision stands.
-    cancelled = BerExperimentRequest.objects.filter(
-        pk=experiment_request.pk, status=BerExperimentRequest.Status.PENDING,
-    ).update(status=BerExperimentRequest.Status.CANCELLED, cancelled_at=now, updated_at=now)
-
-    if cancelled and settings.BER_EMAIL:
-        async_task(
-            'digitaltwins.ber.tasks.send_ber_cancellation_email',
-            experiment_request.pk, request.build_absolute_uri('/'),
-        )
+    # If BER decided it a moment earlier, the decision stands and the page shows it.
+    ber_requests.cancel_request(experiment_request, platform_url=request.build_absolute_uri('/'))
     return redirect('ber-hydrogen-request-detail', request_id=experiment_request.pk)
 
 
@@ -199,12 +183,7 @@ def ber_hydrogen_request_cancel(request, request_id):
 def ber_hydrogen_request_hide(request, request_id):
     """Requester removes a finished request from their own list. BER staff still see it."""
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
-    now = datetime.now(timezone.utc)
-
-    BerExperimentRequest.objects.filter(
-        pk=experiment_request.pk, hidden_by_user_at__isnull=True,
-        status__in=BerExperimentRequest.FINISHED_STATUSES,
-    ).update(hidden_by_user_at=now, updated_at=now)
+    ber_requests.hide_request(experiment_request)
     return redirect('ber-hydrogen-runs')
 
 

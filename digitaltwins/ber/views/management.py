@@ -5,8 +5,6 @@ Group (e.g. "BER Team") assigned to the BER staff's own EnergyGuard accounts.
 """
 
 import json
-import logging
-from datetime import datetime, timezone
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
@@ -16,30 +14,19 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
-from django_q.tasks import async_task
 
-from core.services.object_storage import MinioUploadError
 from digitaltwins.common import dt_render, format_duration
 from digitaltwins.models import BerExperimentRequest
 
-from ..services.results import BER_SIGNAL_INFO, has_power_signals
-from ..services.storage import delete_result_file, store_result_file
+from ..forms import CompleteRequestForm, RejectRequestForm, ReplaceResultForm, first_error
+from ..services import requests as ber_requests
+from ..services.requests import TransitionError
 from ..upload_progress import UPLOAD_ID_RE, progress_callback_for, read_progress
 from .shared import PAGE_SIZE, result_file_response, result_filename
 
-logger = logging.getLogger(__name__)
-
-_RESULT_FILE_MAX_SIZE_MB = 50  # real .lp signal logs, not the JSON request itself
 _ARCHIVED_TAB = 'archived'
 
 manage_permission_required = permission_required('digitaltwins.manage_ber_requests', raise_exception=True)
-
-
-def _parse_datetime(raw):
-    try:
-        return datetime.strptime(raw, '%Y-%m-%dT%H:%M').replace(tzinfo=timezone.utc)
-    except (ValueError, TypeError):
-        return None
 
 
 def _list_filters(params):
@@ -114,33 +101,6 @@ def _render_management(request, params, selected=None, error=None):
     return dt_render(request, 'digitaltwins/ber/management.html', active_navbar_page='ber_management', **context)
 
 
-def _discard_result_file(object_key, request_id, reason):
-    """Best-effort removal of a result file nothing points to any more. A failure
-    only leaves an orphaned object, so it is logged (with the key, for manual
-    cleanup) rather than surfaced to the staff member."""
-    try:
-        delete_result_file(object_key)
-    except MinioUploadError:
-        logger.exception('Could not delete BER result file %s for request %s (%s)', object_key, request_id, reason)
-
-
-def _validate_result_file(result_file):
-    if not result_file:
-        return 'Choose a result file to upload.'
-    if result_file.size > _RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
-        return f'Result file exceeds the {_RESULT_FILE_MAX_SIZE_MB} MB limit.'
-    # Checked before anything is stored or the requester is told their results are
-    # ready: a file the results page can't chart would only reach them as an error.
-    readable = has_power_signals(result_file)
-    result_file.seek(0)
-    if not readable:
-        return (
-            'This file has no power signals the results page can show '
-            f'({", ".join(BER_SIGNAL_INFO)}). Upload the .lp result file of this experiment.'
-        )
-    return None
-
-
 def _wants_json(request):
     """The panel's upload forms are sent by XHR (for the progress bar); they get
     JSON back, while the plain form submit (no JS) keeps the normal page flow."""
@@ -153,10 +113,11 @@ def _done(request, next_url):
     return redirect(next_url)
 
 
-def _not_pending_message(experiment_request):
-    if experiment_request.status == BerExperimentRequest.Status.CANCELLED:
-        return 'The requester cancelled this request.'
-    return 'This request has already been decided.'
+def _error(request, experiment_request, message):
+    """A failed panel action: JSON for the XHR upload forms, else the page with the error shown."""
+    if _wants_json(request):
+        return JsonResponse({'error': message}, status=400)
+    return _render_management(request, request.POST, selected=experiment_request, error=message)
 
 
 @login_required
@@ -192,71 +153,33 @@ def ber_management_detail(request, request_id):
         return redirect(_list_url('', '', experiment_request.pk))
 
     status, page = _list_filters(request.POST)
-
-    def _error(message):
-        if _wants_json(request):
-            return JsonResponse({'error': message}, status=400)
-        return _render_management(request, request.POST, selected=experiment_request, error=message)
-
-    if experiment_request.status != BerExperimentRequest.Status.PENDING:
-        return _error(_not_pending_message(experiment_request))
-
     action = request.POST.get('action')
-    now = datetime.now(timezone.utc)
-    pending = BerExperimentRequest.objects.filter(pk=experiment_request.pk, status=BerExperimentRequest.Status.PENDING)
-
-    if action == 'complete':
-        result_file = request.FILES.get('result_file')
-        actual_start = _parse_datetime(request.POST.get('actual_start', ''))
-        actual_end = _parse_datetime(request.POST.get('actual_end', ''))
-
-        if actual_start is None or actual_end is None:
-            return _error('Provide a valid start and end time.')
-        if actual_end <= actual_start:
-            return _error('End time must be after start time.')
-        file_error = _validate_result_file(result_file)
-        if file_error:
-            return _error(file_error)
-
-        try:
-            result_key = store_result_file(
-                experiment_request.pk, result_file,
-                progress_callback=progress_callback_for(request, result_file),
-            )
-        except MinioUploadError:
-            logger.exception('Failed to store BER result file for request %s', experiment_request.pk)
-            return _error('Could not store the result file. Please try again.')
-
-        # Conditional update: two staff members deciding the same request at once
-        # must not both succeed (and both notify the requester).
-        updated = pending.update(
-            actual_start=actual_start, actual_end=actual_end, result_key=result_key,
-            status=BerExperimentRequest.Status.COMPLETED, updated_at=now,
-        )
-        if not updated:
-            _discard_result_file(result_key, experiment_request.pk, 'request was decided concurrently')
-
-    elif action == 'reject':
-        reason = request.POST.get('rejection_reason', '').strip()
-        if not reason:
-            return _error('A rejection reason is required.')
-        updated = pending.update(
-            rejection_reason=reason, status=BerExperimentRequest.Status.REJECTED, updated_at=now,
-        )
-
-    else:
+    form_class = {'complete': CompleteRequestForm, 'reject': RejectRequestForm}.get(action)
+    if form_class is None:
         return JsonResponse({'error': 'Invalid action.'}, status=400)
 
-    if not updated:
-        experiment_request.refresh_from_db()
-        return _error(_not_pending_message(experiment_request))
+    try:
+        # Before validating the form: no point scanning an upload for a request
+        # that can't be decided any more.
+        ber_requests.ensure_pending(experiment_request)
 
-    if action == 'complete':
-        async_task('digitaltwins.ber.tasks.warm_ber_results_cache', experiment_request.pk)
-    async_task(
-        'digitaltwins.ber.tasks.notify_ber_request_decision',
-        experiment_request.pk, request.build_absolute_uri('/'),
-    )
+        form = form_class(request.POST, request.FILES)
+        if not form.is_valid():
+            return _error(request, experiment_request, first_error(form))
+
+        platform_url = request.build_absolute_uri('/')
+        if action == 'complete':
+            ber_requests.complete_request(
+                experiment_request, **form.cleaned_data, platform_url=platform_url,
+                progress_callback=progress_callback_for(request, form.cleaned_data['result_file']),
+            )
+        else:
+            ber_requests.reject_request(
+                experiment_request, reason=form.cleaned_data['rejection_reason'], platform_url=platform_url,
+            )
+    except TransitionError as exc:
+        return _error(request, experiment_request, str(exc))
+
     return _done(request, _list_url(status, page, experiment_request.pk))
 
 
@@ -264,60 +187,27 @@ def ber_management_detail(request, request_id):
 @manage_permission_required
 @require_POST
 def ber_management_replace_result(request, request_id):
-    """Swap a completed request's result file (e.g. the wrong file was uploaded).
-
-    Order matters: the new file goes to a fresh key, the row is switched to it, and
-    only then is the old file deleted - so the request always points to a complete
-    file. The new key also changes the results cache key, so the requester sees the
-    new data immediately.
-    """
+    """Swap a completed request's result file (e.g. the wrong file was uploaded)."""
     experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user', 'archived_by'), pk=request_id)
     status, page = _list_filters(request.POST)
 
-    def _error(message):
-        if _wants_json(request):
-            return JsonResponse({'error': message}, status=400)
-        return _render_management(request, request.POST, selected=experiment_request, error=message)
-
     if experiment_request.status != BerExperimentRequest.Status.COMPLETED:
-        return _error('Only completed requests have a result file to replace.')
+        return _error(request, experiment_request, 'Only completed requests have a result file to replace.')
 
-    result_file = request.FILES.get('result_file')
-    file_error = _validate_result_file(result_file)
-    if file_error:
-        return _error(file_error)
+    form = ReplaceResultForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return _error(request, experiment_request, first_error(form))
 
-    old_key = experiment_request.result_key
+    result_file = form.cleaned_data['result_file']
     try:
-        new_key = store_result_file(
-            experiment_request.pk, result_file,
+        ber_requests.replace_result(
+            experiment_request, actor=request.user, result_file=result_file,
+            platform_url=request.build_absolute_uri('/'),
             progress_callback=progress_callback_for(request, result_file),
         )
-    except MinioUploadError:
-        logger.exception('Failed to store replacement BER result file for request %s', experiment_request.pk)
-        return _error('Could not store the result file. Please try again.')
+    except TransitionError as exc:
+        return _error(request, experiment_request, str(exc))
 
-    # Conditional on the key we read: if another staff member replaced it meanwhile,
-    # theirs stands and this upload is discarded.
-    now = datetime.now(timezone.utc)
-    switched = BerExperimentRequest.objects.filter(
-        pk=experiment_request.pk, status=BerExperimentRequest.Status.COMPLETED, result_key=old_key,
-    ).update(result_key=new_key, updated_at=now)
-
-    if not switched:
-        _discard_result_file(new_key, experiment_request.pk, 'result was replaced concurrently')
-        experiment_request.refresh_from_db()
-        return _error('The result file was changed by someone else in the meantime. Check it and try again.')
-
-    if old_key:
-        _discard_result_file(old_key, experiment_request.pk, 'replaced by a new upload')
-
-    logger.info('BER request %s result file replaced by user %s', experiment_request.pk, request.user.pk)
-    async_task('digitaltwins.ber.tasks.warm_ber_results_cache', experiment_request.pk)
-    async_task(
-        'digitaltwins.ber.tasks.notify_ber_results_updated',
-        experiment_request.pk, request.build_absolute_uri('/'),
-    )
     return _done(request, _list_url(status, page, experiment_request.pk))
 
 
@@ -339,21 +229,11 @@ def ber_management_archive(request, request_id):
     """Hide a decided request from the management list. The requester still sees it."""
     experiment_request = get_object_or_404(BerExperimentRequest.objects.select_related('user'), pk=request_id)
     status, page = _list_filters(request.POST)
-    now = datetime.now(timezone.utc)
 
-    archived = BerExperimentRequest.objects.filter(
-        pk=experiment_request.pk, archived_at__isnull=True, status__in=BerExperimentRequest.FINISHED_STATUSES,
-    ).update(archived_at=now, archived_by=request.user, updated_at=now)
-
-    if not archived:
-        experiment_request.refresh_from_db()
-        if experiment_request.archived_at:
-            message = 'This request is already archived.'
-        else:
-            message = 'Pending requests cannot be archived. Reject it first so the requester is informed.'
-        return _render_management(request, request.POST, selected=experiment_request, error=message)
-
-    logger.info('BER request %s archived by user %s', experiment_request.pk, request.user.pk)
+    try:
+        ber_requests.archive_request(experiment_request, actor=request.user)
+    except TransitionError as exc:
+        return _render_management(request, request.POST, selected=experiment_request, error=str(exc))
     return redirect(_list_url(status, page))
 
 
@@ -364,12 +244,8 @@ def ber_management_restore(request, request_id):
     """Bring an archived request back into the management list."""
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id)
     status, page = _list_filters(request.POST)
-    now = datetime.now(timezone.utc)
 
-    BerExperimentRequest.objects.filter(pk=experiment_request.pk, archived_at__isnull=False).update(
-        archived_at=None, archived_by=None, updated_at=now,
-    )
-    logger.info('BER request %s restored from archive by user %s', experiment_request.pk, request.user.pk)
+    ber_requests.restore_request(experiment_request, actor=request.user)
     return redirect(_list_url(status, page))
 
 
