@@ -79,6 +79,13 @@ def project_details(request, project_id):
             messages.success(request, "Project updated successfully.")
             return redirect("project_details", project_id=project_id)
 
+    # A dataset can go private after it was attached, so filter through
+    # visible_to rather than listing project.datasets wholesale.
+    datasets_total = project.datasets.count()
+    visible_datasets = list(
+        project.datasets.visible_to(user).select_related("publisher").order_by("name")
+    )
+
     experiments = project.experiments.select_related("creator").order_by("-updated_at")
     latest_experiment = experiments.first()
 
@@ -101,6 +108,9 @@ def project_details(request, project_id):
         {
             "project_details": project_details_data,
             "experiments": experiments,
+            "project_datasets": visible_datasets,
+            "project_datasets_total": datasets_total,
+            "project_datasets_hidden": datasets_total - len(visible_datasets),
             "edit_project_form": edit_project_form,
             "active_navbar_page": "projects",
             "show_sidebar": True,

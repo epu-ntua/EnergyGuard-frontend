@@ -16,6 +16,7 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
+        "projects_count",
         # "status",
         "id",
     ]
@@ -26,6 +27,9 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "source",
         "publisher",
         "size_gb",
+        # Most datasets tie at 0, and the table pages server-side: without a
+        # unique tie-breaker rows can repeat or vanish between pages.
+        ["projects_count", "id"],
         # "status",
     ]
     max_display_length = 25

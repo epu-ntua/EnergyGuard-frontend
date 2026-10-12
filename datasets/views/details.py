@@ -37,6 +37,10 @@ def dataset_details(request, dataset_id):
         Q(creator=request.user) | Q(collaborators=request.user)
     ).distinct().order_by("-created_at")
 
+    # Platform-wide total, private projects included. Only a number, so no
+    # project names are exposed.
+    usage_total = dataset.projects.count()
+
     return render(
         request,
         "datasets/dataset-details.html",
@@ -45,6 +49,7 @@ def dataset_details(request, dataset_id):
             "dt": dataset_details_data,
             "edit_form": GeneralDatasetForm(instance=dataset),
             "user_projects": user_projects,
+            "usage_total": usage_total,
             "active_navbar_page": "datasets",
             "show_sidebar": True,
         },
