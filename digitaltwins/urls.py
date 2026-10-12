@@ -21,6 +21,7 @@ urlpatterns = [
     path('ciemat/ciemat-forecasting-dt/', include('digitaltwins.ciemat.urls')),
     path('rdn-grid/rdn-grid-dt/', include('digitaltwins.rdn.urls')),
     path('results/save/', pages.dt_save_result, name='dt-save-result'),
+    path('<slug:slug>/dataset/', pages.digitaltwins_pilot_dataset, name='digitaltwins-pilot-dataset'),
     # Last: the <slug> catch-all would otherwise shadow the fixed routes above.
     path('<slug:slug>/', pages.digitaltwins_detail, name='digitaltwins-detail'),
 ]

@@ -1,14 +1,18 @@
 """Riga buildings API, Engreen stations, and saving a twin's result to JupyterHub."""
 
 import json
+from decimal import Decimal
 from unittest.mock import patch
 
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.contrib.messages import get_messages
 from django.urls import reverse
 
+from datasets.models import Dataset
+from digitaltwins.catalog import DIGITAL_TWINS
 from digitaltwins.models import DtResult
 
 from .fakes import fake_object_storage
@@ -100,3 +104,55 @@ class SaveResultToJupyterTests(TestCase):
 
         self.assertEqual(response.status_code, 502)
         self.assertIn('could not be opened in JupyterHub', response.json()['error'])
+
+
+class PilotDatasetLinkTests(TestCase):
+    """Overview pages link to the twin's pilot dataset by partner, not by an id
+    that differs between environments."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(email='pilot-links@example.com', password='pw')
+        # Unrelated datasets first, so the pilot one's id is not something a test could guess.
+        for i in range(3):
+            Dataset.objects.create(name=f'Other {i}', size_gb=Decimal('0.01'))
+        cls.ber_dataset = Dataset.objects.create(
+            name='BER Pilot Data', size_gb=Decimal('0.01'), metadata={'pilot_partner': 'BER'},
+            status=Dataset.Status.APPROVED, visibility=True,
+        )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_redirects_to_the_partners_dataset(self):
+        response = self.client.get(reverse('digitaltwins-pilot-dataset', args=['ber-hydrogen']))
+        self.assertRedirects(
+            response, reverse('dataset_details', kwargs={'dataset_id': self.ber_dataset.pk}),
+            fetch_redirect_response=False,
+        )
+
+    def test_dataset_not_seeded_yet(self):
+        response = self.client.get(reverse('digitaltwins-pilot-dataset', args=['cea-hydrogen']))
+
+        self.assertRedirects(response, reverse('datasets_list'), fetch_redirect_response=False)
+        self.assertIn("isn't available yet", str(list(get_messages(response.wsgi_request))[0]))
+
+    def test_twins_without_a_pilot_dataset(self):
+        for slug in ['rdn-grid', 'no-such-twin']:
+            with self.subTest(slug):
+                self.assertEqual(self.client.get(reverse('digitaltwins-pilot-dataset', args=[slug])).status_code, 404)
+
+    def test_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('digitaltwins-pilot-dataset', args=['ber-hydrogen']))
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('/datasets/dataset/', response['Location'], 'sent to login, not to the dataset')
+
+    def test_every_overview_links_by_partner(self):
+        for twin in DIGITAL_TWINS:
+            if not twin.get('pilot_partner'):
+                continue
+            with self.subTest(twin['slug']):
+                response = self.client.get(reverse('digitaltwins-detail', args=[twin['slug']]))
+                self.assertContains(response, reverse('digitaltwins-pilot-dataset', args=[twin['slug']]))
+                self.assertNotContains(response, '/datasets/dataset/')

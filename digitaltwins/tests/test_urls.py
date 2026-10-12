@@ -55,6 +55,7 @@ URL_CONTRACT = [
     ('rdn-grid-job-status', [], '/digitaltwins/rdn-grid/rdn-grid-dt/status/'),
     ('rdn-grid-follow', [], '/digitaltwins/rdn-grid/rdn-grid-dt/follow/'),
     ('dt-save-result', [], '/digitaltwins/results/save/'),
+    ('digitaltwins-pilot-dataset', ['ber-hydrogen'], '/digitaltwins/ber-hydrogen/dataset/'),
     ('digitaltwins-detail', ['ber-hydrogen'], '/digitaltwins/ber-hydrogen/'),
 ]
 

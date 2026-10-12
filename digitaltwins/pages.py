@@ -6,11 +6,14 @@ import logging
 
 import requests
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
+from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 
 from core.services.object_storage import MinioUploadError
+from datasets.models import Dataset
 from datasets.services import provision_user_datasets
 
 from .catalog import DIGITAL_TWINS, DT_BY_SLUG
@@ -53,6 +56,27 @@ def digitaltwins_detail(request, slug):
     if digital_twin is None:
         raise Http404
     return dt_render(request, f'digitaltwins/{slug}.html', digital_twin=digital_twin)
+
+
+@login_required
+def digitaltwins_pilot_dataset(request, slug):
+    """A stable link to a twin's pilot dataset, the same in every environment.
+
+    The pilot datasets are seeded separately on each machine, so their ids differ
+    between a laptop and the server; a link by id is what forced the server to
+    keep uncommitted edits to the overview templates. Access control is left to
+    the dataset page this redirects to.
+    """
+    digital_twin = DT_BY_SLUG.get(slug)
+    partner = (digital_twin or {}).get('pilot_partner')
+    if not partner:
+        raise Http404
+
+    dataset = Dataset.objects.filter(metadata__pilot_partner=partner).order_by('pk').only('pk').first()
+    if dataset is None:
+        messages.info(request, f"The pilot dataset of {digital_twin['name']} isn't available yet.")
+        return redirect('datasets_list')
+    return redirect('dataset_details', dataset_id=dataset.pk)
 
 
 @login_required
