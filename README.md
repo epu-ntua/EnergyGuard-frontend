@@ -129,7 +129,8 @@ Key variables required in `.env`:
 | `RDN_API_URL` / `RDN_API_USER_ID` / `RDN_API_EMAIL` / `RDN_API_PASSWORD` / `RDN_API_ORGANISATION` | RDN API integration |
 | `CIEMAT_API_BASE_URL` / `CIEMAT_API_KEY` | CIEMAT API integration |
 | `HAL_BASE_URL` | HAL API integration |
-| `BER_EMAIL` | BER results notification sender |
+| `BER_EMAIL` | BER lab address that receives new-request and cancellation notifications |
+| `PLATFORM_URL` | Base URL used in links inside emails (default `https://dashboard.energy-guard.eu/`; set `http://localhost:8080/` locally) |
 | `JUPYTERHUB_URL` | JupyterHub integration |
 | `MLFLOW_TRACKING_USERNAME` / `MLFLOW_TRACKING_PASSWORD` | MLflow experiment tracking |
 

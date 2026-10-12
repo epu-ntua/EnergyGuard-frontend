@@ -16,6 +16,7 @@ from digitaltwins.common import check_rate_limit, dt_render
 from digitaltwins.models import BerExperimentRequest
 
 from ..services import requests as ber_requests
+from ..services.requests import SubmissionLimitError
 from ..services.results import BER_SIGNAL_INFO, BerResultUnreadable, build_ber_results_context
 from ..services.validation import validate_ber_experiment
 from .shared import PAGE_SIZE, result_file_response
@@ -64,6 +65,7 @@ _SUBMIT_RATE_WINDOW = 60
 # validated content from the same user, returns the original request instead of
 # creating a duplicate row and a duplicate BER notification email.
 _SUBMIT_DEDUP_WINDOW_SECONDS = 30
+_SUBMISSION_IN_PROGRESS = 0  # dedup value until the request exists (never a real pk)
 
 
 def _submit_dedup_key(user_id, cleaned):
@@ -97,18 +99,25 @@ def ber_experiment_submit(request):
     if error:
         return JsonResponse({'error': error}, status=400)
 
+    # cache.add claims the key atomically, so of two identical submissions arriving
+    # together only one creates a request; the other gets that one back.
     dedup_key = _submit_dedup_key(request.user.pk, cleaned)
-    existing_id = cache.get(dedup_key)
-    if existing_id is not None:
-        existing_request = BerExperimentRequest.objects.filter(pk=existing_id).first()
+    if not cache.add(dedup_key, _SUBMISSION_IN_PROGRESS, timeout=_SUBMIT_DEDUP_WINDOW_SECONDS):
+        existing_request = BerExperimentRequest.objects.filter(pk=cache.get(dedup_key) or 0).first()
         if existing_request is not None:
             return JsonResponse(
                 {'requestId': existing_request.pk, 'status': existing_request.status}, status=202,
             )
+        return JsonResponse({'error': 'This experiment is already being submitted.'}, status=409)
 
-    experiment_request = ber_requests.submit_request(
-        request.user, cleaned, platform_url=request.build_absolute_uri('/'),
-    )
+    try:
+        experiment_request = ber_requests.submit_request(request.user, cleaned)
+    except SubmissionLimitError as exc:
+        cache.delete(dedup_key)  # nothing was created: a later retry must not be blocked
+        return JsonResponse({'error': str(exc)}, status=429)
+    except Exception:
+        cache.delete(dedup_key)
+        raise
     cache.set(dedup_key, experiment_request.pk, timeout=_SUBMIT_DEDUP_WINDOW_SECONDS)
 
     return JsonResponse(
@@ -174,7 +183,7 @@ def ber_hydrogen_request_cancel(request, request_id):
     """Requester withdraws a pending request; BER staff are notified so they don't run it."""
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
     # If BER decided it a moment earlier, the decision stands and the page shows it.
-    ber_requests.cancel_request(experiment_request, platform_url=request.build_absolute_uri('/'))
+    ber_requests.cancel_request(experiment_request)
     return redirect('ber-hydrogen-request-detail', request_id=experiment_request.pk)
 
 

@@ -14,6 +14,13 @@ from .services.results import build_ber_results_context
 logger = logging.getLogger(__name__)
 
 
+# The platform_url parameter of the tasks below is no longer used: links come from
+# settings.PLATFORM_URL. It stays in the signatures because tasks queued before
+# that change still pass it.
+def _platform_link(path):
+    return f'{settings.PLATFORM_URL.rstrip("/")}{path}'
+
+
 def _notify_in_app(experiment_request, *, message, url, icon):
     """The bell notification. Its failure is logged, not raised, so the email that
     follows still goes out: the requester should get at least one of the two."""
@@ -24,7 +31,7 @@ def _notify_in_app(experiment_request, *, message, url, icon):
 
 
 
-def send_ber_notification_email(experiment_request_id, platform_url):
+def send_ber_notification_email(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
     server must never stall the user's submit request (see ber_experiment_submit)."""
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).first()
@@ -41,7 +48,7 @@ def send_ber_notification_email(experiment_request_id, platform_url):
                 f'Request ID: {experiment_request.pk}\n'
                 f'Submitted by: {experiment_request.user.email}\n'
                 f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                f'Review it here:\n{platform_url.rstrip("/")}{management_path}'
+                f'Review it here:\n{_platform_link(management_path)}'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.BER_EMAIL],
@@ -67,7 +74,7 @@ def warm_ber_results_cache(experiment_request_id):
         logger.exception('Could not pre-build BER results for request %s', experiment_request.pk)
 
 
-def send_ber_cancellation_email(experiment_request_id, platform_url):
+def send_ber_cancellation_email(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker - tells BER staff a requester withdrew a pending
     request, so the lab doesn't run it (see ber_hydrogen_request_cancel)."""
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
@@ -85,7 +92,7 @@ def send_ber_cancellation_email(experiment_request_id, platform_url):
                 f'Request ID: {experiment_request.pk}\n'
                 f'Submitted by: {experiment_request.user.email}\n'
                 f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                f'View it here:\n{platform_url.rstrip("/")}{management_path}'
+                f'View it here:\n{_platform_link(management_path)}'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.BER_EMAIL],
@@ -94,7 +101,7 @@ def send_ber_cancellation_email(experiment_request_id, platform_url):
         logger.exception('Failed to send BER cancellation email for request %s', experiment_request.pk)
 
 
-def notify_ber_results_updated(experiment_request_id, platform_url):
+def notify_ber_results_updated(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker - tells the requester BER staff replaced the
     result file of their completed request (see ber_management_replace_result)."""
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
@@ -117,7 +124,7 @@ def notify_ber_results_updated(experiment_request_id, platform_url):
                 f'Hi,\n\n'
                 f'The BER laboratory team has uploaded an updated result file for your PEM electrolyzer '
                 f'experiment request #{experiment_request.pk}. The results shown on EnergyGuard now reflect it.\n\n'
-                f'View them here:\n{platform_url.rstrip("/")}{detail_path}\n\n'
+                f'View them here:\n{_platform_link(detail_path)}\n\n'
                 f'Best regards,\nThe EnergyGuard Team'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -127,7 +134,7 @@ def notify_ber_results_updated(experiment_request_id, platform_url):
         logger.exception('Failed to send BER results-updated email for request %s', experiment_request.pk)
 
 
-def notify_ber_request_decision(experiment_request_id, platform_url):
+def notify_ber_request_decision(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker - notifies the requester once BER staff marks
     their request completed or rejected (see ber_management_detail)."""
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
@@ -157,7 +164,7 @@ def notify_ber_request_decision(experiment_request_id, platform_url):
                 f'Hi,\n\n'
                 f'Your BER PEM electrolyzer experiment request #{experiment_request.pk} {subject_verb}.\n\n'
                 f'{body_line}\n\n'
-                f'View it here:\n{platform_url.rstrip("/")}{detail_path}\n\n'
+                f'View it here:\n{_platform_link(detail_path)}\n\n'
                 f'Best regards,\nThe EnergyGuard Team'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,

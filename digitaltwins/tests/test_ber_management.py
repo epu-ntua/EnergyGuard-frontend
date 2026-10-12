@@ -1,6 +1,7 @@
 """BER experiment management (BER staff side), through the URLs."""
 
 import json
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -19,6 +20,17 @@ BUCKET = settings.OBJECT_STORAGE_BUCKET_SIMULATIONS
 
 def result_upload(name='result.lp', data=SAMPLE_LP):
     return SimpleUploadedFile(name, data, content_type='application/octet-stream')
+
+
+def recent_times():
+    """An execution window the form accepts for a request submitted just now:
+    not before the submission minute, not in the future."""
+    start = datetime.now(timezone.utc).replace(second=0, microsecond=0)
+    return start, start + timedelta(minutes=1)
+
+
+def as_input(moment):
+    return moment.strftime('%Y-%m-%dT%H:%M')
 
 
 class BerManagementPermissionTests(TestCase):
@@ -130,8 +142,13 @@ class BerDecisionTests(TestCase):
     def setUp(self):
         self.client.force_login(self.staff)
 
-    def _complete(self, experiment_request, *, upload=None, start='2026-01-01T09:00', end='2026-01-01T10:00', **extra):
-        data = {'action': 'complete', 'actual_start': start, 'actual_end': end, 'status': 'pending', 'page': '1'}
+    def _complete(self, experiment_request, *, upload=None, start=None, end=None, **extra):
+        default_start, default_end = recent_times()
+        data = {
+            'action': 'complete', 'status': 'pending', 'page': '1',
+            'actual_start': as_input(default_start) if start is None else start,
+            'actual_end': as_input(default_end) if end is None else end,
+        }
         if upload is not None:
             data['result_file'] = upload
         return self.client.post(reverse('ber-management-detail', args=[experiment_request.pk]), data, **extra)
@@ -139,8 +156,11 @@ class BerDecisionTests(TestCase):
     def test_completing_stores_the_file_and_notifies_the_requester(self):
         experiment_request = make_request(self.requester)
 
+        start, end = recent_times()
         with fake_object_storage() as storage:
-            response = self._complete(experiment_request, upload=result_upload(), **XHR)
+            response = self._complete(
+                experiment_request, upload=result_upload(), start=as_input(start), end=as_input(end), **XHR,
+            )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -149,8 +169,8 @@ class BerDecisionTests(TestCase):
         )
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.COMPLETED)
-        self.assertEqual(experiment_request.actual_start.isoformat(), '2026-01-01T09:00:00+00:00')
-        self.assertEqual(experiment_request.actual_end.isoformat(), '2026-01-01T10:00:00+00:00')
+        self.assertEqual(experiment_request.actual_start, start)
+        self.assertEqual(experiment_request.actual_end, end)
         self.assertTrue(experiment_request.result_key.startswith(f'ber-hydrogen/{experiment_request.pk}/result-'))
         self.assertTrue(experiment_request.result_key.endswith('.lp'))
         self.assertEqual(storage.objects[(BUCKET, experiment_request.result_key)], SAMPLE_LP)
@@ -403,9 +423,10 @@ class BerUploadProgressTests(TestCase):
         upload_id = 'abcdef12-3456'
         self.client.force_login(self.staff)
 
+        start, end = recent_times()
         with fake_object_storage():
             self.client.post(reverse('ber-management-detail', args=[experiment_request.pk]), {
-                'action': 'complete', 'actual_start': '2026-01-01T09:00', 'actual_end': '2026-01-01T10:00',
+                'action': 'complete', 'actual_start': as_input(start), 'actual_end': as_input(end),
                 'result_file': result_upload(), 'upload_id': upload_id,
             }, **XHR)
 

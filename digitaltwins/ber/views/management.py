@@ -154,8 +154,7 @@ def ber_management_detail(request, request_id):
 
     status, page = _list_filters(request.POST)
     action = request.POST.get('action')
-    form_class = {'complete': CompleteRequestForm, 'reject': RejectRequestForm}.get(action)
-    if form_class is None:
+    if action not in ('complete', 'reject'):
         return JsonResponse({'error': 'Invalid action.'}, status=400)
 
     try:
@@ -163,20 +162,20 @@ def ber_management_detail(request, request_id):
         # that can't be decided any more.
         ber_requests.ensure_pending(experiment_request)
 
-        form = form_class(request.POST, request.FILES)
+        if action == 'complete':
+            form = CompleteRequestForm(request.POST, request.FILES, experiment_request=experiment_request)
+        else:
+            form = RejectRequestForm(request.POST)
         if not form.is_valid():
             return _error(request, experiment_request, first_error(form))
 
-        platform_url = request.build_absolute_uri('/')
         if action == 'complete':
             ber_requests.complete_request(
-                experiment_request, **form.cleaned_data, platform_url=platform_url,
+                experiment_request, **form.cleaned_data,
                 progress_callback=progress_callback_for(request, form.cleaned_data['result_file']),
             )
         else:
-            ber_requests.reject_request(
-                experiment_request, reason=form.cleaned_data['rejection_reason'], platform_url=platform_url,
-            )
+            ber_requests.reject_request(experiment_request, reason=form.cleaned_data['rejection_reason'])
     except TransitionError as exc:
         return _error(request, experiment_request, str(exc))
 
@@ -202,7 +201,6 @@ def ber_management_replace_result(request, request_id):
     try:
         ber_requests.replace_result(
             experiment_request, actor=request.user, result_file=result_file,
-            platform_url=request.build_absolute_uri('/'),
             progress_callback=progress_callback_for(request, result_file),
         )
     except TransitionError as exc:

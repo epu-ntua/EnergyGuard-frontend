@@ -36,7 +36,7 @@ def upload(data=SAMPLE_LP):
 
 def complete(experiment_request):
     ber_requests.complete_request(
-        experiment_request, actual_start=START, actual_end=END, result_file=upload(), platform_url=PLATFORM_URL,
+        experiment_request, actual_start=START, actual_end=END, result_file=upload(),
     )
 
 
@@ -68,7 +68,7 @@ class StateChangeAndNotificationAreAtomicTests(TestCase):
             with patch(ENQUEUE, side_effect=DatabaseError('broker down')):
                 with self.assertRaisesMessage(TransitionError, 'Could not save the new result file'):
                     ber_requests.replace_result(
-                        experiment_request, actor=self.staff, result_file=upload(), platform_url=PLATFORM_URL,
+                        experiment_request, actor=self.staff, result_file=upload(),
                     )
 
         experiment_request.refresh_from_db()
@@ -79,7 +79,7 @@ class StateChangeAndNotificationAreAtomicTests(TestCase):
         experiment_request = make_request(self.requester)
 
         with patch(ENQUEUE, side_effect=DatabaseError('broker down')), self.assertRaises(DatabaseError):
-            ber_requests.reject_request(experiment_request, reason='No', platform_url=PLATFORM_URL)
+            ber_requests.reject_request(experiment_request, reason='No')
 
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.PENDING)
@@ -87,7 +87,7 @@ class StateChangeAndNotificationAreAtomicTests(TestCase):
     @override_settings(BER_EMAIL='ber-lab@example.com')
     def test_failed_enqueue_on_submit_creates_no_request(self):
         with patch(ENQUEUE, side_effect=DatabaseError('broker down')), self.assertRaises(DatabaseError):
-            ber_requests.submit_request(self.requester, [{'time': 0}], platform_url=PLATFORM_URL)
+            ber_requests.submit_request(self.requester, [{'time': 0}])
 
         self.assertFalse(BerExperimentRequest.objects.exists())
 
@@ -127,7 +127,7 @@ class ConcurrentChangeTests(TestCase):
         BerExperimentRequest.objects.filter(pk=experiment_request.pk).update(status=Status.COMPLETED)
 
         with self.assertRaisesMessage(TransitionError, 'This request has already been decided.'):
-            ber_requests.reject_request(experiment_request, reason='Too late', platform_url=PLATFORM_URL)
+            ber_requests.reject_request(experiment_request, reason='Too late')
 
         self.assertEqual(queued_task_funcs(), [])
 
@@ -138,7 +138,7 @@ class ConcurrentChangeTests(TestCase):
 
             with self.assertRaisesMessage(TransitionError, 'changed by someone else'):
                 ber_requests.replace_result(
-                    experiment_request, actor=self.staff, result_file=upload(), platform_url=PLATFORM_URL,
+                    experiment_request, actor=self.staff, result_file=upload(),
                 )
 
             # Only the original file is left: this upload was discarded, theirs stands.
@@ -150,7 +150,7 @@ class ConcurrentChangeTests(TestCase):
         experiment_request = make_request(self.requester)
         BerExperimentRequest.objects.filter(pk=experiment_request.pk).update(status=Status.REJECTED)
 
-        self.assertFalse(ber_requests.cancel_request(experiment_request, platform_url=PLATFORM_URL))
+        self.assertFalse(ber_requests.cancel_request(experiment_request))
 
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.REJECTED)

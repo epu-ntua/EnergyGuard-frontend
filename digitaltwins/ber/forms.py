@@ -1,6 +1,6 @@
 """Forms of the BER staff management panel."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -11,6 +11,8 @@ RESULT_FILE_MAX_SIZE_MB = 50  # real .lp signal logs, not the JSON request itsel
 REJECTION_REASON_MAX_WORDS = 2000
 
 _INVALID_TIMES = 'Provide a valid start and end time.'
+# Slack for the staff member's clock vs the server's when entering "just now".
+_CLOCK_TOLERANCE = timedelta(minutes=5)
 
 
 def first_error(form):
@@ -55,6 +57,10 @@ class CompleteRequestForm(_ResultFileForm):
 
     field_order = ['actual_start', 'actual_end', 'result_file']
 
+    def __init__(self, *args, experiment_request, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.experiment_request = experiment_request
+
     @staticmethod
     def _parse_utc(raw):
         try:
@@ -71,8 +77,19 @@ class CompleteRequestForm(_ResultFileForm):
     def clean(self):
         cleaned = super().clean()
         start, end = cleaned.get('actual_start'), cleaned.get('actual_end')
-        if start and end and end <= start:
+        if not (start and end):
+            return cleaned
+        if end <= start:
             self.add_error('actual_end', 'End time must be after start time.')
+        elif end > datetime.now(timezone.utc) + _CLOCK_TOLERANCE:
+            self.add_error('actual_end', 'The end time cannot be in the future. Times are in UTC.')
+        # The inputs have minute precision, so compare against the minute of submission.
+        submitted = self.experiment_request.created_at.replace(second=0, microsecond=0)
+        if start < submitted:
+            self.add_error('actual_start', (
+                'The experiment cannot have started before the request was submitted '
+                f'({submitted:%d %b %Y, %H:%M} UTC).'
+            ))
         return cleaned
 
 

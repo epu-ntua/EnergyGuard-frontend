@@ -53,7 +53,7 @@ class TaskPathTests(TestCase):
                 )
 
 
-@override_settings(BER_EMAIL='ber-lab@example.com')
+@override_settings(BER_EMAIL='ber-lab@example.com', PLATFORM_URL='https://dashboard.example.com/')
 class BerTaskTests(TestCase):
     @classmethod
     def setUpTestData(cls):

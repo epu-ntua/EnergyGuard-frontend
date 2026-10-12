@@ -404,3 +404,9 @@ RDN_API_ORGANISATION = env('RDN_API_ORGANISATION', default='')
 # BER PEM Electrolyzer node - notified by email of new experiment requests, since
 # there is no automated API integration (BER runs experiments manually).
 BER_EMAIL = env('BER_EMAIL', default='')
+
+# Base URL for links in emails and notifications sent from background tasks.
+# Not taken from the request's Host header: ALLOWED_HOSTS also admits the raw
+# server IP, which would otherwise end up in links sent to users.
+# Locally, set PLATFORM_URL=http://localhost:8080/ in .env.
+PLATFORM_URL = env('PLATFORM_URL', default='https://dashboard.energy-guard.eu/')

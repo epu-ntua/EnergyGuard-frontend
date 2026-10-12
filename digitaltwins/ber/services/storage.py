@@ -5,11 +5,14 @@ management page - an explicit per-request upload, not timestamp-based retrieval
 from the Data Lake. The row keeps only the object key, mirroring rdn_results.py.
 """
 
+import logging
 from datetime import datetime, timezone
 
 from django.conf import settings
 
-from core.services.object_storage import delete_object, open_object_stream, upload_fileobj
+from core.services.object_storage import MinioUploadError, delete_object, open_object_stream, upload_fileobj
+
+logger = logging.getLogger(__name__)
 
 
 def result_object_key(experiment_request_id):
@@ -55,3 +58,13 @@ def open_result_file(object_key):
 def delete_result_file(object_key):
     """Remove a result file from object storage. Raises MinioUploadError on failure."""
     delete_object(bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key)
+
+
+def discard_result_file(object_key, request_id, reason):
+    """Best-effort removal of a result file nothing points to any more. A failure
+    only leaves an orphaned object, so it is logged (with the key, for manual
+    cleanup) rather than raised."""
+    try:
+        delete_result_file(object_key)
+    except MinioUploadError:
+        logger.exception('Could not delete BER result file %s for request %s (%s)', object_key, request_id, reason)
