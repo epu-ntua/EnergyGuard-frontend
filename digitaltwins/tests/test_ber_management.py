@@ -124,6 +124,20 @@ class BerManagementListTests(TestCase):
             response, f"{reverse('ber-management-list')}?request={self.pending.pk}", fetch_redirect_response=False,
         )
 
+    def test_many_pages_are_elided(self):
+        requester = make_user('pages-requester@example.com')
+        BerExperimentRequest.objects.bulk_create([
+            BerExperimentRequest(user=requester, experiment_json=[]) for _ in range(20 * 12)
+        ])
+
+        response, _ = self._listed(page='6')
+
+        # 242 requests -> 13 pages; the current page keeps two neighbours each side.
+        self.assertEqual(response.context['page_range'], [1, '…', 4, 5, 6, 7, 8, '…', 13])
+        self.assertContains(response, '<li class="page-item disabled"><span class="page-link">…</span></li>', count=2, html=True)
+        self.assertContains(response, 'page=13"')
+        self.assertNotContains(response, 'page=10"')
+
     def test_experiment_json_download(self):
         response = self.client.get(reverse('ber-management-experiment-download', args=[self.pending.pk]))
 
@@ -210,8 +224,7 @@ class BerDecisionTests(TestCase):
 
         response = self._complete(experiment_request, upload=result_upload(), start='')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Provide a valid start and end time.')
+        self.assertContains(response, 'Provide a valid start and end time.', status_code=400)
 
     def test_storage_failure_keeps_the_request_pending(self):
         experiment_request = make_request(self.requester)
@@ -469,7 +482,7 @@ class BerArchiveTests(TestCase):
 
         response = self.client.post(reverse('ber-management-archive', args=[experiment_request.pk]))
 
-        self.assertContains(response, 'Pending requests cannot be archived')
+        self.assertContains(response, 'Pending requests cannot be archived', status_code=400)
         experiment_request.refresh_from_db()
         self.assertIsNone(experiment_request.archived_at)
 

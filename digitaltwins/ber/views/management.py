@@ -91,14 +91,25 @@ def _render_management(request, params, selected=None, error=None):
         experiment_requests = experiment_requests.filter(not_archived).order_by('-created_at')
         if status:
             experiment_requests = experiment_requests.filter(status=status)
-    page_obj = Paginator(experiment_requests, PAGE_SIZE).get_page(page)
+    paginator = Paginator(experiment_requests, PAGE_SIZE)
+    page_obj = paginator.get_page(page)
 
-    context = {'page_obj': page_obj, 'status_tabs': status_tabs}
+    context = {
+        'page_obj': page_obj,
+        'status_tabs': status_tabs,
+        # "1 2 … 9 10 11 … 40" rather than every page number.
+        'page_range': list(paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1)),
+        'page_ellipsis': paginator.ELLIPSIS,
+    }
     if selected is not None:
         context.update(_panel_context(selected, status, page_obj.number, error))
     else:
         context.update({'status_filter': status, 'page_number': page_obj.number})
-    return dt_render(request, 'digitaltwins/ber/management.html', active_navbar_page='ber_management', **context)
+    response = dt_render(request, 'digitaltwins/ber/management.html', active_navbar_page='ber_management', **context)
+    if error:
+        # The page re-rendered for a failed action (no-JS form post): still a failed request.
+        response.status_code = 400
+    return response
 
 
 def _wants_json(request):

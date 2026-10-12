@@ -116,10 +116,14 @@
                             <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
                                 <a class="page-link" {% if page_obj.has_previous %}href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.previous_page_number }}"{% endif %} aria-label="Previous"><span class="fas fa-chevron-left"></span></a>
                             </li>
-                            {% for number in page_obj.paginator.page_range %}
+                            {% for number in page_range %}
+                            {% if number == page_ellipsis %}
+                            <li class="page-item disabled"><span class="page-link">{{ number }}</span></li>
+                            {% else %}
                             <li class="page-item {% if number == page_obj.number %}active{% endif %}">
                                 <a class="page-link" href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ number }}">{{ number }}</a>
                             </li>
+                            {% endif %}
                             {% endfor %}
                             <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
                                 <a class="page-link" {% if page_obj.has_next %}href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.next_page_number }}"{% endif %} aria-label="Next"><span class="fas fa-chevron-right"></span></a>
