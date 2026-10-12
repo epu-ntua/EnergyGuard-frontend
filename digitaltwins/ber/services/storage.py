@@ -2,7 +2,8 @@
 
 BER staff upload the raw result file (.lp) for a specific request through the
 management page - an explicit per-request upload, not timestamp-based retrieval
-from the Data Lake. The row keeps only the object key, mirroring rdn_results.py.
+from the Data Lake. The row keeps only the object key, mirroring
+digitaltwins/rdn/services/results.py.
 """
 
 import logging

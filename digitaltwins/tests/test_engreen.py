@@ -117,7 +117,7 @@ class EngreenPvSimulateTests(TestCase):
 
     # ── HAL proxy (happy path) ────────────────────────────────────────────────
 
-    @patch('digitaltwins.views.requests.post')
+    @patch('requests.post')
     def test_existing_mode_short_term_success(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.ok = True
@@ -133,7 +133,7 @@ class EngreenPvSimulateTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn('summary', resp.json())
 
-    @patch('digitaltwins.views.requests.post')
+    @patch('requests.post')
     def test_new_mode_historical_success(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.ok = True
@@ -149,7 +149,7 @@ class EngreenPvSimulateTests(TestCase):
         })
         self.assertEqual(resp.status_code, 200)
 
-    @patch('digitaltwins.views.requests.post')
+    @patch('requests.post')
     def test_hal_timeout_returns_504(self, mock_post):
         import requests as req_lib
         mock_post.side_effect = req_lib.Timeout()
@@ -160,7 +160,7 @@ class EngreenPvSimulateTests(TestCase):
         })
         self.assertEqual(resp.status_code, 504)
 
-    @patch('digitaltwins.views.requests.post')
+    @patch('requests.post')
     def test_hal_5xx_returns_502(self, mock_post):
         import requests as req_lib
         mock_resp = MagicMock()
@@ -173,7 +173,7 @@ class EngreenPvSimulateTests(TestCase):
         })
         self.assertEqual(resp.status_code, 502)
 
-    @patch('digitaltwins.views.requests.post')
+    @patch('requests.post')
     def test_hal_4xx_returns_422(self, mock_post):
         import requests as req_lib
         mock_resp = MagicMock()

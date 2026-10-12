@@ -8,6 +8,7 @@ the implementation lives.
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.utils.module_loading import import_string
+from django_q.models import Schedule
 
 from accounts.models import Notification
 from digitaltwins.models import BerExperimentRequest
@@ -26,12 +27,13 @@ BER_TASKS = [
     'notify_ber_results_updated',
 ]
 
+RDN_TASKS = ['poll_rdn_job', 'reconcile_stale_rdn_jobs']
+
 TASK_PATHS = [
-    'digitaltwins.tasks.poll_rdn_job',
-    'digitaltwins.tasks.reconcile_stale_rdn_jobs',
+    *(f'digitaltwins.rdn.tasks.{name}' for name in RDN_TASKS),
     *(f'digitaltwins.ber.tasks.{name}' for name in BER_TASKS),
     # Pre-move paths, possibly still on queued tasks: re-exported by digitaltwins.tasks.
-    *(f'digitaltwins.tasks.{name}' for name in BER_TASKS),
+    *(f'digitaltwins.tasks.{name}' for name in RDN_TASKS + BER_TASKS),
 ]
 
 
@@ -45,12 +47,20 @@ class TaskPathTests(TestCase):
             with self.subTest(path=path):
                 self.assertTrue(callable(import_string(path)))
 
-    def test_old_ber_paths_run_the_same_functions(self):
-        for name in BER_TASKS:
-            with self.subTest(name=name):
-                self.assertIs(
-                    import_string(f'digitaltwins.tasks.{name}'), import_string(f'digitaltwins.ber.tasks.{name}'),
-                )
+    def test_old_paths_run_the_same_functions(self):
+        for package, names in [('ber', BER_TASKS), ('rdn', RDN_TASKS)]:
+            for name in names:
+                with self.subTest(name=name):
+                    self.assertIs(
+                        import_string(f'digitaltwins.tasks.{name}'),
+                        import_string(f'digitaltwins.{package}.tasks.{name}'),
+                    )
+
+    def test_the_hourly_reconcile_schedule_points_at_the_new_path(self):
+        """Created by migration 0004 under the old path, moved by 0011."""
+        funcs = set(Schedule.objects.values_list('func', flat=True))
+        self.assertIn('digitaltwins.rdn.tasks.reconcile_stale_rdn_jobs', funcs)
+        self.assertFalse({func for func in funcs if func.startswith('digitaltwins.tasks.')})
 
 
 @override_settings(BER_EMAIL='ber-lab@example.com', PLATFORM_URL='https://dashboard.example.com/')

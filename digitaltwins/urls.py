@@ -1,30 +1,26 @@
+"""Routes of the digital twins, mounted under digitaltwins/.
+
+Each twin with its own package keeps its routes there; URL names are global (no
+app namespace) because templates across the platform reverse them and their paths
+are already in emails sent to users.
+"""
+
 from django.urls import include, path
-from . import views
+
+from . import pages
 
 urlpatterns = [
-    path('riga/rea-riga-dt/', views.rea_riga_dt, name='riga-map'),
-    path('riga/rea-riga-dt/buildings/', views.rea_riga_buildings_api, name='rea-riga-buildings-api'),
-    path('list/', views.digitaltwins_list, name='digitaltwins-list'),
-    path('cea-hydrogen/ai-scenario-generation/', views.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
-    path('cea-hydrogen/dt-simulation/', views.cea_dt_simulation, name='cea-dt-simulation'),
-    path('cea-hydrogen/dt-simulation/documentation/', views.cea_dt_documentation, name='cea-dt-simulation-documentation'),
-    # Before the <slug> catch-all below, like every fixed route.
+    path('riga/rea-riga-dt/', include('digitaltwins.riga.urls')),
+    path('list/', pages.digitaltwins_list, name='digitaltwins-list'),
+    path('cea-hydrogen/ai-scenario-generation/', pages.cea_ai_scenario_generation, name='cea-ai-scenario-generation'),
+    path('cea-hydrogen/dt-simulation/', pages.cea_dt_simulation, name='cea-dt-simulation'),
+    path('cea-hydrogen/dt-simulation/documentation/', pages.cea_dt_documentation, name='cea-dt-simulation-documentation'),
     path('ber-hydrogen/ber-hydrogen-dt/', include('digitaltwins.ber.urls')),
-    path('cartif-hydrogen/cartif-hydrogen-dt/', views.cartif_hydrogen_dt, name='cartif-hydrogen-dt'),
-    path('antrodoco/engreen-antrodoco-dt/', views.engreen_antrodoco_dt, name='engreen-antrodoco-dt'),
-    path('antrodoco/engreen-antrodoco-dt/simulate/', views.engreen_pv_simulate, name='engreen-pv-simulate'),
-    path('antrodoco/engreen-antrodoco-dt/stations/', views.engreen_stations_api, name='engreen-stations-api'),
-    path('ciemat/ciemat-forecasting-dt/', views.ciemat_forecasting_dt, name='ciemat-forecasting-dt'),
-    path('ciemat/ciemat-forecasting-dt/forecast/', views.ciemat_forecast, name='ciemat-forecast'),
-    path('ciemat/ciemat-forecasting-dt/calculate/', views.ciemat_calculate, name='ciemat-calculate'),
-    path('ciemat/ciemat-forecasting-dt/compare/', views.ciemat_compare, name='ciemat-compare'),
-    path('rdn-grid/rdn-grid-dt/', views.rdn_grid_dt, name='rdn-grid-dt'),
-    path('rdn-grid/rdn-grid-dt/runs/', views.rdn_grid_runs, name='rdn-grid-runs'),
-    path('rdn-grid/rdn-grid-dt/runs/<int:rdn_request_id>/', views.rdn_grid_results, name='rdn-grid-results'),
-    path('rdn-grid/rdn-grid-dt/runs/<int:rdn_request_id>/result.json', views.rdn_grid_result_data, name='rdn-grid-result-data'),
-    path('rdn-grid/rdn-grid-dt/simulate/', views.rdn_grid_simulate, name='rdn-grid-simulate'),
-    path('rdn-grid/rdn-grid-dt/status/', views.rdn_grid_job_status, name='rdn-grid-job-status'),
-    path('rdn-grid/rdn-grid-dt/follow/', views.rdn_grid_follow_lookup, name='rdn-grid-follow'),
-    path('results/save/', views.dt_save_result, name='dt-save-result'),
-    path('<slug:slug>/', views.digitaltwins_detail, name='digitaltwins-detail'),
+    path('cartif-hydrogen/cartif-hydrogen-dt/', pages.cartif_hydrogen_dt, name='cartif-hydrogen-dt'),
+    path('antrodoco/engreen-antrodoco-dt/', include('digitaltwins.engreen.urls')),
+    path('ciemat/ciemat-forecasting-dt/', include('digitaltwins.ciemat.urls')),
+    path('rdn-grid/rdn-grid-dt/', include('digitaltwins.rdn.urls')),
+    path('results/save/', pages.dt_save_result, name='dt-save-result'),
+    # Last: the <slug> catch-all would otherwise shadow the fixed routes above.
+    path('<slug:slug>/', pages.digitaltwins_detail, name='digitaltwins-detail'),
 ]

@@ -7,7 +7,7 @@ from django.shortcuts import render
 from accounts.models import Profile
 from core.views.ai_models import AI_MODELS, CATEGORY_LABELS
 from datasets.models import Dataset
-from digitaltwins.views import DIGITAL_TWINS
+from digitaltwins.catalog import DIGITAL_TWINS
 from projects.models import Project
 
 

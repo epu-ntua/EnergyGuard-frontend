@@ -147,7 +147,7 @@
     }
 
     // RDN series can run into the hundreds of thousands of samples (see the
-    // 75,500,000-sample request ceiling in _validate_rdn_grid_input), far more than
+    // 75,500,000-sample request ceiling in digitaltwins/rdn/validation.py), far more than
     // amCharts can render smoothly. Above the budget, each series is cut into
     // buckets and only the min and max sample of each bucket is kept - unlike plain
     // stride sampling, this can never hide a spike/dip, only the smooth parts between

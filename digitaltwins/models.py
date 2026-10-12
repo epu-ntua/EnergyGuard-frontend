@@ -80,7 +80,7 @@ class RdnSimulationJob(TimeStampedModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     # Object-storage key for the completed result. RDN payloads are bounded only
     # by the request validator's 4,000,000-sample ceiling, which is far too large
-    # for a JSONB column - see digitaltwins/services/rdn_results.py.
+    # for a JSONB column - see digitaltwins/rdn/services/results.py.
     result_key = models.CharField(max_length=1024, blank=True, default='')
     # Legacy inline payload. Jobs that completed before results moved to object
     # storage still carry it; nothing new is written here unless the upload fails.

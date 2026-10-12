@@ -1,15 +1,13 @@
-import logging
-from datetime import timedelta
+"""Old dotted paths of the digitaltwins background tasks.
 
-from django.utils import timezone
+The tasks live with their twin now (digitaltwins/rdn/tasks.py, digitaltwins/ber/tasks.py).
+django_q stores a task's dotted path in the database - with each queued task and in
+Schedule rows, including the self-rescheduling RDN poll chain - so rows written
+under these old paths before a deploy must still resolve. Migration 0011 moves the
+Schedule rows to the new paths; this module covers anything already queued.
+Safe to delete once no django_q OrmQ/Schedule row references 'digitaltwins.tasks.'.
+"""
 
-from .models import RdnSimulationJob
-from .services import RdnApiError, get_rdn_job_status, download_rdn_result, store_result
-
-# BER tasks moved to digitaltwins/ber/tasks.py. django_q stores a task's dotted
-# path with the queued task, so ones enqueued under the old path before a deploy
-# must still resolve here. Safe to delete once no OrmQ/Task row references
-# 'digitaltwins.tasks.*ber*' any more.
 from .ber.tasks import (  # noqa: F401
     notify_ber_request_decision,
     notify_ber_results_updated,
@@ -17,91 +15,4 @@ from .ber.tasks import (  # noqa: F401
     send_ber_notification_email,
     warm_ber_results_cache,
 )
-
-logger = logging.getLogger(__name__)
-
-_RDN_JOB_POLL_INTERVAL_SECONDS = 15
-
-STALE_RUNNING_THRESHOLD = timedelta(days=7)
-
-
-def poll_rdn_job(job_id):
-    """Check an RDN job once and either finish it or schedule the next check.
-
-    Runs in the qcluster worker process, not the web process, and each invocation
-    is a single short HTTP call - long waits happen across many small, independently
-    persisted steps (see _reschedule_poll) rather than inside one long-lived task.
-    """
-    job = RdnSimulationJob.objects.filter(pk=job_id).first()
-    if job is None or job.status not in (RdnSimulationJob.Status.PENDING, RdnSimulationJob.Status.RUNNING):
-        return  # already terminal (or reconciled away) - nothing to do
-
-    try:
-        status_payload = get_rdn_job_status(job.rdn_request_id)
-    except RdnApiError:
-        logger.exception('RDN status poll failed for request %s, will retry', job.rdn_request_id)
-        _reschedule_poll(job_id)
-        return
-
-    rdn_status = status_payload.get('status')
-
-    if rdn_status == 'completed':
-        try:
-            result = download_rdn_result(job.rdn_request_id)
-        except RdnApiError as exc:
-            logger.exception('Failed to download RDN result for request %s', job.rdn_request_id)
-            RdnSimulationJob.objects.filter(pk=job_id).update(
-                status=RdnSimulationJob.Status.FAILED, error_message=str(exc), updated_at=timezone.now(),
-            )
-            return
-        # Straight to object storage. Only if that fails does the payload land in
-        # the JSONB column, so an hour-long run is never lost to a storage blip.
-        result_key = store_result(job.rdn_request_id, result)
-        RdnSimulationJob.objects.filter(pk=job_id).update(
-            status=RdnSimulationJob.Status.COMPLETED,
-            result_key=result_key or '',
-            result=None if result_key else result,
-            updated_at=timezone.now(),
-        )
-        return
-
-    if rdn_status == 'failed':
-        RdnSimulationJob.objects.filter(pk=job_id).update(
-            status=RdnSimulationJob.Status.FAILED,
-            error_message=status_payload.get('errorMessage') or 'RDN reported the job as failed.',
-            updated_at=timezone.now(),
-        )
-        return
-
-    _reschedule_poll(job_id)  # still pending/running on RDN's side - RDN confirmed this can
-    # legitimately last a long time (e.g. their DT worker being temporarily unavailable),
-    # so we keep polling indefinitely rather than giving up on our own schedule.
-
-
-def _reschedule_poll(job_id):
-    from django_q.tasks import schedule
-    from django_q.models import Schedule
-
-    schedule(
-        'digitaltwins.tasks.poll_rdn_job', job_id,
-        schedule_type=Schedule.ONCE,
-        next_run=timezone.now() + timedelta(seconds=_RDN_JOB_POLL_INTERVAL_SECONDS),
-    )  # repeats left at its default (-1) so this row self-deletes once it fires
-
-
-def reconcile_stale_rdn_jobs():
-    """Backstop for a broken reschedule chain (e.g. a bug that returns before calling
-    _reschedule_poll) - not the primary safety net, since polling itself survives
-    qcluster/web restarts via persisted Schedule rows."""
-    cutoff = timezone.now() - STALE_RUNNING_THRESHOLD
-    count = RdnSimulationJob.objects.filter(
-        status__in=[RdnSimulationJob.Status.PENDING, RdnSimulationJob.Status.RUNNING],
-        created_at__lt=cutoff,
-    ).update(
-        status=RdnSimulationJob.Status.FAILED,
-        error_message='Job lost - no result was ever recorded.',
-        updated_at=timezone.now(),
-    )
-    if count:
-        logger.warning('Reconciled %s stale RDN job(s)', count)
-    return count
+from .rdn.tasks import poll_rdn_job, reconcile_stale_rdn_jobs  # noqa: F401

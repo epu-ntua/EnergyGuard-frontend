@@ -73,7 +73,7 @@ class RdnResultEndpointTests(TestCase):
 
         self.client.force_login(self.owner)
         with patch(
-            "digitaltwins.views.open_result_stream", return_value=(_Body(raw), len(raw))
+            "digitaltwins.rdn.views.open_result_stream", return_value=(_Body(raw), len(raw))
         ):
             response = self.client.get(reverse("rdn-grid-result-data", args=[9002]))
 
@@ -124,10 +124,10 @@ class RdnResultStorageTests(TestCase):
         )
         payload = {"outputData": []}
 
-        with patch("digitaltwins.tasks.get_rdn_job_status", return_value={"status": "completed"}), \
-             patch("digitaltwins.tasks.download_rdn_result", return_value=payload), \
-             patch("digitaltwins.tasks.store_result", return_value="rdn-grid/9100/result.json"):
-            from digitaltwins.tasks import poll_rdn_job
+        with patch("digitaltwins.rdn.tasks.get_rdn_job_status", return_value={"status": "completed"}), \
+             patch("digitaltwins.rdn.tasks.download_rdn_result", return_value=payload), \
+             patch("digitaltwins.rdn.tasks.store_result", return_value="rdn-grid/9100/result.json"):
+            from digitaltwins.rdn.tasks import poll_rdn_job
 
             poll_rdn_job(job.pk)
 
@@ -142,10 +142,10 @@ class RdnResultStorageTests(TestCase):
         )
         payload = {"outputData": [{"x": 1}]}
 
-        with patch("digitaltwins.tasks.get_rdn_job_status", return_value={"status": "completed"}), \
-             patch("digitaltwins.tasks.download_rdn_result", return_value=payload), \
-             patch("digitaltwins.tasks.store_result", return_value=None):
-            from digitaltwins.tasks import poll_rdn_job
+        with patch("digitaltwins.rdn.tasks.get_rdn_job_status", return_value={"status": "completed"}), \
+             patch("digitaltwins.rdn.tasks.download_rdn_result", return_value=payload), \
+             patch("digitaltwins.rdn.tasks.store_result", return_value=None):
+            from digitaltwins.rdn.tasks import poll_rdn_job
 
             poll_rdn_job(job.pk)
 
