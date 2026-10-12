@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Q
+from django.db.models import CharField, Count, F, Q, Value
+from django.db.models.functions import Coalesce, Concat, Lower, NullIf, Trim
 from django.shortcuts import render
 from django_datatables_view.base_datatable_view import BaseDatatableView
 
@@ -25,17 +26,36 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "created_at",
         "label",
         "source",
-        "publisher",
+        # Sort by the name the column shows, not the publisher FK id.
+        "publisher_sort",
         "size_gb",
-        # Most datasets tie at 0, and the table pages server-side: without a
-        # unique tie-breaker rows can repeat or vanish between pages.
-        ["projects_count", "id"],
+        "projects_count",
         # "status",
     ]
     max_display_length = 25
 
     def get_initial_queryset(self):
-        return Dataset.objects.annotate(projects_count=Count("projects", distinct=True))
+        return Dataset.objects.annotate(
+            projects_count=Count("projects", distinct=True),
+            # Mirrors Dataset.publisher_display: full name, else email, else
+            # the platform name for publisher-less (pilot) datasets.
+            publisher_sort=Lower(Coalesce(
+                NullIf(Trim(Concat(
+                    F("publisher__first_name"), Value(" "), F("publisher__last_name"),
+                )), Value("")),
+                F("publisher__email"),
+                Value(Dataset.PLATFORM_PUBLISHER),
+                output_field=CharField(),
+            )),
+        )
+
+    def ordering(self, qs):
+        qs = super().ordering(qs)
+        # The table pages server-side, and label/publisher/usage tie on most
+        # rows: without a unique last key, rows repeat or vanish across pages.
+        if qs.query.order_by:
+            qs = qs.order_by(*qs.query.order_by, "id")
+        return qs
 
     def filter_queryset(self, qs):
         scope = self.request.GET.get("scope", "public")

@@ -4,9 +4,12 @@ Usage counts are shown to everyone who can see the page, but a project or
 dataset is only named to a user who could open it themselves.
 """
 
+from decimal import Decimal
+
 from django.test import TestCase
 from django.urls import reverse
 
+from datasets.models import Dataset
 from datasets.tests_access_control import make_dataset, make_user
 from projects.models import Project
 
@@ -89,3 +92,27 @@ class DatasetsListUsageColumnTests(TestCase):
             })
             seen += [int(r[-1]) for r in response.json()["data"]]
         self.assertCountEqual(seen, ids)
+
+
+class DatasetsListOrderingTests(TestCase):
+    def test_publisher_sorts_by_displayed_name(self):
+        zed = make_user("a-zed@example.com", first_name="Zed", last_name="Last")
+        amy = make_user("z-amy@example.com", first_name="Amy", last_name="First")
+        nameless = make_user("m-nameless@example.com")
+        viewer = make_user("viewer@example.com")
+        make_dataset("by-zed", zed, visibility=True)
+        make_dataset("by-amy", amy, visibility=True)
+        make_dataset("by-nameless", nameless, visibility=True)
+        Dataset.objects.create(
+            name="by-platform", publisher=None, visibility=True,
+            size_gb=Decimal("1.00"), bucket_name="energyguard-datasets",
+        )
+
+        self.client.force_login(viewer)
+        response = self.client.get(reverse("datasets_list_json"), {
+            "scope": "public", "draw": 1, "order[0][column]": 4, "order[0][dir]": "asc",
+        })
+        publishers = [r[4] for r in response.json()["data"]]
+        self.assertEqual(
+            publishers, ["Amy First", "EnergyGuard", "m-nameless@example.com", "Zed Last"]
+        )
