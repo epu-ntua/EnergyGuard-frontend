@@ -154,3 +154,11 @@ class RequestAIModelAccessTests(TestCase):
         self.assertEqual(response.status_code, 502)
         data = json.loads(response.content)
         self.assertFalse(data["success"])
+
+
+class LegalDocRedirectTests(TestCase):
+    def test_extensionless_links_inside_the_pdfs_redirect_to_the_published_files(self):
+        from main.urls import LEGAL_DOC_ALIASES
+        for alias, filename in LEGAL_DOC_ALIASES.items():
+            response = self.client.get(f'/static/assets/docs/{alias}')
+            self.assertRedirects(response, f'/static/assets/docs/{filename}', fetch_redirect_response=False)

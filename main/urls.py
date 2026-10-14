@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.templatetags.static import static as static_url
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,6 +39,21 @@ urlpatterns = [
     path('trustworthiness/robustness/', include('robustness.urls')),
     path('accounts/', include('allauth.urls')),
     path('surveys/', include('questionnaire.config.urls')),
+]
+
+# The Oct 2026 legal PDFs link to each other as /static/assets/docs/<NAME>_10_2026
+# (no .pdf, and not the names the files are published under), so those links 404.
+# WhiteNoise passes unknown /static/ paths on to Django, so redirect them here until
+# the lawyer fixes the links in the next revision of the documents.
+LEGAL_DOC_ALIASES = {
+    'PRIVACY_POLICY_10_2026': 'privacy-policy.pdf',
+    'TERMS_10_2026': 'terms.pdf',
+    'COOKIES_POLICY_10_2026': 'cookies_policy.pdf',
+    'DPA_WITH_USERS_10_2026': 'DPA_with_users.pdf',
+}
+urlpatterns += [
+    path(f'{settings.STATIC_URL.lstrip("/")}assets/docs/{alias}', RedirectView.as_view(url=static_url(f'assets/docs/{filename}')))
+    for alias, filename in LEGAL_DOC_ALIASES.items()
 ]
 
 # Serve media files during development
