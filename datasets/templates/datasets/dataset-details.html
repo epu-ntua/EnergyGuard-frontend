@@ -52,6 +52,38 @@
           </div>
         </div>
 
+        <!-- Publication review -->
+        {% if review.show %}
+        <div class="alert alert-subtle-{{ review.alert_class }} d-flex align-items-start gap-3 mb-5" role="alert">
+          <i class="fa-solid {{ review.icon }} fs-7 mt-1"></i>
+          <div class="flex-grow-1">
+            {% if dataset.status == 'under_review' %}
+              <h5 class="alert-heading fw-bold mb-1">Awaiting review</h5>
+              <p class="mb-0 fs-9">
+                {% if review.can_review %}
+                  {{ dt.publisher }} asked to publish this dataset. It appears in the public catalogue only once approved.
+                {% else %}
+                  A reviewer has to approve this dataset before it appears in the public catalogue. You will be notified of the decision.
+                {% endif %}
+              </p>
+            {% elif dataset.status == 'rejected' %}
+              <h5 class="alert-heading fw-bold mb-1">Publication rejected</h5>
+              <p class="mb-1 fs-9">This dataset is not listed in the public catalogue{% if dataset.reviewed_at %} (reviewed {{ dataset.reviewed_at|date:"M j, Y" }}){% endif %}.</p>
+              <p class="mb-0 fs-9"><span class="fw-semibold">Reason:</span> {{ dataset.rejection_reason|linebreaksbr }}</p>
+            {% elif dataset.status == 'approved' %}
+              <h5 class="alert-heading fw-bold mb-1">Published</h5>
+              <p class="mb-0 fs-9">Approved{% if review.can_review and dataset.reviewed_by %} by {{ dataset.reviewed_by.get_full_name|default:dataset.reviewed_by.email }}{% endif %}{% if dataset.reviewed_at %} on {{ dataset.reviewed_at|date:"M j, Y" }}{% endif %}.</p>
+            {% endif %}
+          </div>
+          {% if review.can_review and dataset.is_awaiting_review %}
+          <div class="d-flex gap-2 flex-shrink-0">
+            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#datasetApproveModal"><i class="fa-solid fa-check me-1"></i>Approve</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#datasetRejectModal"><i class="fa-solid fa-xmark me-1"></i>Reject</button>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Dataset Information + Quick Actions -->
         <div class="row g-4 mb-4">
           <!-- Dataset Information Card -->
@@ -312,6 +344,57 @@
 </div>
 
 {% include 'core/partials/confirm-action-modal.html' %}
+
+{% if review.can_review and dataset.is_awaiting_review %}
+<!-- Dataset Approve Modal -->
+<div class="modal fade" id="datasetApproveModal" tabindex="-1" aria-labelledby="datasetApproveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="datasetApproveModalLabel"><i class="fa-solid fa-check me-2"></i>Approve Dataset</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'dataset_approve' dataset_id=dataset.id %}">
+        {% csrf_token %}
+        {# The version reviewed: the decision is refused if the publisher edited the dataset since. #}
+        <input type="hidden" name="version" value="{{ dataset.updated_at.isoformat }}">
+        <div class="modal-body">
+          <p class="text-body-tertiary mb-0">Approve this dataset and list it in the public catalogue? The publisher will be notified.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success btn-sm">Approve</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Dataset Reject Modal -->
+<div class="modal fade" id="datasetRejectModal" tabindex="-1" aria-labelledby="datasetRejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="datasetRejectModalLabel"><i class="fa-solid fa-xmark me-2"></i>Reject Dataset</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'dataset_reject' dataset_id=dataset.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="version" value="{{ dataset.updated_at.isoformat }}">
+        <div class="modal-body">
+          <label class="form-label fw-semibold" for="rejectionReason">Reason</label>
+          <textarea class="form-control" id="rejectionReason" name="rejection_reason" rows="4" maxlength="{{ review.reason_max_length }}" required
+            placeholder="Explain why the dataset cannot be published. The publisher will see this."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <!-- Run Project Modal -->
 <div class="modal fade" id="runProjectModal" tabindex="-1" aria-labelledby="runProjectModalLabel" aria-hidden="true">

@@ -10,6 +10,7 @@ from django.urls import reverse
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
 from ..services import delete_dataset_cache, provision_user_datasets
+from ..services.review import EditOutcome, apply_edit
 
 logger = logging.getLogger(__name__)
 
@@ -26,21 +27,40 @@ def dataset_edit(request, dataset_id):
         return redirect("dataset_details", dataset_id=dataset_id)
 
     old_name = dataset.name
+    was_awaiting_review = dataset.is_awaiting_review
     form = GeneralDatasetForm(request.POST, instance=dataset)
     if form.is_valid():
-        form.save()
+        outcome = apply_edit(form, was_awaiting_review=was_awaiting_review)
         new_name = dataset.name
         if old_name != new_name and dataset.data_file:
             minio_prefix = "/".join(dataset.data_file.split("/")[:-1])
             try:
                 delete_dataset_cache(request.user.email, old_name)
             except Exception:
-                pass
+                logger.exception("Could not drop JupyterHub cache of renamed dataset %s", dataset.pk)
             try:
                 provision_user_datasets(request.user.email, {minio_prefix: new_name})
             except Exception:
-                pass
-        messages.success(request, "Dataset updated successfully.")
+                logger.exception("Could not re-provision renamed dataset %s in JupyterHub", dataset.pk)
+        if outcome == EditOutcome.REOPENED:
+            messages.success(
+                request,
+                "Dataset updated. Your changes have been sent for review, and the dataset is hidden "
+                "from the public catalogue until a reviewer approves them.",
+            )
+        elif outcome == EditOutcome.SUBMITTED:
+            messages.success(
+                request,
+                "Dataset updated and submitted for review. It will appear in the public catalogue once approved.",
+            )
+        elif outcome == EditOutcome.REJECTED:
+            messages.warning(
+                request,
+                "Dataset updated. Its publication was rejected, so it remains hidden from the public "
+                "catalogue and has not been sent for review again.",
+            )
+        else:
+            messages.success(request, "Dataset updated successfully.")
     else:
         for field_errors in form.errors.values():
             for error in field_errors:

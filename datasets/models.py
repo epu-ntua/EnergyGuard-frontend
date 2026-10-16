@@ -7,19 +7,52 @@ from projects.models import Project
 from core.models import TimeStampedModel
 
 
+REVIEW_PERMISSION = 'datasets.review_dataset'
+
+
+# The review rules, as queries. Dataset.is_published / is_awaiting_review are
+# the same rules on a loaded instance - change them together.
+
+def _submitted_q():
+    """A user's dataset its publisher made public: the only kind reviewed.
+    Platform-owned (publisher-less) data is curated by us and skips review."""
+    return Q(visibility=True, publisher__isnull=False)
+
+
+def _published_q():
+    """Public and cleared for the catalogue."""
+    return Q(visibility=True, publisher__isnull=True) | (_submitted_q() & Q(status=Dataset.Status.APPROVED))
+
+
 class DatasetQuerySet(models.QuerySet):
+    def published(self):
+        """What the "Public" catalogue lists to everyone."""
+        return self.filter(_published_q())
+
+    def submitted_for_review(self):
+        """Everything a reviewer has to decide or has decided."""
+        return self.filter(_submitted_q())
+
+    def awaiting_review(self):
+        """Submitted, not yet decided."""
+        return self.filter(_submitted_q(), status=Dataset.Status.UNDER_REVIEW)
+
     def visible_to(self, user):
-        """Datasets `user` is allowed to see: public ones, plus their own.
+        """Datasets `user` is allowed to see: published ones, plus their own.
+        Reviewers also see every dataset submitted for publication.
 
         Every view that resolves a Dataset from a user-supplied id must go
         through this (or `Dataset.is_accessible_by`) - ids are sequential, so a
         bare `get_object_or_404(Dataset, pk=...)` is an enumeration hole.
         """
         if not user or not getattr(user, 'is_authenticated', False):
-            return self.filter(visibility=True)
+            return self.filter(_published_q())
         if user.is_staff:
             return self
-        return self.filter(Q(visibility=True) | Q(publisher=user))
+        q = _published_q() | Q(publisher=user)
+        if user.has_perm(REVIEW_PERMISSION):
+            q |= _submitted_q()
+        return self.filter(q)
 
 
 # Create your models here.
@@ -59,7 +92,23 @@ class Dataset(TimeStampedModel):
     description = models.TextField(blank=True)
     label = models.CharField(max_length=30, choices=Label, default=Label.RENEWABLE_ENERGY)
     source = models.CharField(max_length=20, choices=Source, default=Source.ENERGYGUARD_DL)
+    # Only meaningful while visibility is on: a public dataset is listed once a
+    # reviewer approves it. Private datasets are never reviewed.
     status = models.CharField(max_length=20, choices=Status, default=Status.UNDER_REVIEW)
+    # db_default too: a process still running the previous code inserts rows
+    # without this column (seen in the window between migrate and restart).
+    rejection_reason = models.TextField(blank=True, default='', db_default='')
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='reviewed_datasets',
+    )
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    # When the publisher asked for publication (or re-review after an edit);
+    # the review queue is ordered by it.
+    submitted_at = models.DateTimeField(blank=True, null=True)
     visibility = models.BooleanField(default=False)
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
     publisher = models.ForeignKey(
@@ -80,14 +129,32 @@ class Dataset(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    @property
+    def is_submitted_for_review(self) -> bool:
+        """Mirrors _submitted_q()."""
+        return self.visibility and self.publisher_id is not None
+
+    @property
+    def is_published(self) -> bool:
+        """Mirrors _published_q()."""
+        if not self.visibility:
+            return False
+        return self.publisher_id is None or self.status == self.Status.APPROVED
+
+    @property
+    def is_awaiting_review(self) -> bool:
+        """Mirrors DatasetQuerySet.awaiting_review()."""
+        return self.is_submitted_for_review and self.status == self.Status.UNDER_REVIEW
+
     def is_accessible_by(self, user) -> bool:
-        """Read access. Public datasets are visible to everyone; a private one
-        only to its publisher (and staff)."""
-        if self.visibility:
+        """Read access. Mirrors DatasetQuerySet.visible_to()."""
+        if self.is_published:
             return True
         if not user or not getattr(user, 'is_authenticated', False):
             return False
-        return user.is_staff or self.publisher_id == user.id
+        if user.is_staff or self.publisher_id == user.id:
+            return True
+        return self.is_submitted_for_review and user.has_perm(REVIEW_PERMISSION)
 
     def is_editable_by(self, user) -> bool:
         """Write access - strictly the publisher. Public visibility never grants it."""
@@ -123,6 +190,9 @@ class Dataset(TimeStampedModel):
         verbose_name_plural = 'Datasets'
         ordering = ['-created_at']
         indexes = []
+        permissions = [
+            ('review_dataset', 'Can approve or reject datasets submitted for publication'),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=['publisher', 'name'],

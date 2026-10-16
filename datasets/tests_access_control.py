@@ -22,11 +22,14 @@ def make_user(email, **extra):
     return User.objects.create_user(email=email, password="pw-for-tests", **extra)
 
 
-def make_dataset(name, publisher, *, visibility):
+def make_dataset(name, publisher, *, visibility, status=Dataset.Status.APPROVED):
+    # Approved by default, so a visibility=True dataset is in the public
+    # catalogue; tests of the review workflow pass status explicitly.
     return Dataset.objects.create(
         name=name,
         publisher=publisher,
         visibility=visibility,
+        status=status,
         size_gb=Decimal("1.00"),
         data_file=f"user_x/{name}/data.csv",
         bucket_name="energyguard-datasets",

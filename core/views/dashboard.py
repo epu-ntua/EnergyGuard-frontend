@@ -1,7 +1,7 @@
 from collections import Counter
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.shortcuts import render
 
 from accounts.models import Profile
@@ -27,16 +27,12 @@ def dashboard(request):
     public_projects_count = Project.objects.filter(visibility=True).exclude(creator=request.user).count()
 
     # Same query as the "Public" tab of the datasets list, so the numbers match.
-    datasets_count = Dataset.objects.filter(visibility=True).exclude(publisher=request.user).count()
+    datasets_count = Dataset.objects.published().count()
     # Same query as the "My" tab of the datasets list.
     user_datasets_count = Dataset.objects.filter(publisher=request.user).count()
 
     # The charts only include "available" datasets: public ones that are either platform-owned or approved.
-    # TODO: implement the dataset review workflow. Until then user-published datasets stay
-    # "under review" and are only counted as available once someone approves them manually.
-    available_datasets = Dataset.objects.filter(visibility=True).filter(
-        Q(publisher__isnull=True) | Q(status=Dataset.Status.APPROVED)
-    )
+    available_datasets = Dataset.objects.published()
 
     ai_models_badges = Counter(model["badge"] for model in AI_MODELS)
     ai_models_count = ai_models_badges.get("available", 0)

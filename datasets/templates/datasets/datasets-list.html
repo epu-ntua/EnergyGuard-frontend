@@ -102,7 +102,7 @@
                                         <th class="sort align-middle text-start fs-9" scope="col" style="width:12%;">PUBLISHER</th>
                                         <th class="sort align-middle text-end fs-9" scope="col" style="width:10%;">SIZE</th>
                                         <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:10%;">USED IN PROJECTS</th>
-                                        <!-- <th class="sort align-middle text-end fs-9 pe-2" scope="col" style="width:10%;">STATUS</th> -->
+                                        <th class="align-middle text-end fs-9 pe-2" scope="col" style="width:10%;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -126,6 +126,13 @@
 <script>
     $(document).ready(function () {
         const labelParam = new URLSearchParams(window.location.search).get('label') || '';
+        // Publication state of the user's own datasets ("My" tab STATUS column).
+        const STATUS_BADGES = {
+            private: { label: "Private", cls: "badge-phoenix-secondary" },
+            under_review: { label: "Under review", cls: "badge-phoenix-warning" },
+            published: { label: "Published", cls: "badge-phoenix-success" },
+            rejected: { label: "Rejected", cls: "badge-phoenix-danger" },
+        };
         const columns = [
             {
                 data: "name",
@@ -146,9 +153,21 @@
                 className: "text-end fs-9"
             },
             { data: "projects_count", className: "text-end fs-9 pe-2" },
-            // { data: "status", className: "text-end fs-9 pe-2", orderable: false },
             { data: "id", visible: false }
         ];
+        const statusColumn = {
+            data: "status",
+            className: "text-end fs-9 pe-2",
+            orderable: false,
+            render: function(data) {
+                const badge = STATUS_BADGES[data];
+                return badge
+                    ? `<span class="badge badge-phoenix ${badge.cls} fs-11"><span class="badge-label">${badge.label}</span></span>`
+                    : "";
+            }
+        };
+        // Same columns plus STATUS; it goes before the hidden id so it lines up with its header.
+        const myColumns = [...columns.slice(0, -1), statusColumn, columns[columns.length - 1]];
 
         const publicTable = $("#publicDatasetsList").DataTable({
             processing: true,
@@ -186,7 +205,7 @@
                 },
                 type: "GET"
             },
-            columns: columns,
+            columns: myColumns,
             order: [[1, "desc"]],
             dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',
             language: {

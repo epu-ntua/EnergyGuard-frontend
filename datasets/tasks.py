@@ -4,14 +4,19 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
+from core.services.notifications import notify_in_app, platform_link
+
 from .models import Dataset
 from .services import MinioUploadError, move_dataset_object, object_exists
+from .services.review import submit_new_upload
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +48,8 @@ def finalize_dataset_upload(
     """
     Check once whether the uploaded object has landed in MinIO.
 
-    If it has, create the Dataset record as UNDER_REVIEW and notify the user.
+    If it has, create the Dataset record as UNDER_REVIEW and notify the user
+    (and, for a public dataset, the reviewers).
     If it has not, schedule another check, until `deadline_ts` passes - at which
     point the user is told the upload never completed. The worker is free
     between checks, so a slow upload never blocks the queue.
@@ -98,7 +104,7 @@ def finalize_dataset_upload(
     )
 
     try:
-        Dataset.objects.create(
+        dataset = Dataset.objects.create(
             name=dataset_name,
             data_file=final_key,
             bucket_name=bucket_name,
@@ -112,20 +118,24 @@ def finalize_dataset_upload(
             metadata=dataset_metadata,
         )
     except IntegrityError:
-        # Almost always a duplicate name. Say so: the previous code reported every
-        # failure here as "the upload was interrupted", which sent users chasing a
-        # network problem that did not exist.
-        logger.warning(
-            "Dataset name '%s' already taken; no record created for object '%s'.",
-            dataset_name,
-            object_key,
-        )
+        # Usually a duplicate name, but a NOT NULL or FK violation is one too:
+        # only blame the name when it really is taken, or the user goes off
+        # renaming a dataset over what is a server-side problem.
+        duplicate = Dataset.objects.filter(publisher_id=user_id, name=dataset_name).exists()
+        if duplicate:
+            logger.warning(
+                "Dataset name '%s' already taken; no record created for object '%s'.",
+                dataset_name,
+                object_key,
+            )
+        else:
+            logger.exception("Failed to create Dataset record for object '%s'.", object_key)
         _send_notification_email(
             user_email=user_email,
             user_display_name=user_display_name,
             dataset_name=dataset_name,
             success=False,
-            reason="duplicate_name",
+            reason="duplicate_name" if duplicate else "error",
             site_url=site_url,
         )
         return
@@ -147,7 +157,9 @@ def finalize_dataset_upload(
         dataset_name=dataset_name,
         success=True,
         site_url=site_url,
+        under_review=dataset.is_awaiting_review,
     )
+    submit_new_upload(dataset)
 
 
 def _reschedule_finalize(task_kwargs):
@@ -223,6 +235,7 @@ def _send_notification_email(
     success: bool,
     site_url: str,
     reason: str = "timeout",
+    under_review: bool = False,
 ):
     if not user_email:
         return
@@ -232,10 +245,14 @@ def _send_notification_email(
 
     if success:
         subject = "Your dataset has been uploaded — EnergyGuard"
+        review_line = (
+            "It is now under review and will appear in the public catalogue once approved.\n\n"
+            if under_review else ""
+        )
         message = (
             f"Hi {user_display_name},\n\n"
-            f'Your dataset "{dataset_name}" has been successfully uploaded to EnergyGuard '
-            f"and is now under review.\n\n"
+            f'Your dataset "{dataset_name}" has been successfully uploaded to EnergyGuard.\n\n'
+            f"{review_line}"
             f"You can view your datasets here:\n{site_url.rstrip('/')}{datasets_path}\n\n"
             f"Best regards,\nThe EnergyGuard Team"
         )
@@ -264,3 +281,100 @@ def _send_notification_email(
             user_email,
             dataset_name,
         )
+
+
+# --------------------------- publication review --------------------------- #
+
+def _reviewers():
+    """Active users granted `datasets.review_dataset`, directly or through a group.
+    Superusers hold every permission implicitly but are not mailed for it: the
+    reviewers are whoever the permission was actually given to."""
+    permission = Permission.objects.filter(
+        content_type__app_label='datasets', codename='review_dataset',
+    ).first()
+    if permission is None:
+        return get_user_model().objects.none()
+    return get_user_model().objects.filter(
+        Q(user_permissions=permission) | Q(groups__permissions=permission),
+        is_active=True,
+    ).distinct()
+
+
+def notify_dataset_submitted(dataset_id):
+    """Runs in the qcluster worker - tells reviewers a dataset awaits review."""
+    dataset = Dataset.objects.filter(pk=dataset_id).select_related('publisher').first()
+    if dataset is None or not dataset.is_awaiting_review:
+        return
+
+    reviewers = list(_reviewers())
+    if not reviewers:
+        logger.warning(
+            "Dataset %s awaits review but no user holds 'datasets.review_dataset'; nobody was notified.",
+            dataset.pk,
+        )
+        return
+
+    detail_path = reverse('dataset_details', args=[dataset.pk])
+    message = f'Dataset "{dataset.name}" by {dataset.publisher_display} awaits review'
+    for reviewer in reviewers:
+        notify_in_app(reviewer, message=message, url=detail_path, icon='database')
+
+    recipients = [reviewer.email for reviewer in reviewers if reviewer.email]
+    if not recipients:
+        return
+    try:
+        send_mail(
+            subject=f'Dataset "{dataset.name}" awaits review — EnergyGuard',
+            message=(
+                f'A dataset has been submitted for publication on EnergyGuard.\n\n'
+                f'Dataset: {dataset.name}\n'
+                f'Publisher: {dataset.publisher_display}\n\n'
+                f'Review it here:\n{platform_link(detail_path)}\n\n'
+                f'All datasets awaiting review:\n{platform_link(reverse("dataset_review_list"))}'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipients,
+        )
+    except Exception:
+        logger.exception('Failed to send review request email for dataset %s', dataset.pk)
+
+
+def notify_dataset_review_decision(dataset_id):
+    """Runs in the qcluster worker - tells the publisher their dataset was
+    approved or rejected."""
+    dataset = Dataset.objects.filter(pk=dataset_id).select_related('publisher').first()
+    if dataset is None or dataset.publisher is None:
+        return
+
+    if dataset.status == Dataset.Status.APPROVED:
+        verb, body_line, icon = 'was approved', 'It is now listed in the public datasets catalogue.', 'circle-check'
+    elif dataset.status == Dataset.Status.REJECTED:
+        verb, body_line, icon = 'was rejected', f'Reason: {dataset.rejection_reason}', 'circle-xmark'
+    else:
+        return
+
+    detail_path = reverse('dataset_details', args=[dataset.pk])
+    notify_in_app(
+        dataset.publisher,
+        message=f'Your dataset "{dataset.name}" {verb}',
+        url=detail_path,
+        icon=icon,
+    )
+
+    if not dataset.publisher.email:
+        return
+    try:
+        send_mail(
+            subject=f'Your dataset "{dataset.name}" {verb} — EnergyGuard',
+            message=(
+                f'Hi {dataset.publisher_display},\n\n'
+                f'Your dataset "{dataset.name}" {verb}.\n\n'
+                f'{body_line}\n\n'
+                f'View it here:\n{platform_link(detail_path)}\n\n'
+                f'Best regards,\nThe EnergyGuard Team'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[dataset.publisher.email],
+        )
+    except Exception:
+        logger.exception('Failed to send review decision email for dataset %s', dataset.pk)

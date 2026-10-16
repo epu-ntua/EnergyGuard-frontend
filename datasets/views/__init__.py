@@ -4,6 +4,7 @@ from .edit import dataset_delete, dataset_edit
 from .preview import dataset_preview
 from .run import dataset_run
 from .listing import DatasetsListJson, datasets_list
+from .review import dataset_approve, dataset_reject, dataset_review_list
 from .upload import (
     AddDatasetView,
     DATASET_FORMS,
@@ -19,11 +20,14 @@ __all__ = [
     "DATASET_STEP_METADATA",
     "DATASET_TEMPLATE_NAMES",
     "DatasetsListJson",
+    "dataset_approve",
     "dataset_delete",
     "dataset_details",
     "dataset_download",
     "dataset_edit",
     "dataset_preview",
+    "dataset_reject",
+    "dataset_review_list",
     "dataset_run",
     "dataset_upload_success",
     "datasets_list",

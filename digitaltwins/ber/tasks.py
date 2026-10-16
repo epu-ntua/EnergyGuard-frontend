@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from accounts.models import Notification
+from core.services.notifications import notify_in_app, platform_link
 from digitaltwins.models import BerExperimentRequest
 
 from .services.results import build_ber_results_context
@@ -14,23 +14,13 @@ from .services.results import build_ber_results_context
 logger = logging.getLogger(__name__)
 
 
+def _notify_requester(experiment_request, *, message, url, icon):
+    notify_in_app(experiment_request.user, message=message, url=url, icon=icon)
+
+
 # The platform_url parameter of the tasks below is no longer used: links come from
 # settings.PLATFORM_URL. It stays in the signatures because tasks queued before
 # that change still pass it.
-def _platform_link(path):
-    return f'{settings.PLATFORM_URL.rstrip("/")}{path}'
-
-
-def _notify_in_app(experiment_request, *, message, url, icon):
-    """The bell notification. Its failure is logged, not raised, so the email that
-    follows still goes out: the requester should get at least one of the two."""
-    try:
-        Notification.objects.create(recipient=experiment_request.user, message=message, url=url, icon=icon)
-    except Exception:
-        logger.exception('Failed to create BER notification for request %s', experiment_request.pk)
-
-
-
 def send_ber_notification_email(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
     server must never stall the user's submit request (see ber_experiment_submit)."""
@@ -48,7 +38,7 @@ def send_ber_notification_email(experiment_request_id, platform_url=None):
                 f'Request ID: {experiment_request.pk}\n'
                 f'Submitted by: {experiment_request.user.email}\n'
                 f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                f'Review it here:\n{_platform_link(management_path)}'
+                f'Review it here:\n{platform_link(management_path)}'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.BER_EMAIL],
@@ -92,7 +82,7 @@ def send_ber_cancellation_email(experiment_request_id, platform_url=None):
                 f'Request ID: {experiment_request.pk}\n'
                 f'Submitted by: {experiment_request.user.email}\n'
                 f'Submitted at: {experiment_request.created_at.strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                f'View it here:\n{_platform_link(management_path)}'
+                f'View it here:\n{platform_link(management_path)}'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.BER_EMAIL],
@@ -110,7 +100,7 @@ def notify_ber_results_updated(experiment_request_id, platform_url=None):
 
     detail_path = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
 
-    _notify_in_app(
+    _notify_requester(
         experiment_request,
         message=f'The results of your BER experiment request #{experiment_request.pk} were updated',
         url=detail_path,
@@ -124,7 +114,7 @@ def notify_ber_results_updated(experiment_request_id, platform_url=None):
                 f'Hi,\n\n'
                 f'The BER laboratory team has uploaded an updated result file for your PEM electrolyzer '
                 f'experiment request #{experiment_request.pk}. The results shown on EnergyGuard now reflect it.\n\n'
-                f'View them here:\n{_platform_link(detail_path)}\n\n'
+                f'View them here:\n{platform_link(detail_path)}\n\n'
                 f'Best regards,\nThe EnergyGuard Team'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -150,7 +140,7 @@ def notify_ber_request_decision(experiment_request_id, platform_url=None):
 
     detail_path = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
 
-    _notify_in_app(
+    _notify_requester(
         experiment_request,
         message=f'Your BER experiment request #{experiment_request.pk} {subject_verb}',
         url=detail_path,
@@ -164,7 +154,7 @@ def notify_ber_request_decision(experiment_request_id, platform_url=None):
                 f'Hi,\n\n'
                 f'Your BER PEM electrolyzer experiment request #{experiment_request.pk} {subject_verb}.\n\n'
                 f'{body_line}\n\n'
-                f'View it here:\n{_platform_link(detail_path)}\n\n'
+                f'View it here:\n{platform_link(detail_path)}\n\n'
                 f'Best regards,\nThe EnergyGuard Team'
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,

@@ -1,0 +1,88 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}Dataset Review | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="px-4 px-lg-6 pt-6 pb-9">
+
+        <h2 class="text-body-emphasis mb-2">Dataset Review</h2>
+        <p class="text-body-tertiary mb-6">Datasets their publishers asked to make public. Open one to preview it and approve or reject it.</p>
+
+        <ul class="nav nav-links mb-3 mb-lg-2 mx-n3">
+            {% for tab in status_tabs %}
+            <li class="nav-item"><a class="nav-link fs-9 {% if tab.value == status_filter %}active{% endif %}" {% if tab.value == status_filter %}aria-current="page"{% endif %} href="?status={{ tab.value }}"><span>{{ tab.label }} </span><span class="text-body-tertiary fw-semibold">({{ tab.count }})</span></a></li>
+            {% endfor %}
+        </ul>
+
+        <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+            <div class="table-responsive mx-n1 px-1">
+                <table class="table table-sm table-hover fs-9 mb-0" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="white-space-nowrap align-middle pe-3 ps-2 fs-9" scope="col">DATASET NAME</th>
+                            <th class="align-middle text-start fs-9" scope="col">PUBLISHER</th>
+                            <th class="align-middle text-end fs-9" scope="col">LABEL</th>
+                            <th class="align-middle text-end fs-9" scope="col">SIZE</th>
+                            <th class="align-middle text-end fs-9" scope="col">SUBMITTED</th>
+                            <th class="align-middle text-end fs-9 {% if status_filter == 'under_review' %}pe-2{% endif %}" scope="col">STATUS</th>
+                            {% if status_filter != 'under_review' %}
+                            <th class="align-middle text-end fs-9" scope="col">REVIEWED</th>
+                            <th class="align-middle text-end fs-9 pe-2" scope="col">REVIEWER</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dataset in page_obj %}
+                        <tr>
+                            <td class="align-middle py-3 ps-2"><a class="fw-semibold fs-9" href="{% url 'dataset_details' dataset_id=dataset.id %}">{{ dataset.name }}</a></td>
+                            <td class="align-middle py-3 text-start">{{ dataset.publisher_display }}</td>
+                            <td class="align-middle py-3 text-end">{{ dataset.get_label_display }}</td>
+                            <td class="align-middle py-3 text-end">{{ dataset.size_gb }} GB</td>
+                            <td class="align-middle py-3 text-end">{{ dataset.submitted_at|date:"M j, Y"|default:"—" }}</td>
+                            <td class="align-middle py-3 text-end {% if status_filter == 'under_review' %}pe-2{% endif %}">
+                                {% if dataset.status == 'approved' %}
+                                <span class="badge badge-phoenix badge-phoenix-success fs-10"><span class="badge-label">Approved</span></span>
+                                {% elif dataset.status == 'rejected' %}
+                                <span class="badge badge-phoenix badge-phoenix-danger fs-10"><span class="badge-label">Rejected</span></span>
+                                {% else %}
+                                <span class="badge badge-phoenix badge-phoenix-warning fs-10"><span class="badge-label">Under review</span></span>
+                                {% endif %}
+                            </td>
+                            {% if status_filter != 'under_review' %}
+                            <td class="align-middle py-3 text-end">{{ dataset.reviewed_at|date:"M j, Y"|default:"—" }}</td>
+                            <td class="align-middle py-3 text-end pe-2">{% if dataset.reviewed_by %}{{ dataset.reviewed_by.get_full_name|default:dataset.reviewed_by.email }}{% else %}—{% endif %}</td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-body-tertiary py-5">
+                                {% if status_filter == 'under_review' %}No datasets are waiting for review.{% else %}No datasets here.{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="row">
+            <div class="col-sm-12 col-md-7 fs-9 mt-4">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</div>
+            <div class="col-sm-12 col-md-5 mt-4 d-flex justify-content-end">
+                <ul class="pagination mb-0">
+                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                        <a class="page-link" {% if page_obj.has_previous %}href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}"{% endif %} aria-label="Previous"><span class="fas fa-chevron-left"></span></a>
+                    </li>
+                    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                        <a class="page-link" {% if page_obj.has_next %}href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}"{% endif %} aria-label="Next"><span class="fas fa-chevron-right"></span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% include "core/footer.html" %}
+</div>
+{% endblock %}

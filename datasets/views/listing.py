@@ -18,7 +18,8 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "publisher",
         "size_gb",
         "projects_count",
-        # "status",
+        # Publication state; only the "My" tab shows it.
+        "status",
         "id",
     ]
     order_columns = [
@@ -30,7 +31,6 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         "publisher_sort",
         "size_gb",
         "projects_count",
-        # "status",
     ]
     max_display_length = 25
 
@@ -62,7 +62,7 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
         if scope == "my":
             qs = qs.filter(publisher=self.request.user)
         else:
-            qs = qs.filter(visibility=True).exclude(publisher=self.request.user)
+            qs = qs.published()
 
         search = self.request.GET.get("search[value]")
         if search:
@@ -91,30 +91,19 @@ class DatasetsListJson(LoginRequiredMixin, BaseDatatableView):
             return row.get_source_display()
         if column == "size_gb":
             return row.size_gb
-        # if column == "status":
-        #     scope = self.request.GET.get("scope", "public")
-        #     if scope == "public":
-        #         return row.projects_count
-
-        #     status = row.status.replace("_", " ").title()
-        #     status_badge_map = {
-        #         "approved": "badge-phoenix-success",
-        #         "under_review": "badge-phoenix-primary",
-        #         "rejected": "badge-phoenix-danger",
-        #     }
-        #     badge_class = status_badge_map.get(row.status, "badge-phoenix-secondary")
-        #     return (
-        #         '<div class="text-end"><span class="badge badge-phoenix '
-        #         f'{badge_class} fs-11"><span class="badge-label">{status}'
-        #         "</span></span></div>"
-        #     )
+        if column == "status":
+            if self.request.GET.get("scope") != "my":
+                return ""
+            if not row.visibility:
+                return "private"
+            return "published" if row.is_published else row.status
         return super().render_column(row, column)
 
 
 @login_required
 def datasets_list(request):
     my_qs = Dataset.objects.filter(publisher=request.user)
-    public_qs = Dataset.objects.filter(visibility=True).exclude(publisher=request.user)
+    public_qs = Dataset.objects.published()
 
     active_tab = request.GET.get("tab", "public")
     if active_tab not in ["public", "my"]:
