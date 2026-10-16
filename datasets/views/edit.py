@@ -1,15 +1,12 @@
 import logging
-import requests
-from django.conf import settings
 from django.contrib import messages
-from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
-from ..services import delete_dataset_cache, provision_user_datasets
+from ..services import MinioUploadError, delete_dataset_cache, delete_dataset_objects, provision_user_datasets
 from ..services.review import EditOutcome, apply_edit
 
 logger = logging.getLogger(__name__)
@@ -82,7 +79,6 @@ def dataset_delete(request, dataset_id):
 
     username = dataset.publisher.username
     dataset_name = dataset.name
-    dataset_slug = slugify(dataset_name)
     minio_prefix = "/".join(dataset.data_file.split("/")[:-1]) if dataset.data_file else None
 
     # Step 1: delete from JupyterHub cache — no compensation needed if this fails
@@ -93,16 +89,14 @@ def dataset_delete(request, dataset_id):
         messages.error(request, "Dataset could not be deleted. Please try again or contact support if the issue persists.")
         return redirect("dataset_details", dataset_id=dataset_id)
 
-    # Step 2: delete from MinIO — compensate by re-provisioning JupyterHub if this fails
-    url = f"{settings.DATA_MANAGEMENT_SERVER_URL}/api/v1/datasets/{username}/{dataset_slug}"
+    # Step 2: delete from MinIO — compensate by re-provisioning JupyterHub if this fails.
+    # Delete the object at the key stored on the dataset. Rebuilding its path
+    # from the username and name missed it: the folder is named after the
+    # *slugified* username ("user_janedoeexamplecom") and the name at upload
+    # time, so the delete reported success while the file stayed in MinIO.
     try:
-        response = requests.delete(
-            url,
-            headers={"X-API-Key": settings.DATA_MANAGEMENT_SERVER_API_KEY},
-            timeout=10,
-        )
-        response.raise_for_status()
-    except requests.RequestException:
+        delete_dataset_objects(bucket_name=dataset.bucket_name, data_file_key=dataset.data_file)
+    except MinioUploadError:
         logger.exception("Failed to delete dataset '%s' (id=%s) from MinIO storage", dataset_name, dataset_id)
         if minio_prefix:
             try:
