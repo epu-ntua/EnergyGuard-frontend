@@ -19,10 +19,13 @@ from datasets.services import provision_user_datasets
 from datasets.services.pilot import pilot_object_folder
 
 from .catalog import DIGITAL_TWINS, DT_BY_SLUG
-from .common import dt_render
-from .services import save_simulation_result
+from .common import check_rate_limit, dt_render
+from .services import ResultNotFound, export_result
+from .services.jupyterhub_export import is_export_source
 
 logger = logging.getLogger(__name__)
+
+_EXPORT_RATE_LIMIT = 10  # per user per minute (SIMULATE_RATE_WINDOW)
 
 CEA_VALIDATION_CHECKS = [
     'All required variables present',
@@ -111,26 +114,33 @@ def cartif_hydrogen_dt(request):
 @login_required
 @require_POST
 def dt_save_result(request):
+    """Open one of the user's stored twin results in JupyterHub.
+
+    The body names the result - {"source": "run" | "rdn" | "ber", "id": ...} - and
+    the server copies the stored file; the result's data never comes from the browser.
+    """
+    # Each export can copy a large file (an RDN result runs to hundreds of MB).
+    if not check_rate_limit(request.user.pk, 'dt_export', limit=_EXPORT_RATE_LIMIT):
+        return JsonResponse({'error': 'Too many requests. Please wait before opening another result.'}, status=429)
+
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({'error': 'Invalid request body.'}, status=400)
 
-    twin_slug = body.get('twin_slug')
-    if twin_slug not in DT_BY_SLUG:
-        return JsonResponse({'error': 'Invalid or missing twin_slug.'}, status=400)
-
-    data = body.get('data')
-    if not isinstance(data, dict):
-        return JsonResponse({'error': 'Invalid or missing result data.'}, status=400)
+    source, source_id = body.get('source'), body.get('id')
+    if not is_export_source(source) or not isinstance(source_id, int) or isinstance(source_id, bool):
+        return JsonResponse({'error': 'Invalid or missing result reference.'}, status=400)
 
     try:
-        dt_result = save_simulation_result(twin_slug=twin_slug, user=request.user, data=data)
+        export = export_result(user=request.user, source=source, source_id=source_id)
+    except ResultNotFound:
+        return JsonResponse({'error': 'Result not found.'}, status=404)
     except MinioUploadError as exc:
-        logger.error('Failed to save DT result for user %s: %s', request.user.pk, exc)
+        logger.error('Failed to export %s result %s for user %s: %s', source, source_id, request.user.pk, exc)
         return JsonResponse({'error': 'Could not save the result.'}, status=502)
 
-    minio_prefix = dt_result.result_key.rsplit('/', 1)[0]
+    minio_prefix = export.result_key.rsplit('/', 1)[0]
     dataset_local_name = minio_prefix.rsplit('/', 1)[1]
 
     # JupyterHub identifies users by email (OAuth), so the provision server

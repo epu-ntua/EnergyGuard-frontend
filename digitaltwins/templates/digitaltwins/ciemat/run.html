@@ -1,0 +1,38 @@
+{% extends "digitaltwins/runs/run-base.html" %}
+{% load static %}
+
+{% block run_results %}
+{# The same partial the workspace shows for this kind of run, in the same frame. #}
+{% if run.operation == 'compare-forecasts' %}
+<div id="run-results" class="d-none">
+    {% include "digitaltwins/ciemat/results-compare-forecasts.html" %}
+</div>
+{% else %}
+<div id="run-results" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4">
+    {% if run.operation == 'forecast' %}
+    {% include "digitaltwins/ciemat/results-forecast.html" %}
+    {% elif run.operation == 'calculate' %}
+    {% include "digitaltwins/ciemat/results-calculate.html" %}
+    {% elif run.operation == 'compare' %}
+    {% include "digitaltwins/ciemat/results-compare.html" %}
+    {% endif %}
+</div>
+{% endif %}
+{% endblock run_results %}
+
+{% block run_scripts %}
+<script>
+window.CIEMAT_CONFIG = {
+    saveResultUrl: "{% url 'dt-save-result' %}",
+    run: {
+        id: {{ run.pk }},
+        operation: "{{ run.operation|escapejs }}",
+        createdAt: "{{ run.created_at|date:'c' }}",
+        resultUrl: "{% url 'dt-run-result-data' run.pk %}",
+        inputsElementId: "run-inputs"
+    }
+};
+</script>
+<script src="{% static 'digitaltwins/ciemat-results.js' %}" defer></script>
+<script src="{% static 'digitaltwins/ciemat-run.js' %}" defer></script>
+{% endblock run_scripts %}

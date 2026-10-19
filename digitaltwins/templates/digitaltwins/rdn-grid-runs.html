@@ -32,26 +32,38 @@
                             <th class="align-middle text-start fs-9" scope="col">SECTION</th>
                             <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
                             <th class="align-middle text-start fs-9" scope="col">DURATION</th>
-                            <th class="align-middle text-end fs-9 pe-2" scope="col">STATUS</th>
+                            <th class="align-middle text-end fs-9" scope="col">STATUS</th>
+                            <th class="align-middle text-end fs-9 pe-2" scope="col">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for job in page_obj %}
-                        <tr class="position-relative" style="cursor:pointer;">
+                        <tr data-run-href="{% url 'rdn-grid-results' job.rdn_request_id %}" style="cursor:pointer;">
                             <td class="align-middle py-3 ps-2">
-                                <a class="stretched-link fw-semibold fs-9 text-decoration-none" href="{% url 'rdn-grid-results' job.rdn_request_id %}">#{{ job.rdn_request_id }}</a>
+                                <a class="fw-semibold fs-9 text-decoration-none" href="{% url 'rdn-grid-results' job.rdn_request_id %}">#{{ job.rdn_request_id }}</a>
                             </td>
                             <td class="align-middle py-3 fs-9">{{ job.use_case_label }}</td>
                             <td class="align-middle py-3 fs-9">{% if job.grid_section == 'All' %}Full grid{% else %}Section {{ job.grid_section }}{% endif %}</td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ job.created_at|date:"d M, H:i" }}</td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ job.duration_label }}</td>
-                            <td class="align-middle py-3 fs-9 text-end pe-2">
-                                {% if job.status == 'completed' %}
-                                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
-                                {% elif job.status == 'failed' %}
-                                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Failed</span><span class="ms-1 fas fa-xmark"></span></span>
-                                {% else %}
-                                <span class="badge bg-warning-subtle text-warning-emphasis">{{ job.status }}</span>
+                            <td class="align-middle py-3 fs-9 text-end">
+                                {% include "digitaltwins/partials/run-status-badge.html" with status=job.status %}
+                            </td>
+                            <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-row-ignore>
+                                {% if job.status == 'completed' or job.status == 'failed' %}
+                                <div class="btn-reveal-trigger">
+                                    <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                                            data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-haspopup="true" aria-expanded="false"
+                                            aria-label="Actions for run #{{ job.rdn_request_id }}"><span class="fas fa-ellipsis-h fs-10"></span></button>
+                                    <div class="dropdown-menu dropdown-menu-end py-2">
+                                        {% if job.status == 'completed' %}
+                                        <a class="dropdown-item" href="{% url 'rdn-grid-result-data' job.rdn_request_id %}?download=1"><span class="fas fa-download me-2"></span>Download result</a>
+                                        <div class="dropdown-divider"></div>
+                                        {% endif %}
+                                        {% url 'rdn-grid-run-delete' job.rdn_request_id as confirm_url %}
+                                        {% include "digitaltwins/partials/confirm-action-item.html" with url=confirm_url title="Delete run" number=job.rdn_request_id body="The run and its result will be deleted, and it can no longer be continued with a follow-up request. If you opened it in JupyterHub, that copy is removed too. This cannot be undone." label="Delete" icon="fa-trash" danger=True %}
+                                    </div>
+                                </div>
                                 {% endif %}
                             </td>
                         </tr>
@@ -90,4 +102,9 @@
     </div>
     {% include "core/footer.html" %}
 </div>
+{% include "digitaltwins/partials/confirm-modal.html" %}
 {% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'digitaltwins/runs-list.js' %}" defer></script>
+{% endblock scripts %}

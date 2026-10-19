@@ -79,6 +79,26 @@ docker compose up --build
    - Main app: `http://localhost:8080`
    - PgAdmin: `http://localhost:5051`
 
+### Tests
+
+```bash
+docker compose exec web python manage.py test
+```
+
+The digital twins also have browser smoke tests (`digitaltwins/tests/test_browser.py`), which drive their pages in headless Chromium. They are skipped unless Playwright is installed; the install lasts until the image is rebuilt, and the pages load amCharts and Leaflet from their CDNs, so internet is needed:
+
+```bash
+docker compose exec web pip install -r requirements-dev.txt
+docker compose exec web python -m playwright install --with-deps chromium
+docker compose exec web python manage.py test digitaltwins.tests.test_browser
+```
+
+To see how much object storage the twins' results take, and whether anything is orphaned:
+
+```bash
+docker compose exec web python manage.py dt_storage_usage --by-user --orphans
+```
+
 ### Questionnaire Standalone Mode
 
 The `questionnaire` app is integrated into the main Django project. It can also be run as a standalone service:
@@ -119,7 +139,8 @@ Key variables required in `.env`:
 | `KEYCLOAK_USER_SYNC_ID` / `KEYCLOAK_USER_SYNC_CLIENT_SECRET` | Keycloak user sync |
 | `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_SSL` / `DEFAULT_FROM_EMAIL` / `DJANGO_ADMINS` | SMTP email |
 | `OBJECT_STORAGE_ENDPOINT` / `OBJECT_STORAGE_ACCESS_KEY` / `OBJECT_STORAGE_SECRET_KEY` / `OBJECT_STORAGE_VERIFY_SSL` | MinIO/S3 storage |
-| `OBJECT_STORAGE_BUCKET` / `OBJECT_STORAGE_BUCKET_SIMULATIONS` / `OBJECT_STORAGE_MEDIA_BUCKET` / `USE_S3_FOR_MEDIA` | Media/dataset storage configuration |
+| `OBJECT_STORAGE_BUCKET` / `OBJECT_STORAGE_BUCKET_SIMULATIONS` / `OBJECT_STORAGE_MEDIA_BUCKET` / `USE_S3_FOR_MEDIA` | Media/dataset storage configuration. Locally, set `OBJECT_STORAGE_BUCKET_SIMULATIONS=dt-results-dev`: the production MinIO is shared, and production's `dt-results` holds real users' results under ids a local database reuses |
+| `DT_EXPORT_NAME_PREFIX` | Prefix of the digital twins' JupyterHub copies; set `dev-` locally so they never share a name with production's (default empty) |
 | `SCAN_API_URL` / `SCAN_API_TIMEOUT` | Semgrep code analysis API |
 | `ROBUSTNESS_API_URL` / `ROBUSTNESS_API_TIMEOUT` / `ROBUSTNESS_API_SUBMIT_TIMEOUT` / `ROBUSTNESS_API_POLL_INTERVAL` / `ROBUSTNESS_API_POLL_TIMEOUT` | Adversarial robustness testing API |
 | `DATA_MANAGEMENT_SERVER_URL` / `DATA_MANAGEMENT_SERVER_API_KEY` | External data management service |

@@ -14,7 +14,9 @@ from django.views.decorators.http import require_POST
 from core.services.object_storage import MinioUploadError
 from digitaltwins.common import check_rate_limit, dt_render
 from digitaltwins.models import BerExperimentRequest
+from digitaltwins.services.jupyterhub_export import remove_exports
 
+from ..exports import ber_source_prefix
 from ..services import requests as ber_requests
 from ..services.requests import SubmissionLimitError
 from ..services.results import BER_SIGNAL_INFO, BerResultUnreadable, build_ber_results_context
@@ -190,9 +192,11 @@ def ber_hydrogen_request_cancel(request, request_id):
 @login_required
 @require_POST
 def ber_hydrogen_request_hide(request, request_id):
-    """Requester removes a finished request from their own list. BER staff still see it."""
+    """Requester removes a finished request from their own list. BER staff still see it,
+    with its result file; the requester's own JupyterHub copies of it are removed."""
     experiment_request = get_object_or_404(BerExperimentRequest, pk=request_id, user=request.user)
-    ber_requests.hide_request(experiment_request)
+    if ber_requests.hide_request(experiment_request):
+        remove_exports(user_id=request.user.pk, source_prefix=ber_source_prefix(experiment_request.pk))
     return redirect('ber-hydrogen-runs')
 
 

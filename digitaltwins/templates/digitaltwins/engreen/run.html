@@ -1,0 +1,26 @@
+{% extends "digitaltwins/runs/run-base.html" %}
+{% load static %}
+
+{% block run_results %}
+<div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4">
+    {% include "digitaltwins/engreen/results.html" %}
+</div>
+{% endblock run_results %}
+
+{% block run_scripts %}
+<script>
+window.ENGREEN_CONFIG = {
+    stationsUrl: "{% url 'engreen-stations-api' %}",
+    saveResultUrl: "{% url 'dt-save-result' %}",
+    run: {
+        id: {{ run.pk }},
+        operation: "{{ run.operation|escapejs }}",
+        createdAt: "{{ run.created_at|date:'c' }}",
+        resultUrl: "{% url 'dt-run-result-data' run.pk %}",
+        inputsElementId: "run-inputs"
+    }
+};
+</script>
+<script src="{% static 'digitaltwins/engreen-results.js' %}" defer></script>
+<script src="{% static 'digitaltwins/engreen-run.js' %}" defer></script>
+{% endblock run_scripts %}

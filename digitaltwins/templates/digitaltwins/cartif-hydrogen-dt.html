@@ -4,8 +4,9 @@
 {% block title %}CARTIF Node Workspace - Digital Twins{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="{% static 'digitaltwins/leaflet-fixes.css' %}"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
     .chart-placeholder {
         background: var(--phoenix-body-bg);
@@ -681,8 +682,11 @@
         var lon = isNaN(parsedLon) ? CARTIF_SITE.lon : parsedLon;
 
         locationMap = L.map('location-map').setView([lat, lon], 7);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            // The site sends no Referer elsewhere (Django's same-origin policy), and OSM's
+            // tile servers block requests without one; send just the origin to them.
+            referrerPolicy: 'strict-origin-when-cross-origin',
             maxZoom: 18,
         }).addTo(locationMap);
 

@@ -105,6 +105,19 @@ def upload_fileobj(*, bucket_name: str, object_key: str, fileobj, content_type: 
         raise MinioUploadError(str(exc)) from exc
 
 
+def copy_object(*, source_bucket: str, source_key: str, bucket_name: str, object_key: str) -> None:
+    """Copy an object inside the storage server, without passing its bytes through
+    this process. Managed copy: switches to multipart for objects too large for a
+    single CopyObject call."""
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    client = build_minio_client()
+    try:
+        client.copy(CopySource={"Bucket": source_bucket, "Key": source_key}, Bucket=bucket_name, Key=object_key)
+    except (ClientError, BotoCoreError) as exc:
+        raise MinioUploadError(str(exc)) from exc
+
+
 def open_object_stream(*, bucket_name: str, object_key: str):
     """Return (body, content_length) for an object, for streaming without loading it whole.
 

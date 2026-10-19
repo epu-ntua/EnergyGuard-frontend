@@ -1,0 +1,148 @@
+<style>
+    .chart-placeholder {
+        background: var(--phoenix-body-bg);
+        border: 2px dashed var(--phoenix-border-color);
+        border-radius: .75rem;
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: .5rem;
+    }
+</style>
+
+<!-- Results header -->
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <div class="d-flex align-items-center gap-3">
+        <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Forecast Results</h5>
+        <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="res-generation-type">—</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
+            <span class="fas fa-download"></span>Download JSON
+        </button>
+        <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
+            <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
+        </button>
+    </div>
+</div>
+<div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
+    <span><span class="fas fa-location-dot me-1 text-body-tertiary"></span>Location: <span class="fw-semibold text-body-emphasis" id="res-location">—</span></span>
+    <span class="text-body-tertiary">·</span>
+    <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run at: <span class="fw-semibold text-body-emphasis" id="res-timestamp">—</span></span>
+    <span class="text-body-tertiary">·</span>
+    <span><span class="fas fa-calendar-days me-1 text-body-tertiary"></span>Horizon: <span class="fw-semibold text-body-emphasis" id="res-horizon">5 days · 15-min resolution</span></span>
+</div>
+
+<!-- KPI cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">Total Estimated Energy</span>
+            <span class="fw-bolder text-primary fs-7" id="res-total">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">kWh</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">Peak Power</span>
+            <span class="fw-bolder text-body-emphasis fs-7" id="res-peak">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1" id="res-weather-label">Avg Wind Speed</span>
+            <span class="fw-bolder text-body-emphasis fs-7" id="res-weather">—</span>
+            <span class="text-body-tertiary fs-9 ms-1" id="res-weather-unit">m/s</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">Generating Hours</span>
+            <span class="fw-bolder text-body-emphasis fs-7" id="res-gen-hours">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">h</span>
+        </div>
+    </div>
+</div>
+
+<!-- Chart + Insights + Config -->
+<div class="row g-4 mb-4">
+
+    <div class="col-12 col-xxl-9">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h6 class="fw-bold text-body-emphasis mb-0">Power Output Forecast</h6>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3 fs-9 text-body-secondary" id="chart-legend-row"></div>
+                        <button type="button" class="btn btn-sm btn-phoenix-secondary d-inline-flex align-items-center gap-1" id="chart-reset-zoom-btn">
+                            <span class="fas fa-arrows-rotate"></span>Reset zoom
+                        </button>
+                    </div>
+                </div>
+                <div id="chart-placeholder-inner" class="chart-placeholder">
+                    <span class="fas fa-chart-area fs-2 text-body-tertiary"></span>
+                    <span class="text-body-tertiary fs-9">Power output &nbsp;&middot;&nbsp; Weather input &middot; Time series chart</span>
+                    <span class="text-body-tertiary fs-10">Run a forecast to generate the chart.</span>
+                </div>
+                <div id="chart-canvas-wrapper" style="height:48vh;min-height:420px;display:none;">
+                    <div id="power-chart" style="width:100%;height:100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xxl-3">
+        <div class="row g-4 h-100">
+
+            <div class="col-4 col-xxl-12">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                            <span class="fas fa-lightbulb text-warning"></span>Scenario Insights
+                        </h6>
+                        <ul class="list-unstyled fs-9 mb-0">
+                            <li class="d-flex gap-2 mb-3">
+                                <span class="fas fa-bolt text-primary mt-1 flex-shrink-0"></span>
+                                <span class="text-body-secondary">Peak output of <strong id="insight-peak">—</strong> is expected at <strong id="insight-peak-time">—</strong>.</span>
+                            </li>
+                            <li class="d-flex gap-2 mb-0">
+                                <span class="fas fa-circle-info text-info mt-1 flex-shrink-0"></span>
+                                <span class="text-body-secondary">Forecast is based on Open-Meteo weather data corrected by CIEMAT's machine-learning model. Accuracy decreases towards the end of the 5-day horizon.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-8 col-xxl-12">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
+                            <span class="fas fa-list-ul text-body-tertiary"></span>
+                            Configuration Used
+                        </h6>
+                        <div id="config-summary-body">
+                            <dl class="row mb-0 fs-9">
+                                <dt class="col-6 text-body-tertiary fw-normal">Generation Type</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-generation-type">—</dd>
+                                <dt class="col-6 text-body-tertiary fw-normal">Latitude</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-lat">—</dd>
+                                <dt class="col-6 text-body-tertiary fw-normal">Longitude</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-lon">—</dd>
+                                <dt class="col-6 text-body-tertiary fw-normal">Horizon</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-horizon">5 days</dd>
+                                <dt class="col-6 text-body-tertiary fw-normal">Data Source</dt>
+                                <dd class="col-6 fw-semibold text-body-emphasis mb-0">Open-Meteo NWP</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>

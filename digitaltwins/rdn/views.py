@@ -7,12 +7,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import JsonResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.services.object_storage import MinioUploadError
-from digitaltwins.common import check_rate_limit, dt_render, format_duration, iter_body_chunks
+from digitaltwins.common import RUNS_PAGE_SIZE, check_rate_limit, dt_render, format_duration, iter_body_chunks
 from digitaltwins.models import RdnSimulationJob
 
 from .services.client import RdnApiError, upload_rdn_input
@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 _SIMULATE_RATE_LIMIT = 5  # lower than the default: real RDN jobs are far heavier than a typical request
 _SIMULATE_RATE_WINDOW = 60
-_RUNS_PAGE_SIZE = 20
 
 
 @login_required
@@ -64,7 +63,7 @@ def rdn_grid_runs(request):
     # (see RdnSimulationJob.result) - hundreds of MB for old large runs - which this listing
     # never displays, so fetching it here would be pure wasted I/O.
     jobs = RdnSimulationJob.objects.filter(user=request.user).defer('result').order_by('-created_at')
-    paginator = Paginator(jobs, _RUNS_PAGE_SIZE)
+    paginator = Paginator(jobs, RUNS_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     for job in page_obj:
@@ -116,18 +115,41 @@ def rdn_grid_result_data(request, rdn_request_id):
 
     if not job.result_key:
         # Completed before results moved to object storage - still in the column.
-        return JsonResponse(job.result, safe=False)
+        response = JsonResponse(job.result, safe=False)
+    else:
+        try:
+            body, content_length = open_result_stream(job.result_key)
+        except MinioUploadError:
+            logger.exception('Could not read RDN result for request %s', rdn_request_id)
+            return JsonResponse({'error': 'The result could not be retrieved.'}, status=502)
 
-    try:
-        body, content_length = open_result_stream(job.result_key)
-    except MinioUploadError:
-        logger.exception('Could not read RDN result for request %s', rdn_request_id)
-        return JsonResponse({'error': 'The result could not be retrieved.'}, status=502)
+        response = StreamingHttpResponse(iter_body_chunks(body), content_type='application/json')
+        if content_length is not None:
+            response['Content-Length'] = content_length
 
-    response = StreamingHttpResponse(iter_body_chunks(body), content_type='application/json')
-    if content_length is not None:
-        response['Content-Length'] = content_length
+    if request.GET.get('download'):
+        response['Content-Disposition'] = f'attachment; filename="rdn-grid-result-{rdn_request_id}.json"'
     return response
+
+
+@login_required
+@require_POST
+def rdn_grid_run_delete(request, rdn_request_id):
+    """Delete one of the user's finished runs and its result.
+
+    Only completed or failed runs: while one is pending or running the poll chain
+    is still waiting on RDN, and deleting it would not cancel anything there. A
+    deleted run can no longer be continued, since the follow-up lookup reads it.
+    """
+    # .defer('result'): a legacy run's inline payload can be hundreds of MB, and
+    # deleting the row does not need it.
+    job = get_object_or_404(
+        RdnSimulationJob.objects.defer('result'), rdn_request_id=rdn_request_id, user=request.user,
+        status__in=(RdnSimulationJob.Status.COMPLETED, RdnSimulationJob.Status.FAILED),
+    )
+    # Its stored result and JupyterHub copies follow it (digitaltwins.signals).
+    job.delete()
+    return redirect('rdn-grid-runs')
 
 
 @login_required

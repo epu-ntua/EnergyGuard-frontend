@@ -9,6 +9,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from digitaltwins.models import DtRun
+
+from .fakes import fake_object_storage
 from .http_fakes import http_response
 
 User = get_user_model()
@@ -24,6 +27,8 @@ class CiematTestCase(TestCase):
 
     def setUp(self):
         self.client.force_login(self.user)
+        # Each run is now recorded with its result in object storage.
+        self.storage = self.enterContext(fake_object_storage())
 
     def post(self, name, body):
         return self.client.post(reverse(name), data=json.dumps(body), content_type='application/json')
@@ -37,6 +42,7 @@ class CiematForecastTests(CiematTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'points': points})
+        self.assertEqual(response['X-DT-Run-Id'], str(DtRun.objects.get(operation='forecast').pk))
         self.assertTrue(api.call_args.args[0].endswith('/api/v1/forecast/wind'))
         self.assertEqual(api.call_args.kwargs['json'], {'lat': 41.6, 'lon': -2.5})
         self.assertIn('X-API-Key', api.call_args.kwargs['headers'])
@@ -119,6 +125,7 @@ class CiematCompareTests(CiematTestCase):
             response = self.post('ciemat-compare', WIND_1S)
 
         self.assertEqual(response.json(), {'results': answers})
+        self.assertEqual(response['X-DT-Run-Id'], str(DtRun.objects.get(operation='compare').pk))
 
     def test_one_failing_model_fails_the_comparison_with_its_name(self):
         def fake_post(url, **kwargs):
@@ -131,10 +138,75 @@ class CiematCompareTests(CiematTestCase):
         self.assertTrue(response.json()['error'].startswith('5min model:'))
 
 
+class CiematCompareForecastsTests(CiematTestCase):
+    """"Compare with a second model": two forecasts, one request, one recorded run."""
+
+    BODY = {
+        'a': {'generation_type': 'wind', 'lat': 41.6, 'lon': -2.5},
+        'b': {'generation_type': 'solar', 'lat': 40.4, 'lon': -3.7},
+    }
+
+    def test_both_forecasts_are_returned_and_recorded_as_one_run(self):
+        def fake_post(url, **kwargs):
+            return http_response(200, [{'generation': url.rsplit('/', 1)[1]}])
+
+        with patch('requests.post', side_effect=fake_post) as api:
+            response = self.post('ciemat-compare-forecasts', self.BODY)
+
+        self.assertEqual(response.status_code, 200)
+        run = DtRun.objects.get()
+        self.assertEqual(response.json(), {
+            'a': {'points': [{'generation': 'wind'}]},
+            'b': {'points': [{'generation': 'solar'}]},
+        })
+        self.assertEqual(response['X-DT-Run-Id'], str(run.pk))
+        self.assertEqual((run.operation, run.inputs), ('compare-forecasts', self.BODY))
+        self.assertEqual(api.call_count, 2)
+
+    def test_an_invalid_model_is_named(self):
+        body = {**self.BODY, 'b': {'generation_type': 'hydro', 'lat': 1, 'lon': 1}}
+        with patch('requests.post') as api:
+            response = self.post('ciemat-compare-forecasts', body)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.json()['error'].startswith('Model B:'))
+        api.assert_not_called()
+
+    def test_a_failing_model_records_a_failed_run(self):
+        def fake_post(url, **kwargs):
+            return http_response(500 if url.endswith('/solar') else 200, [])
+
+        with patch('requests.post', side_effect=fake_post):
+            response = self.post('ciemat-compare-forecasts', self.BODY)
+
+        self.assertEqual(response.status_code, 502)
+        self.assertTrue(response.json()['error'].startswith('Model B:'))
+        self.assertEqual(DtRun.objects.get().status, DtRun.Status.FAILED)
+
+
+class CiematRunPageTests(CiematTestCase):
+    """Each kind of stored run reopens with the partial its results are drawn in."""
+
+    def test_each_operation_renders_its_results(self):
+        from digitaltwins.runs.services import record_run
+
+        for operation, inputs, marker in [
+            ('forecast', {'generation_type': 'wind', 'lat': 41.6, 'lon': -2.5}, 'id="power-chart"'),
+            ('compare-forecasts', {'a': {}, 'b': {}}, 'id="cm-chart"'),
+            ('calculate', {'resolution': '1min', 'device_id': 'WT-1'}, 'id="calc-res-power-kw"'),
+            ('compare', {'device_id': 'WT-1'}, 'id="compare-chart"'),
+        ]:
+            with self.subTest(operation):
+                run = record_run(user=self.user, twin_slug='ciemat-microgrid', operation=operation,
+                                 inputs=inputs, result={})
+                response = self.client.get(reverse('ciemat-microgrid-run', args=[run.pk]))
+                self.assertContains(response, marker)
+                self.assertContains(response, reverse('dt-run-result-data', args=[run.pk]))
+
+
 class CiematNotConfiguredTests(CiematTestCase):
     @override_settings(CIEMAT_API_KEY='')
     def test_every_endpoint_says_so_without_calling_out(self):
-        for name in ['ciemat-forecast', 'ciemat-calculate', 'ciemat-compare']:
+        for name in ['ciemat-forecast', 'ciemat-compare-forecasts', 'ciemat-calculate', 'ciemat-compare']:
             with self.subTest(name), patch('requests.post') as api:
                 response = self.post(name, {})
                 self.assertEqual(response.status_code, 503)

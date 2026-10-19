@@ -1,0 +1,51 @@
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Model Comparison</h5>
+    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="cmp-export-json-btn">
+        <span class="fas fa-download"></span>Download JSON
+    </button>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">1-Minute Model (base)</span>
+            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-1min">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="bg-body border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">5-Minute Model (base)</span>
+            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-5min">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="bg-primary bg-opacity-50 border rounded-3 p-3 h-100">
+            <span class="text-body-tertiary fs-9 d-block mb-1">1-Second Model (multilag)</span>
+            <span class="fw-bolder text-body-emphasis fs-6" id="cmp-res-1s">—</span>
+            <span class="text-body-tertiary fs-9 ms-1">kW</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-8">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-body-emphasis mb-3">Predicted Power by Model</h6>
+                <div id="compare-chart" style="width:100%;height:280px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
+                    <span class="fas fa-lightbulb text-warning"></span>Insight
+                </h6>
+                <p class="text-body-secondary fs-9 mb-0">The 1-second multilag model differs from the average of the base models by <strong id="cmp-insight-diff">—</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>

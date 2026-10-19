@@ -2,12 +2,22 @@
 
 from django.core.cache import cache
 from django.shortcuts import render
+from django.utils.text import slugify
 
 SIMULATE_RATE_LIMIT = 20   # max requests per user per window
 SIMULATE_RATE_WINDOW = 60  # seconds
 
+# Rows per page of the run and request lists.
+RUNS_PAGE_SIZE = 20
+
 # Read size when streaming a stored result file to the browser or a parser.
 RESULT_STREAM_CHUNK = 64 * 1024
+
+
+def user_storage_folder(user):
+    """The user's folder in object storage, `user_<slug>`: the convention of the
+    datasets app (datasets.tasks), so one user's files sit together in both buckets."""
+    return f"user_{slugify(user.username or str(user.pk)) or 'user'}"
 
 
 def dt_render(request, template, **extra):

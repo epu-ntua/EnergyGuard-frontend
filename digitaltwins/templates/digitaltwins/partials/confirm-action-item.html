@@ -1,0 +1,6 @@
+{# A dropdown item that asks for confirmation (partials/confirm-modal.html) before posting to `url`. #}
+{# {% include ... with url=... title="Delete run" number=run.pk body=... label=... icon="fa-trash" danger=True %} #}
+{# (Template variables inside the strings of an include are not rendered: pass the number on its own.) #}
+<button type="button" class="dropdown-item{% if danger %} text-danger{% endif %}" data-bs-toggle="modal" data-bs-target="#dtConfirmModal"
+        data-confirm-url="{{ url }}" data-confirm-title="{{ title }}{% if number %} #{{ number }}{% endif %}" data-confirm-body="{{ body }}"
+        data-confirm-label="{{ label }}"><span class="fas {{ icon }} me-2"></span>{{ text|default:label }}</button>

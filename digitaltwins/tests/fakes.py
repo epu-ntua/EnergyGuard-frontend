@@ -42,6 +42,29 @@ class FakeS3Client:
         data = self.objects[(Bucket, Key)]
         return {'Body': StreamingBody(io.BytesIO(data), len(data)), 'ContentLength': len(data)}
 
+    def copy(self, CopySource, Bucket, Key):
+        source = (CopySource['Bucket'], CopySource['Key'])
+        if self.fail_reads or source not in self.objects:
+            raise self._missing('CopyObject')
+        self.objects[(Bucket, Key)] = self.objects[source]
+
+    def head_object(self, Bucket, Key):
+        if (Bucket, Key) not in self.objects:
+            raise ClientError({'Error': {'Code': '404', 'Message': 'Not found'}}, 'HeadObject')
+        return {'ContentLength': len(self.objects[(Bucket, Key)])}
+
+    def get_paginator(self, operation):
+        assert operation == 'list_objects_v2', operation
+        client = self
+
+        class _Paginator:
+            def paginate(self, Bucket, Prefix=''):
+                contents = [{'Key': key, 'Size': len(data)} for (bucket, key), data in sorted(client.objects.items())
+                            if bucket == Bucket and key.startswith(Prefix)]
+                yield {'Contents': contents} if contents else {}
+
+        return _Paginator()
+
     def delete_object(self, Bucket, Key):
         self.objects.pop((Bucket, Key), None)
 

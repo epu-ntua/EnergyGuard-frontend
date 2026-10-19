@@ -101,7 +101,7 @@
                         View all requests<span class="fas fa-arrow-right"></span>
                     </a>
                     <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2 ms-auto"
-                            data-bs-toggle="modal" data-bs-target="#berConfirmModal"
+                            data-bs-toggle="modal" data-bs-target="#dtConfirmModal"
                             data-confirm-url="{% url 'ber-hydrogen-request-cancel' experiment_request.pk %}"
                             data-confirm-title="Cancel request #{{ experiment_request.pk }}"
                             data-confirm-body="The BER laboratory team will be notified that this experiment no longer needs to be run. This cannot be undone."
@@ -114,7 +114,7 @@
     </div>
     {% include "core/footer.html" %}
 </div>
-{% include "digitaltwins/ber/partials/request-confirm-modal.html" %}
+{% include "digitaltwins/partials/confirm-modal.html" %}
 {% endblock content %}
 
 {% block scripts %}

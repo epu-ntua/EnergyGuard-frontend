@@ -1,0 +1,32 @@
+{# Shared confirmation for the run and request lists' destructive actions #}
+{# (Delete, Cancel request, Remove from my list). #}
+{# Triggers: data-bs-toggle="modal" data-bs-target="#dtConfirmModal" plus #}
+{# data-confirm-url, data-confirm-title, data-confirm-body, data-confirm-label. #}
+<div class="modal fade" id="dtConfirmModal" tabindex="-1" aria-labelledby="dtConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" class="modal-content" id="dtConfirmForm">
+            {% csrf_token %}
+            <div class="modal-header border-bottom border-translucent">
+                <h5 class="modal-title" id="dtConfirmModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="dtConfirmBody"></p>
+            </div>
+            <div class="modal-footer border-top border-translucent">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Keep it</button>
+                <button type="submit" class="btn btn-danger btn-sm" id="dtConfirmSubmit"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('dtConfirmModal').addEventListener('show.bs.modal', function (event) {
+    var data = event.relatedTarget.dataset;
+    document.getElementById('dtConfirmForm').action = data.confirmUrl;
+    document.getElementById('dtConfirmModalLabel').textContent = data.confirmTitle;
+    document.getElementById('dtConfirmBody').textContent = data.confirmBody;
+    document.getElementById('dtConfirmSubmit').textContent = data.confirmLabel;
+});
+</script>

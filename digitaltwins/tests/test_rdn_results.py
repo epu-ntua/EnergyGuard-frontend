@@ -7,11 +7,14 @@ result, and jobs completed before the move losing access to their payload.
 import json
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from digitaltwins.models import RdnSimulationJob
+
+from .fakes import fake_object_storage
 
 User = get_user_model()
 
@@ -153,3 +156,54 @@ class RdnResultStorageTests(TestCase):
         self.assertEqual(job.status, RdnSimulationJob.Status.COMPLETED)
         self.assertEqual(job.result_key, "")
         self.assertEqual(job.result, payload)
+
+
+class RdnRunDeleteTests(TestCase):
+    """A finished run can be deleted with its result; it then can't be continued."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = User.objects.create_user(email="rdn-deleter@example.com", password="pw")
+        cls.other = User.objects.create_user(email="rdn-bystander@example.com", password="pw")
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+        self.storage = self.enterContext(fake_object_storage())
+
+    def _delete(self, rdn_request_id):
+        return self.client.post(reverse("rdn-grid-run-delete", args=[rdn_request_id]))
+
+    def test_completed_run_and_its_result_are_deleted(self):
+        key = "rdn-grid/701/result.json"
+        self.storage.objects[(settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, key)] = b"{}"
+        make_job(self.owner, rdn_request_id=701, result_key=key)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self._delete(701)
+        self.assertRedirects(response, reverse("rdn-grid-runs"), fetch_redirect_response=False)
+
+        self.assertFalse(RdnSimulationJob.objects.filter(rdn_request_id=701).exists())
+        self.assertEqual(self.storage.objects, {})
+        self.assertEqual(
+            self.client.get(reverse("rdn-grid-follow"), {"requestId": 701}).json(), {"found": False},
+        )
+
+    def test_failed_and_legacy_runs_can_be_deleted(self):
+        make_job(self.owner, rdn_request_id=702, status=RdnSimulationJob.Status.FAILED)
+        make_job(self.owner, rdn_request_id=703, result={"legacy": True})
+        self._delete(702)
+        self._delete(703)
+        self.assertFalse(RdnSimulationJob.objects.filter(rdn_request_id__in=[702, 703]).exists())
+
+    def test_running_or_other_users_runs_are_not_deleted(self):
+        make_job(self.owner, rdn_request_id=704, status=RdnSimulationJob.Status.RUNNING)
+        make_job(self.other, rdn_request_id=705)
+
+        self.assertEqual(self._delete(704).status_code, 404)
+        self.assertEqual(self._delete(705).status_code, 404)
+        self.assertEqual(RdnSimulationJob.objects.filter(rdn_request_id__in=[704, 705]).count(), 2)
+
+    def test_result_can_be_downloaded_as_a_file(self):
+        make_job(self.owner, rdn_request_id=706, result={"a": 1})
+        response = self.client.get(reverse("rdn-grid-result-data", args=[706]), {"download": "1"})
+        self.assertIn('attachment; filename="rdn-grid-result-706.json"', response["Content-Disposition"])

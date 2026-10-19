@@ -8,6 +8,7 @@ are already in emails sent to users.
 from django.urls import include, path
 
 from . import pages
+from .runs import views as runs
 
 urlpatterns = [
     path('riga/rea-riga-dt/', include('digitaltwins.riga.urls')),
@@ -21,6 +22,9 @@ urlpatterns = [
     path('ciemat/ciemat-forecasting-dt/', include('digitaltwins.ciemat.urls')),
     path('rdn-grid/rdn-grid-dt/', include('digitaltwins.rdn.urls')),
     path('results/save/', pages.dt_save_result, name='dt-save-result'),
+    path('runs/<int:run_id>/result.json', runs.dt_run_result_data, name='dt-run-result-data'),
+    path('runs/<int:run_id>/delete/', runs.dt_run_delete, name='dt-run-delete'),
+    path('<slug:slug>/runs/', runs.dt_runs, name='dt-runs'),
     path('<slug:slug>/dataset/', pages.digitaltwins_pilot_dataset, name='digitaltwins-pilot-dataset'),
     # Last: the <slug> catch-all would otherwise shadow the fixed routes above.
     path('<slug:slug>/', pages.digitaltwins_detail, name='digitaltwins-detail'),

@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 
+from .fakes import fake_object_storage
+
 User = get_user_model()
 
 
@@ -14,6 +16,8 @@ class EngreenPvSimulateTests(TestCase):
         self.user = User.objects.create_user(username='testuser', email='test@example.com', password='pass')
         self.client.force_login(self.user)
         self.url = reverse('engreen-pv-simulate')
+        # Each run is now recorded with its result in object storage.
+        self.storage = self.enterContext(fake_object_storage())
 
     def _post(self, payload):
         return self.client.post(

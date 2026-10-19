@@ -333,6 +333,12 @@ OBJECT_STORAGE_SECRET_KEY = env("OBJECT_STORAGE_SECRET_KEY")
 OBJECT_STORAGE_VERIFY_SSL = env.bool("OBJECT_STORAGE_VERIFY_SSL")
 OBJECT_STORAGE_BUCKET = env("OBJECT_STORAGE_BUCKET")
 OBJECT_STORAGE_BUCKET_SIMULATIONS = env("OBJECT_STORAGE_BUCKET_SIMULATIONS", default="dt-results")
+# Development machines share the production MinIO. The twins' results are keyed by
+# row ids, which every database starts from 1, so a local environment must keep
+# them in a bucket of its own (e.g. dt-results-dev; system check digitaltwins.W001)
+# and prefix its JupyterHub copies, which land in the shared datasets bucket under
+# the user's folder (e.g. "dev-", giving dev-rdn-grid-run-5).
+DT_EXPORT_NAME_PREFIX = env("DT_EXPORT_NAME_PREFIX", default="")
 
 # Shared cache (Postgres-backed) so cached values (e.g. the RDN API token) are
 # visible to both the web process and the qcluster process. Table is created by
