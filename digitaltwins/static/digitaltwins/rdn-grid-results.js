@@ -251,7 +251,7 @@
             fetch(cfg.saveResultUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                body: JSON.stringify({ twin_slug: 'rdn-grid', data: lastApiResponse }),
+                body: JSON.stringify({ source: 'rdn', id: cfg.requestId }),
             })
             .then(function (resp) {
                 if (!resp.ok) {

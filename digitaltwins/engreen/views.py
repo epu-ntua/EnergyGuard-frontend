@@ -4,9 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
+from digitaltwins.catalog import DT_BY_SLUG
 from digitaltwins.common import check_rate_limit, dt_render
+from digitaltwins.models import DtRun
+from digitaltwins.runs.services import attach_run_id, record_run
+from digitaltwins.runs.views import get_user_run
 
 from . import client
+
+TWIN_SLUG = 'engreen-antrodoco'
 
 _VALID_PROFILES = {'away_during_day', 'mixed_use', 'often_home'}
 _MAX_FORECAST_DAYS = 16
@@ -16,6 +22,14 @@ _MAX_PANELS = 50
 @login_required
 def engreen_antrodoco_dt(request):
     return dt_render(request, 'digitaltwins/engreen-antrodoco-dt.html')
+
+
+@login_required
+def engreen_antrodoco_run(request, run_id):
+    """One of the user's earlier runs, drawn from its stored result."""
+    run = get_user_run(request, run_id, twin_slug=TWIN_SLUG, status=DtRun.Status.COMPLETED)
+    operation_label = DT_BY_SLUG[TWIN_SLUG]['runs']['operations'].get(run.operation, run.operation)
+    return dt_render(request, 'digitaltwins/engreen/run.html', run=run, operation_label=operation_label)
 
 
 @login_required
@@ -80,6 +94,10 @@ def engreen_pv_simulate(request):
         payload['days'] = days
 
     data, error, status = client.simulate(forecast_type, payload)
+    run = record_run(
+        user=request.user, twin_slug=TWIN_SLUG, operation=forecast_type,
+        inputs={'mode': mode, **payload}, result=data, error=error or '',
+    )
     if error:
         return JsonResponse({'error': error}, status=status)
-    return JsonResponse(data)
+    return attach_run_id(JsonResponse(data), run)

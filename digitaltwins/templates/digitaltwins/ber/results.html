@@ -202,6 +202,7 @@
 {% block scripts %}
 <script>
 window.BER_RESULTS_CONFIG = {
+    requestId: {{ experiment_request.pk }},
     saveResultUrl: "{% url 'dt-save-result' %}"
 };
 </script>

@@ -119,7 +119,8 @@ Key variables required in `.env`:
 | `KEYCLOAK_USER_SYNC_ID` / `KEYCLOAK_USER_SYNC_CLIENT_SECRET` | Keycloak user sync |
 | `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_SSL` / `DEFAULT_FROM_EMAIL` / `DJANGO_ADMINS` | SMTP email |
 | `OBJECT_STORAGE_ENDPOINT` / `OBJECT_STORAGE_ACCESS_KEY` / `OBJECT_STORAGE_SECRET_KEY` / `OBJECT_STORAGE_VERIFY_SSL` | MinIO/S3 storage |
-| `OBJECT_STORAGE_BUCKET` / `OBJECT_STORAGE_BUCKET_SIMULATIONS` / `OBJECT_STORAGE_MEDIA_BUCKET` / `USE_S3_FOR_MEDIA` | Media/dataset storage configuration |
+| `OBJECT_STORAGE_BUCKET` / `OBJECT_STORAGE_BUCKET_SIMULATIONS` / `OBJECT_STORAGE_MEDIA_BUCKET` / `USE_S3_FOR_MEDIA` | Media/dataset storage configuration. Locally, set `OBJECT_STORAGE_BUCKET_SIMULATIONS=dt-results-dev`: the production MinIO is shared, and production's `dt-results` holds real users' results under ids a local database reuses |
+| `DT_EXPORT_NAME_PREFIX` | Prefix of the digital twins' JupyterHub copies; set `dev-` locally so they never share a name with production's (default empty) |
 | `SCAN_API_URL` / `SCAN_API_TIMEOUT` | Semgrep code analysis API |
 | `ROBUSTNESS_API_URL` / `ROBUSTNESS_API_TIMEOUT` / `ROBUSTNESS_API_SUBMIT_TIMEOUT` / `ROBUSTNESS_API_POLL_INTERVAL` / `ROBUSTNESS_API_POLL_TIMEOUT` | Adversarial robustness testing API |
 | `DATA_MANAGEMENT_SERVER_URL` / `DATA_MANAGEMENT_SERVER_API_KEY` | External data management service |

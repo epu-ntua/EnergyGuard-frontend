@@ -5,15 +5,63 @@ from core.models import TimeStampedModel
 
 
 class DtResult(TimeStampedModel):
+    """A copy of a twin's result placed in the datasets bucket for JupyterHub.
+
+    One row per export: the data-management server provisions files into JupyterHub
+    only from the datasets bucket, so the result is copied there from where the
+    twin keeps it. `source_key` is that original object (a DtRun's, an RDN job's or
+    a BER request's result), so opening the same result again reuses this copy.
+    Rows from before source_key existed hold JSON the browser sent and have none.
+    """
+
     twin_slug = models.CharField(max_length=100)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bucket_name = models.CharField(max_length=100, default='')
     result_key = models.CharField(max_length=1024)
+    source_key = models.CharField(max_length=1024, blank=True, default='', db_index=True)
 
     class Meta:
         db_table = 'dt_result'
         verbose_name = 'DT Result'
         verbose_name_plural = 'DT Results'
+
+
+class DtRun(TimeStampedModel):
+    """One run of a twin that answers straight away (CIEMAT, Engreen).
+
+    Written by the twin's own view when its service answers, so the history holds
+    what the service returned and not what a browser later sends back. RDN and BER
+    keep their own models: their runs are long-lived requests with another lifecycle.
+    """
+
+    class Status(models.TextChoices):
+        COMPLETED = 'completed', 'Completed'
+        FAILED = 'failed', 'Failed'                # the twin's service returned an error
+        NOT_KEPT = 'not_kept', 'Not kept'          # a result came back but was not stored
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dt_runs')
+    twin_slug = models.CharField(max_length=100)
+    # What was run, within the twin, e.g. 'forecast' or 'compare' for CIEMAT.
+    operation = models.CharField(max_length=50)
+    # The validated parameters the service was called with.
+    inputs = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices)
+    # Gzipped JSON in OBJECT_STORAGE_BUCKET_SIMULATIONS; empty unless COMPLETED.
+    result_key = models.CharField(max_length=1024, blank=True, default='')
+    # Runs are kept until the user deletes one; there is no soft delete, since they
+    # can be re-run in seconds, so deleting removes the row and its stored result.
+    error_message = models.TextField(blank=True, default='')
+
+    @property
+    def has_result(self):
+        return bool(self.result_key)
+
+    class Meta:
+        db_table = 'dt_run'
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['user', 'twin_slug', '-created_at'])]
+        verbose_name = 'DT Run'
+        verbose_name_plural = 'DT Runs'
 
 
 class BerExperimentRequest(TimeStampedModel):

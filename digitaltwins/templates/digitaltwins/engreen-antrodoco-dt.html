@@ -9,17 +9,6 @@
 <script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
 <style>
-    .chart-placeholder {
-        background: var(--phoenix-body-bg);
-        border: 2px dashed var(--phoenix-border-color);
-        border-radius: .75rem;
-        min-height: 260px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        gap: .5rem;
-    }
     .profiles-locked .dt-tab-card {
         pointer-events: none;
         cursor: default;
@@ -43,6 +32,7 @@
             </ol>
         </nav>
 
+
         <!-- Header + About -->
         <div class="mb-5">
             {% include "digitaltwins/partials/dt_workspace_header.html" with logo_path="assets/img/partners/engreen-icon.png" logo_alt="ENGREEN" title="Smart Energy Optimiser"  %}
@@ -53,6 +43,7 @@
             <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">Smart Energy Optimiser</strong> is an EnGreen node service that estimates how much electricity a photovoltaic plant will produce over a chosen period, and how that output splits between energy consumed on-site and energy exported to the grid.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
                 <a href="#plant-configuration" class="btn btn-primary d-inline-flex align-items-center gap-2">Configure a simulation <span class="fas fa-arrow-right"></span></a>
+                <a href="{% url 'dt-runs' 'engreen-antrodoco' %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">My runs <span class="fas fa-arrow-right"></span></a>
             </div>
 
             <div class="row">
@@ -601,193 +592,7 @@
         <!-- ── Results section ─────────────────────────────────────────────── -->
 
         <div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4 mt-4">
-
-            <!-- Results header -->
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-                <div class="d-flex align-items-center gap-3">
-                    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Forecast Results</h5>
-                    <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="res-forecast-type">—</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="export-json-btn">
-                        <span class="fas fa-download"></span>Download JSON
-                    </button>
-                    <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="save-open-jupyterhub-btn">
-                        <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-3 flex-wrap fs-9 text-body-secondary mb-4">
-                <span><span class="fas fa-solar-panel me-1 text-body-tertiary"></span>Plant: <span class="fw-semibold text-body-emphasis" id="res-plant-name">—</span></span>
-                <span class="text-body-tertiary">·</span>
-                <span><span class="fas fa-clock me-1 text-body-tertiary"></span>Run at: <span class="fw-semibold text-body-emphasis" id="res-timestamp">—</span></span>
-                <span class="text-body-tertiary">·</span>
-                <span><span class="fas fa-calendar-days me-1 text-body-tertiary"></span>Horizon: <span class="fw-semibold text-body-emphasis" id="res-horizon">—</span></span>
-            </div>
-
-            <!-- KPI cards -->
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-4 col-xl">
-                    <div class="bg-body border rounded-3 p-3 h-100">
-                        <span class="text-body-tertiary fs-9 d-block mb-1">Installed Power</span>
-                        <span class="fw-bolder text-body-emphasis fs-7" id="res-pnom">—</span>
-                        <span class="text-body-tertiary fs-9 ms-1">kW</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-xl">
-                    <div class="bg-body border rounded-3 p-3 h-100">
-                        <span class="text-body-tertiary fs-9 d-block mb-1">Total Produced</span>
-                        <span class="fw-bolder text-body-emphasis fs-7" id="res-total">—</span>
-                        <span class="text-body-tertiary fs-9 ms-1">kWh</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-xl">
-                    <div class="bg-body border rounded-3 p-3 h-100">
-                        <span class="text-body-tertiary fs-9 d-block mb-1">Self-Consumed</span>
-                        <span class="fw-bolder text-primary fs-7" id="res-self">—</span>
-                        <span class="text-body-tertiary fs-9 ms-1">kWh</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-xl">
-                    <div class="bg-body border rounded-3 p-3 h-100">
-                        <span class="text-body-tertiary fs-9 d-block mb-1">Fed Into Grid</span>
-                        <span class="fw-bolder text-turquoise fs-7" id="res-grid">—</span>
-                        <span class="text-body-tertiary fs-9 ms-1">kWh</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-xl">
-                    <div class="bg-body border rounded-3 p-3 h-100">
-                        <span class="text-body-tertiary fs-9 d-block mb-1">Feed-in Ratio</span>
-                        <span class="fw-bolder text-body-emphasis fs-7" id="res-feedin">—</span>
-                        <span class="text-body-tertiary fs-9 ms-1">%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Historical baseline note -->
-            <div id="res-historical-note" class="d-none mb-3">
-                <div class="alert alert-subtle-primary rounded-3 py-2 fs-9 mb-0" role="alert">
-                    <span class="fas fa-calendar-days me-2"></span>Based on historical weather data for years: <strong>2021 – 2025</strong>
-                </div>
-            </div>
-
-            <!-- Chart + Insights + Config -->
-            <div class="row g-4 mb-4">
-
-                <!-- Chart: full width below xxl, col-9 on xxl+ -->
-                <div class="col-12 col-xxl-9">
-                    <div class="card h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold text-body-emphasis mb-0">Production Breakdown (kWh)</h6>
-                                <div class="d-flex align-items-center gap-3 fs-9 text-body-secondary">
-                                    <span class="d-flex align-items-center gap-1">
-                                        <span style="width:12px;height:12px;border-radius:2px;background:var(--phoenix-primary);display:inline-block;flex-shrink:0;"></span>
-                                        Self-consumed
-                                    </span>
-                                    <span class="d-flex align-items-center gap-1">
-                                        <span style="width:12px;height:12px;border-radius:2px;background:var(--phoenix-turquoise);display:inline-block;flex-shrink:0;"></span>
-                                        Fed into grid
-                                    </span>
-                                </div>
-                                <div id="chart-granularity-toggle" class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-phoenix-primary active" id="chart-hourly-btn">Hourly</button>
-                                    <button type="button" class="btn btn-phoenix-secondary" id="chart-daily-btn">Daily</button>
-                                </div>
-                            </div>
-                            <div id="chart-placeholder-inner" class="chart-placeholder">
-                                <span class="fas fa-chart-area fs-2 text-body-tertiary"></span>
-                                <span class="text-body-tertiary fs-9">
-                                    <span class="fw-semibold text-success">Self-consumed</span>
-                                    &nbsp;+&nbsp;
-                                    <span class="fw-semibold text-info">Fed into grid</span>
-                                    &nbsp;&middot; Stacked chart
-                                </span>
-                                <span class="text-body-tertiary fs-10">Run a forecast to generate the chart.</span>
-                            </div>
-                            <div id="chart-canvas-wrapper" style="height:40vh;min-height:360px;display:none;">
-                                <div id="production-chart" style="width:100%;height:100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sidebar: col-3 on xxl+ (stacked), full width below xxl (side by side inner) -->
-                <div class="col-12 col-xxl-3">
-                    <div class="row g-4 h-100">
-
-                        <!-- Scenario Insights: col-3 below xxl, full width on xxl+ -->
-                        <div class="col-4 col-xxl-12">
-                            <div class="card h-100">
-                                <div class="card-body p-4">
-                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-3">
-                                        <span class="fas fa-lightbulb text-warning"></span>Scenario Insights
-                                    </h6>
-                                    <ul class="list-unstyled fs-9 mb-0">
-                                        <li class="d-flex gap-2 mb-3">
-                                            <span class="fas fa-circle-check text-success mt-1 flex-shrink-0"></span>
-                                            <span class="text-body-secondary">This configuration is expected to export <strong id="insight-feedin-pct">—</strong> of generated energy to the grid.</span>
-                                        </li>
-                                        <li class="d-flex gap-2 mb-3">
-                                            <span class="fas fa-circle-info text-info mt-1 flex-shrink-0"></span>
-                                            <span class="text-body-secondary" id="insight-profile-text">Increasing daytime consumption may improve self-consumption performance.</span>
-                                        </li>
-                                        <li class="d-flex gap-2 mb-0" id="insight-optimistic-row">
-                                            <span class="fas fa-sun text-warning mt-1 flex-shrink-0"></span>
-                                            <span class="text-body-secondary">Current annual production reaches <strong id="insight-optimistic-pct">—</strong> of the theoretical clear-sky maximum.</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Configuration Used: col-9 below xxl, full width on xxl+ -->
-                        <div class="col-8 col-xxl-12">
-                            <div class="card h-100">
-                                <div class="card-body p-4">
-                                    <h6 class="fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-4">
-                                        <span class="fas fa-list-ul text-body-tertiary"></span>
-                                        Configuration Used
-                                    </h6>
-                                    <div id="config-summary-body">
-                                        <div class="row g-3 fs-9">
-                                            <div class="col-12 col-md-6 col-xxl-12">
-                                                <span class="text-body-tertiary fw-bold d-block mb-2 text-uppercase fs-10 fw-semibold">Plant Configuration</span>
-                                                <dl class="row mb-0">
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Mode</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-mode">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Panels</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-panels">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Panel Power</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-wp">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Tilt</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-tilt">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Azimuth</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="sum-azimuth">—</dd>
-                                                </dl>
-                                            </div>
-                                            <div class="col-12 col-md-6 col-xxl-12">
-                                                <span class="text-body-tertiary fw-bold d-block mb-2 text-uppercase fs-10 fw-semibold">Forecast Settings</span>
-                                                <dl class="row mb-0">
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Profile</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-profile">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Forecast Type</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="sum-forecast-type">—</dd>
-                                                    <dt class="col-6 text-body-tertiary fw-normal">Parameters</dt>
-                                                    <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="sum-forecast-params">—</dd>
-                                                </dl>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-
+            {% include "digitaltwins/engreen/results.html" %}
 
         </div>
 
@@ -804,5 +609,6 @@ window.ENGREEN_CONFIG = {
     saveResultUrl: "{% url 'dt-save-result' %}"
 };
 </script>
+<script src="{% static 'digitaltwins/engreen-results.js' %}" defer></script>
 <script src="{% static 'digitaltwins/engreen-dt.js' %}" defer></script>
 {% endblock scripts %}

@@ -1,0 +1,16 @@
+/* Undoing two Leaflet rules of the Phoenix theme (assets/css/theme.css), on the
+   pages that place a default marker on an OpenStreetMap map (CIEMAT, CARTIF). */
+
+/* The theme sets width/height: auto !important on marker icons. On high-DPI
+   screens Leaflet shows its 2x marker image (50x82) sized down to 25x41; with
+   the size undone it shows at double size while still anchored for 25x41, so
+   the pin's tip lands well below the point that was clicked. */
+.leaflet-container img.leaflet-marker-icon {
+    width: 25px !important;
+    height: 41px !important;
+}
+
+/* The theme hides attribution, which OSM's tile usage policy requires. */
+.leaflet-container .leaflet-control-attribution {
+    display: block;
+}

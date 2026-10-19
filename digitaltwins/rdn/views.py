@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import JsonResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
@@ -116,18 +116,41 @@ def rdn_grid_result_data(request, rdn_request_id):
 
     if not job.result_key:
         # Completed before results moved to object storage - still in the column.
-        return JsonResponse(job.result, safe=False)
+        response = JsonResponse(job.result, safe=False)
+    else:
+        try:
+            body, content_length = open_result_stream(job.result_key)
+        except MinioUploadError:
+            logger.exception('Could not read RDN result for request %s', rdn_request_id)
+            return JsonResponse({'error': 'The result could not be retrieved.'}, status=502)
 
-    try:
-        body, content_length = open_result_stream(job.result_key)
-    except MinioUploadError:
-        logger.exception('Could not read RDN result for request %s', rdn_request_id)
-        return JsonResponse({'error': 'The result could not be retrieved.'}, status=502)
+        response = StreamingHttpResponse(iter_body_chunks(body), content_type='application/json')
+        if content_length is not None:
+            response['Content-Length'] = content_length
 
-    response = StreamingHttpResponse(iter_body_chunks(body), content_type='application/json')
-    if content_length is not None:
-        response['Content-Length'] = content_length
+    if request.GET.get('download'):
+        response['Content-Disposition'] = f'attachment; filename="rdn-grid-result-{rdn_request_id}.json"'
     return response
+
+
+@login_required
+@require_POST
+def rdn_grid_run_delete(request, rdn_request_id):
+    """Delete one of the user's finished runs and its result.
+
+    Only completed or failed runs: while one is pending or running the poll chain
+    is still waiting on RDN, and deleting it would not cancel anything there. A
+    deleted run can no longer be continued, since the follow-up lookup reads it.
+    """
+    # .defer('result'): a legacy run's inline payload can be hundreds of MB, and
+    # deleting the row does not need it.
+    job = get_object_or_404(
+        RdnSimulationJob.objects.defer('result'), rdn_request_id=rdn_request_id, user=request.user,
+        status__in=(RdnSimulationJob.Status.COMPLETED, RdnSimulationJob.Status.FAILED),
+    )
+    # Its stored result and JupyterHub copies follow it (digitaltwins.signals).
+    job.delete()
+    return redirect('rdn-grid-runs')
 
 
 @login_required

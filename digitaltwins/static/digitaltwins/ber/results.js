@@ -185,15 +185,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCsrfToken(),
                 },
-                body: JSON.stringify({
-                    twin_slug: 'ber-hydrogen',
-                    data: {
-                        experiment: resultMeta,
-                        kpis: kpis,
-                        power: powerData,
-                        electrical: electricalData,
-                    },
-                }),
+                body: JSON.stringify({ source: 'ber', id: window.BER_RESULTS_CONFIG.requestId }),
             })
             .then(function (resp) {
                 if (!resp.ok) {

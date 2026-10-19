@@ -17,6 +17,7 @@ from django.conf import settings
 
 from core.services.object_storage import (
     MinioUploadError,
+    delete_object,
     open_object_stream,
     put_object,
 )
@@ -62,6 +63,15 @@ def open_result_stream(object_key):
     return open_object_stream(
         bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key
     )
+
+
+def discard_result(object_key):
+    """Best-effort removal of the result of a deleted job (see digitaltwins.signals).
+    A failure only leaves an orphaned object, so it is logged rather than raised."""
+    try:
+        delete_object(bucket_name=settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, object_key=object_key)
+    except MinioUploadError:
+        logger.exception("Could not delete RDN result %s; it is orphaned", object_key)
 
 
 def load_result(job):

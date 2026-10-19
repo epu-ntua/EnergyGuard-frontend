@@ -1,0 +1,59 @@
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Comparison Results</h5>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="cm-export-json-btn">
+            <span class="fas fa-download"></span>Download JSON
+        </button>
+        <button type="button" class="btn btn-turquoise btn-sm d-inline-flex align-items-center gap-2" id="cm-save-open-jupyterhub-btn">
+            <span class="fas fa-arrow-up-right-from-square"></span>Save and Open in JupyterHub
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h6 class="fw-bold text-body-emphasis mb-0">Production Comparison</h6>
+                <p class="text-body-tertiary fs-9 mb-0">Next 5 days &mdash; drag to zoom</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-phoenix-secondary d-inline-flex align-items-center gap-1" id="cm-reset-zoom-btn">
+                <span class="fas fa-arrows-rotate"></span>Reset zoom
+            </button>
+        </div>
+        <div id="cm-chart" style="width:100%;height:44vh;min-height:380px;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-4">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-body-tertiary fs-9 fw-semibold">Metric</th>
+                        <th class="fs-9 fw-semibold" id="cm-th-a" style="color:var(--phoenix-primary);">Model A</th>
+                        <th class="fs-9 fw-semibold" id="cm-th-b" style="color:var(--phoenix-purple);">Model B</th>
+                    </tr>
+                </thead>
+                <tbody class="fs-9">
+                    <tr>
+                        <td class="text-body-tertiary">Total energy</td>
+                        <td class="fw-bold" id="cm-total-a" style="color:var(--phoenix-primary);">—</td>
+                        <td class="fw-bold" id="cm-total-b" style="color:var(--phoenix-purple);">—</td>
+                    </tr>
+                    <tr>
+                        <td class="text-body-tertiary">Peak maximum</td>
+                        <td class="fw-bold" id="cm-peak-a" style="color:var(--phoenix-primary);">—</td>
+                        <td class="fw-bold" id="cm-peak-b" style="color:var(--phoenix-purple);">—</td>
+                    </tr>
+                    <tr>
+                        <td class="text-body-tertiary">Generating hours</td>
+                        <td class="fw-bold" id="cm-hours-a" style="color:var(--phoenix-primary);">—</td>
+                        <td class="fw-bold" id="cm-hours-b" style="color:var(--phoenix-purple);">—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

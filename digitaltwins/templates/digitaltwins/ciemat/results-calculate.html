@@ -1,0 +1,38 @@
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h5 class="fw-bold text-body-emphasis mb-0 fs-7">Calculation Result</h5>
+        <span class="badge badge-phoenix badge-phoenix-primary fs-10" id="calc-res-model">—</span>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" id="calc-export-json-btn">
+        <span class="fas fa-download"></span>Download JSON
+    </button>
+</div>
+
+<div class="row g-3 align-items-stretch">
+    <div class="col-12 col-md-5">
+        <div class="bg-primary bg-opacity-50 p-4 border rounded-4 border-0 h-100 d-flex flex-column justify-content-center">
+            <span class="text-body-tertiary fs-9 d-block mb-1">Predicted Power Output</span>
+            <div class="d-flex align-items-baseline flex-nowrap">
+                <span class="fs-4 fw-bolder text-body-emphasis text-nowrap" id="calc-res-power-kw">—</span>
+                <span class="text-body-tertiary fs-9 ms-2 text-nowrap">kW</span>
+            </div>
+            <span class="text-body-tertiary fs-10" id="calc-res-power-w">—</span>
+        </div>
+    </div>
+    <div class="col-12 col-md-7">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <dl class="row mb-0 fs-9">
+                    <dt class="col-6 text-body-tertiary fw-normal">Device ID</dt>
+                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-device">—</dd>
+                    <dt class="col-6 text-body-tertiary fw-normal">Generation Type</dt>
+                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-generation-type">—</dd>
+                    <dt class="col-6 text-body-tertiary fw-normal">Resolution</dt>
+                    <dd class="col-6 fw-semibold text-body-emphasis mb-1" id="calc-res-resolution">—</dd>
+                    <dt class="col-6 text-body-tertiary fw-normal">Run at</dt>
+                    <dd class="col-6 fw-semibold text-body-emphasis mb-0" id="calc-res-timestamp">—</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
