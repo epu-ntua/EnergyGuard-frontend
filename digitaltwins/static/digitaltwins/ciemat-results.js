@@ -23,29 +23,10 @@ partial in digitaltwins/ciemat/; buttons of partials not on the page are skipped
     }
 
     // ── CSRF helper ───────────────────────────────────────────────────────────
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
-
     // ── Export ────────────────────────────────────────────────────────────────
-    function triggerDownload(content, filename, mimeType) {
-        var blob = new Blob([content], { type: mimeType });
-        var url  = URL.createObjectURL(blob);
-        var a    = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-    }
-
     function onClick(id, handler) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('click', function () { handler(el); });
-    }
-
-    function flashDownloaded(btn) {
-        var originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="fas fa-check me-2"></span>Downloaded';
-        setTimeout(function () { btn.innerHTML = originalHtml; }, 2000);
     }
 
     // ── Data helpers ──────────────────────────────────────────────────────────
@@ -352,55 +333,14 @@ partial in digitaltwins/ciemat/; buttons of partials not on the page are skipped
 
     onClick('export-json-btn', function (btn) {
         if (!lastApiResponse) return;
-        triggerDownload(JSON.stringify(lastApiResponse, null, 2),
+        DT.triggerDownload(JSON.stringify(lastApiResponse, null, 2),
             'ciemat-forecast-' + (lastGenerationType || 'result') + '.json', 'application/json');
-        flashDownloaded(btn);
+        DT.flashDownloaded(btn);
     });
 
     onClick('save-open-jupyterhub-btn', function (btn) {
-        if (lastApiResponse) openInJupyterHub(btn, lastRunId);
+        if (lastApiResponse) DT.openInJupyterHub(btn, { url: window.CIEMAT_CONFIG.saveResultUrl, source: 'run', id: lastRunId });
     });
-
-    // Asks the server to copy the stored run into JupyterHub, then opens it.
-    function openInJupyterHub(saveOpenJupyterBtn, runId) {
-        if (!runId) {
-            alert('This result was not kept, so it cannot be opened in JupyterHub. Please run it again.');
-            return;
-        }
-
-        var originalHtml = saveOpenJupyterBtn.innerHTML;
-        saveOpenJupyterBtn.disabled = true;
-        saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
-
-        fetch(window.CIEMAT_CONFIG.saveResultUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-            },
-            body: JSON.stringify({ source: 'run', id: runId }),
-        })
-        .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Could not save the result.';
-                    try { msg = JSON.parse(body).error || msg; } catch (parseErr) { console.error('Could not parse error response body:', parseErr); }
-                    throw new Error(msg);
-                });
-            }
-            return resp.json();
-        })
-        .then(function (data) {
-            window.open(data.redirect_url, '_blank');
-        })
-        .catch(function (err) {
-            alert(err.message || 'Could not save the result.');
-        })
-        .finally(function () {
-            saveOpenJupyterBtn.disabled = false;
-            saveOpenJupyterBtn.innerHTML = originalHtml;
-        });
-    }
 
     // ══════════════════════════════════════════════════════════════════════
     // COMPARISON OF TWO FORECASTS ("Compare with a second model")
@@ -535,12 +475,12 @@ partial in digitaltwins/ciemat/; buttons of partials not on the page are skipped
 
     onClick('cm-export-json-btn', function (btn) {
         if (!cmLastResult) return;
-        triggerDownload(JSON.stringify(cmLastResult, null, 2), 'ciemat-forecast-comparison.json', 'application/json');
-        flashDownloaded(btn);
+        DT.triggerDownload(JSON.stringify(cmLastResult, null, 2), 'ciemat-forecast-comparison.json', 'application/json');
+        DT.flashDownloaded(btn);
     });
 
     onClick('cm-save-open-jupyterhub-btn', function (btn) {
-        if (cmLastResult) openInJupyterHub(btn, cmRunId);
+        if (cmLastResult) DT.openInJupyterHub(btn, { url: window.CIEMAT_CONFIG.saveResultUrl, source: 'run', id: cmRunId });
     });
 
     // ══════════════════════════════════════════════════════════════════════
@@ -566,8 +506,8 @@ partial in digitaltwins/ciemat/; buttons of partials not on the page are skipped
 
     onClick('calc-export-json-btn', function (btn) {
         if (!calcLastResponse) return;
-        triggerDownload(JSON.stringify(calcLastResponse, null, 2), 'ciemat-calculation-result.json', 'application/json');
-        flashDownloaded(btn);
+        DT.triggerDownload(JSON.stringify(calcLastResponse, null, 2), 'ciemat-calculation-result.json', 'application/json');
+        DT.flashDownloaded(btn);
     });
 
     // ══════════════════════════════════════════════════════════════════════
@@ -639,8 +579,8 @@ partial in digitaltwins/ciemat/; buttons of partials not on the page are skipped
 
     onClick('cmp-export-json-btn', function (btn) {
         if (!cmpLastResponse) return;
-        triggerDownload(JSON.stringify(cmpLastResponse, null, 2), 'ciemat-model-comparison.json', 'application/json');
-        flashDownloaded(btn);
+        DT.triggerDownload(JSON.stringify(cmpLastResponse, null, 2), 'ciemat-model-comparison.json', 'application/json');
+        DT.flashDownloaded(btn);
     });
 
     // ── Entry points ──────────────────────────────────────────────────────────

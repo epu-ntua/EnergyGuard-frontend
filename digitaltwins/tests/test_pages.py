@@ -14,11 +14,11 @@ from django.urls import reverse
 
 from datasets.models import Dataset
 from digitaltwins.catalog import DIGITAL_TWINS
-from digitaltwins.models import DtResult, DtRun, RdnSimulationJob
+from digitaltwins.models import DtExport, DtRun, RdnSimulationJob
 from digitaltwins.runs.services import record_run
 
 from .ber_factories import make_completed_request
-from .fakes import SAMPLE_LP, fake_object_storage
+from .fakes import SAMPLE_LP, fake_object_storage, queued_task_funcs
 from .http_fakes import http_response
 
 User = get_user_model()
@@ -96,8 +96,8 @@ class SaveResultToJupyterTests(TestCase):
     def _save(self, body):
         return self.client.post(reverse('dt-save-result'), data=json.dumps(body), content_type='application/json')
 
-    def _exported_bytes(self, dt_result):
-        return self.storage.objects[(settings.OBJECT_STORAGE_BUCKET, dt_result.result_key)]
+    def _exported_bytes(self, export):
+        return self.storage.objects[(settings.OBJECT_STORAGE_BUCKET, export.result_key)]
 
     def test_run_result_is_copied_uncompressed_and_provisioned(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical',
@@ -109,7 +109,7 @@ class SaveResultToJupyterTests(TestCase):
         self.assertEqual(
             response.json()['redirect_url'], f"{settings.JUPYTERHUB_URL.rstrip('/')}/user/{self.user.email}/lab",
         )
-        exported = DtResult.objects.get(user=self.user)
+        exported = DtExport.objects.get(user=self.user)
         self.assertEqual(exported.twin_slug, 'engreen-antrodoco')
         self.assertEqual(exported.source_key, run.result_key)
         # Named after the run as the user sees it, in the user's folder, like the datasets.
@@ -127,14 +127,14 @@ class SaveResultToJupyterTests(TestCase):
     def test_a_development_machine_prefixes_its_copies(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
         self._save({'source': 'run', 'id': run.pk})
-        self.assertEqual(DtResult.objects.get(user=self.user).result_key,
+        self.assertEqual(DtExport.objects.get(user=self.user).result_key,
                          f'user_saverexamplecom/dev-engreen-antrodoco-historical-run-{run.pk}/result.json')
 
     def test_opening_the_same_result_again_reuses_the_copy(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
         self._save({'source': 'run', 'id': run.pk})
         self._save({'source': 'run', 'id': run.pk})
-        self.assertEqual(DtResult.objects.filter(user=self.user).count(), 1)
+        self.assertEqual(DtExport.objects.filter(user=self.user).count(), 1)
 
     def test_a_replaced_ber_result_is_exported_again_into_the_same_copy(self):
         experiment_request = make_completed_request(self.user, self.storage, data=SAMPLE_LP)
@@ -146,7 +146,7 @@ class SaveResultToJupyterTests(TestCase):
         experiment_request.__class__.objects.filter(pk=experiment_request.pk).update(result_key=new_key)
         self._save({'source': 'ber', 'id': experiment_request.pk})
 
-        exported = DtResult.objects.get(user=self.user)
+        exported = DtExport.objects.get(user=self.user)
         self.assertEqual(exported.source_key, new_key)
         self.assertEqual(self._exported_bytes(exported), replaced)
 
@@ -155,7 +155,7 @@ class SaveResultToJupyterTests(TestCase):
 
         self.assertEqual(self._save({'source': 'ber', 'id': experiment_request.pk}).status_code, 200)
 
-        exported = DtResult.objects.get(user=self.user)
+        exported = DtExport.objects.get(user=self.user)
         self.assertEqual(
             exported.result_key,
             f'user_saverexamplecom/ber-hydrogen-request-{experiment_request.pk}/'
@@ -171,7 +171,7 @@ class SaveResultToJupyterTests(TestCase):
         self.assertEqual(self._save({'source': 'rdn', 'id': 501}).status_code, 200)
         self.assertEqual(self._save({'source': 'rdn', 'id': 502}).status_code, 200)
 
-        exported = {r.source_key: json.loads(self._exported_bytes(r)) for r in DtResult.objects.filter(user=self.user)}
+        exported = {r.source_key: json.loads(self._exported_bytes(r)) for r in DtExport.objects.filter(user=self.user)}
         self.assertEqual(exported, {'rdn-grid/501/result.json': {'a': 1}, 'rdn-grid/502/result.json': {'b': 2}})
 
     def test_another_users_result_cannot_be_exported(self):
@@ -180,7 +180,7 @@ class SaveResultToJupyterTests(TestCase):
 
         self.assertEqual(self._save({'source': 'run', 'id': run.pk}).status_code, 404)
         self.assertEqual(self._save({'source': 'ber', 'id': theirs.pk}).status_code, 404)
-        self.assertFalse(DtResult.objects.exists())
+        self.assertFalse(DtExport.objects.exists())
 
     def test_invalid_requests(self):
         for label, body in {
@@ -190,6 +190,12 @@ class SaveResultToJupyterTests(TestCase):
         }.items():
             with self.subTest(label):
                 self.assertEqual(self._save(body).status_code, 400)
+
+    def test_exports_are_rate_limited(self):
+        run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
+        statuses = [self._save({'source': 'run', 'id': run.pk}).status_code for _ in range(11)]
+        self.assertEqual(statuses[:10], [200] * 10)
+        self.assertEqual(statuses[10], 429)
 
     def test_provisioning_failure_is_reported(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
@@ -269,7 +275,7 @@ class PilotDatasetLinkTests(TestCase):
 
 class RemovingAResultRemovesItsJupyterHubCopiesTests(TestCase):
     """Deleting a run (or removing a BER request) also removes what was exported
-    from it: the datasets-bucket copy, the file in JupyterHub, the DtResult row."""
+    from it: the datasets-bucket copy, the file in JupyterHub, the DtExport row."""
 
     @classmethod
     def setUpTestData(cls):
@@ -280,15 +286,17 @@ class RemovingAResultRemovesItsJupyterHubCopiesTests(TestCase):
         self.storage = self.enterContext(fake_object_storage())
         self.enterContext(patch('requests.post', return_value=http_response(200, {})))
         self.jupyterhub_delete = self.enterContext(patch('requests.delete', return_value=http_response(200, {})))
+        # The JupyterHub clean-up is a qcluster task; run it in place here.
+        self.enterContext(patch('django_q.conf.Conf.SYNC', True))
 
     def _export(self, source, source_id):
         response = self.client.post(reverse('dt-save-result'), data=json.dumps({'source': source, 'id': source_id}),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        return DtResult.objects.latest('pk')
+        return DtExport.objects.latest('pk')
 
     def _assert_export_gone(self, export):
-        self.assertFalse(DtResult.objects.filter(pk=export.pk).exists())
+        self.assertFalse(DtExport.objects.filter(pk=export.pk).exists())
         self.assertNotIn((export.bucket_name, export.result_key), self.storage.objects)
         local_name = export.result_key.rsplit('/', 2)[1]
         # The data-management server is asked to drop the file, by the user's email (URL-encoded).
@@ -338,7 +346,7 @@ class RemovingAResultRemovesItsJupyterHubCopiesTests(TestCase):
             self.client.post(reverse('dt-run-delete', args=[run.pk]))
 
         self.assertFalse(DtRun.objects.filter(pk=run.pk).exists())
-        self.assertFalse(DtResult.objects.filter(pk=export.pk).exists())
+        self.assertFalse(DtExport.objects.filter(pk=export.pk).exists())
 
     def test_deleting_the_account_removes_its_jupyterhub_copies(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
@@ -349,7 +357,17 @@ class RemovingAResultRemovesItsJupyterHubCopiesTests(TestCase):
 
         self.assertEqual(self.storage.objects, {})
         self.assertTrue(self.jupyterhub_delete.called)
-        self.assertFalse(DtResult.objects.filter(pk=export.pk).exists())
+        self.assertFalse(DtExport.objects.filter(pk=export.pk).exists())
+
+    def test_the_jupyterhub_clean_up_is_queued_not_run_in_the_request(self):
+        run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
+        self._export('run', run.pk)
+
+        with patch('django_q.conf.Conf.SYNC', False), self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('dt-run-delete', args=[run.pk]))
+
+        self.jupyterhub_delete.assert_not_called()
+        self.assertIn('digitaltwins.services.jupyterhub_export.discard_export', queued_task_funcs())
 
     def test_other_runs_exports_are_left_alone(self):
         run = record_run(user=self.user, twin_slug='engreen-antrodoco', operation='historical', inputs={}, result={})
@@ -359,4 +377,4 @@ class RemovingAResultRemovesItsJupyterHubCopiesTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse('dt-run-delete', args=[run.pk]))
 
-        self.assertTrue(DtResult.objects.filter(pk=kept.pk).exists())
+        self.assertTrue(DtExport.objects.filter(pk=kept.pk).exists())

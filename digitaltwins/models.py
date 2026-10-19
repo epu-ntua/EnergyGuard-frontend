@@ -4,7 +4,7 @@ from django.db import models
 from core.models import TimeStampedModel
 
 
-class DtResult(TimeStampedModel):
+class DtExport(TimeStampedModel):
     """A copy of a twin's result placed in the datasets bucket for JupyterHub.
 
     One row per export: the data-management server provisions files into JupyterHub
@@ -21,9 +21,10 @@ class DtResult(TimeStampedModel):
     source_key = models.CharField(max_length=1024, blank=True, default='', db_index=True)
 
     class Meta:
+        # Named DtResult until it became only the record of an export; the table kept its name.
         db_table = 'dt_result'
-        verbose_name = 'DT Result'
-        verbose_name_plural = 'DT Results'
+        verbose_name = 'DT Export'
+        verbose_name_plural = 'DT Exports'
 
 
 class DtRun(TimeStampedModel):

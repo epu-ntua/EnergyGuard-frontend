@@ -14,8 +14,9 @@ from django.views.decorators.http import require_POST
 from core.services.object_storage import MinioUploadError
 from digitaltwins.common import check_rate_limit, dt_render
 from digitaltwins.models import BerExperimentRequest
-from digitaltwins.services.jupyterhub_export import ber_source_prefix, remove_exports
+from digitaltwins.services.jupyterhub_export import remove_exports
 
+from ..exports import ber_source_prefix
 from ..services import requests as ber_requests
 from ..services.requests import SubmissionLimitError
 from ..services.results import BER_SIGNAL_INFO, BerResultUnreadable, build_ber_results_context

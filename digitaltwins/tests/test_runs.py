@@ -2,6 +2,7 @@
 reopening a run."""
 
 import gzip
+import io
 import json
 from unittest.mock import patch
 
@@ -9,6 +10,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.core.management import call_command
 from django.urls import reverse
 
 from digitaltwins.models import DtRun
@@ -106,14 +108,28 @@ class RunPagesTests(RunsTestCase):
         self.assertEqual([run.pk for run in response.context['page_obj']], [mine.pk])
         self.assertNotContains(response, f'#{theirs.pk}<')
 
+    def test_list_actions_name_the_run(self):
+        run = self.make_run()
+        response = self.client.get(reverse('dt-runs', args=['engreen-antrodoco']))
+        self.assertContains(response, f'data-confirm-title="Delete run #{run.pk}"')
+        self.assertContains(response, reverse('dt-run-delete', args=[run.pk]))
+        self.assertNotContains(response, '{{')
+
     def test_twins_without_run_history_have_no_list(self):
         self.assertEqual(self.client.get(reverse('dt-runs', args=['rdn-grid'])).status_code, 404)
 
     def test_result_is_served_gzipped_for_the_browser_to_decompress(self):
         run = self.make_run()
-        response = self.client.get(reverse('dt-run-result-data', args=[run.pk]))
+        response = self.client.get(reverse('dt-run-result-data', args=[run.pk]), HTTP_ACCEPT_ENCODING='gzip, deflate, br')
         self.assertEqual(response['Content-Encoding'], 'gzip')
+        self.assertIn('Accept-Encoding', response['Vary'])
         self.assertEqual(json.loads(gzip.decompress(b''.join(response.streaming_content))), {'summary': {}})
+
+    def test_a_client_without_gzip_gets_plain_json(self):
+        run = self.make_run()
+        response = self.client.get(reverse('dt-run-result-data', args=[run.pk]))
+        self.assertFalse(response.has_header('Content-Encoding'))
+        self.assertEqual(json.loads(b''.join(response.streaming_content)), {'summary': {}})
 
     def test_reopening_a_run_renders_the_workspace_with_it(self):
         run = self.make_run()
@@ -137,3 +153,18 @@ class RunPagesTests(RunsTestCase):
             self.client.post(reverse('dt-run-delete', args=[run.pk]))
         self.assertFalse(DtRun.objects.filter(pk=run.pk).exists())
         self.assertEqual(self.storage.objects, {})
+
+
+class StorageUsageCommandTests(RunsTestCase):
+    def test_reports_usage_per_twin_and_the_orphans(self):
+        self.make_run()
+        orphan = 'dt-runs/engreen-antrodoco/user_x/20260101-000000-deadbeef/result.json.gz'
+        self.storage.objects[(settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, orphan)] = b'x' * 10
+
+        out = io.StringIO()
+        call_command('dt_storage_usage', '--orphans', stdout=out)
+
+        self.assertIn('engreen-antrodoco', out.getvalue())
+        self.assertIn('Orphaned results in', out.getvalue())
+        self.assertIn(orphan, out.getvalue())
+

@@ -1,0 +1,4 @@
+# Development and test tools, not installed in the production image.
+# Browser smoke tests (digitaltwins/tests/test_browser.py); after installing,
+# also run: python -m playwright install --with-deps chromium
+playwright==1.55.0

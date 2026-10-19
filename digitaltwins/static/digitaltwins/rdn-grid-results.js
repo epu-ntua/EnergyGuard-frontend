@@ -18,11 +18,6 @@
     var elapsedTimer    = null;
 
     // ── CSRF helper ───────────────────────────────────────────────────────────
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
-
     // ── Elapsed ticker (running/pending only) ───────────────────────────────
     function formatElapsed(totalSeconds) {
         var s = Math.max(0, Math.floor(totalSeconds));
@@ -228,47 +223,15 @@
     }
 
     // ── Export ────────────────────────────────────────────────────────────────
-    function triggerDownload(content, filename, mimeType) {
-        var blob = new Blob([content], { type: mimeType });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-    }
-
     if (exportJsonBtn) {
         exportJsonBtn.addEventListener('click', function () {
-            triggerDownload(JSON.stringify(lastApiResponse, null, 2), 'rdn-grid-result-' + lastApiResponse.requestId + '.json', 'application/json');
+            DT.triggerDownload(JSON.stringify(lastApiResponse, null, 2), 'rdn-grid-result-' + lastApiResponse.requestId + '.json', 'application/json');
         });
     }
 
     if (saveOpenJupyterBtn) {
         saveOpenJupyterBtn.addEventListener('click', function () {
-            var originalHtml = saveOpenJupyterBtn.innerHTML;
-            saveOpenJupyterBtn.disabled = true;
-            saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
-
-            fetch(cfg.saveResultUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                body: JSON.stringify({ source: 'rdn', id: cfg.requestId }),
-            })
-            .then(function (resp) {
-                if (!resp.ok) {
-                    return resp.text().then(function (body) {
-                        var msg = 'Could not save the result.';
-                        try { msg = JSON.parse(body).error || msg; } catch (_) {}
-                        throw new Error(msg);
-                    });
-                }
-                return resp.json();
-            })
-            .then(function (data) { window.open(data.redirect_url, '_blank'); })
-            .catch(function (err) { alert(err.message || 'Could not save the result.'); })
-            .finally(function () {
-                saveOpenJupyterBtn.disabled = false;
-                saveOpenJupyterBtn.innerHTML = originalHtml;
-            });
+            DT.openInJupyterHub(saveOpenJupyterBtn, { url: cfg.saveResultUrl, source: 'rdn', id: cfg.requestId });
         });
     }
 

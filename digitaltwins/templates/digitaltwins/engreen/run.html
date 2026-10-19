@@ -1,66 +1,13 @@
-{% extends "core/authenticated-base.html" %}
+{% extends "digitaltwins/runs/run-base.html" %}
 {% load static %}
 
-{% block title %}Run #{{ run.pk }} - Smart Energy Optimiser - Digital Twins{% endblock %}
-
-{% block head %}
-<meta name="csrf-token" content="{{ csrf_token }}">
-<script src="https://cdn.amcharts.com/lib/5/index.js" defer></script>
-<script src="https://cdn.amcharts.com/lib/5/xy.js" defer></script>
-<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js" defer></script>
-{% endblock head %}
-
-{% block content %}
-<div class="content">
-    <div class="px-4 px-lg-6 pt-6 pb-9">
-
-        <nav class="mb-3" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-list' %}">Digital Twins</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'digitaltwins-detail' 'engreen-antrodoco' %}">Antrodoco REC</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'engreen-antrodoco-dt' %}">Smart Energy Optimiser</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'dt-runs' 'engreen-antrodoco' %}">My runs</a></li>
-                <li class="breadcrumb-item active">Run #{{ run.pk }}</li>
-            </ol>
-        </nav>
-
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-            <div>
-                <h2 class="fw-bolder text-body-emphasis mb-1">Run #{{ run.pk }}</h2>
-                <p class="text-body-tertiary fs-9 mb-0">{{ operation_label }} &middot; {{ run.created_at|date:"d M Y, H:i" }}</p>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{% url 'dt-runs' 'engreen-antrodoco' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
-                    <span class="fas fa-arrow-left"></span>My runs
-                </a>
-                <a href="{% url 'engreen-antrodoco-dt' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
-                    New run <span class="fas fa-arrow-right"></span>
-                </a>
-            </div>
-        </div>
-
-        <div id="loading-panel" class="mb-4">
-            <div class="card">
-                <div class="card-body p-4 d-flex align-items-center gap-3">
-                    <div class="spinner-border text-primary flex-shrink-0" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <h6 class="fw-bold text-body-emphasis mb-0">Loading the stored result&hellip;</h6>
-                </div>
-            </div>
-        </div>
-
-        <div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4">
-            {% include "digitaltwins/engreen/results.html" %}
-        </div>
-
-    </div>
-    {% include "core/footer.html" %}
+{% block run_results %}
+<div id="results-section" class="d-none bg-body rounded-3 shadow-lg border rounded-3 p-4">
+    {% include "digitaltwins/engreen/results.html" %}
 </div>
-{% endblock content %}
+{% endblock run_results %}
 
-{% block scripts %}
-{{ run.inputs|json_script:"engreen-run-inputs" }}
+{% block run_scripts %}
 <script>
 window.ENGREEN_CONFIG = {
     stationsUrl: "{% url 'engreen-stations-api' %}",
@@ -70,10 +17,10 @@ window.ENGREEN_CONFIG = {
         operation: "{{ run.operation|escapejs }}",
         createdAt: "{{ run.created_at|date:'c' }}",
         resultUrl: "{% url 'dt-run-result-data' run.pk %}",
-        inputsElementId: "engreen-run-inputs"
+        inputsElementId: "run-inputs"
     }
 };
 </script>
 <script src="{% static 'digitaltwins/engreen-results.js' %}" defer></script>
 <script src="{% static 'digitaltwins/engreen-run.js' %}" defer></script>
-{% endblock scripts %}
+{% endblock run_scripts %}

@@ -7,6 +7,9 @@ from django.utils.text import slugify
 SIMULATE_RATE_LIMIT = 20   # max requests per user per window
 SIMULATE_RATE_WINDOW = 60  # seconds
 
+# Rows per page of the run and request lists.
+RUNS_PAGE_SIZE = 20
+
 # Read size when streaming a stored result file to the browser or a parser.
 RESULT_STREAM_CHUNK = 64 * 1024
 

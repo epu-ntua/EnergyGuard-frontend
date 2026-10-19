@@ -1,0 +1,10 @@
+{# Status of a run in the RDN and DT run lists: {% include ... with status=... title=... %}. #}
+{% if status == 'completed' %}
+<span class="badge bg-success-subtle text-success-emphasis">completed</span>
+{% elif status == 'failed' %}
+<span class="badge badge-phoenix badge-phoenix-secondary"{% if title %} title="{{ title }}"{% endif %}><span class="badge-label">Failed</span><span class="ms-1 fas fa-xmark"></span></span>
+{% elif status == 'not_kept' %}
+<span class="badge bg-warning-subtle text-warning-emphasis"{% if title %} title="{{ title }}"{% endif %}>not kept</span>
+{% else %}
+<span class="badge bg-warning-subtle text-warning-emphasis">{{ status }}</span>
+{% endif %}

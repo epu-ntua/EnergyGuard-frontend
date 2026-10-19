@@ -5,11 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from digitaltwins.catalog import DT_BY_SLUG
 from digitaltwins.common import check_rate_limit, dt_render
-from digitaltwins.models import DtRun
 from digitaltwins.runs.services import attach_run_id, record_run
-from digitaltwins.runs.views import get_user_run
+from digitaltwins.runs.views import render_run_page
 
 from . import client
 
@@ -26,9 +24,7 @@ def ciemat_forecasting_dt(request):
 @login_required
 def ciemat_microgrid_run(request, run_id):
     """One of the user's earlier runs, drawn from its stored result."""
-    run = get_user_run(request, run_id, twin_slug=TWIN_SLUG, status=DtRun.Status.COMPLETED)
-    operation_label = DT_BY_SLUG[TWIN_SLUG]['runs']['operations'].get(run.operation, run.operation)
-    return dt_render(request, 'digitaltwins/ciemat/run.html', run=run, operation_label=operation_label)
+    return render_run_page(request, run_id, twin_slug=TWIN_SLUG, template='digitaltwins/ciemat/run.html')
 
 
 def _forecast_inputs(body):

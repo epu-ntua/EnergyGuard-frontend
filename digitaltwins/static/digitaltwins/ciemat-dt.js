@@ -118,12 +118,6 @@ the results is ciemat-results.js (window.CiematResults). */
         cmResultsSection.classList.add('d-none');
     });
 
-    // ── CSRF helper ───────────────────────────────────────────────────────────
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
-
     // ── Run Forecast ──────────────────────────────────────────────────────────
     runBtn.addEventListener('click', function () {
         if (compareToggle.checked) {
@@ -160,19 +154,13 @@ the results is ciemat-results.js (window.CiematResults). */
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
+                'X-CSRFToken': DT.getCsrfToken(),
             },
             body: JSON.stringify(payload),
             signal: signal,
         })
         .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Forecast failed.';
-                    try { msg = JSON.parse(body).error || msg; } catch (parseErr) { console.error('Could not parse error response body:', parseErr); }
-                    throw new Error(msg);
-                });
-            }
+            if (!resp.ok) return DT.errorFrom(resp, 'Forecast failed.');
             // The stored run's id travels in a header, apart from the service's data.
             // Headers are strings; the export endpoint takes the id as a number.
             var runId = parseInt(resp.headers.get(RUN_ID_HEADER), 10) || null;
@@ -331,18 +319,12 @@ the results is ciemat-results.js (window.CiematResults). */
 
         fetch(window.CIEMAT_CONFIG.calculateUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': DT.getCsrfToken() },
             body: JSON.stringify(payload),
             signal: calcActiveController.signal,
         })
         .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Calculation failed.';
-                    try { msg = JSON.parse(body).error || msg; } catch (parseErr) { console.error('Could not parse error response body:', parseErr); }
-                    throw new Error(msg);
-                });
-            }
+            if (!resp.ok) return DT.errorFrom(resp, 'Calculation failed.');
             return resp.json();
         })
         .then(function (data) {
@@ -401,18 +383,12 @@ the results is ciemat-results.js (window.CiematResults). */
 
         fetch(window.CIEMAT_CONFIG.compareUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': DT.getCsrfToken() },
             body: JSON.stringify(payload),
             signal: cmpActiveController.signal,
         })
         .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Comparison failed.';
-                    try { msg = JSON.parse(body).error || msg; } catch (parseErr) { console.error('Could not parse error response body:', parseErr); }
-                    throw new Error(msg);
-                });
-            }
+            if (!resp.ok) return DT.errorFrom(resp, 'Comparison failed.');
             return resp.json();
         })
         .then(function (data) {
@@ -517,12 +493,17 @@ the results is ciemat-results.js (window.CiematResults). */
     var modelAMapPicker = setupToggleMapPicker('model-a-toggle-map-btn', 'model-a-map-wrapper', 'model-a-map', modelALat, modelALon, function () {});
     var modelBMapPicker = setupToggleMapPicker('model-b-toggle-map-btn', 'model-b-map-wrapper', 'model-b-map', modelBLat, modelBLon, function () {});
 
-    document.getElementById('copy-from-a-btn').addEventListener('click', function () {
-        modelBLat.value = modelALat.value;
-        modelBLon.value = modelALon.value;
-        selectModelGeneration(modelASelectedGeneration, 'b');
-        modelBMapPicker.recenter();
-    });
+    // The template has no "Copy from A" button (yet); binding it unguarded threw
+    // here and stopped the rest of this script.
+    var copyFromABtn = document.getElementById('copy-from-a-btn');
+    if (copyFromABtn) {
+        copyFromABtn.addEventListener('click', function () {
+            modelBLat.value = modelALat.value;
+            modelBLon.value = modelALon.value;
+            selectModelGeneration(modelASelectedGeneration, 'b');
+            modelBMapPicker.recenter();
+        });
+    }
 
 
     function runCompareForecast() {
@@ -553,18 +534,12 @@ the results is ciemat-results.js (window.CiematResults). */
         // One request: the server runs both forecasts and records them as one run.
         fetch(window.CIEMAT_CONFIG.compareForecastsUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': DT.getCsrfToken() },
             body: JSON.stringify(inputs),
             signal: activeController.signal,
         })
         .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Comparison failed.';
-                    try { msg = JSON.parse(body).error || msg; } catch (parseErr) { console.error('Could not parse error response body:', parseErr); }
-                    throw new Error(msg);
-                });
-            }
+            if (!resp.ok) return DT.errorFrom(resp, 'Comparison failed.');
             // The stored run's id travels in a header, apart from the service's data.
             // Headers are strings; the export endpoint takes the id as a number.
             var runId = parseInt(resp.headers.get(RUN_ID_HEADER), 10) || null;

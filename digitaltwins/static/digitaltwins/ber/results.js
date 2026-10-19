@@ -25,11 +25,6 @@
         return am5.color(rootStyles.getPropertyValue(varName).trim());
     }
 
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
-
     function buildLineChart(containerId, seriesDefs, opts) {
         opts = opts || {};
 
@@ -175,37 +170,8 @@
     var saveOpenJupyterBtn = document.getElementById('save-open-jupyterhub-btn');
     if (saveOpenJupyterBtn) {
         saveOpenJupyterBtn.addEventListener('click', function () {
-            var originalHtml = saveOpenJupyterBtn.innerHTML;
-            saveOpenJupyterBtn.disabled = true;
-            saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
-
-            fetch(window.BER_RESULTS_CONFIG.saveResultUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                body: JSON.stringify({ source: 'ber', id: window.BER_RESULTS_CONFIG.requestId }),
-            })
-            .then(function (resp) {
-                if (!resp.ok) {
-                    return resp.text().then(function (body) {
-                        var msg = 'Could not save the result.';
-                        try { msg = JSON.parse(body).error || msg; } catch (_) {}
-                        throw new Error(msg);
-                    });
-                }
-                return resp.json();
-            })
-            .then(function (data) {
-                window.open(data.redirect_url, '_blank');
-            })
-            .catch(function (err) {
-                alert(err.message || 'Could not save the result.');
-            })
-            .finally(function () {
-                saveOpenJupyterBtn.disabled = false;
-                saveOpenJupyterBtn.innerHTML = originalHtml;
+            DT.openInJupyterHub(saveOpenJupyterBtn, {
+                url: window.BER_RESULTS_CONFIG.saveResultUrl, source: 'ber', id: window.BER_RESULTS_CONFIG.requestId,
             });
         });
     }

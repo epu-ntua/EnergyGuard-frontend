@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.services.object_storage import MinioUploadError
-from digitaltwins.common import check_rate_limit, dt_render, format_duration, iter_body_chunks
+from digitaltwins.common import RUNS_PAGE_SIZE, check_rate_limit, dt_render, format_duration, iter_body_chunks
 from digitaltwins.models import RdnSimulationJob
 
 from .services.client import RdnApiError, upload_rdn_input
@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 _SIMULATE_RATE_LIMIT = 5  # lower than the default: real RDN jobs are far heavier than a typical request
 _SIMULATE_RATE_WINDOW = 60
-_RUNS_PAGE_SIZE = 20
 
 
 @login_required
@@ -64,7 +63,7 @@ def rdn_grid_runs(request):
     # (see RdnSimulationJob.result) - hundreds of MB for old large runs - which this listing
     # never displays, so fetching it here would be pure wasted I/O.
     jobs = RdnSimulationJob.objects.filter(user=request.user).defer('result').order_by('-created_at')
-    paginator = Paginator(jobs, _RUNS_PAGE_SIZE)
+    paginator = Paginator(jobs, RUNS_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     for job in page_obj:

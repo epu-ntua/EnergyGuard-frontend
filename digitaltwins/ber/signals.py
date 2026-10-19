@@ -8,7 +8,8 @@ from django.dispatch import receiver
 
 from digitaltwins.models import BerExperimentRequest
 
-from ..services.jupyterhub_export import ber_source_prefix, remove_exports
+from ..services.jupyterhub_export import remove_exports
+from .exports import ber_source_prefix
 from .services.storage import discard_result_file
 
 

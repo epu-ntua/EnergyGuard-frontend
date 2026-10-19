@@ -43,11 +43,6 @@ Expects the markup of digitaltwins/engreen/results.html and window.ENGREEN_CONFI
     var chartRefs            = null;
 
     // ── CSRF helper ───────────────────────────────────────────────────────────
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
-
     // ── Granularity toggle visibility ─────────────────────────────────────────
     function syncGranularityVisibility(forecastType) {
         chartGranularity.style.display = forecastType === 'short-term' ? '' : 'none';
@@ -313,17 +308,9 @@ Expects the markup of digitaltwins/engreen/results.html and window.ENGREEN_CONFI
     });
 
     // ── Export ────────────────────────────────────────────────────────────────
-    function triggerDownload(content, filename, mimeType) {
-        var blob = new Blob([content], { type: mimeType });
-        var url  = URL.createObjectURL(blob);
-        var a    = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-    }
-
     exportJsonBtn.addEventListener('click', function () {
         if (!lastApiResponse) return;
-        triggerDownload(JSON.stringify(lastApiResponse, null, 2),
+        DT.triggerDownload(JSON.stringify(lastApiResponse, null, 2),
             'pv-forecast-' + (lastForecastType || 'result') + '.json', 'application/json');
         exportJsonBtn.innerHTML = '<span class="fas fa-check me-2"></span>Downloaded';
         setTimeout(function () { exportJsonBtn.innerHTML = '<span class="fas fa-file-code me-2"></span>Download Raw Data (JSON)'; }, 2000);
@@ -347,7 +334,7 @@ Expects the markup of digitaltwins/engreen/results.html and window.ENGREEN_CONFI
                 return [p.month, p.produced_kwh, p.self_consumed_kwh, p.fed_in_kwh].join(',');
             });
         }
-        triggerDownload([header].concat(rows).join('\n'),
+        DT.triggerDownload([header].concat(rows).join('\n'),
             'pv-forecast-' + (lastForecastType || 'result') + '.csv', 'text/csv');
         exportCsvBtn.innerHTML = '<span class="fas fa-check me-2"></span>Downloaded';
         setTimeout(function () { exportCsvBtn.innerHTML = '<span class="fas fa-file-csv me-2"></span>Export CSV'; }, 2000);
@@ -356,43 +343,7 @@ Expects the markup of digitaltwins/engreen/results.html and window.ENGREEN_CONFI
 
     saveOpenJupyterBtn.addEventListener('click', function () {
         if (!lastApiResponse) return;
-        if (!lastRunId) {
-            alert('This result was not kept, so it cannot be opened in JupyterHub. Please run the forecast again.');
-            return;
-        }
-
-        var originalHtml = saveOpenJupyterBtn.innerHTML;
-        saveOpenJupyterBtn.disabled = true;
-        saveOpenJupyterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
-
-        fetch(window.ENGREEN_CONFIG.saveResultUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-            },
-            body: JSON.stringify({ source: 'run', id: lastRunId }),
-        })
-        .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Could not save the result.';
-                    try { msg = JSON.parse(body).error || msg; } catch (_) {}
-                    throw new Error(msg);
-                });
-            }
-            return resp.json();
-        })
-        .then(function (data) {
-            window.open(data.redirect_url, '_blank');
-        })
-        .catch(function (err) {
-            alert(err.message || 'Could not save the result.');
-        })
-        .finally(function () {
-            saveOpenJupyterBtn.disabled = false;
-            saveOpenJupyterBtn.innerHTML = originalHtml;
-        });
+        DT.openInJupyterHub(saveOpenJupyterBtn, { url: window.ENGREEN_CONFIG.saveResultUrl, source: 'run', id: lastRunId });
     });
     // The snapshot populateResults expects, rebuilt from a stored run's inputs
     // (the validated parameters the server sent to HAL; see engreen_pv_simulate).

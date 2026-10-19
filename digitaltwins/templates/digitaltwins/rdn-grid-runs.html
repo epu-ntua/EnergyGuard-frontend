@@ -47,13 +47,7 @@
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ job.created_at|date:"d M, H:i" }}</td>
                             <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ job.duration_label }}</td>
                             <td class="align-middle py-3 fs-9 text-end">
-                                {% if job.status == 'completed' %}
-                                <span class="badge bg-success-subtle text-success-emphasis">completed</span>
-                                {% elif job.status == 'failed' %}
-                                <span class="badge badge-phoenix badge-phoenix-secondary"><span class="badge-label">Failed</span><span class="ms-1 fas fa-xmark"></span></span>
-                                {% else %}
-                                <span class="badge bg-warning-subtle text-warning-emphasis">{{ job.status }}</span>
-                                {% endif %}
+                                {% include "digitaltwins/partials/run-status-badge.html" with status=job.status %}
                             </td>
                             <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-row-ignore>
                                 {% if job.status == 'completed' or job.status == 'failed' %}
@@ -66,11 +60,8 @@
                                         <a class="dropdown-item" href="{% url 'rdn-grid-result-data' job.rdn_request_id %}?download=1"><span class="fas fa-download me-2"></span>Download result</a>
                                         <div class="dropdown-divider"></div>
                                         {% endif %}
-                                        <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#dtConfirmModal"
-                                                data-confirm-url="{% url 'rdn-grid-run-delete' job.rdn_request_id %}"
-                                                data-confirm-title="Delete run #{{ job.rdn_request_id }}"
-                                                data-confirm-body="The run and its result will be deleted, and it can no longer be continued with a follow-up request. If you opened it in JupyterHub, that copy is removed too. This cannot be undone."
-                                                data-confirm-label="Delete"><span class="fas fa-trash me-2"></span>Delete</button>
+                                        {% url 'rdn-grid-run-delete' job.rdn_request_id as confirm_url %}
+                                        {% include "digitaltwins/partials/confirm-action-item.html" with url=confirm_url title="Delete run" number=job.rdn_request_id body="The run and its result will be deleted, and it can no longer be continued with a follow-up request. If you opened it in JupyterHub, that copy is removed too. This cannot be undone." label="Delete" icon="fa-trash" danger=True %}
                                     </div>
                                 </div>
                                 {% endif %}

@@ -79,6 +79,26 @@ docker compose up --build
    - Main app: `http://localhost:8080`
    - PgAdmin: `http://localhost:5051`
 
+### Tests
+
+```bash
+docker compose exec web python manage.py test
+```
+
+The digital twins also have browser smoke tests (`digitaltwins/tests/test_browser.py`), which drive their pages in headless Chromium. They are skipped unless Playwright is installed; the install lasts until the image is rebuilt, and the pages load amCharts and Leaflet from their CDNs, so internet is needed:
+
+```bash
+docker compose exec web pip install -r requirements-dev.txt
+docker compose exec web python -m playwright install --with-deps chromium
+docker compose exec web python manage.py test digitaltwins.tests.test_browser
+```
+
+To see how much object storage the twins' results take, and whether anything is orphaned:
+
+```bash
+docker compose exec web python manage.py dt_storage_usage --by-user --orphans
+```
+
 ### Questionnaire Standalone Mode
 
 The `questionnaire` app is integrated into the main Django project. It can also be run as a standalone service:

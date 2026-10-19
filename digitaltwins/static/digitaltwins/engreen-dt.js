@@ -191,7 +191,6 @@ forecast. Drawing the result is engreen-results.js (window.EngreenResults). */
             selectedForecast = card.dataset.forecast;
             var pane = document.getElementById('detail-' + selectedForecast);
             if (pane) pane.classList.remove('d-none');
-            _savePrefs();
         });
         card.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
@@ -217,12 +216,6 @@ forecast. Drawing the result is engreen-results.js (window.EngreenResults). */
         if (v > 16) this.value = 16;
         if (v < 1)  this.value = 1;
     });
-
-    // ── CSRF helper ───────────────────────────────────────────────────────────
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
-    }
 
     // ── Run Forecast ──────────────────────────────────────────────────────────
     runBtn.addEventListener('click', function () {
@@ -271,19 +264,13 @@ forecast. Drawing the result is engreen-results.js (window.EngreenResults). */
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
+                'X-CSRFToken': DT.getCsrfToken(),
             },
             body: JSON.stringify(payload),
             signal: signal,
         })
         .then(function (resp) {
-            if (!resp.ok) {
-                return resp.text().then(function (body) {
-                    var msg = 'Forecast failed.';
-                    try { msg = JSON.parse(body).error || msg; } catch (_) {}
-                    throw new Error(msg);
-                });
-            }
+            if (!resp.ok) return DT.errorFrom(resp, 'Forecast failed.');
             // The stored run's id travels in a header, apart from the service's data.
             // Headers are strings; the export endpoint takes the id as a number.
             var runId = parseInt(resp.headers.get(RUN_ID_HEADER), 10) || null;
