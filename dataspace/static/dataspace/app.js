@@ -9,17 +9,6 @@
     return div.innerHTML;
   }
 
-  function formatRequestedBy(raw) {
-    const str = raw == null ? "" : String(raw);
-    // The gateway sends "<org> <i class=\"fa fa-caret-right\"></i> <username>" as one
-    // string. Only the literal separator below is trusted; org/username are escaped.
-    const parts = str.split(/\s*<i\s+class=["']fa fa-caret-right["']\s*>\s*<\/i>\s*/i);
-    if (parts.length === 2) {
-      return `${escapeHtml(parts[0])} <i class="fa fa-caret-right"></i> ${escapeHtml(parts[1])}`;
-    }
-    return escapeHtml(str);
-  }
-
   function showToast(message, variant) {
     const container = document.getElementById("toast-container");
     const el = document.createElement("div");
@@ -32,6 +21,31 @@
       '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button></div>';
     container.appendChild(el);
     new bootstrap.Toast(el, { autohide: true, delay: 4000 }).show();
+  }
+
+  // "2026-10-13T09:47:14Z" -> "2026-10-13 12:47" in the viewer's local time.
+  function formatDateTime(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  // Small outlined badge for a data format (json, csv, ...). Empty when unknown.
+  function formatBadge(format) {
+    if (!format) return "";
+    return `<span class="badge badge-phoenix badge-phoenix-secondary fs-11 text-uppercase"><span class="badge-label">${escapeHtml(format)}</span></span>`;
+  }
+
+  function fileExtension(filename) {
+    const i = (filename || "").lastIndexOf(".");
+    return i > 0 ? filename.slice(i + 1).toLowerCase() : "";
+  }
+
+  // Joins the non-empty parts into one muted metadata line.
+  function metaLine(parts) {
+    return parts.filter(Boolean).map(escapeHtml).join(" &middot; ");
   }
 
   function parseCategoryTop(item) {
@@ -103,14 +117,18 @@
       <tr>
         <td class="ps-2">
           <div class="fw-semibold text-body-emphasis">${escapeHtml(e.data_title)}</div>
-          <div class="fs-9 text-body-tertiary">${escapeHtml(e.file_name)}</div>
+          ${e.data_description ? `<div class="fs-9 text-body-secondary">${escapeHtml(e.data_description)}</div>` : ""}
+          <div class="fs-9 text-body-tertiary">${escapeHtml(e.file_name)} ${formatBadge(fileExtension(e.file_name))}</div>
         </td>
-        <td>${escapeHtml(e.offering_title)}</td>
+        <td>
+          <div>${escapeHtml(e.offering_title)}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine([e.data_catalog_category_name, e.data_catalog_business_object_code, e.data_catalog_service_code])}</div>
+        </td>
         <td>
           <div class="fw-semibold">${escapeHtml(e.provider_company_name)}</div>
           <div class="fs-9 text-body-tertiary">${escapeHtml(e.provider_username)}</div>
         </td>
-        <td class="fs-9 text-body-tertiary">${escapeHtml((e.created_on || "").slice(0, 10))}</td>
+        <td class="fs-9 text-body-tertiary">${escapeHtml(formatDateTime(e.created_on))}</td>
         <td class="pe-2 text-end">
           <a class="btn btn-phoenix-secondary btn-sm" href="${Api.downloadUrl(e.id, e.file_name)}" download="${escapeHtml(e.file_name)}">Download</a>
         </td>
@@ -120,28 +138,80 @@
     return entities;
   }
 
+  // ---- Status tabs (All | Accepted | Rejected | Pending) ---------------
+
+  const STATUS_TABS = [
+    { key: "", label: "All" },
+    { key: "accept", label: "Accepted" },
+    { key: "reject", label: "Rejected" },
+    { key: "pending", label: "Pending" },
+  ];
+
+  // The Middleware's status strings vary ("accept"/"accepted", "reject"/"rejected").
+  function statusKey(status) {
+    const s = (status || "").toLowerCase();
+    if (s.startsWith("accept")) return "accept";
+    if (s.startsWith("reject")) return "reject";
+    return "pending";
+  }
+
+  function renderStatusTabs(containerId, rows, activeKey, onSelect) {
+    const counts = { accept: 0, reject: 0, pending: 0 };
+    rows.forEach((r) => counts[statusKey(r.status)]++);
+    const container = document.getElementById(containerId);
+    container.innerHTML = STATUS_TABS.map((t) => {
+      const n = t.key ? counts[t.key] : rows.length;
+      const active = activeKey === t.key ? "active" : "";
+      return `<li class="nav-item"><a class="nav-link fs-9 ${active}" href="#" data-status="${t.key}">${t.label} <span class="text-body-tertiary fw-semibold">(${n})</span></a></li>`;
+    }).join("");
+    container.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        onSelect(a.dataset.status);
+      });
+    });
+  }
+
   // ---- My Subscriptions ------------------------------------------------
 
-  async function loadMySubscriptions() {
-    const subs = await Api.getMySubscriptions();
-    document.getElementById("statSubscriptions").textContent = subs.filter((s) => s.status === "accept").length;
-    document.getElementById("mySubsCount").textContent = subs.length + " subscriptions";
-    const list = document.getElementById("mySubsList");
-    list.innerHTML = subs
+  let mySubsRows = [];
+  let mySubsStatus = "";
+
+  function renderMySubscriptions() {
+    renderStatusTabs("mySubsStatusTabs", mySubsRows, mySubsStatus, (key) => {
+      mySubsStatus = key;
+      renderMySubscriptions();
+    });
+    const shown = mySubsRows.filter((s) => !mySubsStatus || statusKey(s.status) === mySubsStatus);
+    document.getElementById("mySubsCount").textContent = shown.length + " subscriptions";
+    const badges = {
+      accept: ["badge-phoenix-success", "Active"],
+      reject: ["badge-phoenix-danger", "Rejected"],
+      pending: ["badge-phoenix-warning", "Pending"],
+    };
+    document.getElementById("mySubsList").innerHTML = shown
       .map((s) => {
-        const badge = s.status === "accept" ? "badge-phoenix-success" : "badge-phoenix-warning";
-        const label = s.status === "accept" ? "Active" : s.status;
+        const [badge, label] = badges[statusKey(s.status)];
         return `
         <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center">
           <div>
-            <div class="fw-semibold text-body-emphasis">${escapeHtml(s.title)}</div>
-            <div class="fs-9 text-body-tertiary">${escapeHtml(s.category_name)}</div>
+            <div class="fw-semibold text-body-emphasis">${escapeHtml(s.title)} ${formatBadge(s.profile_selector)}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([s.category_name && s.category_code ? s.category_name + " (" + s.category_code + ")" : s.category_name])}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([s.provider_username && "Provider: " + s.provider_username, s.provider_email, s.created_at && "Requested " + formatDateTime(s.created_at)])}</div>
           </div>
-          <span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${escapeHtml(label)}</span></span>
+          <span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${label}</span></span>
         </div>`;
       })
       .join("");
-    return subs;
+  }
+
+  async function loadMySubscriptions() {
+    mySubsRows = await Api.getMySubscriptions();
+    document.getElementById("statSubscriptions").textContent = mySubsRows.filter(
+      (s) => statusKey(s.status) === "accept"
+    ).length;
+    renderMySubscriptions();
+    return mySubsRows;
   }
 
   // ---- Browse Catalog ----------------------------------------------------
@@ -191,7 +261,10 @@
           : `<button class="btn btn-primary btn-sm" data-subscribe-id="${escapeHtml(item.cf_id)}">Subscribe</button>`;
         return `
         <tr>
-          <td class="ps-2 fw-semibold text-body-emphasis">${escapeHtml(item.title)}</td>
+          <td class="ps-2">
+            <div class="fw-semibold text-body-emphasis">${escapeHtml(item.title)} ${formatBadge(item.profile_selector)}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([item.created_at && "Created " + formatDateTime(item.created_at)])}</div>
+          </td>
           <td>${escapeHtml(parseCategoryTop(item))}</td>
           <td>
             <div class="fw-semibold">${escapeHtml(item.email)}</div>
@@ -249,11 +322,11 @@
         <tr>
           <td class="ps-2">
             <div class="fw-semibold text-body-emphasis">${escapeHtml(o.title)}</div>
-            <div class="fs-9 text-body-tertiary">${escapeHtml((o.cf_id || "").slice(0, 8))}&hellip;</div>
+            <div class="fs-9 text-body-tertiary">${formatBadge(o.profile_selector)} ${escapeHtml((o.cf_id || "").slice(0, 8))}&hellip;</div>
           </td>
           <td>${escapeHtml(parseCategoryTop(o))}</td>
           <td><span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${escapeHtml(o.status)}</span></span></td>
-          <td class="fs-9 text-body-tertiary">${escapeHtml((o.created_on || "").slice(0, 10))}</td>
+          <td class="fs-9 text-body-tertiary">${escapeHtml(formatDateTime(o.created_at))}</td>
           <td class="pe-2 text-end">
             <button class="btn btn-phoenix-secondary btn-sm" data-upload-for="${escapeHtml(o.cf_id)}" data-upload-title="${escapeHtml(o.title)}">Upload Data</button>
           </td>
@@ -361,6 +434,7 @@
         description: document.getElementById("uploadDescInput").value.trim() || null,
         filename: selectedFile.name,
         file: await readFileAsBase64(selectedFile),
+        fileSize: String(selectedFile.size),
         data_offering_id: document.getElementById("uploadTargetId").value,
       };
       await Api.provideData(payload);
@@ -431,26 +505,42 @@
 
   // ---- Incoming Requests -------------------------------------------------
 
-  async function loadIncomingRequests() {
-    const requests = await Api.getIncomingRequests();
-    document.getElementById("requestsCount").textContent = requests.length + " pending requests";
+  let requestRows = [];
+  let requestStatus = "";
+
+  function renderIncomingRequests() {
+    renderStatusTabs("requestsStatusTabs", requestRows, requestStatus, (key) => {
+      requestStatus = key;
+      renderIncomingRequests();
+    });
+    const shown = requestRows.filter((r) => !requestStatus || statusKey(r.status) === requestStatus);
+    document.getElementById("requestsCount").textContent = shown.length + " requests";
     const list = document.getElementById("requestsList");
-    const emptyState = document.getElementById("requestsEmptyState");
-    emptyState.classList.toggle("d-none", requests.length !== 0);
-    list.innerHTML = requests
-      .map(
-        (r) => `
+    document.getElementById("requestsEmptyState").classList.toggle("d-none", shown.length !== 0);
+    const badges = {
+      accept: ["badge-phoenix-success", "Accepted"],
+      reject: ["badge-phoenix-danger", "Rejected"],
+    };
+    list.innerHTML = shown
+      .map((r) => {
+        const key = statusKey(r.status);
+        const right =
+          key === "pending"
+            ? `<div class="d-flex gap-2">
+          <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>
+          <button class="btn btn-primary btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="accept">Accept</button>
+        </div>`
+            : `<span class="badge badge-phoenix ${badges[key][0]} fs-11"><span class="badge-label">${badges[key][1]}</span></span>`;
+        return `
       <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center mb-2" data-request-row="${escapeHtml(r.request_id)}">
         <div>
           <div class="fw-semibold text-body-emphasis">${escapeHtml(r.title)}</div>
-          <div class="fs-9 text-body-tertiary">Requested by ${formatRequestedBy(r.user_requesting)}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine([(r.category_path || []).join(" \u203a ")])}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine(["Requested by " + (r.requester_username || ""), r.requester_company, r.created_at && formatDateTime(r.created_at)])}</div>
         </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>
-          <button class="btn btn-primary btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="accept">Accept</button>
-        </div>
-      </div>`
-      )
+        ${right}
+      </div>`;
+      })
       .join("");
 
     list.querySelectorAll("[data-respond]").forEach((btn) => {
@@ -468,7 +558,12 @@
         }
       });
     });
-    return requests;
+  }
+
+  async function loadIncomingRequests() {
+    requestRows = await Api.getIncomingRequests();
+    renderIncomingRequests();
+    return requestRows;
   }
 
   // ---- boot --------------------------------------------------------
