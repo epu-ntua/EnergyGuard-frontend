@@ -427,8 +427,10 @@ def _create_assessment(user, project_id, input_data, parent_assessment=None):
         from projects.models import Project
         from trustworthiness.models import Assessment
         project = Project.objects.get(id=int(project_id))
-        if not project.is_accessible_by(user):
-            logger.warning("User %s denied access to project_id=%s for Assessment creation", user.id, project_id)
+        # Creating an assessment writes to the project: read access to a public
+        # project is not enough.
+        if not project.can_edit(user):
+            logger.warning("User %s denied write access to project_id=%s for Assessment creation", user.id, project_id)
             return None
         return Assessment.objects.create(
             project=project,
@@ -454,13 +456,16 @@ def _config_to_yaml_text(input_data):
     return yaml.dump(config, sort_keys=False, default_flow_style=False)
 
 
-def _get_owned_assessment(user, assessment_id):
+def _get_owned_assessment(user, assessment_id, for_edit=False):
+    """Read access is enough to view an assessment; versioning it (for_edit)
+    creates a new one on the project, so it needs write access."""
     from trustworthiness.models import Assessment
     assessment = get_object_or_404(
         Assessment, id=assessment_id, assessment_type=Assessment.AssessmentType.ROBUSTNESS,
     )
-    if not assessment.project.is_accessible_by(user):
-        logger.warning("User %s denied access to assessment_id=%s", user.id, assessment_id)
+    allowed = assessment.project.can_edit(user) if for_edit else assessment.project.is_accessible_by(user)
+    if not allowed:
+        logger.warning("User %s denied %s access to assessment_id=%s", user.id, "write" if for_edit else "read", assessment_id)
         raise Http404
     return assessment
 
@@ -491,7 +496,7 @@ def config_input_view(request):
         parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
         if parent_assessment_id:
             try:
-                parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id))
+                parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id), for_edit=True)
             except (ValueError, Http404):
                 logger.warning(
                     "Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
@@ -684,7 +689,7 @@ def view_assessment(request, assessment_id):
 
 @login_required
 def edit_assessment(request, assessment_id):
-    assessment = _get_owned_assessment(request.user, assessment_id)
+    assessment = _get_owned_assessment(request.user, assessment_id, for_edit=True)
     input_data = assessment.input_data or {}
     original_filename = input_data.get("config_file") or "config.yaml"
     yaml_text = _config_to_yaml_text(input_data)

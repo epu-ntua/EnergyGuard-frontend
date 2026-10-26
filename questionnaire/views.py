@@ -157,9 +157,11 @@ def _sync_trustworthiness(request, state):
         from projects.models import Project
         from trustworthiness.models import Assessment as TWAssessment
         project = Project.objects.get(id=int(project_id))
-        if not project.is_accessible_by(request.user):
+        # Creating an assessment writes to the project: read access to a public
+        # project is not enough.
+        if not project.can_edit(request.user):
             logger.warning(
-                "User %s denied access to project_id=%s for Assessment creation",
+                "User %s denied write access to project_id=%s for Assessment creation",
                 request.user.id, project_id,
             )
             return

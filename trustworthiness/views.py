@@ -115,7 +115,7 @@ def _build_assessment_runs(project_ids):
 
 @login_required
 def trustworthiness(request):
-    from projects.models import Project
+    from projects.models import Project, ProjectCollaborator
 
     projects = list(
         Project.objects
@@ -125,6 +125,18 @@ def trustworthiness(request):
     )
 
     project_ids = [p.id for p in projects]
+
+    # The picker only offers projects the user may write to: starting an
+    # assessment creates one on the project, which a view-only collaborator
+    # is not allowed to do. Their projects' results stay listed below.
+    editable_ids = {p.id for p in projects if p.creator_id == request.user.id}
+    editable_ids.update(
+        ProjectCollaborator.objects.filter(
+            collaborator=request.user,
+            project_id__in=project_ids,
+            permission_level=ProjectCollaborator.Permission.EDIT,
+        ).values_list('project_id', flat=True)
+    )
     last_assessment_map = {}
     for a in Assessment.objects.filter(project_id__in=project_ids).order_by('-created_at'):
         if a.project_id not in last_assessment_map:
@@ -132,6 +144,8 @@ def trustworthiness(request):
 
     projects_data = []
     for p in projects:
+        if p.id not in editable_ids:
+            continue
         last_a = last_assessment_map.get(p.id)
         projects_data.append({
             'id': p.id,
