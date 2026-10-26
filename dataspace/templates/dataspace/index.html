@@ -122,6 +122,7 @@
 
         <!-- MY SUBSCRIPTIONS -->
         <div class="tab-pane fade" id="tab-mysubs" role="tabpanel">
+          <ul class="nav nav-links mb-3 mx-n3" id="mySubsStatusTabs"></ul>
           <p class="fs-9 text-body-secondary mb-3" id="mySubsCount">&nbsp;</p>
           <div class="d-flex flex-column gap-2" id="mySubsList"></div>
         </div>
@@ -181,11 +182,12 @@
 
         <!-- INCOMING REQUESTS -->
         <div class="tab-pane fade" id="tab-requests" role="tabpanel">
+          <ul class="nav nav-links mb-3 mx-n3" id="requestsStatusTabs"></ul>
           <p class="fs-9 text-body-secondary mb-3" id="requestsCount">&nbsp;</p>
           <div id="requestsList"></div>
           <div class="text-center py-6 d-none" id="requestsEmptyState">
             <span class="fs-1 uil uil-bell text-body-tertiary"></span>
-            <p class="fw-semibold text-body-emphasis mt-2 mb-1">No subscription requests yet</p>
+            <p class="fw-semibold text-body-emphasis mt-2 mb-1">No subscription requests here</p>
             <p class="fs-9 text-body-secondary mb-0">When another participant asks to subscribe to one of your offerings, it'll show up here for you to accept or reject.</p>
           </div>
         </div>
