@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import timezone
@@ -119,8 +119,7 @@ def trustworthiness(request):
 
     projects = list(
         Project.objects
-        .filter(Q(creator=request.user) | Q(collaborators=request.user))
-        .distinct()
+        .member_of(request.user)
         .annotate(experiments_count=Count('experiments', distinct=True))
         .order_by('-updated_at')
     )
@@ -139,6 +138,7 @@ def trustworthiness(request):
             'name': p.name,
             'project_type': p.project_type,
             'project_type_display': p.get_project_type_display(),
+            'type_style': p.type_style,
             'experiments_count': p.experiments_count,
             'updated_at': p.updated_at.isoformat(),
             'last_assessment': last_a.isoformat() if last_a else None,

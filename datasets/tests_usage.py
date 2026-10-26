@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from datasets.models import Dataset
 from datasets.tests_access_control import make_dataset, make_user
-from projects.models import Project
+from projects.models import Project, ProjectCollaborator
 
 
 def make_project(name, creator, *, visibility):
@@ -38,6 +38,29 @@ class DatasetUsagePanelTests(TestCase):
         self.assertEqual(response.context["usage_total"], 3)
         self.assertContains(response, "3 projects")
         self.assertNotContains(response, "Secret Proj")
+
+    def test_modal_lists_only_projects_the_user_can_open(self):
+        response = self._get(self.viewer)
+        self.assertCountEqual(
+            response.context["usage_projects"], [self.public_project, self.viewer_project]
+        )
+        self.assertEqual(response.context["usage_hidden"], 1)
+        self.assertContains(response, reverse("project_details", args=[self.viewer_project.id]))
+        self.assertNotContains(response, reverse("project_details", args=[self.private_project.id]))
+
+    def test_collaborator_sees_private_project_by_name(self):
+        ProjectCollaborator.objects.create(collaborator=self.viewer, project=self.private_project)
+        response = self._get(self.viewer)
+        self.assertIn(self.private_project, response.context["usage_projects"])
+        self.assertEqual(response.context["usage_hidden"], 0)
+        self.assertContains(response, "Secret Proj")
+
+    def test_unused_dataset_has_no_modal(self):
+        unused = make_dataset("unused-set", self.owner, visibility=True)
+        self.client.force_login(self.viewer)
+        response = self.client.get(reverse("dataset_details", args=[unused.id]))
+        self.assertContains(response, "0 projects")
+        self.assertNotContains(response, "datasetUsageModal")
 
 
 class ProjectDatasetsPanelTests(TestCase):

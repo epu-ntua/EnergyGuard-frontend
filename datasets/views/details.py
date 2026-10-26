@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import redirect, render
 
 from projects.models import Project
@@ -34,13 +33,12 @@ def dataset_details(request, dataset_id):
         "metadata": dataset.metadata,
     }
 
-    user_projects = Project.objects.filter(
-        Q(creator=request.user) | Q(collaborators=request.user)
-    ).distinct().order_by("-created_at")
+    user_projects = Project.objects.member_of(request.user).order_by("-created_at")
 
-    # Platform-wide total, private projects included. Only a number, so no
-    # project names are exposed.
+    # Platform-wide total, private projects included. Only projects the user
+    # could open themselves are named.
     usage_total = dataset.projects.count()
+    usage_projects = list(dataset.projects.visible_to(request.user).order_by("name"))
 
     # Review state is shown to the publisher and reviewers of a user dataset
     # submitted for publication; other viewers only ever see it published.
@@ -74,6 +72,8 @@ def dataset_details(request, dataset_id):
             "edit_form": GeneralDatasetForm(instance=dataset),
             "user_projects": user_projects,
             "usage_total": usage_total,
+            "usage_projects": usage_projects,
+            "usage_hidden": usage_total - len(usage_projects),
             "review": review,
             "active_navbar_page": "datasets",
             "show_sidebar": True,
