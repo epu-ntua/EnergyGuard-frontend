@@ -133,3 +133,17 @@
   color: #fff;
   border-color: var(--phoenix-primary);
 }
+
+/* Journey cards: Phoenix has no hover utility for a card's border, so highlight it in the primary colour. */
+.journey-card {
+  transition: border-color .15s ease-in-out;
+}
+.journey-card:hover,
+.journey-card:focus-visible {
+  border-color: var(--phoenix-primary);
+}
+
+/* Dashboard team banner: the white Create Team button dims slightly on hover. */
+#dashboard-create-team-btn:hover {
+  opacity: .9;
+}

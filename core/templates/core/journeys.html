@@ -1,0 +1,36 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}Getting Started | Documentation | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'documentation' %}">Documentation</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Getting Started</li>
+      </ol>
+    </nav>
+
+    <h2 class="text-body-emphasis fw-bolder mb-2">Getting Started</h2>
+    <p class="text-body-tertiary fs-8-5 mb-5">Step-by-step guides for common tasks. Each journey shows the steps to follow and where to do them.</p>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+      {% for journey in journeys %}
+      <div class="col">
+        <a class="card journey-card h-100 text-decoration-none" href="{% url 'journey_detail' journey.slug %}">
+          <div class="card-body">
+            <h5 class="fw-bold text-body-emphasis mb-3">{{ journey.title }}</h5>
+            <p class="text-body-secondary fs-9 mb-3">{{ journey.summary }}</p>
+            <p class="text-body-tertiary fs-10 mb-0">{{ journey.steps|length }} steps · {{ journey.duration }} · {{ journey.tools }}</p>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock %}

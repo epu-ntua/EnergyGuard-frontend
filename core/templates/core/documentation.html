@@ -1,86 +1,111 @@
-{% extends "./authenticated-base.html" %}
+{% extends "core/authenticated-base.html" %}
 
 {% block title %}Documentation | EnergyGuard{% endblock %}
 
-{% block content %}   
-<div class="content px-0 pt-navbar">
-    <div class="row col-12 col-xxl-8 px-0 bg-body mx-auto">
-        <div class="px-4 px-lg-6 pt-6 pb-9">
-            <div class="mb-5">
-                <h2 class="text-body-emphasis fw-bolder mb-2">Documentation</h2>
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <h2 class="text-body-emphasis fw-bolder mb-2">Documentation</h2>
+    <p class="text-body-tertiary fs-8-5 mb-5">Guides and reference material for working with EnergyGuard.</p>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+      <div class="col">
+        <a class="card journey-card h-100 text-decoration-none" href="{% url 'journeys' %}">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-primary-subtle text-primary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-bars-staggered"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <h5 class="fw-bold text-body-emphasis mb-1">Getting Started</h5>
+              <p class="text-body-secondary fs-9 mb-0">Step-by-step guides for using EnergyGuard.</p>
             </div>
-            <div class="row mt-12">
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger h-100">
-                            <div class="card-body pb-0 pt-4">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-solid fa-bars-staggered me-3"></i>Getting Started</h4>
-                                <p class="text-center fs-9">Step-by-step guide for using EnergyGuard</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger h-100">
-                            <div class="card-body pb-0 pt-4">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-solid fa-clipboard-list me-3"></i>Best practices</h4>
-                                <p class="text-center fs-9">Recommendations for developing and deploying AI services</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger h-100">
-                            <div class="card-body pb-0 pt-4">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-solid fa-headset me-3"></i>Support</h4>
-                                <p class="text-center fs-9">Contact support or start a live chat</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger h-100">
-                            <div class="card-body pb-0 pt-4">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-regular fa-circle-question me-3"></i>FAQs</h4>
-                                <p class="text-center fs-9">Answers to frequently asked questions</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger">
-                            <div class="card-body pb-0 pt-4">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-solid fa-scale-balanced me-3"></i>AI Ethics & Compliance Standards</h4>
-                                <p class="text-center fs-9">Regulatory frameworks and guidelines for building responsible AI systems.</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <!-- TODO: Implement link redirection -->
-                    <a href="#" class="card-link">
-                        <div class="card hover-actions-trigger h-100">
-                            <div class="card-body pb-0 pt-3">
-                                <h4 class="lh-sm me-5 mb-3 text-primary text-center"><i class="fa-solid fa-list-check me-3"></i>Terms of Use</h4>
-                                <p class="text-center fs-9">Legal conditions for using the EnergyGuard platform and its services.</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+          </div>
+        </a>
+      </div>
+      <div class="col">
+        <div class="card h-100 opacity-50 pe-none" aria-disabled="true">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-body-highlight text-body-tertiary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-clipboard-list"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold text-body-emphasis mb-0">Best practices</h5>
+                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+              </div>
+              <p class="text-body-secondary fs-9 mb-0">Recommendations for developing and deploying AI services.</p>
             </div>
+          </div>
         </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 opacity-50 pe-none" aria-disabled="true">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-body-highlight text-body-tertiary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-headset"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold text-body-emphasis mb-0">Support</h5>
+                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+              </div>
+              <p class="text-body-secondary fs-9 mb-0">Contact support or start a live chat.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 opacity-50 pe-none" aria-disabled="true">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-body-highlight text-body-tertiary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-circle-question"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold text-body-emphasis mb-0">FAQs</h5>
+                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+              </div>
+              <p class="text-body-secondary fs-9 mb-0">Answers to frequently asked questions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 opacity-50 pe-none" aria-disabled="true">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-body-highlight text-body-tertiary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-scale-balanced"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold text-body-emphasis mb-0">AI Ethics &amp; Compliance Standards</h5>
+                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+              </div>
+              <p class="text-body-secondary fs-9 mb-0">Regulatory frameworks and guidelines for building responsible AI systems.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 opacity-50 pe-none" aria-disabled="true">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-body-highlight text-body-tertiary" style="width:44px;height:44px;" aria-hidden="true">
+              <span class="fas fa-list-check"></span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold text-body-emphasis mb-0">Terms of Use</h5>
+                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Coming soon</span>
+              </div>
+              <p class="text-body-secondary fs-9 mb-0">Legal conditions for using the EnergyGuard platform and its services.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    {% include "./footer.html" %}
+
+  </div>
+  {% include "core/footer.html" %}
 </div>
-
-
-{% endblock content %}
+{% endblock %}
