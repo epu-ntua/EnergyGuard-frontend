@@ -1,0 +1,87 @@
+{% extends "core/authenticated-base.html" %}
+
+{% block title %}{{ journey.title }} | Documentation | EnergyGuard{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="px-4 px-lg-6 pt-6 pb-9">
+
+    <nav class="mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'documentation' %}">Documentation</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'journeys' %}">Getting Started</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ journey.title }}</li>
+      </ol>
+    </nav>
+
+    <h2 class="text-body-emphasis fw-bolder mb-2">{{ journey.title }}</h2>
+    <p class="text-body-emphasis fs-8-5 mb-3">{{ journey.summary }}</p>
+    {% if journey.scenario %}
+    <p class="text-body-secondary fs-9 border-start border-3 ps-3 mb-3"><span class="fw-bold text-body-emphasis">Scenario:</span> {{ journey.scenario }}</p>
+    {% endif %}
+
+    <div class="row g-0 border-bottom py-3 mb-5">
+      <div class="col-12 col-md-4 border-end pe-3">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">For</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">{{ journey.audience }}</span>
+      </div>
+      <div class="col-6 col-md-4 border-end px-md-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Time</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">{{ journey.duration }}</span>
+      </div>
+      <div class="col-6 col-md-4 ps-3 mt-3 mt-md-0">
+        <span class="text-uppercase text-body-tertiary fs-10 d-block mb-1" style="letter-spacing:.04em;">Tools</span>
+        <span class="fw-bold text-body-emphasis fs-8-5">{{ journey.tools }}</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 col-lg-9 col-xl-8">
+        <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-1" style="letter-spacing:.04em;">Steps</h6>
+        <ol class="list-unstyled mb-0">
+          {% for step in steps %}
+          <li class="d-flex align-items-start gap-3 py-4{% if not forloop.last %} border-bottom{% endif %}">
+            <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;" aria-hidden="true">{{ forloop.counter }}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="fw-bolder text-body-emphasis mb-2 fs-8-5">{{ step.title }}{% if step.optional %} <span class="badge badge-phoenix badge-phoenix-secondary fs-10 ms-1 align-middle">Optional</span>{% endif %}</h3>
+              {% for paragraph in step.body %}
+                <p class="text-body-secondary fs-8-5 mb-2">{{ paragraph }}</p>
+              {% endfor %}
+              {% if step.code %}
+                <pre class="bg-body-highlight border border-translucent rounded-2 p-3 fs-9 mt-3 mb-2"><code>{{ step.code }}</code></pre>
+              {% endif %}
+              {% if step.result %}
+                <p class="text-body-tertiary fs-9 mb-2 d-flex gap-2"><span class="fs-8 lh-1" aria-hidden="true">&#8627;</span><span><span class="fw-bold text-body-emphasis">Result:</span> {{ step.result }}</span></p>
+              {% endif %}
+              {% if step.link %}
+                <a class="btn btn-phoenix-primary btn-sm mt-2" href="{{ step.link.url }}">{{ step.link.label }}<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span></a>
+              {% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+
+        {% if next_journey %}
+        <div class="border-top pt-5 mt-4">
+          <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-3" style="letter-spacing:.04em;">Next journey</h6>
+          <a class="card journey-card text-decoration-none" href="{% url 'journey_detail' next_journey.slug %}">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+              <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-3 bg-primary-subtle text-primary" style="width:44px;height:44px;" aria-hidden="true">
+                <span class="fas {{ next_journey.icon|default:'fa-compass' }}"></span>
+              </span>
+              <div class="flex-1 min-w-0">
+                <h5 class="fw-bold text-body-emphasis mb-1 fs-8-5">{{ next_journey.title }}</h5>
+                <p class="text-body-secondary fs-9 mb-0">{{ next_journey.summary }}</p>
+              </div>
+              <span class="fas fa-arrow-right text-primary fs-8 flex-shrink-0" aria-hidden="true"></span>
+            </div>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+  {% include "core/footer.html" %}
+</div>
+{% endblock %}

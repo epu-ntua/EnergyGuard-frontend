@@ -74,6 +74,14 @@
                     </div>
                 </li>
 
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1 {%if active_navbar_page == 'documentation' %}active{% endif %}" href="{% url 'documentation' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="book-open"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">Documentation</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+
                 {% if perms.datasets.review_dataset %}
                 <li class="nav-item">
                     <div class="nav-item-wrapper"><a class="nav-link label-1 {%if active_navbar_page == 'dataset_review' %}active{% endif %}" href="{% url 'dataset_review_list' %}">

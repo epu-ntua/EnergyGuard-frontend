@@ -16,19 +16,22 @@
   </div>
 
   {% if not team %}
-    <div class="card mb-5 border-0 overflow-hidden bg-turquoise" >
+    <div class="card mb-6 border-0 overflow-hidden bg-turquoise" id="dashboard-team-banner" data-dismiss-key="dashboard-team-banner-dismissed-{{ request.user.pk }}" data-dismiss-storage="session">
       <div class="card-body p-5 position-relative">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" aria-label="Close" data-banner-close></button>
         <div class="row align-items-center">
           <div class="col-md-7">
             <p class="mb-1 fs-8 text-light">Hello, {{ request.user.first_name|default:request.user.username }}! 👋</p>
             <h2 class="fw-bold mb-3 text-light">Energy innovation starts here.</h2>
             <p class="mb-4 text-light">You don't have a team yet. Create your first<br> Team to collaborate on projects, datasets and AI models.</p>
-            <a href="{% url 'projects_list' %}" class="btn btn-primary fw-semibold" id="dashboard-create-project-btn">
-              + Create Team
-            </a>
-            <style>
-              #dashboard-create-project-btn:hover { color: #fff !important; border-color: #fff !important; }
-            </style>
+            <div class="d-flex flex-wrap align-items-center gap-4">
+              <a href="{% url 'team_management' %}?create=1" class="btn bg-white text-dark fw-semibold" id="dashboard-create-team-btn">
+                <span class="fas fa-plus me-2" aria-hidden="true"></span>Create Team
+              </a>
+              <a href="{% url 'journeys' %}" class="text-white fs-9 fw-semibold text-decoration-underline link-offset-2">
+                <span class="far fa-compass me-2" aria-hidden="true"></span>Not sure where to start? Follow a guided journey<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span>
+              </a>
+            </div>
           </div>
           <div class="col-md-5 text-end d-none d-md-block">
             {% static 'assets/img/spot-illustrations/36.png' as ill_36 %}
@@ -37,7 +40,55 @@
         </div>
       </div>
     </div>
+  {% else %}
+    <div class="card mb-6 overflow-hidden" id="dashboard-journeys-banner" data-dismiss-key="dashboard-journeys-banner-dismissed-{{ request.user.pk }}">
+      <div class="card-body d-flex flex-wrap align-items-center gap-3 py-3 px-4">
+        <span class="far fa-compass text-primary fs-8" aria-hidden="true"></span>
+        <p class="text-body mb-0 flex-1">Guided journeys show you how the tools fit together, step by step.</p>
+        <a href="{% url 'journeys' %}" class="fw-bold text-decoration-none">Browse journeys<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span></a>
+        <button type="button" class="btn-close ms-2" aria-label="Close" data-banner-close></button>
+      </div>
+    </div>
   {% endif %}
+  <script>
+    // Closing a dashboard banner hides it for this user on this browser. With
+    // data-dismiss-storage="session" it stays hidden only until the browser tab is closed.
+    document.querySelectorAll('[data-dismiss-key]').forEach(function (banner) {
+      var key = banner.dataset.dismissKey;
+      var storage;
+      try {
+        storage = banner.dataset.dismissStorage === 'session' ? sessionStorage : localStorage;
+        if (storage.getItem(key)) { banner.remove(); return; }
+      } catch (e) { /* storage unavailable: show the banner */ }
+      banner.querySelector('[data-banner-close]').addEventListener('click', function () {
+        try { storage.setItem(key, '1'); } catch (e) { /* hide for this page view only */ }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { banner.remove(); return; }
+        // Animating height re-lays out the whole dashboard on every frame and stutters, so only
+        // opacity and transform move here: fade the banner, remove it in one step, then start the
+        // content below where it was and slide it up into its new place.
+        banner.style.transition = 'opacity .2s ease-out, transform .2s ease-out';
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-8px)';
+        setTimeout(function () {
+          var gap = banner.offsetHeight + parseFloat(getComputedStyle(banner).marginBottom);
+          var below = [];
+          for (var node = banner; node && !node.classList.contains('content'); node = node.parentElement) {
+            for (var next = node.nextElementSibling; next; next = next.nextElementSibling) { below.push(next); }
+          }
+          banner.remove();
+          below.forEach(function (el) { el.style.transform = 'translateY(' + gap + 'px)'; });
+          document.body.offsetHeight; // apply the offset before transitioning from it
+          below.forEach(function (el) {
+            el.style.transition = 'transform .3s ease-out';
+            el.style.transform = '';
+          });
+          setTimeout(function () {
+            below.forEach(function (el) { el.style.transition = ''; });
+          }, 300);
+        }, 200);
+      });
+    });
+  </script>
 
   <!-- 1ST LEVEL CARDS -->
   <div class="row mb-5 gy-6">

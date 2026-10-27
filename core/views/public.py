@@ -29,6 +29,7 @@ def collaboration_hub(request):
     )
 
 
+@login_required
 def documentation(request):
     return render(
         request,

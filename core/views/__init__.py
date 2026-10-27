@@ -1,6 +1,7 @@
 from .ai_models import ai_models, deeptsf_detail, request_ai_model_access, tirex_detail
 from .dashboard import dashboard
 from .hpc import hpc
+from .journeys import journey_detail, journeys
 from .public import (
     collaboration_hub,
     contact_form,
@@ -23,4 +24,6 @@ __all__ = [
     "error_does_not_exist",
     "home",
     "hpc",
+    "journey_detail",
+    "journeys",
 ]
