@@ -21,7 +21,7 @@ from django.utils import timezone
 
 from billing.models import Billing, PaymentMethod
 from datasets.models import Dataset, DatasetUserDownload
-from digitaltwins.models import BerExperimentRequest, DtResult, RdnSimulationJob
+from digitaltwins.models import BerExperimentRequest, DtExport, DtRun, RdnSimulationJob
 from projects.models import Experiment, Project, ProjectCollaborator
 
 from ..models import Notification, PrivacyRequest, Profile, TeamInvite
@@ -79,10 +79,15 @@ def collect_user_data(user):
         ),
         'datasets_published': _rows(
             Dataset.objects.filter(publisher=user),
-            'name', 'description', 'label', 'source', 'status', 'visibility', 'size_gb', 'created_at',
+            'name', 'description', 'label', 'source', 'status', 'rejection_reason', 'visibility', 'size_gb',
+            'submitted_at', 'reviewed_at', 'created_at',
         ),
         'dataset_downloads': _rows(DatasetUserDownload.objects.filter(user=user), 'dataset__name', 'created_at'),
-        'digital_twin_results': _rows(DtResult.objects.filter(user=user), 'twin_slug', 'created_at'),
+        'digital_twin_runs': _rows(
+            DtRun.objects.filter(user=user),
+            'twin_slug', 'operation', 'inputs', 'status', 'error_message', 'created_at',
+        ),
+        'digital_twin_exports': _rows(DtExport.objects.filter(user=user), 'twin_slug', 'created_at'),
         'ber_experiment_requests': _rows(
             BerExperimentRequest.objects.filter(user=user),
             'experiment_json', 'status', 'rejection_reason', 'actual_start', 'actual_end', 'cancelled_at', 'created_at',
@@ -123,7 +128,8 @@ SECTION_TITLES = {
     'experiments_created': 'Experiments you created',
     'datasets_published': 'Datasets you published',
     'dataset_downloads': 'Datasets you downloaded',
-    'digital_twin_results': 'Digital twin results',
+    'digital_twin_runs': 'Digital twin runs',
+    'digital_twin_exports': 'Digital twin results exported to JupyterHub',
     'ber_experiment_requests': 'BER experiment requests',
     'rdn_simulation_jobs': 'RDN simulation jobs',
     'invoices': 'Invoices',

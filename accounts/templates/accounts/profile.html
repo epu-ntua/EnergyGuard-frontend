@@ -22,7 +22,8 @@
                             {% else %}
                             <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#privacyDeletionModal"><span class="fas fa-trash-alt me-2"></span>Delete account</button>
                             {% endif %}
-                    
+                            {# Outside the tabs: a modal inside a hidden tab pane can't be shown #}
+                            {% include "accounts/partials/privacy-deletion-modal.html" %}
                         </div>
                         <div class="col-auto">
                             <button class="btn btn-phoenix-secondary" type="button" data-bs-toggle="modal" data-bs-target="#resetPasswordModal"><span class="fas fa-key me-2"></span>Reset password</button>
@@ -366,6 +367,17 @@
 {% endblock content %}
 
 {% block scripts %}
+<script>
+const PROFILE_TAB_PARAMS = { '#tab-personal-info': 'personal-info', '#tab-privacy': 'privacy' };
+document.querySelectorAll('#myTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    tabEl.addEventListener('shown.bs.tab', e => {
+        // Keep the URL on the visible tab so a reload or Back lands there.
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', PROFILE_TAB_PARAMS[e.target.getAttribute('href')]);
+        history.replaceState(null, '', url);
+    });
+});
+</script>
 {% if not existing_team and open_create_modal %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {

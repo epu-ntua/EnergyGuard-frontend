@@ -56,7 +56,7 @@
                 <th class="align-middle" scope="col">SUBMITTED</th>
                 <th class="align-middle" scope="col">STATUS</th>
                 <th class="align-middle" scope="col">NOTE</th>
-                <th class="align-middle pe-0 text-end" scope="col"></th>
+                <th class="align-middle pe-0 text-end" scope="col">ACTIONS</th>
             </tr>
         </thead>
         <tbody>
@@ -87,29 +87,3 @@
 {% else %}
 <p class="text-body-tertiary fs-9">You have not made any deletion requests.</p>
 {% endif %}
-
-<!-- Deletion request modal -->
-<div class="modal fade" id="privacyDeletionModal" tabindex="-1" aria-labelledby="privacyDeletionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" method="post" action="{% url 'create_privacy_request' %}">
-            {% csrf_token %}
-            <input type="hidden" name="kind" value="deletion">
-            <div class="modal-header">
-                <h5 class="modal-title" id="privacyDeletionModalLabel">Request deletion of your data</h5>
-                <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-body-tertiary lh-lg">
-                    Once processed, your account and the personal data associated with it will be permanently deleted.
-                    We will confirm by email at <strong>{{ request.user.email }}</strong>. You can cancel the request while it is pending.
-                </p>
-                <label class="form-label fs-9 ps-0" for="privacyDeletionMessage">Reason or details (optional)</label>
-                <textarea class="form-control" id="privacyDeletionMessage" name="message" rows="3" maxlength="2000"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-phoenix-danger" type="submit">Request deletion</button>
-                <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>

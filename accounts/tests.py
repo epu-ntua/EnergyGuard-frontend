@@ -213,6 +213,13 @@ class PersonalDataExportTests(TestCase):
         self.assertEqual(data["account"]["first_name"], "Ann")
         self.assertEqual([p["name"] for p in data["projects_created"]], ["Mine"])
 
+    def test_export_contains_own_digital_twin_runs(self):
+        from digitaltwins.models import DtRun
+        DtRun.objects.create(user=self.user, twin_slug="ciemat", operation="forecast", inputs={"days": 3}, status="completed")
+        DtRun.objects.create(user=self.other, twin_slug="engreen", operation="run", status="failed")
+        data = self._download()
+        self.assertEqual([(r["twin_slug"], r["inputs"]) for r in data["digital_twin_runs"]], [("ciemat", {"days": 3})])
+
     def test_export_never_contains_full_card_number_or_cvv(self):
         from billing.models import PaymentMethod
         PaymentMethod.objects.create(user=self.user, card_number="4111111111111111", cvv="123", cardholder_name="Ann")
