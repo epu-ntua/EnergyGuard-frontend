@@ -17,7 +17,9 @@
                 <div class="col-auto">
                     <div class="row g-2 g-sm-3">
                         <div class="col-auto">
-                            {% if 'deletion' in pending_privacy_kinds %}
+                            {% if open_deletion_request.status == 'approved' %}
+                            <a class="btn btn-phoenix-secondary" href="?tab=privacy"><span class="fas fa-hourglass-half me-2"></span>Deletion on {{ open_deletion_request.scheduled_for|date:"M j, Y" }}</a>
+                            {% elif open_deletion_request %}
                             <a class="btn btn-phoenix-secondary" href="?tab=privacy"><span class="fas fa-hourglass-half me-2"></span>Deletion requested</a>
                             {% else %}
                             <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#privacyDeletionModal"><span class="fas fa-trash-alt me-2"></span>Delete account</button>

@@ -27,12 +27,12 @@ def create_privacy_request(request):
         messages.error(request, "Unknown privacy request.")
         return redirect(_privacy_tab_url())
 
-    privacy_request, created = submit_privacy_request(request, kind, request.POST.get('message', '')[:2000])
+    privacy_request, created = submit_privacy_request(request.user, kind, request.POST.get('message', '')[:2000])
     label = privacy_request.get_kind_display().lower()
     if created:
         messages.success(request, f"Your request for a {label} has been sent. We will reply to {privacy_request.email}.")
     else:
-        messages.info(request, f"You already have a pending request for a {label}.")
+        messages.info(request, f"You already have an open request for a {label}.")
     return redirect(_privacy_tab_url())
 
 

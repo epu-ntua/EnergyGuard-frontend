@@ -112,7 +112,7 @@ def collect_user_data(user):
         ],
         'privacy_requests': _rows(
             PrivacyRequest.objects.filter(user=user),
-            'kind', 'status', 'message', 'admin_note', 'created_at', 'resolved_at',
+            'kind', 'status', 'message', 'admin_note', 'scheduled_for', 'created_at', 'resolved_at',
         ),
     }
 

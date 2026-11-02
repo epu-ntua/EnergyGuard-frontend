@@ -171,15 +171,37 @@ class PrivacyRequestTests(TestCase):
         pr.refresh_from_db()
         self.assertEqual(pr.status, "cancelled")
 
-    def test_resolve_notifies_user_once(self):
+    def test_approve_schedules_deletion_and_notifies_user_once(self):
+        import datetime
+        from django.utils import timezone
         from accounts.models import Notification, PrivacyRequest
-        from accounts.services.privacy_requests import resolve_privacy_request
+        from accounts.services.privacy_requests import approve_privacy_request, reject_privacy_request
         pr = PrivacyRequest.objects.create(user=self.user, email=self.user.email, kind="deletion")
-        self.assertTrue(resolve_privacy_request(pr, PrivacyRequest.Status.COMPLETED, self.other))
-        self.assertFalse(resolve_privacy_request(pr, PrivacyRequest.Status.REJECTED, self.other))
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assertTrue(approve_privacy_request(pr, self.other))
+        self.assertFalse(approve_privacy_request(pr, self.other))
+        self.assertFalse(reject_privacy_request(pr, self.other))
         pr.refresh_from_db()
-        self.assertEqual(pr.status, "completed")
+        self.assertEqual(pr.status, "approved")
+        self.assertEqual(pr.scheduled_for, timezone.localdate() + datetime.timedelta(days=2))
         self.assertEqual(Notification.objects.filter(recipient=self.user).count(), 1)
+        self.assertEqual(self.async_task.call_args[0][0], "accounts.tasks.send_privacy_request_approved_email")
+
+    def test_user_can_cancel_approved_request_and_admins_are_told(self):
+        from accounts.models import PrivacyRequest
+        pr = PrivacyRequest.objects.create(user=self.user, email=self.user.email, kind="deletion", status="approved")
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("cancel_privacy_request", args=[pr.pk]))
+        pr.refresh_from_db()
+        self.assertEqual(pr.status, "cancelled")
+        self.assertEqual(self.async_task.call_args[0][0], "accounts.tasks.send_privacy_request_cancelled_email")
+
+    def test_cannot_submit_while_a_request_is_approved(self):
+        from accounts.models import PrivacyRequest
+        PrivacyRequest.objects.create(user=self.user, email=self.user.email, kind="deletion", status="approved")
+        self._submit("deletion")
+        self.assertEqual(PrivacyRequest.objects.filter(user=self.user).count(), 1)
+        self.async_task.assert_not_called()
 
     def test_profile_privacy_tab_renders(self):
         response = self.client.get(f"{reverse('profile')}?tab=privacy")
@@ -242,3 +264,175 @@ class PersonalDataExportTests(TestCase):
         self.client.logout()
         response = self.client.get(reverse("download_personal_data"))
         self.assertEqual(response.status_code, 302)
+
+
+class AccountDeletionTests(TestCase):
+
+    def setUp(self):
+        import datetime
+        from unittest.mock import patch
+        from allauth.socialaccount.models import SocialAccount
+        from django.utils import timezone
+        from accounts.models import PrivacyRequest
+        self.admin = User.objects.create_superuser(email="admin@example.com", password="testpass123")
+        self.user = User.objects.create_user(email="leaving@example.com", password="testpass123", is_active=True)
+        SocialAccount.objects.create(user=self.user, provider="keycloak", uid="kc-leaving")
+        self.today = timezone.localdate()
+        self.pr = PrivacyRequest.objects.create(
+            user=self.user, email=self.user.email, kind="deletion", status="approved", scheduled_for=self.today,
+        )
+        self.tomorrow = self.today + datetime.timedelta(days=1)
+
+        patcher = patch("accounts.services.privacy_requests.async_task")
+        self.async_task = patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = patch("accounts.services.privacy_requests.KeycloakUserSyncClient")
+        self.keycloak = patcher.start().return_value
+        self.keycloak.delete_user.return_value = {"success": True}
+        self.addCleanup(patcher.stop)
+
+    def _delete(self):
+        from accounts.services.privacy_requests import delete_account
+        with self.captureOnCommitCallbacks(execute=True):
+            delete_account(self.pr, self.admin)
+
+    def test_deletes_django_and_keycloak_user_and_emails_them(self):
+        self._delete()
+        self.assertFalse(User.objects.filter(email="leaving@example.com").exists())
+        self.keycloak.delete_user.assert_called_once_with("kc-leaving")
+        self.pr.refresh_from_db()
+        self.assertEqual((self.pr.status, self.pr.user, self.pr.email), ("completed", None, "leaving@example.com"))
+        self.assertEqual(self.async_task.call_args[0][0], "accounts.tasks.send_account_deleted_email")
+
+    def test_keycloak_failure_rolls_back_the_django_delete(self):
+        from accounts.services.privacy_requests import AccountDeletionError
+        self.keycloak.delete_user.return_value = {"error": "Failed."}
+        with self.assertRaises(AccountDeletionError):
+            self._delete()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+        self.pr.refresh_from_db()
+        self.assertEqual(self.pr.status, "approved")
+        self.async_task.assert_not_called()
+
+    def test_keycloak_auth_failure_deletes_nothing(self):
+        from accounts.services.privacy_requests import AccountDeletionError
+        self.keycloak.token = None
+        with self.assertRaises(AccountDeletionError):
+            self._delete()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+        self.keycloak.delete_user.assert_not_called()
+
+    def test_team_member_who_joined_first_becomes_admin(self):
+        import datetime
+        from django.utils import timezone
+        from accounts.models import Notification, Profile, Team
+        team = Team.objects.create(name="Grid")
+        now = timezone.now()
+        Profile.objects.filter(user=self.user).update(team=team, team_role="admin", team_joined_at=now - datetime.timedelta(days=30))
+        first, later = (User.objects.create_user(email=f"{n}@example.com", password="testpass123") for n in ("first", "later"))
+        Profile.objects.filter(user=later).update(team=team, team_role="member", team_joined_at=now - datetime.timedelta(days=1))
+        Profile.objects.filter(user=first).update(team=team, team_role="member", team_joined_at=now - datetime.timedelta(days=10))
+        self._delete()
+        self.assertEqual(Profile.objects.get(user=first).team_role, "admin")
+        self.assertEqual(Profile.objects.get(user=later).team_role, "member")
+        self.assertTrue(Notification.objects.filter(recipient=first, message__contains="admin of the team Grid").exists())
+
+    def test_team_left_with_no_members_is_deleted(self):
+        from django.utils import timezone
+        from accounts.models import Profile, Team, TeamInvite
+        team = Team.objects.create(name="Solo")
+        Profile.objects.filter(user=self.user).update(team=team, team_role="admin", team_joined_at=timezone.now())
+        TeamInvite.objects.create(team=team, email="pending@example.com", invited_by=self.user, expires_at=timezone.now())
+        self._delete()
+        self.assertFalse(Team.objects.filter(pk=team.pk).exists())
+        self.assertFalse(TeamInvite.objects.exists())
+
+    def test_team_with_members_is_kept(self):
+        from django.utils import timezone
+        from accounts.models import Profile, Team
+        team = Team.objects.create(name="Grid")
+        Profile.objects.filter(user=self.user).update(team=team, team_role="admin", team_joined_at=timezone.now())
+        member = User.objects.create_user(email="member@example.com", password="testpass123")
+        Profile.objects.filter(user=member).update(team=team, team_role="member", team_joined_at=timezone.now())
+        self._delete()
+        self.assertTrue(Team.objects.filter(pk=team.pk).exists())
+
+    def test_invites_received_are_deleted(self):
+        from accounts.models import Team, TeamInvite
+        from django.utils import timezone
+        team = Team.objects.create(name="Grid")
+        for email in ("LEAVING@example.com", "stays@example.com"):
+            TeamInvite.objects.create(team=team, email=email, invited_by=self.admin, expires_at=timezone.now())
+        self._delete()
+        self.assertEqual(list(TeamInvite.objects.values_list("email", flat=True)), ["stays@example.com"])
+
+    def test_admin_save_does_not_undo_a_cancel(self):
+        from accounts.admin import PrivacyRequestAdmin
+        from accounts.models import PrivacyRequest
+        from django.contrib.admin.sites import site
+        stale = PrivacyRequest.objects.get(pk=self.pr.pk)
+        PrivacyRequest.objects.filter(pk=self.pr.pk).update(status="cancelled")
+        stale.admin_note = "Noted"
+        PrivacyRequestAdmin(PrivacyRequest, site).save_model(None, stale, None, True)
+        self.pr.refresh_from_db()
+        self.assertEqual((self.pr.status, self.pr.admin_note), ("cancelled", "Noted"))
+
+    def test_user_with_open_request_cannot_be_deleted_from_users_admin(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("admin:accounts_user_delete", args=[self.user.pk]), {"post": "yes"})
+        self.assertEqual(response.status_code, 403)
+        self.client.post(reverse("admin:accounts_user_changelist"), {
+            "action": "delete_selected", "_selected_action": [self.user.pk], "post": "yes",
+        })
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_privacy_requests_cannot_be_deleted_in_admin(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("admin:accounts_privacyrequest_delete", args=[self.pr.pk]), {"post": "yes"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_not_before_the_scheduled_day(self):
+        from accounts.services.privacy_requests import AccountDeletionError
+        self.pr.scheduled_for = self.tomorrow
+        self.pr.save()
+        with self.assertRaises(AccountDeletionError):
+            self._delete()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+        self.keycloak.delete_user.assert_not_called()
+
+    def test_not_after_the_user_cancelled(self):
+        from accounts.services.privacy_requests import AccountDeletionError, cancel_privacy_request
+        self.assertTrue(cancel_privacy_request(self.user, self.pr.pk))
+        with self.assertRaises(AccountDeletionError):
+            self._delete()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_admin_approve_button_saves_the_note_first(self):
+        self.pr.status = "pending"
+        self.pr.scheduled_for = None
+        self.pr.save()
+        self.client.force_login(self.admin)
+        url = reverse("admin:accounts_privacyrequest_change", args=[self.pr.pk])
+        response = self.client.post(url, {"admin_note": "See you", "_approve": "1"})
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+        self.pr.refresh_from_db()
+        self.assertEqual((self.pr.status, self.pr.admin_note), ("approved", "See you"))
+
+    def test_admin_delete_button(self):
+        self.client.force_login(self.admin)
+        url = reverse("admin:accounts_privacyrequest_change", args=[self.pr.pk])
+        self.assertContains(self.client.get(url), 'name="_delete_account"')
+        self.client.post(url, {"admin_note": "", "_delete_account": "1"})
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+
+    @override_settings(ADMINS=[("Admin", "admins@example.com")])
+    def test_reminder_lists_only_deletions_due_today(self):
+        from django.core import mail
+        from accounts.models import PrivacyRequest
+        from accounts.tasks import remind_admins_of_due_deletions
+        other = User.objects.create_user(email="later@example.com", password="testpass123")
+        PrivacyRequest.objects.create(user=other, email=other.email, kind="deletion", status="approved", scheduled_for=self.tomorrow)
+        remind_admins_of_due_deletions()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("leaving@example.com", mail.outbox[0].body)
+        self.assertNotIn("later@example.com", mail.outbox[0].body)

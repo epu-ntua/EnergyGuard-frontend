@@ -35,7 +35,9 @@
                 <h5 class="mb-2"><span class="fas fa-trash-alt me-2 text-body-tertiary"></span>Delete your data</h5>
                 <p class="text-body-tertiary fs-9 flex-1">Request the deletion of your account and personal data. This cannot be undone once processed.</p>
                 <div>
-                    {% if 'deletion' in pending_privacy_kinds %}
+                    {% if open_deletion_request.status == 'approved' %}
+                        <button class="btn btn-phoenix-secondary" type="button" disabled>Deletion on {{ open_deletion_request.scheduled_for|date:"M j, Y" }}</button>
+                    {% elif open_deletion_request %}
                         <button class="btn btn-phoenix-secondary" type="button" disabled>Request pending</button>
                     {% else %}
                         <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#privacyDeletionModal">Request deletion</button>
@@ -66,17 +68,16 @@
                 <td class="align-middle text-body-tertiary">{{ pr.created_at|date:"M j, Y" }}</td>
                 <td class="align-middle">
                     {% if pr.status == 'pending' %}<span class="badge badge-phoenix fs-10 badge-phoenix-warning">Pending</span>
+                    {% elif pr.status == 'approved' %}<span class="badge badge-phoenix fs-10 badge-phoenix-info">Approved</span>
+                    <div class="fs-10 text-body-tertiary mt-1">Account deleted on {{ pr.scheduled_for|date:"M j, Y" }}</div>
                     {% elif pr.status == 'completed' %}<span class="badge badge-phoenix fs-10 badge-phoenix-success">Completed</span>
                     {% elif pr.status == 'rejected' %}<span class="badge badge-phoenix fs-10 badge-phoenix-danger">Rejected</span>
                     {% else %}<span class="badge badge-phoenix fs-10 badge-phoenix-secondary">Cancelled</span>{% endif %}
                 </td>
                 <td class="align-middle text-body-tertiary">{{ pr.admin_note|default:"-" }}</td>
                 <td class="align-middle pe-0 text-end">
-                    {% if pr.is_pending %}
-                    <form method="post" action="{% url 'cancel_privacy_request' pr.pk %}" class="d-inline">
-                        {% csrf_token %}
-                        <button class="btn btn-link btn-sm text-danger p-0" type="submit">Cancel</button>
-                    </form>
+                    {% if pr.is_open %}
+                    <button class="btn btn-link btn-sm text-danger p-0" type="button" data-bs-toggle="modal" data-bs-target="#privacyCancelModal">Cancel</button>
                     {% endif %}
                 </td>
             </tr>
@@ -86,4 +87,33 @@
 </div>
 {% else %}
 <p class="text-body-tertiary fs-9">You have not made any deletion requests.</p>
+{% endif %}
+
+{% if open_deletion_request %}
+<!-- Cancel confirmation modal: a user has at most one open deletion request -->
+<div class="modal fade" id="privacyCancelModal" tabindex="-1" aria-labelledby="privacyCancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="post" action="{% url 'cancel_privacy_request' open_deletion_request.pk %}">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyCancelModalLabel">Cancel your deletion request</h5>
+                <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-body-tertiary lh-lg mb-0">
+                    {% if open_deletion_request.status == 'approved' %}
+                    Your account will not be deleted on {{ open_deletion_request.scheduled_for|date:"M j, Y" }} and you can keep using EnergyGuard.
+                    {% else %}
+                    Your request will be withdrawn and your account will not be deleted.
+                    {% endif %}
+                    If you change your mind later, you will need to submit a new request. Are you sure you want to cancel?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-phoenix-danger" type="submit">Yes, cancel request</button>
+                <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep request</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endif %}

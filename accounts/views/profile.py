@@ -96,9 +96,9 @@ def profile(request):
             "open_create_modal": open_create_modal, 
             "active_tab": "privacy" if request.GET.get("tab") == "privacy" else "personal-info",
             "privacy_requests": PrivacyRequest.objects.filter(user=request.user),
-            "pending_privacy_kinds": set(
-                PrivacyRequest.objects.filter(user=request.user, status=PrivacyRequest.Status.PENDING).values_list("kind", flat=True)
-            ),
+            "open_deletion_request": PrivacyRequest.objects.filter(
+                user=request.user, kind=PrivacyRequest.Kind.DELETION, status__in=PrivacyRequest.OPEN_STATUSES,
+            ).first(),
         },
     )
 

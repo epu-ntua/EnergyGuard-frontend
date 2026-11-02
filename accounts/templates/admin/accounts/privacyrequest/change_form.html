@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+{% if original.is_pending %}
+<div class="submit-row">
+    <p>Write the note first if you want one: it is saved together with the decision and included in the email to the user.</p>
+    <input type="submit" name="_approve" value="Approve: delete the account in {{ deletion_grace_days }} days">
+    <input type="submit" name="_reject" value="Reject" class="deletelink">
+</div>
+{% elif original.status == "approved" %}
+<div class="submit-row">
+    {% if original.is_due %}
+    <p>Deletes the account and its data from EnergyGuard and Keycloak, then emails the user. This cannot be undone.</p>
+    <input type="submit" name="_delete_account" value="Delete account now" class="deletelink"
+           onclick="return confirm('Permanently delete the account of {{ original.email|escapejs }} from EnergyGuard and Keycloak?');">
+    {% else %}
+    <p>Approved. The account can be deleted from {{ original.scheduled_for|date:"d M Y" }}.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
