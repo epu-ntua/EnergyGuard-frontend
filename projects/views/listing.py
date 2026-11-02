@@ -19,10 +19,12 @@ class ProjectsListJson(LoginRequiredMixin, BaseDatatableView):
         "project_type",
         "id",
     ]
+    # Indexed by the table's column position, so it must follow the JS
+    # columns exactly. Collaborators is commented out there, so it is absent
+    # here; a visible:false column would still take a position.
     order_columns = [
         "name",
         "description",
-        "collaborators__first_name",
         "created_at",
         "updated_at",
         "project_type",
@@ -31,6 +33,14 @@ class ProjectsListJson(LoginRequiredMixin, BaseDatatableView):
 
     def get_initial_queryset(self):
         return Project.objects.prefetch_related("collaborators").all()
+
+    def ordering(self, qs):
+        qs = super().ordering(qs)
+        # The table pages server-side and type ties on most rows: without a
+        # unique last key, rows repeat or vanish across pages.
+        if qs.query.order_by:
+            qs = qs.order_by(*qs.query.order_by, "id")
+        return qs
 
     def render_column(self, row, column):
         if column == "created_at":
