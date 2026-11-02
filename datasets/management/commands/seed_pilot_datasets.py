@@ -63,7 +63,8 @@ class Command(BaseCommand):
                         f"Skipping {name}: '{object_key}' not found in bucket '{bucket_name}' yet."
                     )
                 )
-                Dataset.objects.filter(name=f"{name} Pilot Data").delete()
+                # Platform rows only: a user may have named their own dataset the same
+                Dataset.objects.filter(name=f"{name} Pilot Data", publisher__isnull=True).delete()
                 continue
 
             size_gb = _size_gb(bucket_name, object_key)
@@ -73,8 +74,10 @@ class Command(BaseCommand):
             # data management export exposes a real last-update timestamp (e.g. the
             # MinIO object's LastModified, or a value from the data lake API), use that
             # here instead so "Last Updated" reflects the real data freshness.
+            # publisher=None in the lookup, for the same reason as the delete above
             dataset, created = Dataset.objects.update_or_create(
                 name=f"{name} Pilot Data",
+                publisher=None,
                 defaults={
                     "description": pilot_description(name),
                     "label": Dataset.Label.IOT_SENSORS_MONITORING,

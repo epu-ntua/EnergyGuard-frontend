@@ -111,11 +111,14 @@ class Dataset(TimeStampedModel):
     submitted_at = models.DateTimeField(blank=True, null=True)
     visibility = models.BooleanField(default=False)
     size_gb = models.DecimalField(decimal_places=2, max_digits=12, validators=[MinValueValidator(Decimal('0.01'))])
+    # CASCADE: a user's datasets are their personal data and go with the account
+    # (the files too, see datasets/signals.py). SET_NULL would turn them into
+    # platform-owned data, which counts as published once public.
     publisher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name='published_datasets',
     )
     # MinIO object key for the primary dataset file.
