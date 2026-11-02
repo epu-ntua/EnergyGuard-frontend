@@ -44,17 +44,20 @@
 
 {% block scripts %}
 <script>
-const TAB_KEY = 'trustworthiness_active_tab';
+const TAB_PARAMS = { '#tab-assessments': 'assessments', '#tab-results': 'results' };
 
-const savedTab = localStorage.getItem(TAB_KEY);
-if (savedTab) {
-    const tabEl = document.querySelector('#trustworthinessTab a[href="' + savedTab + '"]');
+// The page renders on Assessments; ?tab=results (kept in the URL below) lets a
+// reload or Back return to the Results tab.
+if (new URLSearchParams(window.location.search).get('tab') === 'results') {
+    const tabEl = document.querySelector('#trustworthinessTab a[href="#tab-results"]');
     if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
 }
 
 document.querySelectorAll('#trustworthinessTab a[data-bs-toggle="tab"]').forEach(tabEl => {
     tabEl.addEventListener('shown.bs.tab', e => {
-        localStorage.setItem(TAB_KEY, e.target.getAttribute('href'));
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', TAB_PARAMS[e.target.getAttribute('href')]);
+        history.replaceState(null, '', url);
     });
 });
 

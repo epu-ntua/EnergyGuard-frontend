@@ -195,20 +195,31 @@
             publicTable.search(this.value).draw();
         });
 
+        $('#myProjects-tab').on('shown.bs.tab', function () {
+            myTable.columns.adjust();
+        });
+
         $('#publicProjects-tab').on('shown.bs.tab', function () {
-            publicTable.columns.adjust().draw();
+            publicTable.columns.adjust();
         });
     });
 </script>
 <script>
-const savedProjectsTab = localStorage.getItem('projects_active_tab');
-if (savedProjectsTab) {
-    const tabEl = document.querySelector('#myTab a[href="' + savedProjectsTab + '"]');
-    if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
-}
+const PROJECT_TAB_PARAMS = { '#tab-myProjects': 'my', '#tab-publicProjects': 'public' };
 document.querySelectorAll('#myTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    // A type filter belongs to the tab it was picked on: switching tabs
+    // reloads the other tab unfiltered instead of carrying it over.
+    tabEl.addEventListener('show.bs.tab', e => {
+        if (new URLSearchParams(window.location.search).has('type')) {
+            e.preventDefault();
+            window.location.search = '?tab=' + PROJECT_TAB_PARAMS[e.target.getAttribute('href')];
+        }
+    });
     tabEl.addEventListener('shown.bs.tab', e => {
-        localStorage.setItem('projects_active_tab', e.target.getAttribute('href'));
+        // Keep the URL on the visible tab so a reload or Back lands there.
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', PROJECT_TAB_PARAMS[e.target.getAttribute('href')]);
+        history.replaceState(null, '', url);
     });
 });
 </script>

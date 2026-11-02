@@ -226,23 +226,30 @@
         });
 
         $("#publicDatasets-tab").on("shown.bs.tab", function() {
-            publicTable.columns.adjust().draw();
+            publicTable.columns.adjust();
         });
 
         $("#myDatasets-tab").on("shown.bs.tab", function() {
-            myTable.columns.adjust().draw();
+            myTable.columns.adjust();
         });
     });
 </script>
 <script>
-const savedDatasetsTab = localStorage.getItem('datasets_active_tab');
-if (savedDatasetsTab) {
-    const tabEl = document.querySelector('#datasetsTab a[href="' + savedDatasetsTab + '"]');
-    if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
-}
+const DATASET_TAB_PARAMS = { '#tab-publicDatasets': 'public', '#tab-myDatasets': 'my' };
 document.querySelectorAll('#datasetsTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    // A label filter belongs to the tab it was picked on: switching tabs
+    // reloads the other tab unfiltered instead of carrying it over.
+    tabEl.addEventListener('show.bs.tab', e => {
+        if (new URLSearchParams(window.location.search).has('label')) {
+            e.preventDefault();
+            window.location.search = '?tab=' + DATASET_TAB_PARAMS[e.target.getAttribute('href')];
+        }
+    });
     tabEl.addEventListener('shown.bs.tab', e => {
-        localStorage.setItem('datasets_active_tab', e.target.getAttribute('href'));
+        // Keep the URL on the visible tab so a reload or Back lands there.
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', DATASET_TAB_PARAMS[e.target.getAttribute('href')]);
+        history.replaceState(null, '', url);
     });
 });
 </script>
