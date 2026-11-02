@@ -9,29 +9,167 @@
 
         <h2>Digital Twins</h2>
         <p>Here you can find all the digital twins available in EnergyGuard platform.</p>
-        <div class="row g-5 mt-3">
-            {% for digital_twin in digital_twins %}
-                <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
-                    <div class="card h-100" style="cursor: pointer;">
-                        {% if digital_twin.image %}
-                        <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                        <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ digital_twin.name }}</h5>
-                            <p class="card-text text-body-tertiary fs-9">{{ digital_twin.description }}</p>
-                            <a href="{% url 'digitaltwins-detail' digital_twin.slug %}" class="stretched-link"></a>
+
+        {# Plain links, not Bootstrap tabs: only the open tab is built (see digitaltwins_list). #}
+        <ul class="nav nav-underline mt-4">
+            <li class="nav-item me-3"><a class="nav-link fs-8 {% if active_tab == 'twins' %}active{% endif %}" href="{% url 'digitaltwins-list' %}"{% if active_tab == 'twins' %} aria-current="page"{% endif %}>All Digital Twins</a></li>
+            <li class="nav-item"><a class="nav-link fs-8 {% if active_tab == 'runs' %}active{% endif %}" href="{% url 'digitaltwins-list' %}?tab=runs"{% if active_tab == 'runs' %} aria-current="page"{% endif %}>My runs</a></li>
+        </ul>
+
+        <div class="mt-4">
+            {% if active_tab == 'twins' %}
+                <div class="row g-5">
+                    {% for digital_twin in digital_twins %}
+                        <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
+                            <div class="card h-100" style="cursor: pointer;">
+                                {% if digital_twin.image %}
+                                <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                <img class="card-img-top" src="{% static 'assets/img/generic/no-img.webp' %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ digital_twin.name }}</h5>
+                                    <p class="card-text text-body-tertiary fs-9">{{ digital_twin.description }}</p>
+                                    <a href="{% url 'digitaltwins-detail' digital_twin.slug %}" class="stretched-link"></a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <p class="text-body-tertiary fs-9">No digital twins found.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {# My runs: the user's runs of every twin that keeps them. #}
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                    <ul class="nav nav-links mx-n2">
+                        {% for item in twin_filters %}
+                        <li class="nav-item"><a class="nav-link px-2 py-1 fs-9 {% if item.active %}active{% endif %}" href="?{{ item.query }}"><span>{{ item.label }} </span><span class="text-body-tertiary fw-semibold">({{ item.count }})</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-phoenix-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fas fa-filter me-2 fs-10"></span>{{ status_label }}
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end py-2">
+                            {% for item in status_filters %}
+                            <a class="dropdown-item {% if item.active %}active{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-            {% empty %}
-                <div class="col-12">
-                    <p class="text-body-tertiary fs-9">No digital twins found.</p>
+
+                {% if page_obj.object_list %}
+                <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis border-top border-bottom border-translucent position-relative top-1">
+                    <div class="table-responsive mx-n1 px-1" style="overflow: visible;">
+                        <table class="table table-sm table-hover fs-9 mb-0" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th class="white-space-nowrap align-middle py-3 ps-2 fs-9" scope="col">DIGITAL TWIN</th>
+                                    <th class="align-middle text-start fs-9" scope="col">RUN</th>
+                                    <th class="align-middle text-start fs-9" scope="col">TYPE</th>
+                                    <th class="align-middle text-start fs-9" scope="col">SUBMITTED</th>
+                                    <th class="align-middle text-end fs-9" scope="col">STATUS</th>
+                                    <th class="align-middle text-end fs-9 pe-2" scope="col">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for run in page_obj %}
+                                {% if run.open_url %}
+                                <tr data-run-href="{{ run.open_url }}" style="cursor:pointer;">
+                                {% else %}
+                                <tr>
+                                {% endif %}
+                                    <td class="align-middle py-3 ps-2 fw-semibold">{{ run.twin.short_name }}</td>
+                                    <td class="align-middle py-3">
+                                        {% if run.open_url %}
+                                        <a class="fw-semibold fs-9 text-decoration-none" href="{{ run.open_url }}">#{{ run.ref }}</a>
+                                        {% else %}
+                                        <span class="fw-semibold fs-9">#{{ run.ref }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle py-3 fs-9">{{ run.type_label }}</td>
+                                    <td class="align-middle py-3 fs-9" style="font-variant-numeric: tabular-nums;">{{ run.created|date:"d M Y, H:i" }}</td>
+                                    <td class="align-middle py-3 fs-9 text-end">
+                                        {% if run.status_group == 'completed' %}
+                                        <span class="badge badge-phoenix badge-phoenix-success">{{ run.status_label }}</span>
+                                        {% elif run.status_group == 'failed' %}
+                                        <span class="badge badge-phoenix badge-phoenix-danger"{% if run.error %} title="{{ run.error }}"{% endif %}>{{ run.status_label }}</span>
+                                        {% elif run.status_group == 'cancelled' %}
+                                        <span class="badge badge-phoenix badge-phoenix-secondary">{{ run.status_label }}</span>
+                                        {% else %}
+                                        <span class="badge badge-phoenix badge-phoenix-warning">{{ run.status_label }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle text-end white-space-nowrap py-2 pe-2" style="cursor:default;" data-row-ignore>
+                                        <div class="btn-reveal-trigger">
+                                            <button class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal" type="button"
+                                                    data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-haspopup="true" aria-expanded="false"
+                                                    aria-label="Actions for {{ run.twin.short_name }} run #{{ run.ref }}"><span class="fas fa-ellipsis-h fs-10"></span></button>
+                                            <div class="dropdown-menu dropdown-menu-end py-2">
+                                                {% if run.open_url %}
+                                                <a class="dropdown-item" href="{{ run.open_url }}"><span class="fas fa-eye me-2"></span>Open</a>
+                                                {% endif %}
+                                                {% if run.download_url %}
+                                                <a class="dropdown-item" href="{{ run.download_url }}"><span class="fas fa-download me-2"></span>Download result</a>
+                                                {% endif %}
+                                                {% if run.open_url or run.download_url %}
+                                                <div class="dropdown-divider"></div>
+                                                {% endif %}
+                                                <a class="dropdown-item" href="{{ run.list_url }}"><span class="fas fa-list me-2"></span>All {{ run.twin.short_name }} runs</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            {% endfor %}
+
+                {# Laid out like the DataTables footer of the datasets list. #}
+                <div class="row">
+                    <div class="col-sm-12 col-md-7 fs-9 mt-4">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</div>
+                    <div class="col-sm-12 col-md-5 mt-4 d-flex justify-content-end">
+                        <nav aria-label="Runs pagination">
+                            <ul class="pagination">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item previous"><a class="page-link" href="?{{ runs_query }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+                                {% else %}
+                                <li class="page-item previous disabled"><span class="page-link" aria-disabled="true">Previous</span></li>
+                                {% endif %}
+                                {% for number in page_range %}
+                                {% if number == page_ellipsis %}
+                                <li class="page-item disabled"><span class="page-link">{{ number }}</span></li>
+                                {% elif number == page_obj.number %}
+                                <li class="page-item active" aria-current="page"><span class="page-link">{{ number }}</span></li>
+                                {% else %}
+                                <li class="page-item"><a class="page-link" href="?{{ runs_query }}&page={{ number }}">{{ number }}</a></li>
+                                {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                <li class="page-item next"><a class="page-link" href="?{{ runs_query }}&page={{ page_obj.next_page_number }}">Next</a></li>
+                                {% else %}
+                                <li class="page-item next disabled"><span class="page-link" aria-disabled="true">Next</span></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                {% else %}
+                <p class="text-body-tertiary my-4">{% if filtered %}No runs match these filters.{% else %}No runs yet. Runs of the digital twins you use will appear here.{% endif %}</p>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
     {% include "core/footer.html" %}
 </div>
 {% endblock %}
+
+{% block scripts %}
+{% if active_tab == 'runs' %}
+<script src="{% static 'digitaltwins/runs-list.js' %}" defer></script>
+{% endif %}
+{% endblock scripts %}

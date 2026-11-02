@@ -20,6 +20,7 @@ from datasets.services.pilot import pilot_object_folder
 
 from .catalog import DIGITAL_TWINS, DT_BY_SLUG
 from .common import check_rate_limit, dt_render
+from .runs import overview
 from .services import ResultNotFound, export_result
 from .services.jupyterhub_export import is_export_source
 
@@ -52,7 +53,17 @@ CEA_SAMPLE_JSON = """{
 
 @login_required
 def digitaltwins_list(request):
-    return dt_render(request, 'digitaltwins/digitaltwins-list.html', digital_twins=DIGITAL_TWINS)
+    """The twins, or with ?tab=runs the user's runs of all of them.
+
+    Only the open tab is built: the twins tab is the catalog page every menu links
+    to, so it does not pay for the runs queries.
+    """
+    if request.GET.get('tab') != 'runs':
+        return dt_render(request, 'digitaltwins/digitaltwins-list.html', digital_twins=DIGITAL_TWINS, active_tab='twins')
+    return dt_render(
+        request, 'digitaltwins/digitaltwins-list.html',
+        active_tab='runs', **overview.runs_tab_context(request.user, request.GET),
+    )
 
 
 @login_required
