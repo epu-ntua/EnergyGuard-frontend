@@ -77,25 +77,15 @@
                                                 <tr class="text-body-secondary text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
                                                     <th class="fw-medium" style="width: 6%;">Ref</th>
                                                     <th class="fw-medium">Obligation</th>
-                                                    <th class="fw-medium" style="width: 10%;">Status</th>
                                                     <th class="fw-medium" style="width: 10%;">Progress</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for item in group.fulfilled %}
+                                                {% for item in group.fulfilled|add:group.outstanding %}
                                                     <tr class="fs-8-5 fw-light">
                                                         <td class="text-body-secondary ps-1">{{ item.number }}</td>
                                                         <td class="pe-4">{{ item.text }}</td>
-                                                        <td><span class="badge bg-success-subtle text-success-emphasis">Fulfilled</span></td>
-                                                        <td class="text-body-secondary">{{ item.status|humanize_label }}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                                {% for item in group.outstanding %}
-                                                    <tr class="fs-8-5 fw-light">
-                                                        <td class="text-body-secondary ps-1">{{ item.number }}</td>
-                                                        <td class="pe-4">{{ item.text }}</td>
-                                                        <td><span class="badge bg-danger-subtle text-danger-emphasis">Outstanding</span></td>
-                                                        <td class="text-body-secondary">{{ item.status|humanize_label }}</td>
+                                                        <td><span class="badge {% if item.status == 'COMPLETE' %}bg-success-subtle text-success-emphasis{% elif item.status == 'IN_PROGRESS' %}bg-warning-subtle text-warning-emphasis{% elif item.status == 'NOT_APPLICABLE' %}text-bg-dark{% else %}bg-danger-subtle text-danger-emphasis{% endif %}">{{ item.status|humanize_label }}</span></td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
