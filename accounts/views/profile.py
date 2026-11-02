@@ -8,7 +8,7 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 
 from ..forms import ProfileEditForm, ProfileUpdateForm
-from ..models import Profile
+from ..models import PrivacyRequest, Profile
 from ..services.keycloak_user_sync import KeycloakUserSyncClient
 from ..services.team_creation import handle_create_team_post
 from ..utils.dates import get_time_since_joined
@@ -94,6 +94,11 @@ def profile(request):
             "total_projects": user_projects_count,
             "create_team_form": create_team_form,
             "open_create_modal": open_create_modal, 
+            "active_tab": "privacy" if request.GET.get("tab") == "privacy" else "personal-info",
+            "privacy_requests": PrivacyRequest.objects.filter(user=request.user),
+            "open_deletion_request": PrivacyRequest.objects.filter(
+                user=request.user, kind=PrivacyRequest.Kind.DELETION, status__in=PrivacyRequest.OPEN_STATUSES,
+            ).first(),
         },
     )
 

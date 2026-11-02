@@ -17,29 +17,15 @@
                 <div class="col-auto">
                     <div class="row g-2 g-sm-3">
                         <div class="col-auto">
-                            <!-- TODO: Add delete customer functionality -->
-                            <!-- <button class="btn btn-phoenix-danger"><span class="fas fa-trash-alt me-2"></span>Delete account</button> -->
-                            
-                            <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#verticallyCentered"><span class="fas fa-trash-alt me-2"></span>Delete account</button>
-                            <div class="modal fade" id="verticallyCentered" tabindex="-1" aria-labelledby="verticallyCenteredModalLabel" aria-hidden="true" style="display: none;">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="verticallyCenteredModalLabel">Delete Account</h5>
-                                            <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p class="text-body-tertiary lh-lg mb-0">This choice will permanently delete your account and all associated data. Are you sure you want to continue?</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <!-- TODO: Add delete account functionality -->
-                                            <button class="btn btn-phoenix-danger" type="submit">Yes</button>
-                                            <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal">Cancel</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                    
+                            {% if open_deletion_request.status == 'approved' %}
+                            <a class="btn btn-phoenix-secondary" href="?tab=privacy"><span class="fas fa-hourglass-half me-2"></span>Deletion on {{ open_deletion_request.scheduled_for|date:"M j, Y" }}</a>
+                            {% elif open_deletion_request %}
+                            <a class="btn btn-phoenix-secondary" href="?tab=privacy"><span class="fas fa-hourglass-half me-2"></span>Deletion requested</a>
+                            {% else %}
+                            <button class="btn btn-phoenix-danger" type="button" data-bs-toggle="modal" data-bs-target="#privacyDeletionModal"><span class="fas fa-trash-alt me-2"></span>Delete account</button>
+                            {% endif %}
+                            {# Outside the tabs: a modal inside a hidden tab pane can't be shown #}
+                            {% include "accounts/partials/privacy-deletion-modal.html" %}
                         </div>
                         <div class="col-auto">
                             <button class="btn btn-phoenix-secondary" type="button" data-bs-toggle="modal" data-bs-target="#resetPasswordModal"><span class="fas fa-key me-2"></span>Reset password</button>
@@ -117,7 +103,8 @@
             <div>
                 <div class="scrollbar">
                     <ul class="nav nav-underline fs-9 flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
-                        <li class="nav-item"><a class="nav-link text-nowrap active" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="true"><span class="fas fa-user me-2"></span>Personal info</a></li>
+                        <li class="nav-item"><a class="nav-link text-nowrap{% if active_tab == 'personal-info' %} active{% endif %}" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="{% if active_tab == 'personal-info' %}true{% else %}false{% endif %}"><span class="fas fa-user me-2"></span>Personal info</a></li>
+                        <li class="nav-item"><a class="nav-link text-nowrap{% if active_tab == 'privacy' %} active{% endif %}" id="privacy-tab" data-bs-toggle="tab" href="#tab-privacy" role="tab" aria-controls="tab-privacy" aria-selected="{% if active_tab == 'privacy' %}true{% else %}false{% endif %}"><span class="fas fa-shield-alt me-2"></span>Privacy</a></li>
                         {% comment %}
                         <li class="nav-item me-3"><a class="nav-link text-nowrap" id="billing-tab" data-bs-toggle="tab" href="#tab-billing" role="tab" aria-controls="tab-billing" aria-selected="true"><span class="fas fa-credit-card me-2"></span>Billing</a></li>
                         {% endcomment %}
@@ -126,7 +113,7 @@
                 <div class="tab-content" id="profileTabContent">
     
                     <!-- Personal Info Tab Content -->               
-                    <div class="tab-pane fade show active" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                    <div class="tab-pane fade{% if active_tab == 'personal-info' %} show active{% endif %}" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
                         <form method="post" action="">
                             {% csrf_token %}
                             <div class="row gx-3 gy-4 mb-5">
@@ -194,6 +181,11 @@
                         </form>
                     </div>
     
+                    <!-- Privacy Tab Content -->
+                    <div class="tab-pane fade{% if active_tab == 'privacy' %} show active{% endif %}" id="tab-privacy" role="tabpanel" aria-labelledby="privacy-tab">
+                        {% include "accounts/partials/privacy-tab.html" %}
+                    </div>
+
                     <!-- Billing Tab Content -->
                     {% comment %}
                     <div class="tab-pane fade" id="tab-billing" role="tabpanel" aria-labelledby="billing-tab">
@@ -377,6 +369,17 @@
 {% endblock content %}
 
 {% block scripts %}
+<script>
+const PROFILE_TAB_PARAMS = { '#tab-personal-info': 'personal-info', '#tab-privacy': 'privacy' };
+document.querySelectorAll('#myTab a[data-bs-toggle="tab"]').forEach(tabEl => {
+    tabEl.addEventListener('shown.bs.tab', e => {
+        // Keep the URL on the visible tab so a reload or Back lands there.
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', PROFILE_TAB_PARAMS[e.target.getAttribute('href')]);
+        history.replaceState(null, '', url);
+    });
+});
+</script>
 {% if not existing_team and open_create_modal %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {

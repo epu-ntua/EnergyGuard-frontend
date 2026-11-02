@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EnergyGuard personal data</title>
+{# Standalone file opened offline from the export zip: no external CSS, JS or fonts #}
+<style>
+  :root {
+    --bg: #f5f7fa; --surface: #ffffff; --text: #141824; --muted: #6e7891;
+    --border: #e3e6ed; --accent: #3874ff; --code-bg: #f5f7fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f111a; --surface: #141824; --text: #e3e6ed; --muted: #9fa6bc;
+      --border: #31374a; --accent: #85a9ff; --code-bg: #0f111a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { margin-bottom: 24px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: var(--muted); margin: 0; }
+  nav { margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  nav .count { color: var(--muted); }
+  section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; margin-top: 16px;
+  }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  h2 .count { color: var(--muted); font-weight: normal; }
+  .empty { color: var(--muted); margin: 0; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; vertical-align: top; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  dl { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: 6px 24px; margin: 0; }
+  dt { color: var(--muted); }
+  dd { margin: 0; word-break: break-word; }
+  pre {
+    margin: 0; padding: 8px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; max-height: 240px; overflow: auto;
+  }
+  details summary { cursor: pointer; color: var(--accent); }
+  .note { color: var(--muted); }
+  .note ul { margin: 8px 0 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Your EnergyGuard personal data</h1>
+    <p class="meta">{{ user.get_full_name|default:user.email }} &middot; {{ user.email }} &middot; exported {{ exported_at }}</p>
+    <nav>
+      {% for section in sections %}
+        <a href="#section-{{ forloop.counter }}">{{ section.title }}{% if section.kind == 'table' %} <span class="count">({{ section.rows|length }})</span>{% endif %}</a>
+      {% endfor %}
+    </nav>
+  </header>
+
+  {% for section in sections %}
+  <section id="section-{{ forloop.counter }}">
+    <h2>{{ section.title }}{% if section.kind == 'table' %} <span class="count">({{ section.rows|length }})</span>{% endif %}</h2>
+
+    {% if section.kind == 'fields' %}
+      <dl>
+        {% for label, cell in section.fields %}
+          <dt>{{ label }}</dt>
+          <dd>{% if cell.1 %}<pre>{{ cell.0 }}</pre>{% else %}{{ cell.0 }}{% endif %}</dd>
+        {% endfor %}
+      </dl>
+    {% elif section.kind == 'table' and section.rows %}
+      <div class="scroll">
+        <table>
+          <thead><tr>{% for header in section.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for row in section.rows %}
+            <tr>
+              {% for cell in row %}
+                <td>{% if cell.1 %}<details><summary>Show</summary><pre>{{ cell.0 }}</pre></details>{% else %}{{ cell.0 }}{% endif %}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty">None</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <section class="note">
+    <h2>About this export</h2>
+    <p>This file is a readable copy of <strong>personal_data.json</strong>, which holds the same data in a machine-readable format. Your profile picture, if you uploaded one, is in the <strong>profile_picture</strong> folder.</p>
+    <p>Not included:</p>
+    <ul>
+      <li>The contents of your dataset files and digital twin results. They are listed above and can be downloaded from the platform.</li>
+      <li>Personal data of other people, such as the members of your team or the collaborators on your projects.</li>
+      <li>Your sign-in account (Keycloak), which holds the same name and email address shown above.</li>
+    </ul>
+    <p>To have your data deleted, use the Privacy tab of your EnergyGuard profile.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -27,7 +27,7 @@ class KeycloakUserSyncClient:
             "grant_type": "client_credentials",
         }
         try:
-            response = requests.post(token_url, data=payload)
+            response = requests.post(token_url, data=payload, timeout=15)
             response.raise_for_status()  # Raise an exception for bad status codes
             return response.json().get("access_token")
         except requests.exceptions.RequestException as e:
@@ -104,3 +104,27 @@ class KeycloakUserSyncClient:
             status = e.response.status_code if e.response is not None else "No response"
             logger.error(f"Error sending reset password email for user {user.id}: {type(e).__name__} (status={status})")
             return {"error": f"Failed to send reset password email: {e}"}
+
+    def delete_user(self, keycloak_user_id):
+        """Delete the user from the realm. Takes the Keycloak id, since the caller deletes
+        the Django user (and its SocialAccount) in the same transaction."""
+        if not self.token:
+            logger.error("Cannot delete Keycloak user: user sync client is not authenticated.")
+            return {"error": "Authentication failed. Cannot get service account token."}
+
+        url = f"{self.base_url}/admin/realms/{self.realm}/users/{keycloak_user_id}"
+        headers = {"Authorization": f"Bearer {self.token}"}
+
+        try:
+            # Timeout: the caller holds a transaction open around this call
+            response = requests.delete(url, headers=headers, timeout=15)
+            if response.status_code == 404:
+                logger.warning(f"Keycloak user {keycloak_user_id} was already deleted.")
+                return {"success": True}
+            response.raise_for_status()
+            logger.info(f"Successfully deleted user {keycloak_user_id} from Keycloak.")
+            return {"success": True}
+        except requests.exceptions.RequestException as e:
+            status = e.response.status_code if e.response is not None else "No response"
+            logger.error(f"Error deleting user {keycloak_user_id} from Keycloak: {type(e).__name__} (status={status})")
+            return {"error": f"Failed to delete the user in Keycloak (status={status})."}

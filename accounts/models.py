@@ -217,6 +217,64 @@ class Notification(models.Model):
         return f"Notification for {self.recipient}: {self.message}"
 
 
+class PrivacyRequest(TimeStampedModel):
+    """A user's GDPR request, handled by an admin. Data export is self-service (services/data_export.py).
+
+    Deletion: pending -> approved (the account is deleted on scheduled_for, which
+    gives the user time to download their data) -> completed once an admin deletes
+    the account. The user can cancel while it is pending or approved.
+    """
+
+    class Kind(models.TextChoices):
+        DELETION = 'deletion', 'Deletion of personal data'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        APPROVED = 'approved', 'Approved'
+        COMPLETED = 'completed', 'Completed'
+        REJECTED = 'rejected', 'Rejected'
+        CANCELLED = 'cancelled', 'Cancelled'
+
+    OPEN_STATUSES = (Status.PENDING, Status.APPROVED)
+
+    # SET_NULL + email snapshot: the request record must outlive a completed deletion
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='privacy_requests')
+    email = models.EmailField()
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    message = models.TextField(blank=True)
+    admin_note = models.TextField(blank=True, help_text='Shown to the user and included in the email sent on approval or rejection.')
+    scheduled_for = models.DateField(null=True, blank=True, help_text='Day the account is deleted. Set on approval.')
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    @property
+    def is_pending(self):
+        return self.status == self.Status.PENDING
+
+    @property
+    def is_open(self):
+        return self.status in self.OPEN_STATUSES
+
+    @property
+    def is_due(self):
+        """Approved and its deletion day has come."""
+        return self.status == self.Status.APPROVED and self.scheduled_for is not None and self.scheduled_for <= timezone.localdate()
+
+    def __str__(self):
+        return f"{self.get_kind_display()} request by {self.email} ({self.status})"
+
+    class Meta:
+        db_table = 'privacy_request'
+        verbose_name = 'Privacy Request'
+        verbose_name_plural = 'Privacy Requests'
+        ordering = ['-created_at']
+        constraints = [
+            # One open request per kind per user, so double submits don't pile up
+            models.UniqueConstraint(fields=['user', 'kind'], condition=Q(status__in=['pending', 'approved']), name='unique_open_privacy_request'),
+        ]
+
+
 # ------------------- SIGNALS ------------------- #
 
 # Automatically create a Profile for each new User and save the Profile when the User is saved
