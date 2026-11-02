@@ -2,6 +2,7 @@ import json
 from collections import Counter
 from unittest.mock import patch
 
+from django.contrib.staticfiles import finders
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -195,6 +196,13 @@ class JourneysViewTests(TestCase):
                 self.assertContains(response, step["title"])
                 if step.get("link"):
                     self.assertContains(response, reverse(step["link"]["url_name"], kwargs=step["link"].get("kwargs")))
+
+    def test_every_step_image_exists_and_has_alt_text(self):
+        for journey in JOURNEYS:
+            for step in journey["steps"]:
+                for image in step.get("images", []):
+                    self.assertIsNotNone(finders.find(image["src"]), image["src"])
+                    self.assertTrue(image.get("alt"), image["src"])
 
     def test_unknown_journey_is_not_found(self):
         self.client.force_login(self.user)

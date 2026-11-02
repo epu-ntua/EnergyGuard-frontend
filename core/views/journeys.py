@@ -12,8 +12,9 @@ it as its next journey.
 Each step has a title, a short `body` (one paragraph per item), `optional` when the
 journey works without it, an optional `link` to
 the page where the step is done (`url_name` and optional `kwargs`, reversed when the
-page is shown), an optional `code` sample, and an optional `result` saying what the
-user sees afterwards.
+page is shown), an optional `code` sample, optional `images` (screenshots: `src` under
+static/, `alt` and a short `caption`), and an optional `result` saying what the user
+sees afterwards.
 
 A body paragraph can link inline: `[text](journey:<slug>)` links to another journey,
 `[text](<url_name>)` to a page of the platform. The rest of the text is escaped.
@@ -112,10 +113,13 @@ JOURNEYS = [
                 'title': 'Register your model',
                 'optional': True,
                 'body': [
-                    'If you logged the model, open the run in MLflow, click the model and choose '
-                    '"Register model". Select "Create new model", give it a name and press "Register".',
-                    'Each improved model you register under the same name becomes a new version, so you can '
-                    'always trace which version came from which run.',
+                    'If you logged the model, register it in MLflow to keep it under a name of your choice. '
+                    'In the experiment, open the "Models" tab, click the model and choose "Register model", '
+                    'then "Create new model".',
+                    'Each improved model you register later under the same name becomes a new version, so you '
+                    'can compare the versions and always trace which one came from which run. The '
+                    '[Register your model in MLflow](journey:register-model) journey walks through each '
+                    'step with screenshots.',
                 ],
                 'result': 'Version 1 of your model appears in MLflow.',
             },
@@ -178,24 +182,111 @@ JOURNEYS = [
                 ),
             },
             {
-                'title': 'Register the new model as a new version',
+                'title': 'Register the new version and compare',
                 'body': [
-                    'In Projects, open your project and click the experiment\'s name. In MLflow, open the new '
-                    'run, click its model and choose "Register model". Select the name you used for your first '
-                    'model instead of creating a new one.',
-                    'If you did not register your first model, register it too, under the same name.',
+                    'If you did not register your first model, register it now. Then register the model of '
+                    'the new run under the same name, so that it becomes version 2, and compare the two '
+                    'versions in MLflow. '
+                    '[Register your model in MLflow](journey:register-model) shows each step.',
+                ],
+                'result': 'You see the metrics of both versions side by side and whether the richer data '
+                          'improved your model.',
+            },
+        ],
+    },
+    {
+        'slug': 'register-model',
+        'title': 'Register your model in MLflow',
+        'summary': 'Register a model logged in MLflow, keep each improved model as a new version and compare '
+                   'the versions.',
+        'scenario': (
+            'Alice has logged the models of several training runs in MLflow and wants to keep the best '
+            'ones under one name, with a version for each improvement.'
+        ),
+        'icon': 'fa-code-branch',
+        'audience': 'AI developers and data scientists',
+        'duration': 'About 5 minutes',
+        'tools': 'Projects, MLflow',
+        'steps': [
+            {
+                'title': 'Open the model in MLflow',
+                'body': [
+                    'You need a model logged in MLflow from a training run, as in '
+                    '[Your first experiment](journey:first-experiment).',
+                    'In Projects, open your project and click the experiment\'s name. MLflow opens on the '
+                    'experiment.',
+                    'Choose "Models" in the experiment\'s menu on the left. The table lists every model logged '
+                    'in the experiment, with the run it came from and its metrics and parameters. The '
+                    '"Registered models" column shows which of them are already registered.',
                 ],
                 'link': {'label': 'My projects', 'url_name': 'projects_list'},
-                'result': 'The model becomes version 2 of the same registered model, linked to the run it '
-                          'came from.',
+                'images': [
+                    {
+                        'src': 'assets/img/journeys/mlflow-experiment-models.png',
+                        'alt': 'The Models tab of an MLflow experiment, listing three logged models with their '
+                               'source run, registered models, metrics and parameters.',
+                        'caption': 'The models logged in the experiment.',
+                    },
+                ],
+            },
+            {
+                'title': 'Register it',
+                'body': [
+                    'Click the name of the model you want to keep. Its page shows the metrics, parameters '
+                    'and run of the model. Choose "Register model" at the top right.',
+                    'The first time, select "Create new model" in the window that opens, give the model a '
+                    'name and press "Register". For each improved model after that, select the name you '
+                    'already have instead of creating a new one, so that it is kept as a new version.',
+                ],
+                'images': [
+                    {
+                        'src': 'assets/img/journeys/mlflow-logged-model.png',
+                        'alt': 'The page of a logged model in MLflow, marked "Not registered", with the '
+                               '"Register model" button at the top right.',
+                        'caption': 'A logged model that is not registered yet.',
+                    },
+                    {
+                        'src': 'assets/img/journeys/mlflow-register-dialog.png',
+                        'alt': 'The "Register model" window with an existing registered model selected.',
+                        'caption': 'Registering the model under an existing name, as a new version.',
+                    },
+                ],
+                'result': 'The model is registered as version 1 of a new name, or as the next version of an '
+                          'existing one, linked to the run it came from.',
+            },
+            {
+                'title': 'Find your registered model',
+                'body': [
+                    'Go to the MLflow home page, outside the experiment, by clicking the EnergyGuard logo at '
+                    'the top left, and choose "Models" in the menu on the left.',
+                    'This page lists every registered model with its latest version. Click the name of your '
+                    'model.',
+                ],
+                'images': [
+                    {
+                        'src': 'assets/img/journeys/mlflow-registered-models.png',
+                        'alt': 'The Registered Models page of MLflow, listing two models with their latest '
+                               'version and last modified date.',
+                        'caption': 'The registered models in MLflow.',
+                    },
+                ],
             },
             {
                 'title': 'Compare the versions',
+                'optional': True,
                 'body': [
-                    'With both versions registered, compare them in MLflow to see their parameters and '
-                    'metrics side by side.',
+                    'The model page lists its versions with the date each was registered. Once there are two '
+                    'or more, tick the versions you want to compare and press "Compare".',
                 ],
-                'result': 'You see whether the richer data improved your model.',
+                'images': [
+                    {
+                        'src': 'assets/img/journeys/mlflow-model-versions.png',
+                        'alt': 'The page of a registered model in MLflow, with versions 1 and 2 ticked and the '
+                               '"Compare" button next to the Versions heading.',
+                        'caption': 'Selecting two versions to compare.',
+                    },
+                ],
+                'result': 'You see the parameters and metrics of the versions side by side.',
             },
         ],
     },
