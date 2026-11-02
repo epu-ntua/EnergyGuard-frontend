@@ -11,7 +11,7 @@
         <p>Here you can find all the digital twins available in EnergyGuard platform.</p>
         <div class="row g-5 mt-3">
             {% for digital_twin in digital_twins %}
-                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
                     <div class="card h-100" style="cursor: pointer;">
                         {% if digital_twin.image %}
                         <img class="card-img-top" src="{% static digital_twin.image %}" alt="{{ digital_twin.name }}" style="height: 200px; object-fit: cover;">
