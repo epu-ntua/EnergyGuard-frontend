@@ -2,6 +2,8 @@ import logging
 import time
 from datetime import timedelta
 
+import requests
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -15,7 +17,7 @@ from django.utils.text import slugify
 from core.services.notifications import notify_in_app, platform_link
 
 from .models import Dataset
-from .services import MinioUploadError, move_dataset_object, object_exists
+from .services import MinioUploadError, delete_dataset_cache, delete_dataset_objects, move_dataset_object, object_exists
 from .services.review import submit_new_upload
 
 logger = logging.getLogger(__name__)
@@ -378,3 +380,20 @@ def notify_dataset_review_decision(dataset_id):
         )
     except Exception:
         logger.exception('Failed to send review decision email for dataset %s', dataset.pk)
+
+
+def discard_dataset_files(*, bucket_name, data_file_key, email, dataset_name):
+    """Best-effort removal of a deleted dataset's files: its MinIO object and the
+    publisher's JupyterHub copy (queued by datasets/signals.py). Failures are logged
+    with the key, for a manual clean-up, rather than raised. Runs on the qcluster."""
+    try:
+        delete_dataset_objects(bucket_name=bucket_name, data_file_key=data_file_key)
+    except MinioUploadError:
+        logger.exception("Could not delete dataset object %s/%s; it is orphaned", bucket_name, data_file_key)
+
+    if not email:
+        return
+    try:
+        delete_dataset_cache(email, dataset_name)
+    except requests.RequestException:
+        pass  # already logged in delete_dataset_cache

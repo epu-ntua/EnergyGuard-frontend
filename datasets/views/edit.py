@@ -7,6 +7,7 @@ from django.urls import reverse
 from ..forms import GeneralDatasetForm
 from ..models import Dataset
 from ..services import MinioUploadError, delete_dataset_cache, delete_dataset_objects, provision_user_datasets
+from ..signals import FILES_ALREADY_REMOVED
 from ..services.review import EditOutcome, apply_edit
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,8 @@ def dataset_delete(request, dataset_id):
 
     # Step 3: delete from DB — log critical if this fails since MinIO + JupyterHub are already gone
     try:
+        # Steps 1 and 2 removed the files; the post_delete signal must not try again
+        setattr(dataset, FILES_ALREADY_REMOVED, True)
         dataset.delete()
     except Exception as e:
         logger.critical(
