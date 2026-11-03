@@ -1,0 +1,50 @@
+{% with url_name=request.resolver_match.url_name %}
+<!-- Account sidebar: replaces the platform sidebar on the profile, team management and notifications pages -->
+<nav class="navbar navbar-vertical navbar-expand-lg">
+    <div class="collapse navbar-collapse" id="navbarVerticalCollapse">
+        <div class="navbar-vertical-content">
+            <ul class="navbar-nav flex-column" id="navbarVerticalNav">
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1" href="{% url 'dashboard' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="arrow-left"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">Back to platform</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <p class="navbar-vertical-label">Account</p>
+                    <hr class="navbar-vertical-line" />
+                </li>
+
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1 {% if url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="user"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">Profile</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1 {% if url_name == 'team_management' %}active{% endif %}" href="{% url 'team_management' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="users"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">Team Management</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link label-1 {% if url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="bell"></span></span><span class="nav-link-text-wrapper fs-8-5 py-2"><span class="nav-link-text">Notifications</span></span>
+                        </div>
+                    </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Vertical Navbar Footer -->
+    <div class="navbar-vertical-footer">
+        <button class="btn navbar-vertical-toggle border-0 fw-semibold w-100 white-space-nowrap d-flex align-items-center"><span class="uil uil-left-arrow-to-left fs-8-5 py-2"></span><span class="uil uil-arrow-from-right py-1"></span><span class="navbar-vertical-footer-text ms-2 fs-8-5">Collapsed View</span></button>
+    </div>
+</nav>
+{% endwith %}

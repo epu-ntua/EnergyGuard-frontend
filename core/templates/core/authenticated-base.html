@@ -48,9 +48,11 @@
     <!-- ===============================================-->
     <main class="main" id="top">
 
+      {% block sidebar %}
       {% if show_sidebar %}
-        {% include "./vertical-navbar.html" %}  
+        {% include "./vertical-navbar.html" %}
       {% endif %}
+      {% endblock sidebar %}
 
       {% include "./header.html" %}
 
@@ -160,9 +162,11 @@
       var READ_URL_BASE = "{% url 'read_notification' 0 %}";
       var MEMBERS_PARTIAL_URL = "{% url 'team_members_partial' %}";
       var PENDING_INVITES_PARTIAL_URL = "{% url 'pending_invites_partial' %}";
-      var FALLBACK_URL = "{% url 'team_management' %}";
+      var FALLBACK_URL = "{% url 'notifications' %}";
       var CSRF_TOKEN = "{{ csrf_token }}";
       var POLL_INTERVAL = 15000;
+      var DROPDOWN_LIMIT = {{ header_notifications_limit }};
+      var RENDERED_AT_MS = {{ header_notifications_rendered_at_ms|default:0 }};
       // Notifications already rendered server-side on this page load must not be re-toasted/duplicated by the first poll().
       var shown = new Set();
       var escapeHtml = window.EnergyGuardToast.escapeHtml;
@@ -171,23 +175,12 @@
         return READ_URL_BASE.replace("/0/", "/" + id + "/");
       }
 
-      // Bell badge = live unread-notification count from the server + the fixed count of
-      // non-dismissible profile/team reminders that were present on the initial page load.
-      var staticReminderCount = 0;
-      function initBadgeBaseline() {
-        var badge = document.getElementById("notif-badge");
-        var initialBadgeCount = badge ? (parseInt(badge.childNodes[0].textContent, 10) || 0) : 0;
-        var initialRealCount = document.querySelectorAll('#notif-dropdown-list .notification-card[data-notification-id]').length;
-        staticReminderCount = Math.max(0, initialBadgeCount - initialRealCount);
-      }
-
       function setBellBadge(unreadCount) {
         var badge = document.getElementById("notif-badge");
         if (!badge) return;
-        var total = staticReminderCount + unreadCount;
-        if (total > 0) {
+        if (unreadCount > 0) {
           badge.classList.remove("d-none");
-          badge.childNodes[0].textContent = total;
+          badge.childNodes[0].textContent = unreadCount;
         } else {
           badge.classList.add("d-none");
           badge.childNodes[0].textContent = "0";
@@ -236,6 +229,10 @@
         if (empty) {
           empty.classList.add("d-none");
         }
+        var markAllForm = document.getElementById("notif-mark-all-form");
+        if (markAllForm) {
+          markAllForm.classList.remove("d-none");
+        }
         var item = document.createElement("div");
         item.className = "px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom";
         item.setAttribute("data-notification-id", n.id);
@@ -247,12 +244,18 @@
               '</div>' +
               '<div class="flex-1 me-sm-3">' +
                 '<a class="stretched-link text-decoration-none notification-link" href="' + escapeHtml(readUrlFor(n.id)) + '" data-notification-id="' + n.id + '">' +
-                  '<p class="fs-8-5 text-body-highlight mb-2 fw-normal">' + escapeHtml(n.message) + '</p>' +
+                  '<p class="fs-8-5 text-body-highlight mb-1 fw-normal">' + escapeHtml(n.message) + '</p>' +
                 '</a>' +
+                '<p class="fs-10 text-body-tertiary mb-0">just now</p>' +
               '</div>' +
             '</div>' +
           '</div>';
         list.insertBefore(item, list.firstChild);
+        // Keep the dropdown to the latest few; the rest stay reachable from "View all notifications".
+        var cards = list.querySelectorAll(".notification-card");
+        for (var i = DROPDOWN_LIMIT; i < cards.length; i++) {
+          cards[i].remove();
+        }
       }
 
       function showToast(n) {
@@ -278,15 +281,15 @@
         if (!link) return;
         e.preventDefault();
         var id = link.getAttribute("data-notification-id");
-        var fallbackUrl = link.getAttribute("href") || FALLBACK_URL;
+        // Not the link's href: that is the POST-only read URL, which a plain navigation would 405 on.
         fetch(readUrlFor(id), {
           method: "POST",
           headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": CSRF_TOKEN },
           credentials: "same-origin",
         })
           .then(function (r) { return r.json(); })
-          .then(function (data) { window.location = (data && data.url) || fallbackUrl; })
-          .catch(function () { window.location = fallbackUrl; });
+          .then(function (data) { window.location = (data && data.url) || FALLBACK_URL; })
+          .catch(function () { window.location = FALLBACK_URL; });
       });
 
       function poll() {
@@ -298,7 +301,11 @@
             data.notifications.forEach(function (n) {
               if (!shown.has(n.id)) {
                 shown.add(n.id);
-                showToast(n);
+                // Only what arrived after this page was rendered. An older unread one can enter the
+                // latest-N window when another is read elsewhere; it is not new, so no toast.
+                if (Date.parse(n.created_at) >= RENDERED_AT_MS) {
+                  showToast(n);
+                }
               }
             });
           })
@@ -309,7 +316,6 @@
         document.querySelectorAll('#notif-dropdown-list .notification-card[data-notification-id]').forEach(function (el) {
           shown.add(parseInt(el.getAttribute("data-notification-id"), 10));
         });
-        initBadgeBaseline();
         poll();
         setInterval(poll, POLL_INTERVAL);
       });

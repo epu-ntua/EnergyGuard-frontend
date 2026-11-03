@@ -86,7 +86,6 @@ def profile(request):
         request,
         "accounts/profile.html",
         {
-            "show_sidebar": False,
             "joined_display": joined_display,
             "form": form,
             "profile": user_profile,

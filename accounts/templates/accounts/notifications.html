@@ -1,0 +1,94 @@
+{% extends "core/authenticated-base.html" %}
+{% load notification_tags %}
+
+{% block title %}Notifications | EnergyGuard{% endblock %}
+
+{% block sidebar %}{% include "accounts/partials/account-navbar.html" %}{% endblock %}
+
+{% block content %}
+<div class="content">
+    <!-- A header, not a div: user.min.css deliberately caps ".content > div:first-child" at 1800px and
+         centres it on ultra-wide screens. This page's rows are full-bleed (mx-n4 mx-lg-n6), so the title
+         opts out of that cap to stay aligned with them. -->
+    <header class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-5">
+        <h2 class="mb-0">Notifications</h2>
+        {% if unread_count %}
+        <form method="post" action="{% url 'mark_all_notifications_read' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            <button type="submit" class="btn btn-phoenix-secondary btn-sm"><span class="fas fa-check-double me-2"></span>Mark all as read</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <ul class="nav nav-links mb-4 mx-n3">
+        <li class="nav-item"><a class="nav-link fs-9 {% if active_filter == 'all' %}active{% endif %}" {% if active_filter == 'all' %}aria-current="page"{% endif %} href="?filter=all"><span>All</span></a></li>
+        <li class="nav-item"><a class="nav-link fs-9 {% if active_filter == 'unread' %}active{% endif %}" {% if active_filter == 'unread' %}aria-current="page"{% endif %} href="?filter=unread"><span>Unread </span><span class="text-body-tertiary fw-semibold">({{ unread_count }})</span></a></li>
+    </ul>
+
+    {% for day in notification_days %}
+    <h5 class="text-body-emphasis mb-3">{{ day.label }}</h5>
+    <div class="mx-n4 mx-lg-n6 {% if forloop.last and page_obj.paginator.num_pages == 1 %}mb-9{% else %}mb-5{% endif %} border-bottom">
+        {% for notification in day.notifications %}
+        <div class="d-flex align-items-center justify-content-between py-3 px-lg-6 px-4 notification-card position-relative border-top {% if notification.is_read %}read{% else %}unread{% endif %}">
+            <div class="d-flex">
+                <div class="avatar avatar-xl me-3">
+                    <div class="avatar-name rounded-circle"><span><span class="fas fa-{{ notification.icon }}"></span></span></div>
+                </div>
+                <div class="me-3 flex-1 mt-2">
+                    <a class="stretched-link text-decoration-none notification-link" href="{% url 'read_notification' notification.id %}" data-notification-id="{{ notification.id }}">
+                        <p class="fs-9 text-body-highlight {% if not notification.is_read %}fw-semibold{% endif %}">{{ notification.message }}{% if day.is_today %}<span class="ms-2 text-body-tertiary text-opacity-85 fw-bold fs-10">{{ notification.created_at|ago }}</span>{% endif %}</p>
+                    </a>
+                    <p class="text-body-secondary fs-9 mb-0"><span class="me-1 fas fa-clock"></span><span class="fw-bold">{{ notification.created_at|date:"g:i A" }} </span>{{ notification.created_at|date:"F j, Y" }} UTC</p>
+                </div>
+            </div>
+            <!-- Above the stretched link, so the menu opens instead of following the notification -->
+            <div class="dropdown position-relative z-2">
+                <button class="btn fs-10 btn-sm dropdown-toggle dropdown-caret-none transition-none notification-dropdown-toggle" type="button" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false" data-bs-reference="parent" aria-label="Notification actions"><span class="fas fa-ellipsis-h fs-10 text-body"></span></button>
+                <div class="dropdown-menu dropdown-menu-end py-2">
+                    <form method="post" action="{% url 'set_notification_read' notification.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                        <input type="hidden" name="is_read" value="{% if notification.is_read %}0{% else %}1{% endif %}" />
+                        <button type="submit" class="dropdown-item">{% if notification.is_read %}Mark as unread{% else %}Mark as read{% endif %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% empty %}
+    <p class="text-center text-body-tertiary py-5 fs-9 mb-9">
+        {% if active_filter == 'unread' %}You have no unread notifications.{% else %}You have no notifications yet.{% endif %}
+    </p>
+    {% endfor %}
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="row mb-9">
+        <!-- Same markup DataTables renders on the datasets list (bootstrap5, simple_numbers) -->
+        <div class="col-sm-12 col-md-7 fs-9 mt-4">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</div>
+        <div class="col-sm-12 col-md-5 mt-4 d-flex justify-content-end">
+            <ul class="pagination">
+                <li class="page-item previous {% if not page_obj.has_previous %}disabled{% endif %}">
+                    <a class="page-link" {% if page_obj.has_previous %}href="?filter={{ active_filter }}&page={{ page_obj.previous_page_number }}"{% endif %}>Previous</a>
+                </li>
+                {% for number in page_range %}
+                {% if number == page_obj.paginator.ELLIPSIS %}
+                <li class="page-item disabled"><a class="page-link">…</a></li>
+                {% else %}
+                <li class="page-item {% if number == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?filter={{ active_filter }}&page={{ number }}" {% if number == page_obj.number %}aria-current="page"{% endif %}>{{ number }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item next {% if not page_obj.has_next %}disabled{% endif %}">
+                    <a class="page-link" {% if page_obj.has_next %}href="?filter={{ active_filter }}&page={{ page_obj.next_page_number }}"{% endif %}>Next</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% include "core/footer.html" %}
+</div>
+{% endblock %}

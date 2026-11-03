@@ -436,3 +436,94 @@ class AccountDeletionTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("leaving@example.com", mail.outbox[0].body)
         self.assertNotIn("later@example.com", mail.outbox[0].body)
+
+
+class NotificationsTests(TestCase):
+
+    def setUp(self):
+        from accounts.models import Notification
+        self.user = User.objects.create_user(email="notified@example.com", password="testpass123", is_active=True)
+        self.other = User.objects.create_user(email="other@example.com", password="testpass123", is_active=True)
+        self.read = Notification.objects.create(recipient=self.user, message="Old news", url="/datasets/", is_read=True)
+        self.unread = Notification.objects.create(recipient=self.user, message="Fresh news", url="")
+        Notification.objects.create(recipient=self.other, message="Not yours")
+        self.client.force_login(self.user)
+
+    def test_page_lists_read_and_unread_of_the_user_only(self):
+        response = self.client.get(reverse("notifications"))
+        self.assertContains(response, "Old news")
+        self.assertContains(response, "Fresh news")
+        self.assertNotContains(response, "Not yours")
+
+    def test_unread_filter_hides_read_ones(self):
+        response = self.client.get(reverse("notifications"), {"filter": "unread"})
+        self.assertContains(response, "Fresh news")
+        self.assertNotContains(response, "Old news")
+
+    def test_mark_all_read_only_touches_the_user(self):
+        from accounts.models import Notification
+        response = self.client.post(reverse("mark_all_notifications_read"), {"next": "https://evil.example.com/"})
+        self.assertRedirects(response, reverse("notifications"), fetch_redirect_response=False)
+        self.assertFalse(Notification.objects.filter(recipient=self.user, is_read=False).exists())
+        self.assertTrue(Notification.objects.filter(recipient=self.other, is_read=False).exists())
+
+    def test_read_without_url_goes_to_notifications_page(self):
+        response = self.client.post(reverse("read_notification", args=[self.unread.id]), HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.json()["url"], reverse("notifications"))
+
+    def test_bell_counts_only_real_unread_notifications(self):
+        # The user has no team and an empty profile; those used to be added to the bell as reminders.
+        response = self.client.get(reverse("notifications"))
+        self.assertEqual(response.context["header_notifications_count"], 1)
+        self.assertEqual([n["message"] for n in response.context["header_notifications"]], ["Fresh news"])
+
+    def test_set_read_toggles_both_ways_and_stays_on_the_page(self):
+        url = reverse("set_notification_read", args=[self.read.id])
+        response = self.client.post(url, {"is_read": "0", "next": reverse("notifications") + "?filter=all"})
+        self.assertRedirects(response, reverse("notifications") + "?filter=all", fetch_redirect_response=False)
+        self.read.refresh_from_db()
+        self.assertFalse(self.read.is_read)
+        self.client.post(url, {"is_read": "1"})
+        self.read.refresh_from_db()
+        self.assertTrue(self.read.is_read)
+
+    def test_set_read_on_someone_elses_notification_is_404(self):
+        from accounts.models import Notification
+        theirs = Notification.objects.get(recipient=self.other)
+        response = self.client.post(reverse("set_notification_read", args=[theirs.id]), {"is_read": "1"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_page_groups_notifications_by_day(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from accounts.models import Notification
+        Notification.objects.filter(pk=self.read.pk).update(created_at=timezone.now() - timedelta(days=1))
+        response = self.client.get(reverse("notifications"))
+        self.assertEqual([d["label"] for d in response.context["notification_days"]], ["Today", "Yesterday"])
+
+    def test_pagination_shows_numbered_pages_with_ellipsis(self):
+        from accounts.models import Notification
+        Notification.objects.bulk_create(Notification(recipient=self.user, message=f"n{i}") for i in range(200))
+        response = self.client.get(reverse("notifications"), {"page": 6})
+        self.assertEqual(list(response.context["page_range"]), [1, "…", 5, 6, 7, "…", 11])
+        self.assertContains(response, 'href="?filter=all&page=11"')
+
+    def test_set_read_rejects_a_missing_or_unknown_value(self):
+        url = reverse("set_notification_read", args=[self.read.id])
+        for data in ({}, {"is_read": "yes"}):
+            self.assertEqual(self.client.post(url, data).status_code, 400)
+        self.read.refresh_from_db()
+        self.assertTrue(self.read.is_read)
+
+    def test_header_exposes_limit_and_render_time_for_the_poll(self):
+        from accounts.models import Notification
+        response = self.client.get(reverse("notifications"))
+        self.assertEqual(response.context["header_notifications_limit"], Notification.DROPDOWN_LIMIT)
+        self.assertGreater(response.context["header_notifications_rendered_at_ms"], 0)
+
+    def test_ago_filter_says_just_now_under_a_minute(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from accounts.templatetags.notification_tags import ago
+        self.assertEqual(ago(timezone.now() - timedelta(seconds=10)), "just now")
+        self.assertEqual(ago(timezone.now() - timedelta(minutes=5)), "5 minutes ago")

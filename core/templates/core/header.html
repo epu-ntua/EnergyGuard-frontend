@@ -1,4 +1,4 @@
-{% load static %}
+{% load static notification_tags %}
 <nav class="navbar navbar-top fixed-top navbar-expand" id="navbarDefault">
   <div class="collapse navbar-collapse justify-content-between">
     <div class="navbar-logo">
@@ -42,23 +42,29 @@
         </a>
         <div class="dropdown-menu dropdown-menu-end notification-dropdown-menu py-0 shadow border navbar-dropdown-caret">
           <div class="card position-relative border-0">
-            <div class="card-header p-2">
+            <div class="card-header p-2 d-flex align-items-center justify-content-between">
               <h5 class="text-body-emphasis mb-0">Notifications</h5>
+              <form method="post" action="{% url 'mark_all_notifications_read' %}" class="{% if not header_notifications %}d-none{% endif %}" id="notif-mark-all-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                <button type="submit" class="btn btn-link p-0 fs-9 fw-normal">Mark all as read</button>
+              </form>
             </div>
             <div class="card-body p-0" id="notif-dropdown-body">
               {% if header_notifications %}
               <div id="notif-dropdown-list" style="max-height: 18rem; overflow-y: auto;">
                 {% for notification in header_notifications %}
-                <div class="px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom"{% if notification.id %} data-notification-id="{{ notification.id }}"{% endif %}>
+                <div class="px-2 px-sm-3 py-3 notification-card position-relative unread border-bottom" data-notification-id="{{ notification.id }}">
                   <div class="d-flex align-items-center justify-content-between position-relative">
                     <div class="d-flex">
                       <div class="avatar avatar-m me-3">
                         <div class="avatar-name rounded-circle"><span><span class="fas fa-{{ notification.icon }}"></span></span></div>
                       </div>
                       <div class="flex-1 me-sm-3">
-                        <a class="stretched-link text-decoration-none notification-link" href="{{ notification.url }}"{% if notification.id %} data-notification-id="{{ notification.id }}"{% endif %}>
-                          <p class="fs-8-5 text-body-highlight mb-2 fw-normal">{{ notification.message }}</p>
+                        <a class="stretched-link text-decoration-none notification-link" href="{{ notification.url }}" data-notification-id="{{ notification.id }}">
+                          <p class="fs-8-5 text-body-highlight mb-1 fw-normal">{{ notification.message }}</p>
                         </a>
+                        <p class="fs-10 text-body-tertiary mb-0">{{ notification.created_at|ago }}</p>
                       </div>
                     </div>
                   </div>
@@ -69,6 +75,9 @@
               <div class="px-2 px-sm-3 py-3 text-center text-body-secondary fs-9" id="notif-empty-state">No new notifications</div>
               <div class="d-none" id="notif-dropdown-list" style="max-height: 18rem; overflow-y: auto;"></div>
               {% endif %}
+            </div>
+            <div class="card-footer p-0 border-top border-translucent text-center">
+              <a class="d-block py-2 fs-9 fw-bold" href="{% url 'notifications' %}">View all notifications</a>
             </div>
           </div>
         </div>
@@ -91,10 +100,11 @@
                 <h6 class="mt-2 text-body-emphasis">{{ request.user.first_name }} {{ request.user.last_name }}</h6>
               </div>
             </div>
-            <div class="overflow-auto scrollbar" style="height: 8rem;">
+            <div class="overflow-auto scrollbar" style="height: 10rem;">
               <ul class="nav d-flex flex-column mb-2 pb-1">
                 <li class="nav-item"><a class="nav-link px-3 d-block" href="{% url 'profile' %}"><span class="me-2 text-body align-bottom" data-feather="user"></span>Profile</a></li>
                 <li class="nav-item"><a class="nav-link px-3 d-block" href="{% url 'team_management' %}"><span class="me-2 text-body align-bottom" data-feather="lock"></span>Team Management</a></li>
+                <li class="nav-item"><a class="nav-link px-3 d-block" href="{% url 'notifications' %}"><span class="me-2 text-body align-bottom" data-feather="bell"></span>Notifications</a></li>
                 <li class="nav-item"><a class="nav-link px-3 d-block" href="{% url 'dashboard' %}"><span class="me-2 text-body align-bottom" data-feather="pie-chart"></span>Dashboard</a></li>
               </ul>
             </div>

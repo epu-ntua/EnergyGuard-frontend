@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.utils import timezone
 from .models import Notification, Profile
 
 
@@ -7,54 +8,34 @@ def header_notifications(request):
         return {
             "header_notifications": [],
             "header_notifications_count": 0,
+            "header_notifications_limit": Notification.DROPDOWN_LIMIT,
             "current_user_profile": None,
         }
-
-    notifications = []
 
     try:
         profile = request.user.profile
     except Profile.DoesNotExist:
         profile = None
 
+    # Taken before the query: the poll only toasts notifications created after it, so an
+    # old unread one that slides into the dropdown window is not announced as new.
+    rendered_at = timezone.now()
     unread = Notification.objects.filter(recipient=request.user, is_read=False)
-    for n in unread:
-        notifications.append(
-            {
-                "id": n.id,
-                "message": n.message,
-                "url": reverse("read_notification", args=[n.id]),
-                "icon": n.icon,
-            }
-        )
-
-    team_missing = profile is None or profile.team_id is None
-    if team_missing:
-        notifications.append(
-            {
-                "message": "Add Team to collaborate with people",
-                "url": reverse("team_management"),
-                "icon": "users",
-            }
-        )
-
-    profile_details_missing = (
-        profile is None
-        or not profile.position
-        or not profile.birth_date
-        or not profile.bio
-    )
-    if profile_details_missing:
-        notifications.append(
-            {
-                "message": "Complete your profile for better experience",
-                "url": reverse("profile"),
-                "icon": "user",
-            }
-        )
+    notifications = [
+        {
+            "id": n.id,
+            "message": n.message,
+            "url": reverse("read_notification", args=[n.id]),
+            "icon": n.icon,
+            "created_at": n.created_at,
+        }
+        for n in unread[:Notification.DROPDOWN_LIMIT]
+    ]
 
     return {
         "header_notifications": notifications,
-        "header_notifications_count": len(notifications),
+        "header_notifications_count": unread.count(),
+        "header_notifications_limit": Notification.DROPDOWN_LIMIT,
+        "header_notifications_rendered_at_ms": int(rendered_at.timestamp() * 1000),
         "current_user_profile": profile,
     }

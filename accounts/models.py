@@ -202,6 +202,9 @@ class TeamInvite(models.Model):
 
 
 class Notification(models.Model):
+    # The bell dropdown (and its poll) shows only the latest unread; the full history is on the notifications page.
+    DROPDOWN_LIMIT = 5
+
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     message = models.CharField(max_length=255)
     url = models.CharField(max_length=500, blank=True)
