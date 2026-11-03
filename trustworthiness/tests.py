@@ -188,6 +188,87 @@ class AiActAssessmentPermissionTests(PermissionFixture):
                 self.assertEqual(after - before, 1 if allowed else 0)
 
 
+class AiActRestartTests(PermissionFixture):
+    """A restart, from the intro or the results page, records a new Assessment on the same project."""
+
+    def finish_questionnaire(self):
+        # Jump to the last step (AI-8, AI literacy) and answer it, so the
+        # track completes through the real submit view.
+        from questionnaire import engine, views
+
+        session = self.client.session
+        state = {"tracks": {name: views._empty_track_state() for name in engine.TRACK_NAMES}, "active_track": "ai_system"}
+        state["tracks"]["ai_system"].update(
+            started=True, current_step="AI-8", role="provider", risk_category="minimal_risk",
+        )
+        session[views.SESSION_KEY] = state
+        session.save()
+        url = reverse("questionnaire:submit_branching", kwargs={"track": "ai_system", "step_id": "AI-8"})
+        self.client.post(url, {"answer": "YES"})
+
+    def test_restart_keeps_the_project_and_records_a_new_assessment(self):
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.finish_questionnaire()
+        self.client.get(reverse("questionnaire:restart"))
+        self.finish_questionnaire()
+
+        self.assertEqual(self.assessments(Assessment.AssessmentType.AI_ACT).count(), 2)
+
+    def test_completing_without_a_project_records_nothing_and_warns(self):
+        self.client.force_login(self.owner)
+        with self.assertLogs("questionnaire.views", level="WARNING") as logs:
+            self.finish_questionnaire()
+
+        self.assertFalse(Assessment.objects.exists())
+        self.assertIn("without a project", logs.output[0])
+
+    def test_a_deleted_project_is_dropped_from_the_session(self):
+        self.client.force_login(self.owner)
+        doomed = Project.objects.create(name="Doomed", creator=self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": doomed.pk})
+        doomed.delete()
+
+        with self.assertLogs("questionnaire.views", level="WARNING") as logs:
+            self.finish_questionnaire()
+
+        self.assertFalse(Assessment.objects.exists())
+        self.assertIn("missing project_id", logs.output[0])
+        self.assertNotIn("ai_act_project_id", self.client.session)
+
+
+class AiActFindingsSummaryTests(TestCase):
+    def summary(self, track_results):
+        from trustworthiness.views import _ai_act_findings_summary
+        return _ai_act_findings_summary({"roles": [], "track_results": track_results})
+
+    def test_one_track(self):
+        self.assertEqual(
+            self.summary({"ai_system": {"risk_category": "transparency_risk", "role": "provider"}}),
+            "AI System: Transparency (Limited) Risk (Provider)",
+        )
+
+    def test_both_tracks_in_track_order(self):
+        self.assertEqual(
+            self.summary({
+                "gpai_model": {"risk_category": "systemic_risk", "role": "provider"},
+                "ai_system": {"risk_category": "high_risk", "role": "deployer"},
+            }),
+            "AI System: High Risk (Deployer) · GPAI Model: Systemic Risk (Provider)",
+        )
+
+    def test_undetermined_risk_and_missing_role(self):
+        self.assertEqual(
+            self.summary({"ai_system": {"risk_category": None, "role": None}}),
+            "AI System: Not yet determined",
+        )
+
+    def test_no_results(self):
+        self.assertEqual(self.summary({}), "-")
+        from trustworthiness.views import _ai_act_findings_summary
+        self.assertEqual(_ai_act_findings_summary(None), "-")
+
+
 class HubProjectPickerTests(PermissionFixture):
     def test_picker_offers_only_projects_the_user_can_edit(self):
         Assessment.objects.create(
