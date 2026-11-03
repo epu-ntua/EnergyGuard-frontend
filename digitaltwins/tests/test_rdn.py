@@ -154,10 +154,10 @@ class RdnStatusAndLookupTests(TestCase):
         response = self.client.get(reverse('rdn-grid-job-status'), {'job': job.pk})
         self.assertEqual(response.json(), {'status': 'running', 'requestId': job.pk})
 
-    def test_status_of_a_failed_job_carries_the_error(self):
+    def test_status_of_a_failed_job_hides_the_raw_error(self):
         job = make_job(self.owner, status=Status.FAILED, error_message='RDN said no')
         response = self.client.get(reverse('rdn-grid-job-status'), {'job': job.pk})
-        self.assertEqual(response.json()['error'], 'RDN said no')
+        self.assertEqual(response.json()['error'], RdnSimulationJob.FAILED_MESSAGE)
 
     def test_status_of_another_users_job_is_404(self):
         job = make_job(self.other)
@@ -200,6 +200,14 @@ class RdnStatusAndLookupTests(TestCase):
 
         self.assertEqual(self.client.get(reverse('rdn-grid-results', args=[foreign.rdn_request_id])).status_code, 404)
 
+    def test_results_page_of_a_failed_job_hides_the_raw_error(self):
+        job = make_job(self.owner, status=Status.FAILED, error_message='Component [Sim_gate] not found !')
+
+        response = self.client.get(reverse('rdn-grid-results', args=[job.rdn_request_id]))
+
+        self.assertContains(response, RdnSimulationJob.FAILED_MESSAGE)
+        self.assertNotContains(response, 'Sim_gate')
+
 
 class RdnPollingTaskTests(TestCase):
     """The poll chain lives in django_q Schedule rows, which store the task's dotted path."""
@@ -233,9 +241,12 @@ class RdnPollingTaskTests(TestCase):
     def test_failed_on_rdns_side(self):
         job = make_job(self.user)
 
-        with patch('requests.request', return_value=http_response(200, {'status': 'failed', 'errorMessage': 'diverged'})):
+        with patch('requests.request', return_value=http_response(200, {'status': 'failed', 'errorMessage': 'diverged'})), \
+                self.assertLogs('digitaltwins.rdn.tasks', 'WARNING') as logs:
             import_string(POLL_TASK)(job.pk)
 
+        # Users never see the raw cause, so the log and the row are where it is kept.
+        self.assertIn('diverged', logs.output[0])
         job.refresh_from_db()
         self.assertEqual(job.status, Status.FAILED)
         self.assertEqual(job.error_message, 'diverged')

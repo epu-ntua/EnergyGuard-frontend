@@ -134,7 +134,14 @@ class RdnSimulationJob(TimeStampedModel):
     # Legacy inline payload. Jobs that completed before results moved to object
     # storage still carry it; nothing new is written here unless the upload fails.
     result = models.JSONField(null=True, blank=True)
+    # Raw cause of a failure (RDN's own errorMessage, or ours), for debugging only:
+    # it is never shown to users, who see FAILED_MESSAGE instead.
     error_message = models.TextField(null=True, blank=True)
+
+    FAILED_MESSAGE = (
+        'The grid simulator could not complete this simulation. '
+        'If the problem persists, please contact support.'
+    )
 
     @property
     def has_result(self):

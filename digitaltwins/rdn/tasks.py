@@ -79,9 +79,11 @@ def poll_rdn_job(job_id):
         return
 
     if rdn_status == 'failed':
+        error = status_payload.get('errorMessage') or 'RDN reported the job as failed.'
+        logger.warning('RDN reported request %s as failed: %s', job.rdn_request_id, error)
         RdnSimulationJob.objects.filter(pk=job_id).update(
             status=RdnSimulationJob.Status.FAILED,
-            error_message=status_payload.get('errorMessage') or 'RDN reported the job as failed.',
+            error_message=error,
             updated_at=timezone.now(),
         )
         return

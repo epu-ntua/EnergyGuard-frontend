@@ -233,7 +233,7 @@ def rdn_grid_job_status(request):
         # re-serialising a multi-hundred-megabyte result each time is pure waste.
         payload['resultUrl'] = reverse('rdn-grid-result-data', args=[job.rdn_request_id])
     elif job.status == RdnSimulationJob.Status.FAILED:
-        payload['error'] = job.error_message
+        payload['error'] = RdnSimulationJob.FAILED_MESSAGE
     return JsonResponse(payload)
 
 

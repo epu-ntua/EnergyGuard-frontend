@@ -10,8 +10,9 @@ means something different in each model, so those stay on each twin's own list.
 from urllib.parse import urlencode
 
 from django.core.paginator import Paginator
-from django.db.models import BooleanField, CharField, Count, ExpressionWrapper, F, IntegerField, Q, TextField, Value
-from django.db.models.functions import Coalesce
+from django.db.models import (
+    BooleanField, Case, CharField, Count, ExpressionWrapper, F, IntegerField, Q, TextField, Value, When,
+)
 from django.urls import reverse
 
 from ..catalog import DIGITAL_TWINS, DT_BY_SLUG
@@ -72,7 +73,12 @@ def _rdn_jobs(user):
     return _columns(
         RdnSimulationJob.objects.filter(user=user, rdn_request_id__isnull=False),
         source='rdn', ref=F('rdn_request_id'), slug=Value(RDN_SLUG, output_field=CharField()),
-        kind=F('use_case'), error=Coalesce('error_message', Value(''), output_field=TextField()),
+        kind=F('use_case'),
+        # The raw error_message is RDN's internal diagnostic, never shown to users.
+        error=Case(
+            When(status=_Rdn.FAILED, then=Value(RdnSimulationJob.FAILED_MESSAGE)),
+            default=Value(''), output_field=TextField(),
+        ),
         # As rdn_grid_result_data: a result is served only once the job completed.
         downloadable=Q(status=_Rdn.COMPLETED) & (~Q(result_key='') | Q(result__isnull=False)),
     )

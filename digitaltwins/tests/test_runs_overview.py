@@ -61,6 +61,15 @@ class AllRunsTabTests(RunsTestCase):
         self.assertContains(response, reverse('ber-hydrogen-request-detail', args=[ber.pk]))
         self.assertNotContains(response, '{{')
 
+    def test_a_failed_rdn_job_shows_a_generic_error_not_the_raw_one(self):
+        self.make_rdn_job(status='failed', error_message='Component [Sim_gate] not found !')
+        self.make_rdn_job(status='running')
+
+        response, _ = self.list_runs()
+
+        self.assertEqual([row['error'] for row in response.context['page_obj']], ['', RdnSimulationJob.FAILED_MESSAGE])
+        self.assertNotContains(response, 'Sim_gate')
+
     def test_requests_the_user_removed_are_left_out(self):
         self.make_ber_request(status='cancelled', hidden_by_user_at=timezone.now())
         _, rows = self.list_runs()
