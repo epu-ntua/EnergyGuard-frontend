@@ -46,6 +46,25 @@ def get_track_label(track_name):
     return get_track(track_name).get('label', track_name)
 
 
+def humanize_label(value):
+    return (value or '').replace('_', ' ').strip().title()
+
+
+_RISK_CATEGORY_LABELS = {
+    'minimal_risk': 'Minimal or No Risk',
+    'prohibited': 'Unacceptable Risk - Prohibited Practices',
+    'transparency_risk': 'Transparency (Limited) Risk',
+}
+
+
+def risk_category_label(value):
+    """Most risk_category slugs read fine through humanize_label's generic
+    underscore-to-title conversion; 'minimal_risk' needs its own wording
+    ('Minimal or No Risk') to match how this outcome is actually described
+    to users."""
+    return _RISK_CATEGORY_LABELS.get(value, humanize_label(value))
+
+
 def get_steps(track_name):
     return get_track(track_name)['steps']
 

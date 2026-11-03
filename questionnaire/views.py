@@ -127,6 +127,10 @@ def _sync_trustworthiness(request, state):
     tw_id = request.session.get('ai_act_assessment_id')
     project_id = request.session.get('ai_act_project_id', '')
     if not (tw_id or project_id):
+        logger.warning(
+            "AI Act questionnaire completed by user %s without a project; no Assessment recorded",
+            request.user.id,
+        )
         return
 
     track_results = {
@@ -148,15 +152,23 @@ def _sync_trustworthiness(request, state):
         TWAssessment.objects.filter(id=tw_id).update(results=tw_result)
         return
 
-    # project_id is single-use: it only seeds the first Assessment of this
-    # attempt, so drop it now rather than letting it leak into a later
-    # attempt that doesn't specify its own project.
-    request.session.pop('ai_act_project_id', None)
-    request.session.modified = True
+    # project_id stays in the session for later attempts: a restart records a
+    # new Assessment on the same project, until the hub picks another one.
+    from projects.models import Project
     try:
-        from projects.models import Project
-        from trustworthiness.models import Assessment as TWAssessment
         project = Project.objects.get(id=int(project_id))
+    except (Project.DoesNotExist, ValueError):
+        # Deleted since the hub picked it (or never valid): drop it, or every
+        # later attempt in this session would fail the same way.
+        logger.warning(
+            "AI Act questionnaire completed by user %s for missing project_id=%s; no Assessment recorded",
+            request.user.id, project_id,
+        )
+        request.session.pop('ai_act_project_id', None)
+        request.session.modified = True
+        return
+    try:
+        from trustworthiness.models import Assessment as TWAssessment
         # Creating an assessment writes to the project: read access to a public
         # project is not enough.
         if not project.can_edit(request.user):
@@ -581,8 +593,9 @@ def results(request):
 
 @login_required
 def restart(request):
+    # Keep ai_act_project_id: the new attempt belongs to the same project and
+    # gets its own Assessment once the previous one's id is dropped.
     request.session.pop(SESSION_KEY, None)
-    request.session.pop('ai_act_project_id', None)
     request.session.pop('ai_act_assessment_id', None)
     request.session.modified = True
     return redirect('questionnaire:start_track', track='ai_system')

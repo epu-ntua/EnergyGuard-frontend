@@ -39,25 +39,8 @@ def guideline_badge_icon(guideline_type):
     return _GUIDELINE_BADGE_META.get(guideline_type, _DEFAULT_BADGE)[1]
 
 
-@register.filter
-def humanize_label(value):
-    return (value or '').replace('_', ' ').strip().title()
-
-
-_RISK_CATEGORY_LABELS = {
-    'minimal_risk': 'Minimal or No Risk',
-    'prohibited': 'Unacceptable Risk - Prohibited Practices',
-    'transparency_risk': 'Transparency (Limited) Risk',
-}
-
-
-@register.filter
-def risk_category_label(value):
-    """Most risk_category slugs read fine through humanize_label's generic
-    underscore-to-title conversion; 'minimal_risk' needs its own wording
-    ('Minimal or No Risk') to match how this outcome is actually described
-    to users."""
-    return _RISK_CATEGORY_LABELS.get(value, humanize_label(value))
+register.filter('humanize_label', engine.humanize_label)
+register.filter('risk_category_label', engine.risk_category_label)
 
 
 @register.filter
