@@ -35,14 +35,27 @@ def editable_project(user, project_id):
     return project
 
 
-def assessment_project_id(assessment_id):
-    """The project of a running job's Assessment, so the job's pages can link
-    back to the form for the same project; None when there is none."""
+def visible_job_assessment(user, job_id, job):
+    """The Assessment that records `job`, when `user` may see the job's pages
+    (status, results, downloads), else None - answered like a missing job.
+
+    The rule is read access to the Assessment's project, the same as viewing
+    that Assessment. A job no Assessment records (one run before every run
+    needed a project) belongs to no one.
+    """
     from .models import Assessment
 
-    if not assessment_id:
+    if not job:
         return None
-    return Assessment.objects.filter(id=assessment_id).values_list('project_id', flat=True).first()
+    assessment_id = job.get('assessment_id')
+    assessment = (
+        Assessment.objects.select_related('project').filter(id=assessment_id).first()
+        if assessment_id else None
+    )
+    if assessment is None or not assessment.project.is_accessible_by(user):
+        logger.warning("User %s denied access to job_id=%s", user.id, job_id)
+        return None
+    return assessment
 
 
 def project_picker_redirect(request, assessment_type):

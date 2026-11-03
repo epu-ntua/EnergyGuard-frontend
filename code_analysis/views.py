@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from trustworthiness.project_access import assessment_project_id, editable_project, project_picker_redirect
+from trustworthiness.project_access import editable_project, project_picker_redirect, visible_job_assessment
 
 
 logger = logging.getLogger(__name__)
@@ -827,14 +827,15 @@ def processing(request):
 
 	if job_id:
 		job = _get_scan_job(job_id)
-		if not job:
+		assessment = visible_job_assessment(request.user, job_id, job)
+		if assessment is None:
 			context = _build_processing_context(source_label, analysis_error="Scan job not found. Please submit the analysis again.")
 			context["job_id"] = job_id
 			context["job_status"] = "failed"
 			return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label, job_id=job_id), status=404)
 
 		source_label = job.get("source_label") or source_label
-		project_id = assessment_project_id(job.get("assessment_id"))
+		project_id = assessment.project_id
 		job_status = job.get("status")
 		if job_status == "completed":
 			return redirect("code_analysis:results", job_id=job_id)
@@ -876,7 +877,8 @@ def job_status_api(request):
 	if not job_id:
 		return JsonResponse({"status": "not_found"}, status=400)
 	job = _get_scan_job(job_id)
-	if not job:
+	assessment = visible_job_assessment(request.user, job_id, job)
+	if assessment is None:
 		return JsonResponse({"status": "not_found"}, status=404)
 	return JsonResponse({
 		"status": job.get("status"),
@@ -887,7 +889,8 @@ def job_status_api(request):
 @login_required
 def results_json(request, job_id):
 	job = _get_scan_job(job_id) or _load_persisted_scan(job_id)
-	if not job:
+	assessment = visible_job_assessment(request.user, job_id, job)
+	if assessment is None:
 		return JsonResponse({"error": "Job not found."}, status=404)
 	result = job.get("result") or {}
 	response = JsonResponse(result, json_dumps_params={"indent": 2})
@@ -899,7 +902,8 @@ def results_json(request, job_id):
 def results(request, job_id):
 	"""Display the raw JSON result of a completed scan job."""
 	job = _get_scan_job(job_id) or _load_persisted_scan(job_id)
-	if not job:
+	assessment = visible_job_assessment(request.user, job_id, job)
+	if assessment is None:
 		return render(request, "code_analysis/results.html", {
 			"job_id": job_id,
 			"error": "Job not found. The server may have restarted since the scan ran.",
@@ -911,26 +915,20 @@ def results(request, job_id):
 		query = urlencode({"job": job_id, "source": job.get("source_label", "")})
 		return redirect(reverse("code_analysis:processing") + f"?{query}")
 	source_label = job.get("source_label")
-	assessment_id = job.get("assessment_id")
-	project_id = None
-	if assessment_id:
+	if assessment.results is None or assessment.status != assessment.Status.COMPLETED:
 		try:
-			from trustworthiness.models import Assessment
-			a = Assessment.objects.get(id=assessment_id)
-			project_id = a.project_id
-			if a.results is None or a.status != Assessment.Status.COMPLETED:
-				a.results = job.get("result") or {}
-				a.status = Assessment.Status.COMPLETED
-				a.save()
+			assessment.results = job.get("result") or {}
+			assessment.status = assessment.Status.COMPLETED
+			assessment.save(update_fields=["results", "status"])
 		except Exception:
-			logger.exception("Failed to sync results for assessment_id=%s", assessment_id)
+			logger.exception("Failed to sync results for assessment_id=%s", assessment.id)
 	return render(
 		request,
 		"code_analysis/results.html",
 		_add_stepper_context(
 			{
 				**_build_results_context(job.get("result") or {}, source_label, job_id),
-				"project_id": project_id,
+				"project_id": assessment.project_id,
 				"error": None,
 				"show_sidebar": True,
 				"active_navbar_page": "trustworthiness",

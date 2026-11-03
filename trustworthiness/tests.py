@@ -8,6 +8,7 @@ assessment still only needs read access.
 
 import os
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlencode
 
@@ -359,6 +360,104 @@ class NoRunWithoutProjectTests(PermissionFixture):
                 )
                 response = self.client.get(reverse(results_url, args=[assessment.pk]))
                 self.assertContains(response, f'{reverse(form_url)}?project_id={self.project.pk}')
+
+
+class JobPageAccessTests(PermissionFixture):
+    """A job's pages need read access to the project of the Assessment that
+    records the job; anyone else gets the same answer as for a missing job."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.private_project = Project.objects.create(name="Private project", creator=cls.owner, visibility=False)
+
+    def setUp(self):
+        from code_analysis import views as code_analysis_views
+        from robustness import views as robustness_views
+
+        self.robustness = robustness_views
+        self.code_analysis = code_analysis_views
+        self.addCleanup(robustness_views.EVAL_JOBS.clear)
+        self.addCleanup(code_analysis_views.SCAN_JOBS.clear)
+        # Jobs persisted to disk go to throwaway report folders.
+        for module in (robustness_views, code_analysis_views):
+            reports_dir = tempfile.TemporaryDirectory()
+            self.addCleanup(reports_dir.cleanup)
+            patcher = patch.object(module, "REPORTS_DIR", Path(reports_dir.name))
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def assessment_id(self, assessment_type, project):
+        return Assessment.objects.create(project=project, assessment_type=assessment_type).pk
+
+    def in_memory_jobs(self, job_id, project):
+        """The same job_id, completed, in both apps' in-memory job stores."""
+        for set_job, assessment_type in (
+            (self.robustness._set_job, Assessment.AssessmentType.ROBUSTNESS),
+            (self.code_analysis._set_scan_job, Assessment.AssessmentType.CODE_ANALYSIS),
+        ):
+            assessment_id = self.assessment_id(assessment_type, project) if project else None
+            set_job(job_id, status="completed", result={}, assessment_id=assessment_id)
+
+    def persisted_jobs(self, job_id, project):
+        """The same job_id, only on disk: how robustness results are reached
+        (by the backend's job id) and every job after a server restart."""
+        self.robustness._persist_result(
+            job_id, "config", {}, assessment_id=self.assessment_id(Assessment.AssessmentType.ROBUSTNESS, project),
+        )
+        self.code_analysis._persist_scan_result(
+            job_id, "GitHub Repository", {},
+            assessment_id=self.assessment_id(Assessment.AssessmentType.CODE_ANALYSIS, project),
+        )
+
+    def job_pages(self, job_id, persisted_only=False):
+        """(url, visible(response)) for each job page: what a visible job
+        answers, as opposed to a missing one."""
+        not_404 = lambda r: r.status_code != 404
+        pages = [
+            (reverse("robustness:results", args=[job_id]), not_404),
+            (reverse("robustness:results_json", args=[job_id]), not_404),
+            (reverse("robustness:list_adversarial_csvs", args=[job_id]), not_404),
+            # A visible job without backend CSVs is a 404 too, with its own message.
+            (reverse("robustness:download_adversarial_csv", args=[job_id, "fgsm"]),
+             lambda r: r.json().get("error") != "Job not found."),
+            (reverse("code_analysis:results", args=[job_id]), lambda r: r.context["error"] is None),
+            (reverse("code_analysis:results_json", args=[job_id]), not_404),
+        ]
+        if not persisted_only:
+            pages += [
+                (f"{reverse('robustness:processing')}?job={job_id}", not_404),
+                (f"{reverse('robustness:job_status')}?job={job_id}", not_404),
+                (f"{reverse('code_analysis:processing')}?job={job_id}", not_404),
+                (f"{reverse('code_analysis:job_status_api')}?job={job_id}", not_404),
+            ]
+        return pages
+
+    def check(self, pages, cases):
+        for user, visible in cases:
+            self.client.force_login(user)
+            for url, is_visible in pages:
+                with self.subTest(user=user.email, url=url):
+                    self.assertEqual(is_visible(self.client.get(url)), visible)
+
+    def test_private_project_jobs_are_only_visible_to_its_members(self):
+        self.in_memory_jobs("private-job", self.private_project)
+        self.check(self.job_pages("private-job"), [(self.owner, True), (self.stranger, False)])
+
+    def test_persisted_private_project_jobs_are_only_visible_to_its_members(self):
+        self.persisted_jobs("persisted-job", self.private_project)
+        self.check(self.job_pages("persisted-job", persisted_only=True), [(self.owner, True), (self.stranger, False)])
+
+    def test_public_project_jobs_are_visible_like_its_assessments(self):
+        self.in_memory_jobs("public-job", self.project)
+        self.check(self.job_pages("public-job"), [(self.viewer, True), (self.stranger, True)])
+
+    def test_a_job_no_assessment_records_is_visible_to_no_one(self):
+        self.in_memory_jobs("orphan-job", None)
+        self.check(self.job_pages("orphan-job"), [(self.owner, False)])
+
+    def test_a_missing_job_answers_the_same_as_a_hidden_one(self):
+        self.check(self.job_pages("no-such-job"), [(self.owner, False)])
 
 
 class AiActFindingsSummaryTests(TestCase):

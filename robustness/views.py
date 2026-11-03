@@ -114,7 +114,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from trustworthiness.project_access import assessment_project_id, editable_project, project_picker_redirect
+from trustworthiness.project_access import editable_project, project_picker_redirect, visible_job_assessment
 
 
 # ---------------------------------------------------------------------------
@@ -549,7 +549,8 @@ def processing_view(request):
         return redirect("robustness:config_input")
 
     job = _get_job(job_id)
-    if not job:
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
         return _robustness_render(
             request,
             "robustness/processing.html",
@@ -563,7 +564,7 @@ def processing_view(request):
         )
 
     config_name = job.get("config_name", "-")
-    project_id = assessment_project_id(job.get("assessment_id"))
+    project_id = assessment.project_id
     job_status = job.get("status")
 
     if job_status == "completed":
@@ -613,7 +614,8 @@ def job_status_api(request):
     if not job_id:
         return JsonResponse({"status": "not_found"}, status=400)
     job = _get_job(job_id)
-    if not job:
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
         return JsonResponse({"status": "not_found"}, status=404)
     return JsonResponse({
         "status": job.get("status"),
@@ -659,34 +661,26 @@ def _report_context_from_result(data):
 @login_required
 def results_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
-    if not job:
-        return _robustness_render(
-            request,
-            "robustness/results_report.html",
-            {"job_id": job_id, "error": "Job not found. The server may have restarted since the evaluation ran."},
-        )
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
+        # results_report.html has no place for an error message.
+        raise Http404("Job not found.")
 
     if job.get("status") != "completed":
         return redirect(f"{reverse('robustness:processing')}?job={job_id}")
 
     data = job.get("result") or {}
-    assessment_id = job.get("assessment_id")
-    project_id = None
-    if assessment_id:
+    if assessment.results is None or assessment.status != assessment.Status.COMPLETED:
         try:
-            from trustworthiness.models import Assessment
-            a = Assessment.objects.get(id=assessment_id)
-            project_id = a.project_id
-            if a.results is None or a.status != Assessment.Status.COMPLETED:
-                a.results = data
-                a.status = Assessment.Status.COMPLETED
-                a.save()
+            assessment.results = data
+            assessment.status = assessment.Status.COMPLETED
+            assessment.save(update_fields=["results", "status"])
         except Exception:
-            logger.exception("Failed to sync results for assessment_id=%s", assessment_id)
+            logger.exception("Failed to sync results for assessment_id=%s", assessment.id)
 
     context = {
         "job_id": job_id,
-        "project_id": project_id,
+        "project_id": assessment.project_id,
         "backend_job_id": job.get("backend_job_id"),
         "error": None,
         **_report_context_from_result(data),
@@ -748,7 +742,8 @@ def view_assessment_results(request, assessment_id):
 @login_required
 def results_json_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
-    if not job:
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
         return JsonResponse({"error": "Job not found."}, status=404)
     result = job.get("result") or {}
     response = JsonResponse(result, json_dumps_params={"indent": 2})
@@ -759,7 +754,8 @@ def results_json_view(request, job_id):
 @login_required
 def list_adversarial_csvs_view(request, job_id):
     job = _get_job(job_id) or _load_persisted(job_id)
-    if not job:
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
         return JsonResponse({"error": "Job not found."}, status=404)
 
     backend_job_id = job.get("backend_job_id")
@@ -790,7 +786,8 @@ def list_adversarial_csvs_view(request, job_id):
 @login_required
 def download_adversarial_csv_view(request, job_id, attack_key):
     job = _get_job(job_id) or _load_persisted(job_id)
-    if not job:
+    assessment = visible_job_assessment(request.user, job_id, job)
+    if assessment is None:
         return JsonResponse({"error": "Job not found."}, status=404)
 
     backend_job_id = job.get("backend_job_id")
