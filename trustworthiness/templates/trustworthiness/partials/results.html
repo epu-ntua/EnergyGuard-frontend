@@ -88,7 +88,7 @@ $(document).ready(function () {
             { data: "assessment_type" },
             { data: "status", render: data => data },
             { data: "score", className: "text-start" },
-            { data: "accessed_at", className: "text-start" },
+            { data: "accessed_at", className: "text-start", render: (data, type, row) => type === 'sort' ? row.accessed_at_iso : data },
             { data: "findings_summary", className: "text-start" },
             { data: null, className: "text-start", orderable: false, render: (data, type, row) => actionsHtmlFor(row) },
         ],

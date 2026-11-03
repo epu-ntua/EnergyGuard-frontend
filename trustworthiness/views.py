@@ -74,7 +74,20 @@ def _robustness_findings_summary(results):
 
 
 def _ai_act_findings_summary(results):
-    return (results or {}).get('final_classification') or '-'
+    from questionnaire import engine
+
+    track_results = (results or {}).get('track_results') or {}
+    parts = []
+    for name in engine.TRACK_NAMES:
+        track = track_results.get(name)
+        if not track:
+            continue
+        risk = track.get('risk_category')
+        summary = f"{engine.get_track_label(name)}: {engine.risk_category_label(risk) if risk else 'Not yet determined'}"
+        if track.get('role'):
+            summary += f" ({engine.humanize_label(track['role'])})"
+        parts.append(summary)
+    return ' · '.join(parts) or '-'
 
 
 FINDINGS_SUMMARY_BUILDERS = {
@@ -107,6 +120,9 @@ def _build_assessment_runs(project_ids):
             'status': STATUS_BADGES.get(a.status, a.status),
             'score': '-',
             'accessed_at': timezone.localtime(a.created_at).strftime('%b %d, %Y'),
+            # The display date sorts alphabetically ("Sep" after "Nov"); the
+            # table orders on this instead.
+            'accessed_at_iso': a.created_at.isoformat(),
             'findings_summary': _findings_summary(a),
         }
         for a in assessments
