@@ -160,7 +160,7 @@
             {% if backend_job_id %}
             <div id="csv-download-btns" style="margin-top:0.5rem;"></div>
             {% endif %}
-            <a href="{% url 'robustness:config_input' %}" class="download-btn" style="display:block;text-align:center;text-decoration:none;margin-top:0.5rem;">
+            <a href="{% url 'robustness:config_input' %}{% if project_id %}?project_id={{ project_id }}{% endif %}" class="download-btn" style="display:block;text-align:center;text-decoration:none;margin-top:0.5rem;">
               ↺ Run new analysis
             </a>
           </div>

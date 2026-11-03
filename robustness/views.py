@@ -114,6 +114,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from trustworthiness.project_access import assessment_project_id, editable_project, project_picker_redirect
+
 
 # ---------------------------------------------------------------------------
 # In-memory job store (thread-safe)
@@ -420,18 +422,11 @@ def _fmt_pct(value):
         return str(value)
 
 
-def _create_assessment(user, project_id, input_data, parent_assessment=None):
-    if not project_id:
-        return None
+def _create_assessment(project, input_data, parent_assessment=None):
+    """Assessment id on `project` (already checked with editable_project), or
+    None when it could not be saved."""
     try:
-        from projects.models import Project
         from trustworthiness.models import Assessment
-        project = Project.objects.get(id=int(project_id))
-        # Creating an assessment writes to the project: read access to a public
-        # project is not enough.
-        if not project.can_edit(user):
-            logger.warning("User %s denied write access to project_id=%s for Assessment creation", user.id, project_id)
-            return None
         return Assessment.objects.create(
             project=project,
             assessment_type=Assessment.AssessmentType.ROBUSTNESS,
@@ -440,7 +435,7 @@ def _create_assessment(user, project_id, input_data, parent_assessment=None):
             version=(parent_assessment.version + 1) if parent_assessment else 1,
         ).id
     except Exception:
-        logger.exception("Failed to create Assessment for project_id=%s", project_id)
+        logger.exception("Failed to create Assessment for project_id=%s", project.id)
         return None
 
 
@@ -472,13 +467,24 @@ def _get_owned_assessment(user, assessment_id, for_edit=False):
 
 @login_required
 def config_input_view(request):
+    from trustworthiness.models import Assessment
+
     if request.method == "POST":
+        project_id = request.POST.get("project_id", "")
+        project = editable_project(request.user, project_id)
+        if project is None:
+            # No Assessment could record this run: don't start it.
+            return project_picker_redirect(request, Assessment.AssessmentType.ROBUSTNESS)
+
         config_file = request.FILES.get("config_file")
         if not config_file:
             return _robustness_render(
                 request,
                 "robustness/config_input.html",
-                {"error": "Please select a YAML configuration file before submitting."},
+                {
+                    "error": "Please select a YAML configuration file before submitting.",
+                    "project_id": project_id,
+                },
             )
 
         config_name = request.POST.get("config_name", "").strip() or Path(config_file.name).stem
@@ -490,7 +496,6 @@ def config_input_view(request):
 
         parsed_config = _parse_yaml_config(tmp.name)
         job_id = _job_id_from_config(parsed_config)
-        project_id = request.POST.get("project_id", "")
 
         parent_assessment = None
         parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
@@ -503,11 +508,21 @@ def config_input_view(request):
                     parent_assessment_id, request.user.id,
                 )
 
-        assessment_id = _create_assessment(request.user, project_id, {
+        assessment_id = _create_assessment(project, {
             "config_name": config_name,
             "config_file": config_file.name,
             "config": parsed_config,
         }, parent_assessment=parent_assessment)
+        if assessment_id is None:
+            os.unlink(tmp.name)
+            return _robustness_render(
+                request,
+                "robustness/config_input.html",
+                {
+                    "error": "The assessment could not be started. Please try again.",
+                    "project_id": project_id,
+                },
+            )
         _set_job(job_id, status="running", config_name=config_name, result=None, error=None, assessment_id=assessment_id)
 
         threading.Thread(
@@ -519,8 +534,11 @@ def config_input_view(request):
 
         return redirect(f"{reverse('robustness:processing')}?job={job_id}")
 
+    project_id = request.GET.get("project_id", "")
+    if editable_project(request.user, project_id) is None:
+        return project_picker_redirect(request, Assessment.AssessmentType.ROBUSTNESS)
     return _robustness_render(request, "robustness/config_input.html", {
-        "project_id": request.GET.get("project_id", ""),
+        "project_id": project_id,
     })
 
 
@@ -545,6 +563,7 @@ def processing_view(request):
         )
 
     config_name = job.get("config_name", "-")
+    project_id = assessment_project_id(job.get("assessment_id"))
     job_status = job.get("status")
 
     if job_status == "completed":
@@ -568,6 +587,7 @@ def processing_view(request):
                 "job_status": job_status,
                 "analysis_error": job.get("error") or "Unknown evaluation error.",
                 "config_name": config_name,
+                "project_id": project_id,
             },
             status=502,
         )
@@ -580,6 +600,7 @@ def processing_view(request):
             "job_status": job_status,
             "analysis_error": None,
             "config_name": config_name,
+            "project_id": project_id,
             "status_url": reverse("robustness:job_status"),
             "results_base_url": reverse("robustness:results", kwargs={"job_id": "__JOB_ID__"}).replace("__JOB_ID__/", ""),
         },
@@ -650,10 +671,12 @@ def results_view(request, job_id):
 
     data = job.get("result") or {}
     assessment_id = job.get("assessment_id")
+    project_id = None
     if assessment_id:
         try:
             from trustworthiness.models import Assessment
             a = Assessment.objects.get(id=assessment_id)
+            project_id = a.project_id
             if a.results is None or a.status != Assessment.Status.COMPLETED:
                 a.results = data
                 a.status = Assessment.Status.COMPLETED
@@ -663,6 +686,7 @@ def results_view(request, job_id):
 
     context = {
         "job_id": job_id,
+        "project_id": project_id,
         "backend_job_id": job.get("backend_job_id"),
         "error": None,
         **_report_context_from_result(data),
@@ -714,6 +738,7 @@ def view_assessment_results(request, assessment_id):
 
     context = {
         "assessment_id": assessment.id,
+        "project_id": assessment.project_id,
         "error": None,
         **_report_context_from_result(assessment.results),
     }

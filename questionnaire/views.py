@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 
+from trustworthiness.project_access import editable_project, project_picker_redirect
+
 from . import engine
 from .models import AIActAssessment
 
@@ -154,29 +156,15 @@ def _sync_trustworthiness(request, state):
 
     # project_id stays in the session for later attempts: a restart records a
     # new Assessment on the same project, until the hub picks another one.
-    from projects.models import Project
-    try:
-        project = Project.objects.get(id=int(project_id))
-    except (Project.DoesNotExist, ValueError):
-        # Deleted since the hub picked it (or never valid): drop it, or every
-        # later attempt in this session would fail the same way.
-        logger.warning(
-            "AI Act questionnaire completed by user %s for missing project_id=%s; no Assessment recorded",
-            request.user.id, project_id,
-        )
+    project = editable_project(request.user, project_id)
+    if project is None:
+        # Deleted (or no longer writable) since the hub picked it: drop it, so
+        # the next entry goes back to the project picker.
         request.session.pop('ai_act_project_id', None)
         request.session.modified = True
         return
     try:
         from trustworthiness.models import Assessment as TWAssessment
-        # Creating an assessment writes to the project: read access to a public
-        # project is not enough.
-        if not project.can_edit(request.user):
-            logger.warning(
-                "User %s denied write access to project_id=%s for Assessment creation",
-                request.user.id, project_id,
-            )
-            return
         tw = TWAssessment.objects.create(
             project=project,
             assessment_type=TWAssessment.AssessmentType.AI_ACT,
@@ -188,6 +176,18 @@ def _sync_trustworthiness(request, state):
         request.session.modified = True
     except Exception:
         logger.exception("Failed to create trustworthiness Assessment for project_id=%s", project_id)
+
+
+def _project_picker_unless_project(request):
+    """The redirect to the hub's project picker when the session holds no
+    project the user can edit, else None: an attempt is never started without
+    a project to record its Assessment on."""
+    if editable_project(request.user, request.session.get('ai_act_project_id')) is not None:
+        return None
+    request.session.pop('ai_act_project_id', None)
+    request.session.modified = True
+    from trustworthiness.models import Assessment as TWAssessment
+    return project_picker_redirect(request, TWAssessment.AssessmentType.AI_ACT)
 
 
 @login_required
@@ -203,6 +203,9 @@ def intro(request):
         request.session['ai_act_project_id'] = project_id
         request.session.pop('ai_act_assessment_id', None)
         request.session.modified = True
+    no_project = _project_picker_unless_project(request)
+    if no_project:
+        return no_project
 
     state = _get_state(request)
     entry_track = state['active_track'] or 'ai_system'
@@ -230,6 +233,9 @@ def intro(request):
 def start_track(request, track):
     if track not in engine.TRACK_NAMES:
         return HttpResponseBadRequest('Unknown track')
+    no_project = _project_picker_unless_project(request)
+    if no_project:
+        return no_project
 
     state = _get_state(request)
     track_state = _empty_track_state()

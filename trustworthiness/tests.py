@@ -7,9 +7,12 @@ assessment still only needs read access.
 """
 
 import os
+import tempfile
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, TestCase
@@ -229,12 +232,133 @@ class AiActRestartTests(PermissionFixture):
         self.client.get(reverse("questionnaire:intro"), {"project_id": doomed.pk})
         doomed.delete()
 
-        with self.assertLogs("questionnaire.views", level="WARNING") as logs:
+        with self.assertLogs("trustworthiness.project_access", level="WARNING") as logs:
             self.finish_questionnaire()
 
         self.assertFalse(Assessment.objects.exists())
-        self.assertIn("missing project_id", logs.output[0])
+        self.assertIn("unknown project_id", logs.output[0])
         self.assertNotIn("ai_act_project_id", self.client.session)
+
+
+class NoRunWithoutProjectTests(PermissionFixture):
+    """Every assessment entry without a project the user can edit goes back to
+    the hub's project picker, and no job starts."""
+
+    def picker_url(self, assessment_type):
+        return f"{reverse('trustworthiness:trustworthiness')}?{urlencode({'open_modal': assessment_type.label})}"
+
+    def test_entry_pages_send_users_without_an_editable_project_to_the_picker(self):
+        entries = [
+            (reverse("questionnaire:intro"), Assessment.AssessmentType.AI_ACT),
+            (reverse("trustworthiness:assessment_detail", args=["code-analysis"]), Assessment.AssessmentType.CODE_ANALYSIS),
+            (reverse("code_analysis:select_source"), Assessment.AssessmentType.CODE_ANALYSIS),
+            (reverse("code_analysis:configure_github"), Assessment.AssessmentType.CODE_ANALYSIS),
+            (reverse("code_analysis:configure_upload"), Assessment.AssessmentType.CODE_ANALYSIS),
+            (reverse("robustness:config_input"), Assessment.AssessmentType.ROBUSTNESS),
+        ]
+        for user, project_id, label in [
+            (self.owner, None, "no project"),
+            (self.owner, 999999, "unknown project"),
+            (self.viewer, self.project.pk, "read-only project"),
+        ]:
+            self.client.force_login(user)
+            query = {"project_id": project_id} if project_id else {}
+            for url, assessment_type in entries:
+                with self.subTest(case=label, url=url):
+                    response = self.client.get(url, query)
+                    self.assertRedirects(response, self.picker_url(assessment_type), fetch_redirect_response=False)
+
+    def test_entry_pages_open_for_an_editable_project(self):
+        self.client.force_login(self.editor)
+        for url in [
+            reverse("questionnaire:intro"),
+            reverse("code_analysis:select_source"),
+            reverse("robustness:config_input"),
+        ]:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url, {"project_id": self.project.pk}).status_code, 200)
+
+    def test_ai_act_track_needs_a_project_in_the_session(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("questionnaire:start_track", args=["ai_system"]))
+        self.assertRedirects(response, self.picker_url(Assessment.AssessmentType.AI_ACT), fetch_redirect_response=False)
+
+    def test_the_picker_says_why_the_user_landed_there(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("robustness:config_input"), follow=True)
+        self.assertEqual(
+            [str(m) for m in get_messages(response.wsgi_request)],
+            ["Choose a project you can edit to start the Adversarial Robustness."],
+        )
+
+    def submit_robustness(self, user, **data):
+        self.client.force_login(user)
+        config = SimpleUploadedFile("config.yaml", b"model:\n  backend: mlflow\n", content_type="application/x-yaml")
+        temp_files = []
+        real_tempfile = tempfile.NamedTemporaryFile
+
+        def tracked_tempfile(*args, **kwargs):
+            tmp = real_tempfile(*args, **kwargs)
+            temp_files.append(tmp.name)
+            return tmp
+
+        with patch("robustness.views.threading.Thread") as thread, \
+                patch("robustness.views.tempfile.NamedTemporaryFile", side_effect=tracked_tempfile):
+            response = self.client.post(reverse("robustness:config_input"), {"config_file": config, **data})
+        return response, thread, temp_files
+
+    def submit_code_analysis(self, user, **data):
+        self.client.force_login(user)
+        with patch("code_analysis.views.threading.Thread") as thread:
+            response = self.client.post(reverse("code_analysis:processing"), {
+                "source_type": "GitHub Repository", "repo_url": "https://github.com/example/repo", **data,
+            })
+        return response, thread
+
+    def test_submit_without_an_editable_project_starts_no_job(self):
+        for user, data, label in [
+            (self.owner, {}, "no project"),
+            (self.viewer, {"project_id": self.project.pk}, "read-only project"),
+        ]:
+            with self.subTest(case=label, app="robustness"):
+                response, thread, temp_files = self.submit_robustness(user, **data)
+                self.assertRedirects(response, self.picker_url(Assessment.AssessmentType.ROBUSTNESS), fetch_redirect_response=False)
+                thread.assert_not_called()
+                self.assertEqual(temp_files, [])
+            with self.subTest(case=label, app="code_analysis"):
+                response, thread = self.submit_code_analysis(user, **data)
+                self.assertRedirects(response, self.picker_url(Assessment.AssessmentType.CODE_ANALYSIS), fetch_redirect_response=False)
+                thread.assert_not_called()
+        self.assertFalse(Assessment.objects.exists())
+
+    def test_submit_whose_assessment_cannot_be_saved_shows_an_error_and_starts_no_job(self):
+        with patch.object(Assessment.objects, "create", side_effect=RuntimeError("db down")):
+            with self.assertLogs("robustness.views", level="ERROR"):
+                response, thread, temp_files = self.submit_robustness(self.owner, project_id=self.project.pk)
+            with self.assertLogs("code_analysis.views", level="ERROR"):
+                ca_response, ca_thread = self.submit_code_analysis(self.owner, project_id=self.project.pk)
+
+        self.assertContains(response, "The assessment could not be started.")
+        thread.assert_not_called()
+        self.assertEqual(len(temp_files), 1)
+        self.assertFalse(os.path.exists(temp_files[0]))
+
+        self.assertContains(ca_response, "The analysis could not be started.", status_code=500)
+        ca_thread.assert_not_called()
+
+    def test_new_analysis_links_keep_the_project(self):
+        self.client.force_login(self.owner)
+        for assessment_type, results_url, form_url in [
+            (Assessment.AssessmentType.ROBUSTNESS, "robustness:view_assessment_results", "robustness:config_input"),
+            (Assessment.AssessmentType.CODE_ANALYSIS, "code_analysis:view_assessment_results", "code_analysis:select_source"),
+        ]:
+            with self.subTest(assessment_type=assessment_type):
+                assessment = Assessment.objects.create(
+                    project=self.project, assessment_type=assessment_type,
+                    status=Assessment.Status.COMPLETED, results={"report_meta": {}},
+                )
+                response = self.client.get(reverse(results_url, args=[assessment.pk]))
+                self.assertContains(response, f'{reverse(form_url)}?project_id={self.project.pk}')
 
 
 class AiActFindingsSummaryTests(TestCase):

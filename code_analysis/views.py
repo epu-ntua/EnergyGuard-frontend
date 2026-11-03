@@ -17,6 +17,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from trustworthiness.project_access import assessment_project_id, editable_project, project_picker_redirect
+
 
 logger = logging.getLogger(__name__)
 
@@ -106,18 +108,11 @@ def _add_stepper_context(context, source_label=None, job_id=None):
 	return context
 
 
-def _create_assessment(user, project_id, input_data, parent_assessment=None):
-	if not project_id:
-		return None
+def _create_assessment(project, input_data, parent_assessment=None):
+	"""Assessment id on `project` (already checked with editable_project), or
+	None when it could not be saved."""
 	try:
-		from projects.models import Project
 		from trustworthiness.models import Assessment
-		project = Project.objects.get(id=int(project_id))
-		# Creating an assessment writes to the project: read access to a public
-		# project is not enough.
-		if not project.can_edit(user):
-			logger.warning("User %s denied write access to project_id=%s for Assessment creation", user.id, project_id)
-			return None
 		return Assessment.objects.create(
 			project=project,
 			assessment_type=Assessment.AssessmentType.CODE_ANALYSIS,
@@ -126,7 +121,7 @@ def _create_assessment(user, project_id, input_data, parent_assessment=None):
 			version=(parent_assessment.version + 1) if parent_assessment else 1,
 		).id
 	except Exception:
-		logger.exception("Failed to create Assessment for project_id=%s", project_id)
+		logger.exception("Failed to create Assessment for project_id=%s", project.id)
 		return None
 
 
@@ -144,8 +139,21 @@ def _get_owned_assessment(user, assessment_id, for_edit=False):
 	return assessment
 
 
+def _project_picker_unless_project(request):
+	"""The redirect to the hub's project picker when the request names no
+	project the user can edit, else None: a scan is never started without a
+	project to record its Assessment on."""
+	if editable_project(request.user, request.GET.get("project_id")) is not None:
+		return None
+	from trustworthiness.models import Assessment
+	return project_picker_redirect(request, Assessment.AssessmentType.CODE_ANALYSIS)
+
+
 @login_required
 def select_source(request):
+	no_project = _project_picker_unless_project(request)
+	if no_project:
+		return no_project
 	return render(request, "code_analysis/mockup1.html", {
 		"show_sidebar": True,
 		"active_navbar_page": "trustworthiness",
@@ -681,6 +689,9 @@ def configure_jupyter(request):
 
 @login_required
 def configure_github(request):
+	no_project = _project_picker_unless_project(request)
+	if no_project:
+		return no_project
 	return render(
 		request,
 		"code_analysis/configure_github.html",
@@ -694,6 +705,9 @@ def configure_github(request):
 
 @login_required
 def configure_upload(request):
+	no_project = _project_picker_unless_project(request)
+	if no_project:
+		return no_project
 	return render(
 		request,
 		"code_analysis/configure_upload.html",
@@ -705,6 +719,14 @@ def configure_upload(request):
 	)
 
 
+def _assessment_not_started(request, source_label, project_id):
+	"""The processing page in its failed state, for a scan whose Assessment
+	could not be saved and which therefore never started."""
+	context = _build_processing_context(source_label, analysis_error="The analysis could not be started. Please try again.")
+	context.update(job_status="failed", project_id=project_id)
+	return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label), status=500)
+
+
 @login_required
 def processing(request):
 	source_label = request.POST.get("source_type") or request.GET.get("source") or "Submitted source"
@@ -712,7 +734,13 @@ def processing(request):
 	job_status = None
 
 	if request.method == "POST":
+		from trustworthiness.models import Assessment
+
 		project_id = request.POST.get("project_id", "")
+		project = editable_project(request.user, project_id)
+		if project is None:
+			# No Assessment could record this scan: don't start it.
+			return project_picker_redirect(request, Assessment.AssessmentType.CODE_ANALYSIS)
 
 		parent_assessment = None
 		parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
@@ -729,6 +757,15 @@ def processing(request):
 			upload = request.FILES["archive_file"]
 			project_name = _derive_project_name(source_label, request.POST, request.FILES)
 
+			assessment_id = _create_assessment(project, {
+				"source": source_label,
+				"analysis_name": project_name,
+				"root_folder": request.POST.get("root_folder", "").strip(),
+				"archive_filename": upload.name,
+			}, parent_assessment=parent_assessment)
+			if assessment_id is None:
+				return _assessment_not_started(request, source_label, project_id)
+
 			suffix = Path(upload.name).suffix or ".upload"
 			with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
 				for chunk in upload.chunks():
@@ -736,12 +773,6 @@ def processing(request):
 			temp_path = tmp_file.name
 
 			job_id = uuid.uuid4().hex
-			assessment_id = _create_assessment(request.user, project_id, {
-				"source": source_label,
-				"analysis_name": project_name,
-				"root_folder": request.POST.get("root_folder", "").strip(),
-				"archive_filename": upload.name,
-			}, parent_assessment=parent_assessment)
 			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 
 			threading.Thread(
@@ -776,12 +807,14 @@ def processing(request):
 			payload = {key: value for key, value in payload.items() if value}
 
 			job_id = uuid.uuid4().hex
-			assessment_id = _create_assessment(request.user, project_id, {
+			assessment_id = _create_assessment(project, {
 				"source": source_label,
 				"repo_url": request.POST.get("repo_url", "").strip(),
 				"branch": request.POST.get("branch", "").strip(),
 				"subdirectory": request.POST.get("subdirectory", "").strip(),
 			}, parent_assessment=parent_assessment)
+			if assessment_id is None:
+				return _assessment_not_started(request, source_label, project_id)
 			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 			threading.Thread(
 				target=_run_scan_job,
@@ -801,6 +834,7 @@ def processing(request):
 			return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label, job_id=job_id), status=404)
 
 		source_label = job.get("source_label") or source_label
+		project_id = assessment_project_id(job.get("assessment_id"))
 		job_status = job.get("status")
 		if job_status == "completed":
 			return redirect("code_analysis:results", job_id=job_id)
@@ -818,7 +852,7 @@ def processing(request):
 			return render(
 				request,
 				"code_analysis/processing.html",
-				_add_stepper_context({**context, "job_id": job_id, "job_status": job_status}, source_label=source_label, job_id=job_id),
+				_add_stepper_context({**context, "job_id": job_id, "job_status": job_status, "project_id": project_id}, source_label=source_label, job_id=job_id),
 				status=502,
 			)
 		else:
@@ -826,6 +860,7 @@ def processing(request):
 
 		context["job_id"] = job_id
 		context["job_status"] = job_status
+		context["project_id"] = project_id
 		return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label, job_id=job_id))
 
 	context = _build_processing_context(source_label)
@@ -877,10 +912,12 @@ def results(request, job_id):
 		return redirect(reverse("code_analysis:processing") + f"?{query}")
 	source_label = job.get("source_label")
 	assessment_id = job.get("assessment_id")
+	project_id = None
 	if assessment_id:
 		try:
 			from trustworthiness.models import Assessment
 			a = Assessment.objects.get(id=assessment_id)
+			project_id = a.project_id
 			if a.results is None or a.status != Assessment.Status.COMPLETED:
 				a.results = job.get("result") or {}
 				a.status = Assessment.Status.COMPLETED
@@ -893,6 +930,7 @@ def results(request, job_id):
 		_add_stepper_context(
 			{
 				**_build_results_context(job.get("result") or {}, source_label, job_id),
+				"project_id": project_id,
 				"error": None,
 				"show_sidebar": True,
 				"active_navbar_page": "trustworthiness",
@@ -966,6 +1004,7 @@ def view_assessment_results(request, assessment_id):
 			{
 				**_build_results_context(assessment.results, source_label, None),
 				"assessment_id": assessment.id,
+				"project_id": assessment.project_id,
 				"error": None,
 				"show_sidebar": True,
 				"active_navbar_page": "trustworthiness",

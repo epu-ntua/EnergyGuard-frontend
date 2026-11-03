@@ -362,7 +362,7 @@
 
                         <!-- Actions -->
                         <div class="d-flex gap-3 mt-4">
-                            <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}">
+                            <a class="btn btn-outline-secondary" href="{% url 'code_analysis:select_source' %}{% if project_id %}?project_id={{ project_id }}{% endif %}">
                                 <span class="fas fa-plus me-1"></span>New Analysis
                             </a>
                             <a class="btn btn-outline-primary" href="{% url 'trustworthiness:trustworthiness' %}">

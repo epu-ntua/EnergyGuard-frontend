@@ -5,11 +5,11 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .models import Assessment
+from .project_access import editable_project, project_picker_redirect
 
 ASSESSMENT_TEMPLATES = {
-    'ai-act-questionnaire': 'ai_act/mockup1.html',
-    'code-analysis': 'code_analysis/mockup1.html',
-    'robustness': 'robustness/config_input.html',
+    'code-analysis': ('code_analysis/mockup1.html', Assessment.AssessmentType.CODE_ANALYSIS),
+    'robustness': ('robustness/config_input.html', Assessment.AssessmentType.ROBUSTNESS),
 }
 
 STATUS_BADGES = {
@@ -184,11 +184,14 @@ def trustworthiness(request):
 
 @login_required
 def assessment_detail(request, slug):
-    template = ASSESSMENT_TEMPLATES.get(slug)
-    if template is None:
+    if slug not in ASSESSMENT_TEMPLATES:
         raise Http404
+    template, assessment_type = ASSESSMENT_TEMPLATES[slug]
+    project_id = request.GET.get('project_id', '')
+    if editable_project(request.user, project_id) is None:
+        return project_picker_redirect(request, assessment_type)
     return render(request, template, {
         'show_sidebar': True,
         'active_navbar_page': 'trustworthiness',
-        'project_id': request.GET.get('project_id', ''),
+        'project_id': project_id,
     })

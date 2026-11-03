@@ -107,7 +107,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex flex-column gap-2">
-                                    <a class="btn btn-outline-secondary" href="{% url 'robustness:config_input' %}">Back to Config Input</a>
+                                    <a class="btn btn-outline-secondary" href="{% url 'robustness:config_input' %}{% if project_id %}?project_id={{ project_id }}{% endif %}">Back to Config Input</a>
                                 </div>
                             </div>
 
@@ -215,7 +215,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex flex-column gap-2">
-                                    <a class="btn btn-outline-secondary" href="{% url 'robustness:config_input' %}">Back to Config Input</a>
+                                    <a class="btn btn-outline-secondary" href="{% url 'robustness:config_input' %}{% if project_id %}?project_id={{ project_id }}{% endif %}">Back to Config Input</a>
                                     <button class="btn btn-primary" type="button" disabled>Results will appear here next</button>
                                 </div>
                             </div>
