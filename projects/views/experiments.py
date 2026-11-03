@@ -28,10 +28,14 @@ from ..services import (
     set_experiment_tags as mlflow_set_experiment_tags,
     update_experiment_name as mlflow_update_experiment_name,
 )
+from ..signals import MLFLOW_ALREADY_REMOVED
 from .creation import _cleanup_mlflow_experiment
 from ..services.mlflow_client import (
+    delete_all_experiment_tags as mlflow_delete_all_experiment_tags,
+    find_any_run_id as mlflow_find_any_run_id,
     list_registered_model_versions_for_run,
     make_registered_model_links,
+    purge_deleted_experiment as mlflow_purge_deleted_experiment,
 )
 
 '''
@@ -79,6 +83,17 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
             raise ExperimentDeletionError(f"failed to delete artifacts: {exc}") from exc
 
         try:
+            # Before the delete, while the experiment is still active
+            run_id = mlflow_find_any_run_id(experiment.mlflow_experiment_id)
+            if run_id is None:
+                # Without a run the trash cleanup below can't be narrowed to this
+                # experiment, so it stays in the trash: empty its tags (the
+                # project name, the description) first.
+                mlflow_delete_all_experiment_tags(experiment.mlflow_experiment_id)
+        except MlflowClientError as exc:
+            raise ExperimentDeletionError(f"failed to look up runs or delete tags in MLflow: {exc}") from exc
+
+        try:
             mlflow_update_experiment_name(
                 experiment.mlflow_experiment_id,
                 mlflow_make_deleted_experiment_name(),
@@ -88,7 +103,21 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
         except MlflowClientError as exc:
             raise ExperimentDeletionError(f"failed to rename/delete in MLflow: {exc}") from exc
 
+        # MLflow's delete is a soft delete; purge the experiment and its runs,
+        # params and metrics from its trash too. The experiment is already deleted
+        # in MLflow, so a failure here no longer stops the row's delete (it
+        # couldn't be deleted twice).
+        if run_id:
+            try:
+                mlflow_purge_deleted_experiment(experiment.mlflow_experiment_id, run_id)
+            except MlflowClientError:
+                logger.exception("Could not purge MLflow experiment %s from the trash", experiment.mlflow_experiment_id)
+        else:
+            logger.warning("MLflow experiment %s has no runs; left in the MLflow trash", experiment.mlflow_experiment_id)
+
     try:
+        # The steps above cleaned up MLflow; the post_delete signal must not try again
+        setattr(experiment, MLFLOW_ALREADY_REMOVED, True)
         experiment.delete()
     except Exception as exc:
         raise ExperimentDeletionError(f"failed to delete local database record: {exc}") from exc

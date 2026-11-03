@@ -43,10 +43,11 @@ def _request(
     params: dict[str, Any] | None = None,
     user: Any | None = None,
     use_service_credentials: bool = False,
+    timeout: int = 15,
 ) -> dict[str, Any]:
     url = f"{_tracking_uri()}{path}"
     request_kwargs: dict[str, Any] = {
-        "timeout": 15,
+        "timeout": timeout,
     }
     if use_service_credentials:
         request_kwargs["auth"] = _service_credentials()
@@ -56,6 +57,8 @@ def _request(
         request_kwargs["params"] = params or {}
     else:
         request_kwargs["json"] = payload or {}
+        if params:
+            request_kwargs["params"] = params
 
     try:
         response = requests.request(method, url, **request_kwargs)
@@ -281,6 +284,59 @@ def delete_artifacts_from_object_storage(experiment_id: str) -> None:
         raise MlflowClientError(f"Artifact cleanup failed for experiment {experiment}: {exc}") from exc
 
 
+def find_any_run_id(experiment_id: str) -> str | None:
+    """One run of the experiment, active or deleted, or None when it has none."""
+    data = _request(
+        "POST",
+        "/api/2.0/mlflow/runs/search",
+        {"experiment_ids": [str(experiment_id)], "run_view_type": "ALL", "max_results": 1},
+        use_service_credentials=True,
+    )
+    runs = data.get("runs") or []
+    return runs[0]["info"]["run_id"] if runs else None
+
+
+def delete_all_experiment_tags(experiment_id: str) -> None:
+    data = _request(
+        "GET",
+        "/api/2.0/mlflow/experiments/get",
+        params={"experiment_id": str(experiment_id)},
+        use_service_credentials=True,
+    )
+    for tag in data.get("experiment", {}).get("tags") or []:
+        _request(
+            "POST",
+            "/api/2.0/mlflow/experiments/delete-experiment-tag",
+            {"experiment_id": str(experiment_id), "key": tag["key"]},
+            use_service_credentials=True,
+        )
+
+
+def purge_deleted_experiment(experiment_id: str, run_id: str) -> None:
+    """Permanently remove a soft-deleted experiment and all its runs (the
+    mlflow-oidc-auth trash, the API equivalent of `mlflow gc`). Artifacts in
+    object storage stay.
+
+    Purging the experiment takes all its runs; run_id, one of them, is there only
+    to narrow the cleanup: given only experiment_ids the server purges every
+    deleted run on it, given only run_ids it tries every deleted experiment.
+    """
+    if not run_id:
+        raise ValueError("run_id must not be empty, or every deleted run on the server is purged.")
+    data = _request(
+        "POST",
+        "/oidc/trash/cleanup",
+        params={"experiment_ids": str(experiment_id), "run_ids": str(run_id)},
+        use_service_credentials=True,
+        # The server purges every run with its params and metrics in this call
+        timeout=60,
+    )
+    # The server answers 200 even when some items could not be purged
+    failed = {key: data[key] for key in ("failed_experiments", "failed_runs") if data.get(key)}
+    if failed:
+        raise MlflowClientError(f"MLflow trash cleanup of experiment {experiment_id} partly failed: {failed}")
+
+
 def make_deleted_experiment_name() -> str:
     return f"deleted-{secrets.token_hex(8)}"
 
@@ -309,4 +365,24 @@ def create_mlflow_user(username: str, display_name: str = "") -> dict[str, Any]:
         # RESOURCE_ALREADY_EXISTS – user was already provisioned (e.g. via OIDC login)
         if "RESOURCE_ALREADY_EXISTS" in str(exc):
             return {"already_exists": True}
+        raise
+
+
+def delete_mlflow_user(username: str) -> None:
+    """Delete a user from MLflow-OIDC, together with their permissions.
+
+    Uses the service account credentials. A user MLflow doesn't know (never
+    provisioned) is not an error.
+    """
+    try:
+        _request(
+            "DELETE",
+            "/api/2.0/mlflow/users",
+            {"username": str(username)},
+            use_service_credentials=True,
+        )
+    except MlflowClientError as exc:
+        # Not any 404: a moved route must not pass for a deleted user
+        if "failed with 404" in str(exc) and "User not found" in str(exc):
+            return
         raise
