@@ -82,6 +82,14 @@
                     </div>
                 </li>
 
+                <!-- Work queues for the roles holding these permissions -->
+                {% if perms.datasets.review_dataset or perms.digitaltwins.manage_ber_requests %}
+                <li class="nav-item">
+                    <p class="navbar-vertical-label">Management</p>
+                    <hr class="navbar-vertical-line" />
+                </li>
+                {% endif %}
+
                 {% if perms.datasets.review_dataset %}
                 <li class="nav-item">
                     <div class="nav-item-wrapper"><a class="nav-link label-1 {%if active_navbar_page == 'dataset_review' %}active{% endif %}" href="{% url 'dataset_review_list' %}">
