@@ -118,7 +118,6 @@ def _build_assessment_runs(project_ids):
             'project': a.project.name,
             'assessment_type': a.get_assessment_type_display(),
             'status': STATUS_BADGES.get(a.status, a.status),
-            'score': '-',
             'accessed_at': timezone.localtime(a.created_at).strftime('%b %d, %Y'),
             # The display date sorts alphabetically ("Sep" after "Nov"); the
             # table orders on this instead.
