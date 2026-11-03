@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from core.services.notifications import notify_in_app, platform_link
+from core.services.notifications import notify_in_app, platform_link, users_with_permission
 from digitaltwins.models import BerExperimentRequest
 
 from .services.results import build_ber_results_context
@@ -18,9 +18,62 @@ def _notify_requester(experiment_request, *, message, url, icon):
     notify_in_app(experiment_request.user, message=message, url=url, icon=icon)
 
 
+def _notify_ber_staff(experiment_request, *, message, icon):
+    """Bell notification for everyone who manages BER requests, except the requester
+    (a staff member submitting their own request needn't be told about it).
+
+    Never raises: the lab email the callers send next must go out even if looking up
+    the staff fails, so BER hears about the request one way or the other."""
+    try:
+        staff = users_with_permission('digitaltwins', 'manage_ber_requests').exclude(pk=experiment_request.user_id)
+        url = reverse('ber-management-detail', args=[experiment_request.pk])
+        notified = 0
+        for member in staff:
+            notify_in_app(member, message=message, url=url, icon=icon)
+            notified += 1
+    except Exception:
+        logger.exception('Failed to notify BER staff in-app about request %s', experiment_request.pk)
+        return
+    if not notified:
+        logger.warning(
+            "No BER staff other than the requester hold 'digitaltwins.manage_ber_requests'; "
+            "nobody was notified in-app about BER request %s.",
+            experiment_request.pk,
+        )
+
+
+def notify_ber_staff_of_new_request(experiment_request_id):
+    """Runs in the qcluster worker - tells BER staff a request awaits them: in-app to
+    each staff member, then the email to the lab address (if one is configured)."""
+    experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
+    if experiment_request is None:
+        return
+    _notify_ber_staff(
+        experiment_request,
+        message=f'New BER experiment request #{experiment_request.pk} from {experiment_request.user.email}',
+        icon='flask',
+    )
+    send_ber_notification_email(experiment_request.pk)
+
+
+def notify_ber_staff_of_cancellation(experiment_request_id):
+    """Runs in the qcluster worker - tells BER staff a requester withdrew a pending
+    request, so the lab doesn't run it: in-app, then the email to the lab address."""
+    experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).select_related('user').first()
+    if experiment_request is None or experiment_request.status != BerExperimentRequest.Status.CANCELLED:
+        return
+    _notify_ber_staff(
+        experiment_request,
+        message=f'BER experiment request #{experiment_request.pk} was cancelled by its requester',
+        icon='ban',
+    )
+    send_ber_cancellation_email(experiment_request.pk)
+
+
 # The platform_url parameter of the tasks below is no longer used: links come from
 # settings.PLATFORM_URL. It stays in the signatures because tasks queued before
-# that change still pass it.
+# that change still pass it. The two email tasks are no longer queued directly
+# (the notify_ber_staff_* tasks above call them) but stay tasks for the same reason.
 def send_ber_notification_email(experiment_request_id, platform_url=None):
     """Runs in the qcluster worker, not the web process - a slow/unreachable SMTP
     server must never stall the user's submit request (see ber_experiment_submit)."""

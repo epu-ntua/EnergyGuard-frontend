@@ -6,15 +6,13 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
-from core.services.notifications import notify_in_app, platform_link
+from core.services.notifications import notify_in_app, platform_link, users_with_permission
 
 from .models import Dataset
 from .services import MinioUploadError, delete_dataset_cache, delete_dataset_objects, move_dataset_object, object_exists
@@ -288,18 +286,8 @@ def _send_notification_email(
 # --------------------------- publication review --------------------------- #
 
 def _reviewers():
-    """Active users granted `datasets.review_dataset`, directly or through a group.
-    Superusers hold every permission implicitly but are not mailed for it: the
-    reviewers are whoever the permission was actually given to."""
-    permission = Permission.objects.filter(
-        content_type__app_label='datasets', codename='review_dataset',
-    ).first()
-    if permission is None:
-        return get_user_model().objects.none()
-    return get_user_model().objects.filter(
-        Q(user_permissions=permission) | Q(groups__permissions=permission),
-        is_active=True,
-    ).distinct()
+    """Active users granted `datasets.review_dataset` (superusers are not mailed for it)."""
+    return users_with_permission('datasets', 'review_dataset')
 
 
 def notify_dataset_submitted(dataset_id):

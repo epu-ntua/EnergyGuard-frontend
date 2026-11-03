@@ -227,7 +227,7 @@ class EmailLinkTests(TestCase):
             HTTP_HOST='147.102.6.166',
         )
 
-        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.send_ber_notification_email'])
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.notify_ber_staff_of_new_request'])
         experiment_request = BerExperimentRequest.objects.get()
-        import_string('digitaltwins.ber.tasks.send_ber_notification_email')(experiment_request.pk)
+        import_string('digitaltwins.ber.tasks.notify_ber_staff_of_new_request')(experiment_request.pk)
         self.assertIn(settings.PLATFORM_URL, mail.outbox[0].body)

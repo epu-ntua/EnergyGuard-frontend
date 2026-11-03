@@ -16,7 +16,6 @@ transaction.on_commit, since the worker could otherwise run before the commit.
 import logging
 from datetime import datetime, timedelta, timezone
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import DatabaseError, transaction
 from django_q.tasks import async_task
@@ -70,7 +69,7 @@ def ensure_pending(experiment_request):
 # ── Requester ────────────────────────────────────────────────────────────────
 
 def submit_request(user, experiment_json):
-    """Create a pending request and let BER know (if a BER address is configured).
+    """Create a pending request and let BER staff know (in-app, plus the lab email if configured).
 
     Every submission emails the real BER lab team, so a user can have at most
     MAX_PENDING_PER_USER requests waiting and submit at most MAX_SUBMISSIONS_PER_DAY
@@ -93,8 +92,8 @@ def submit_request(user, experiment_json):
             )
 
         experiment_request = BerExperimentRequest.objects.create(user=user, experiment_json=experiment_json)
-        if settings.BER_EMAIL:
-            async_task('digitaltwins.ber.tasks.send_ber_notification_email', experiment_request.pk)
+        # In-app to BER staff always; the lab email only if a BER address is configured.
+        async_task('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', experiment_request.pk)
     return experiment_request
 
 
@@ -105,8 +104,8 @@ def cancel_request(experiment_request):
         cancelled = BerExperimentRequest.objects.filter(
             pk=experiment_request.pk, status=Status.PENDING,
         ).update(status=Status.CANCELLED, cancelled_at=now, updated_at=now)
-        if cancelled and settings.BER_EMAIL:
-            async_task('digitaltwins.ber.tasks.send_ber_cancellation_email', experiment_request.pk)
+        if cancelled:
+            async_task('digitaltwins.ber.tasks.notify_ber_staff_of_cancellation', experiment_request.pk)
     return bool(cancelled)
 
 

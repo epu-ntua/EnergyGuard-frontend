@@ -12,6 +12,23 @@ def platform_link(path):
     return f'{settings.PLATFORM_URL.rstrip("/")}{path}'
 
 
+def users_with_permission(app_label, codename):
+    """Active users granted the permission, directly or through a group. Superusers
+    hold every permission implicitly but are left out: the staff for a job is whoever
+    the permission was actually given to."""
+    from django.contrib.auth import get_user_model
+    from django.contrib.auth.models import Permission
+    from django.db.models import Q
+
+    permission = Permission.objects.filter(content_type__app_label=app_label, codename=codename).first()
+    if permission is None:
+        return get_user_model().objects.none()
+    return get_user_model().objects.filter(
+        Q(user_permissions=permission) | Q(groups__permissions=permission),
+        is_active=True,
+    ).distinct()
+
+
 def notify_in_app(recipient, *, message, url, icon):
     """The bell notification. Its failure is logged, not raised, so an email that
     follows still goes out: the recipient should get at least one of the two."""

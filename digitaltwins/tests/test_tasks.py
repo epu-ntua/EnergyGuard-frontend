@@ -5,8 +5,13 @@ keep these paths in the database, so they must stay importable no matter where
 the implementation lives.
 """
 
+from unittest.mock import patch
+
+from django.contrib.auth.models import Group, Permission
 from django.core import mail
+from django.db import DatabaseError
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils.module_loading import import_string
 from django_q.models import Schedule
 
@@ -27,11 +32,14 @@ BER_TASKS = [
     'notify_ber_results_updated',
 ]
 
+# Added after the move, so they were only ever queued under digitaltwins.ber.tasks.
+NEW_BER_TASKS = ['notify_ber_staff_of_new_request', 'notify_ber_staff_of_cancellation']
+
 RDN_TASKS = ['poll_rdn_job', 'reconcile_stale_rdn_jobs']
 
 TASK_PATHS = [
     *(f'digitaltwins.rdn.tasks.{name}' for name in RDN_TASKS),
-    *(f'digitaltwins.ber.tasks.{name}' for name in BER_TASKS),
+    *(f'digitaltwins.ber.tasks.{name}' for name in BER_TASKS + NEW_BER_TASKS),
     # Pre-move paths, possibly still on queued tasks: re-exported by digitaltwins.tasks.
     *(f'digitaltwins.tasks.{name}' for name in RDN_TASKS + BER_TASKS),
 ]
@@ -86,6 +94,81 @@ class BerTaskTests(TestCase):
         experiment_request = make_request(self.requester)
         run('digitaltwins.ber.tasks.send_ber_notification_email', experiment_request.pk, PLATFORM_URL)
         self.assertEqual(mail.outbox, [])
+
+    def test_new_request_notifies_staff_in_app_and_the_lab_by_email(self):
+        staff = make_user('task-staff@example.com', ber_staff=True)
+        experiment_request = make_request(self.requester)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', experiment_request.pk)
+
+        notification = Notification.objects.get(recipient=staff)
+        self.assertIn(f'#{experiment_request.pk}', notification.message)
+        self.assertEqual(notification.url, reverse('ber-management-detail', args=[experiment_request.pk]))
+        self.assertFalse(Notification.objects.filter(recipient=self.requester).exists())
+        self.assertEqual(mail.outbox[0].to, ['ber-lab@example.com'])
+
+    def test_staff_submitting_their_own_request_are_not_notified_of_it(self):
+        staff = make_user('task-own@example.com', ber_staff=True)
+        experiment_request = make_request(staff)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', experiment_request.pk)
+
+        self.assertFalse(Notification.objects.exists())
+
+    @override_settings(BER_EMAIL='')
+    def test_staff_get_the_in_app_notification_without_a_lab_address(self):
+        staff = make_user('task-noemail@example.com', ber_staff=True)
+        experiment_request = make_request(self.requester)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', experiment_request.pk)
+
+        self.assertTrue(Notification.objects.filter(recipient=staff).exists())
+        self.assertEqual(mail.outbox, [])
+
+    def test_cancellation_notifies_staff_in_app_and_the_lab_by_email(self):
+        staff = make_user('task-cancel@example.com', ber_staff=True)
+        experiment_request = make_request(self.requester, status=Status.CANCELLED)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_cancellation', experiment_request.pk)
+
+        self.assertIn('cancelled', Notification.objects.get(recipient=staff).message)
+        self.assertIn('cancelled', mail.outbox[0].subject)
+
+    def test_no_cancellation_notice_for_a_request_that_is_not_cancelled(self):
+        make_user('task-notcancel@example.com', ber_staff=True)
+        experiment_request = make_request(self.requester, status=Status.COMPLETED)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_cancellation', experiment_request.pk)
+
+        self.assertFalse(Notification.objects.exists())
+        self.assertEqual(mail.outbox, [])
+
+    def test_staff_holding_the_permission_through_a_group_are_notified(self):
+        # How the permission is granted on the server: a "BER staff" group.
+        group = Group.objects.create(name='BER staff')
+        group.permissions.add(Permission.objects.get(codename='manage_ber_requests'))
+        member = make_user('task-group@example.com')
+        member.groups.add(group)
+        experiment_request = make_request(self.requester)
+
+        run('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', experiment_request.pk)
+
+        self.assertTrue(Notification.objects.filter(recipient=member).exists())
+
+    def test_the_lab_email_still_goes_out_when_the_staff_lookup_fails(self):
+        for path, status in [
+            ('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', Status.PENDING),
+            ('digitaltwins.ber.tasks.notify_ber_staff_of_cancellation', Status.CANCELLED),
+        ]:
+            with self.subTest(path=path):
+                mail.outbox.clear()
+                experiment_request = make_request(self.requester, status=status)
+
+                with patch('digitaltwins.ber.tasks.users_with_permission', side_effect=DatabaseError('down')):
+                    run(path, experiment_request.pk)
+
+                self.assertEqual(len(mail.outbox), 1)
+                self.assertEqual(mail.outbox[0].to, ['ber-lab@example.com'])
 
     def test_cancellation_email_goes_to_ber(self):
         experiment_request = make_request(self.requester, status=Status.CANCELLED)
@@ -148,6 +231,8 @@ class BerTaskTests(TestCase):
 
     def test_tasks_tolerate_a_deleted_request(self):
         for path, args in [
+            ('digitaltwins.ber.tasks.notify_ber_staff_of_new_request', (999999,)),
+            ('digitaltwins.ber.tasks.notify_ber_staff_of_cancellation', (999999,)),
             ('digitaltwins.ber.tasks.send_ber_notification_email', (999999, PLATFORM_URL)),
             ('digitaltwins.ber.tasks.send_ber_cancellation_email', (999999, PLATFORM_URL)),
             ('digitaltwins.ber.tasks.notify_ber_request_decision', (999999, PLATFORM_URL)),
