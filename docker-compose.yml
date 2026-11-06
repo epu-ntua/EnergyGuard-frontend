@@ -16,9 +16,10 @@
 # concurrency, so one slow download no longer blocks the site. Raise the worker
 # count only once those two apps keep job state in the database.
 #
-# Also set BIND_ADDR=127.0.0.1 in the server's .env so the published web port
-# 8080 is reachable only from the VM itself. pgadmin 5051 deliberately stays
-# public so it can be opened directly in a browser. Nginx Proxy
+# Also set BIND_ADDR=127.0.0.1 in the server's .env so the published ports (web
+# 8080, pgadmin 5051) are reachable only from the VM itself. Docker publishes
+# ports on 0.0.0.0 by default, which bypasses ufw. Open the server's pgadmin
+# through an SSH tunnel: ssh -L 5051:localhost:5051 <user>@<server>. Nginx Proxy
 # Manager reaches web over the docker network, not through 8080. With 8080 open
 # to the internet, scanners connected straight to gunicorn, never finished their
 # requests, and held all 8 gthread threads until the site hung with a 504. Nginx
@@ -82,7 +83,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     ports:
-      - "5051:80"
+      - "${BIND_ADDR:-0.0.0.0}:5051:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
