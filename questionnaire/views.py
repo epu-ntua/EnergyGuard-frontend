@@ -40,6 +40,9 @@ def _get_state(request):
         state = {
             'tracks': {name: _empty_track_state() for name in engine.TRACK_NAMES},
             'active_track': None,
+            # The project these answers are given for: entering from the hub
+            # with another project starts a new attempt (see intro).
+            'project_id': request.session.get('ai_act_project_id'),
         }
         request.session[SESSION_KEY] = state
     return state
@@ -151,8 +154,16 @@ def _sync_trustworthiness(request, state):
 
     if tw_id:
         from trustworthiness.models import Assessment as TWAssessment
-        TWAssessment.objects.filter(id=tw_id).update(results=tw_result)
-        return
+        if TWAssessment.objects.filter(id=tw_id).update(results=tw_result):
+            return
+        # Deleted since this attempt recorded it: record the attempt anew
+        # rather than losing it.
+        logger.warning(
+            "AI Act assessment_id=%s of user %s no longer exists; recording a new one",
+            tw_id, request.user.id,
+        )
+        request.session.pop('ai_act_assessment_id', None)
+        request.session.modified = True
 
     # project_id stays in the session for later attempts: a restart records a
     # new Assessment on the same project, until the hub picks another one.
@@ -200,12 +211,24 @@ def intro(request):
     """
     project_id = request.GET.get('project_id', '')
     if project_id:
-        request.session['ai_act_project_id'] = project_id
-        request.session.pop('ai_act_assessment_id', None)
+        project = editable_project(request.user, project_id)
+        if project is None:
+            # A rejected pick leaves the current attempt alone.
+            from trustworthiness.models import Assessment as TWAssessment
+            return project_picker_redirect(request, TWAssessment.AssessmentType.AI_ACT)
+        state = request.session.get(SESSION_KEY)
+        if not state or str(state.get('project_id')) != str(project.pk):
+            # Answers given for another project (or saved before answers
+            # carried one) must not be recorded on this one: start a new
+            # attempt. The same project resumes its attempt, Assessment included.
+            request.session.pop(SESSION_KEY, None)
+            request.session.pop('ai_act_assessment_id', None)
+        request.session['ai_act_project_id'] = str(project.pk)
         request.session.modified = True
-    no_project = _project_picker_unless_project(request)
-    if no_project:
-        return no_project
+    else:
+        no_project = _project_picker_unless_project(request)
+        if no_project:
+            return no_project
 
     state = _get_state(request)
     entry_track = state['active_track'] or 'ai_system'

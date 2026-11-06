@@ -201,7 +201,11 @@ class AiActRestartTests(PermissionFixture):
         from questionnaire import engine, views
 
         session = self.client.session
-        state = {"tracks": {name: views._empty_track_state() for name in engine.TRACK_NAMES}, "active_track": "ai_system"}
+        state = {
+            "tracks": {name: views._empty_track_state() for name in engine.TRACK_NAMES},
+            "active_track": "ai_system",
+            "project_id": session.get("ai_act_project_id"),
+        }
         state["tracks"]["ai_system"].update(
             started=True, current_step="AI-8", role="provider", risk_category="minimal_risk",
         )
@@ -218,6 +222,84 @@ class AiActRestartTests(PermissionFixture):
         self.finish_questionnaire()
 
         self.assertEqual(self.assessments(Assessment.AssessmentType.AI_ACT).count(), 2)
+
+    def assertFreshAttempt(self, project):
+        from questionnaire import views
+
+        state = self.client.session[views.SESSION_KEY]
+        self.assertEqual(state["project_id"], str(project.pk))
+        self.assertFalse(any(track["started"] for track in state["tracks"].values()))
+
+    def test_picking_another_project_starts_a_new_attempt(self):
+        from questionnaire import views
+
+        other = Project.objects.create(name="Other project", creator=self.owner)
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.finish_questionnaire()
+        self.client.get(reverse("questionnaire:intro"), {"project_id": other.pk})
+
+        self.assertFreshAttempt(other)
+        self.assertNotIn("ai_act_assessment_id", self.client.session)
+        # A new attempt that completes is recorded on the new project only.
+        self.finish_questionnaire()
+        self.assertEqual(Assessment.objects.filter(project=self.project).count(), 1)
+        self.assertEqual(Assessment.objects.filter(project=other).count(), 1)
+
+    def test_answers_saved_without_a_project_are_not_carried_into_one(self):
+        from questionnaire import engine, views
+
+        self.client.force_login(self.owner)
+        session = self.client.session
+        session[views.SESSION_KEY] = {
+            "tracks": {name: views._empty_track_state() for name in engine.TRACK_NAMES}, "active_track": None,
+        }
+        session.save()
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+
+        self.assertFreshAttempt(self.project)
+
+    def test_the_same_project_resumes_its_attempt(self):
+        from questionnaire import views
+
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.finish_questionnaire()
+        assessment_id = self.client.session["ai_act_assessment_id"]
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+
+        self.assertIn(views.SESSION_KEY, self.client.session)
+        self.assertEqual(self.client.session["ai_act_assessment_id"], assessment_id)
+        # Completing it again updates its Assessment instead of adding one.
+        self.finish_questionnaire()
+        self.assertEqual(self.assessments(Assessment.AssessmentType.AI_ACT).count(), 1)
+
+    def test_a_rejected_pick_leaves_the_current_attempt_alone(self):
+        from questionnaire import views
+
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.finish_questionnaire()
+        before = {key: self.client.session[key] for key in (views.SESSION_KEY, "ai_act_project_id", "ai_act_assessment_id")}
+
+        response = self.client.get(reverse("questionnaire:intro"), {"project_id": 999999})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            {key: self.client.session[key] for key in before}, before,
+        )
+
+    def test_an_assessment_deleted_since_is_recorded_anew(self):
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.finish_questionnaire()
+        Assessment.objects.filter(pk=self.client.session["ai_act_assessment_id"]).delete()
+
+        with self.assertLogs("questionnaire.views", level="WARNING"):
+            self.finish_questionnaire()
+
+        recorded = self.assessments(Assessment.AssessmentType.AI_ACT).get()
+        self.assertEqual(self.client.session["ai_act_assessment_id"], recorded.pk)
 
     def test_completing_without_a_project_records_nothing_and_warns(self):
         self.client.force_login(self.owner)
