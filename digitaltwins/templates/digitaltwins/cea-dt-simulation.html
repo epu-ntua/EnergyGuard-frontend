@@ -199,6 +199,7 @@
                                 <tbody id="signals-body"></tbody>
                             </table>
                         </div>
+                        <div id="table-feedback"></div>
                         <p class="text-body-tertiary fs-9 mt-2 mb-0"><span class="fas fa-lightbulb me-1"></span>Copy a block of cells from Excel and paste it into any cell; rows are added as needed. Enter moves to the next row.</p>
                     </div>
                 </div>
@@ -295,6 +296,25 @@
             <div id="run-feedback"></div>
         </div>
 
+        {# As core/partials/confirm-action-modal.html, but confirming runs a script instead of posting a form. #}
+        <div class="modal fade" id="scenario-confirm-modal" tabindex="-1" aria-labelledby="scenario-confirm-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="scenario-confirm-label"></h5>
+                        <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-body-tertiary lh-lg mb-0" id="scenario-confirm-message"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn" type="button" id="scenario-confirm-btn"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="scenario-preview-modal" tabindex="-1" aria-labelledby="scenario-preview-label" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
@@ -348,6 +368,7 @@
     var statusText = document.getElementById('scenario-status');
     var runBtn = document.getElementById('run-simulation-btn');
     var runFeedback = document.getElementById('run-feedback');
+    var tableFeedback = document.getElementById('table-feedback');
 
     // Each variable's description, as in the documentation, on hover over its name.
     document.querySelectorAll('#scenario-builder [data-bs-toggle="popover"]').forEach(function (el) {
@@ -532,6 +553,7 @@
                 : state.rows.length + ' time steps · ' + valueCount + ' values ready.';
         }
         runFeedback.replaceChildren();
+        tableFeedback.replaceChildren();
         return result;
     }
 
@@ -579,7 +601,7 @@
         var lines = text.replace(/\r/g, '').replace(/\n+$/, '').split('\n');
         var r0 = +input.dataset.row, c0 = +input.dataset.col;
         if (r0 + lines.length > MAX_TABLE_ROWS) {
-            window.alert('The table holds up to ' + MAX_TABLE_ROWS + ' time steps. Upload a longer scenario as a JSON file instead.');
+            showTableFull();
             return;
         }
         lines.forEach(function (line, i) {
@@ -607,9 +629,14 @@
         });
     });
 
+    function showTableFull() {
+        showMessage(tableFeedback, 'warning', 'The table holds up to ' + MAX_TABLE_ROWS
+            + ' time steps. Upload a longer scenario as a JSON file instead.');
+    }
+
     function addRow() {
         if (state.rows.length >= MAX_TABLE_ROWS) {
-            window.alert('The table holds up to ' + MAX_TABLE_ROWS + ' time steps. Upload a longer scenario as a JSON file instead.');
+            showTableFull();
             return;
         }
         state.rows.push(emptyRow());
@@ -631,18 +658,62 @@
         renderTable();
     });
 
+    // ---- Confirmation ----
+
+    var confirmModal = document.getElementById('scenario-confirm-modal');
+    var confirmBtn = document.getElementById('scenario-confirm-btn');
+    var onConfirm = null;
+
+    // Runs options.onConfirm straight away on an empty scenario, and otherwise
+    // only once the user confirms in the modal that their values may be lost.
+    function confirmReplace(options) {
+        if (isBlank()) {
+            options.onConfirm();
+            return;
+        }
+        document.getElementById('scenario-confirm-label').textContent = options.title;
+        document.getElementById('scenario-confirm-message').textContent = options.message;
+        confirmBtn.textContent = options.label;
+        confirmBtn.className = 'btn ' + (options.danger ? 'btn-danger' : 'btn-primary');
+        onConfirm = options.onConfirm;
+        bootstrap.Modal.getOrCreateInstance(confirmModal).show();
+    }
+
+    confirmBtn.addEventListener('click', function () {
+        var action = onConfirm;
+        onConfirm = null;
+        bootstrap.Modal.getOrCreateInstance(confirmModal).hide();
+        if (action) action();
+    });
+
+    // Closing the modal any other way drops the pending action.
+    confirmModal.addEventListener('hidden.bs.modal', function () { onConfirm = null; });
+
     document.getElementById('clear-btn').addEventListener('click', function () {
-        if (!isBlank() && !window.confirm('Clear all values of this scenario?')) return;
-        state = { rows: [emptyRow()], scalars: {}, large: false };
-        showErrors = false;
-        uploadFeedback.replaceChildren();
-        renderTable();
+        confirmReplace({
+            title: 'Clear the scenario',
+            message: 'All time steps and scalar parameters you have entered will be removed.',
+            label: 'Clear',
+            danger: true,
+            onConfirm: function () {
+                state = { rows: [emptyRow()], scalars: {}, large: false };
+                showErrors = false;
+                uploadFeedback.replaceChildren();
+                renderTable();
+            },
+        });
     });
 
     document.getElementById('load-example-btn').addEventListener('click', function () {
-        if (!isBlank() && !window.confirm('Replace the current values with the example scenario?')) return;
-        loadScenario(JSON.parse(document.getElementById('example-json-source').textContent));
-        renderTable();
+        confirmReplace({
+            title: 'Load the example',
+            message: 'The example scenario will replace the values you have entered.',
+            label: 'Replace values',
+            onConfirm: function () {
+                loadScenario(JSON.parse(document.getElementById('example-json-source').textContent));
+                renderTable();
+            },
+        });
     });
 
     // ---- JSON in and out ----
@@ -727,7 +798,15 @@
             showMessage(uploadFeedback, 'danger', file.name + ' is larger than 10 MB.');
             return;
         }
-        if (!isBlank() && !window.confirm('Replace the current values with the scenario in ' + file.name + '?')) return;
+        confirmReplace({
+            title: 'Replace with the uploaded file',
+            message: 'The scenario in ' + file.name + ' will replace the values you have entered.',
+            label: 'Replace values',
+            onConfirm: function () { loadFile(file); },
+        });
+    }
+
+    function loadFile(file) {
         file.text().then(function (text) {
             var data;
             try {
