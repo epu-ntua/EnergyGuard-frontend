@@ -183,9 +183,9 @@
                             <table class="table table-sm table-borderless align-middle text-nowrap fs-9 mb-0 scenario-grid">
                                 <thead class="align-middle">
                                     <tr>
-                                        <th class="col-fit bg-body fw-normal text-center text-body-tertiary ps-3" scope="col">#</th>
+                                        <th class="col-fit bg-body-highlight fw-normal text-center text-body-tertiary ps-3" scope="col">#</th>
                                         {% for variable in cea_variables %}{% if variable.kind == 'signal' %}
-                                        <th class="col-signal bg-body fw-normal text-end ps-3 pe-1" scope="col">
+                                        <th class="col-signal bg-body-highlight fw-normal text-end ps-3 pe-1" scope="col">
                                             <div class="d-block mb-1"><span class="fw-bold text-body-emphasis">{{ variable.label }}</span><span
                                                 class="cursor-pointer text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.label }}?"
                                                 data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top" data-bs-container="body"
@@ -193,7 +193,7 @@
                                             <div class="d-block text-body-tertiary">{% if variable.unit %}{{ variable.unit }} {% endif %}{{ variable.range }}</div>
                                         </th>
                                         {% endif %}{% endfor %}
-                                        <th class="col-fit bg-body" scope="col"><span class="visually-hidden">Remove</span></th>
+                                        <th class="col-fit bg-body-highlight" scope="col"><span class="visually-hidden">Remove</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="signals-body"></tbody>
