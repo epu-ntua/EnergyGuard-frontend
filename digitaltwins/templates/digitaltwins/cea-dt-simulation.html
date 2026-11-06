@@ -3,6 +3,52 @@
 
 {% block title %}DT Scenario Simulation - Digital Twins{% endblock %}
 
+{% block head %}
+<style>
+    .scenario-grid th,
+    .scenario-grid td {
+        vertical-align: middle;
+        white-space: nowrap;
+        background: var(--phoenix-emphasis-bg);
+    }
+    .scenario-grid thead th {
+        font-weight: 400;
+    }
+    /* White, so they stand out on the light grey card; hover keeps the theme's colour. */
+    .scenario-tools .btn {
+        --phoenix-btn-bg: var(--phoenix-emphasis-bg);
+    }
+    .variable-help {
+        cursor: help;
+    }
+    /* No gridlines: each cell is a rounded input of its own, like the scalar
+       fields below the table, with a small gap around it. */
+    .scenario-grid > :not(caption) > * > * {
+        border-width: 0;
+    }
+    .scenario-grid td.grid-cell {
+        padding: 0.25rem;
+    }
+    /* The table fills the card and the signal columns share its width equally;
+       none gets narrower than its header (which does not wrap), and past that the
+       wrapper scrolls. The # and remove columns shrink to their content. The
+       inputs (size=1) take their column's width instead of setting it. */
+    .scenario-grid {
+        width: 100%;
+    }
+    .scenario-grid .col-signal {
+        width: 11%;
+    }
+    .scenario-grid .col-fit {
+        width: 1%;
+    }
+    .scenario-grid .form-control {
+        width: 100%;
+        min-width: 0;
+    }
+</style>
+{% endblock head %}
+
 {% block content %}
 <div class="content">
     <div class="px-4 px-lg-6 pt-6 pb-9">
@@ -24,7 +70,7 @@
         <div class="mb-5">
             <p class="fs-7-5 text-body-secondary mb-4 pe-5" style="width: 60%;">The <strong class="text-body-emphasis">DT Scenario Simulation</strong> is a CEA node that runs the SOEC (Solid Oxide Electrolysis Cell) Digital Twin on a scenario you provide, returning the raw time-series output of the simulated test.</p>
             <div class="d-flex flex-wrap gap-2 mb-5">
-                <a href="#scenario-upload" class="btn btn-primary d-inline-flex align-items-center gap-2">Upload a scenario <span class="fas fa-arrow-right"></span></a>
+                <a href="#scenario-builder" class="btn btn-primary d-inline-flex align-items-center gap-2">Build a scenario <span class="fas fa-arrow-right"></span></a>
             </div>
 
             <div class="row">
@@ -36,8 +82,8 @@
                                 <img src="{% static 'assets/img/digital_twins/engreen graph.png' %}" alt="CEA SOEC hydrogen test bench" class="img-fluid rounded-3 w-100">
                             </div>
                             <div class="col-12 col-lg-5 p-4 p-lg-5 d-flex flex-column justify-content-center">
-                                <h5 class="fw-bold text-body-emphasis mb-3">One scenario file, a full SOEC simulation</h5>
-                                <p class="text-body-tertiary fs-8-5 mb-0">Provide the operating conditions and degradation coefficients that define your test, either generated with the AI Scenario Generation node or written by hand. The Digital Twin runs the SOEC simulation and returns the raw output as an .h5 file, ready to download or open directly in JupyterHub.</p>
+                                <h5 class="fw-bold text-body-emphasis mb-3">One scenario, a full SOEC simulation</h5>
+                                <p class="text-body-tertiary fs-8-5 mb-0">Provide the operating conditions and degradation coefficients that define your test, either by filling in the scenario table below or by uploading a scenario file generated with the AI Scenario Generation node. The Digital Twin runs the SOEC simulation and returns the raw output as an .h5 file, ready to download or open directly in JupyterHub.</p>
                             </div>
                         </div>
                     </div>
@@ -53,8 +99,8 @@
                         <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-tertiary-bg)" stroke-width="3"></circle>
                         <circle cx="18" cy="18" r="16" fill="none" stroke="var(--phoenix-primary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="75.40" transform="rotate(-90 18 18)"></circle>
                     </svg>
-                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Upload</h6>
-                    <p class="text-body-tertiary fs-8-5 mb-0">Provide a generated or custom scenario file.</p>
+                    <h6 class="fw-bold text-body-emphasis mb-2 fs-8">Build</h6>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Fill in the scenario table or upload a scenario file.</p>
                 </div>
                 <div class="col text-center border-bottom border-bottom-md-0 p-4 p-lg-5">
                     <svg width="52" height="52" viewBox="0 0 36 36" class="d-block mx-auto mb-3">
@@ -90,11 +136,11 @@
                 <div class="col-12 col-md-4 border-end-md p-4 p-lg-5">
                     <div class="d-flex justify-content-between align-items-start gap-3">
                         <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
-                            <span class="fas fa-file-code"></span>
+                            <span class="fas fa-table"></span>
                         </span>
                         <div>
-                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Scenario file</h6>
-                            <p class="text-body-tertiary fs-9 mb-0">A single JSON file, up to 10 MB, containing the time-series signals and scalar parameters for the test you want to simulate.</p>
+                            <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Scenario values</h6>
+                            <p class="text-body-tertiary fs-9 mb-0">Typed or pasted into the scenario table, or uploaded as a single JSON file of up to 10 MB.</p>
                         </div>
                     </div>
                 </div>
@@ -105,7 +151,7 @@
                         </span>
                         <div>
                             <h6 class="fw-bold text-body-emphasis mb-2 fs-8-5">Time-series signals</h6>
-                            <p class="text-body-tertiary fs-9 mb-0">9 variables &mdash; current, voltage, temperature, steam conversion and gas flowrates &mdash; each an array the same length as the time vector.</p>
+                            <p class="text-body-tertiary fs-9 mb-0">9 variables &mdash; current, voltage, temperature, steam conversion and gas flowrates &mdash; each given a value at every time step.</p>
                         </div>
                     </div>
                 </div>
@@ -124,77 +170,182 @@
         </div>
 
         <div class="mx-n4 px-4 mx-lg-n6 px-lg-6 border-y py-5 mb-5 text-center bg-body-emphasis">
-            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Scenario Upload</h3>
+            <h3 class="fw-semibold text-uppercase text-body-tertiary ls-2 mb-0">Scenario Builder</h3>
         </div>
 
-        <!-- Content -->
-        <div class="card" id="scenario-upload">
+        <!-- Scenario builder -->
+        <div class="card" id="scenario-builder">
             <div class="card-body p-4 p-lg-5">
 
-                <h5 class="fw-bold text-body-emphasis mb-2">Upload Scenario JSON</h5>
-                <p class="text-body-tertiary fs-8-5 mb-3">Upload a JSON file describing the time-series signals and scalar parameters for the SOEC simulation.</p>
-
-                <div class="row g-5">
-
-                    <!-- Upload column -->
-                    <div class="col-12 col-lg-7">
-                        {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="scenario-json-file" input_name="scenario_json_file" large=True %}
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-6">
+                    <div>
+                        <h5 class="fw-bold text-body-emphasis mb-2">Build your scenario</h5>
+                        <p class="text-body-tertiary fs-8-5 mb-0">Fill in the table, or paste the values from a spreadsheet. If you already have a scenario file, upload it instead.</p>
                     </div>
+                    <div class="btn-group" role="group" aria-label="Scenario input">
+                        <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-table" value="table" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="scenario-mode-table"><span class="fas fa-table me-2"></span>Fill in table</label>
+                        <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-upload" value="upload" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="scenario-mode-upload"><span class="fas fa-file-arrow-up me-2"></span>Upload JSON</label>
+                    </div>
+                </div>
 
-                    <!-- Info column -->
-                    <div class="col-12 col-lg-5">
-                        <div class="p-4 border-start">
-
-                            <div class="d-flex align-items-start gap-2 mb-4">
-                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
-                                    <span class="fas fa-file-lines"></span>
-                                </span>
+                <!-- Table mode -->
+                <div id="table-panel">
+                    <div class="card bg-body">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
                                 <div>
-                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Accepted format</h6>
-                                    <p class="text-body-tertiary fs-9 mb-0">JSON</p>
+                                    <h5 class="fw-bold text-body-emphasis mb-1">Time-series signals</h5>
+                                    <p class="text-body-tertiary fs-9 mb-0">One row per time step. Each value holds until the next timestamp, so only add a row where a signal changes. <a href="{% url 'cea-dt-simulation-documentation' %}">What do the variables mean?</a></p>
+                                </div>
+                                <div class="scenario-tools d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="load-example-btn"><span class="fas fa-file-import me-2"></span>Load example</button>
+                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="fill-down-btn" title="Fill every empty signal cell with the value above it (timeStamp is left as is)"><span class="fas fa-arrow-down me-2"></span>Fill down</button>
+                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="clear-btn"><span class="fas fa-eraser me-2"></span>Clear</button>
+                                    <button type="button" class="btn btn-sm btn-phoenix-primary" id="add-row-btn"><span class="fas fa-plus me-2"></span>Add time step</button>
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-start gap-2 mb-4">
-                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
-                                    <span class="fas fa-shield-halved"></span>
-                                </span>
-                                <div>
-                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Maximum size</h6>
-                                    <p class="text-body-tertiary fs-9 mb-0">10 MB</p>
-                                </div>
+                            <div class="alert alert-subtle-info fs-9 mb-4" id="large-scenario-notice" hidden>
+                                <span class="fas fa-circle-info me-2"></span>The uploaded scenario has <strong id="large-scenario-steps"></strong> time steps, too many to edit in the table. It will be run exactly as uploaded; use <strong>Clear</strong> to start a new one.
                             </div>
 
-                            <a href="{% url 'cea-dt-simulation-documentation' %}" class="btn btn-outline-primary w-100 d-flex align-items-center text-start gap-2 mb-3 ps-0">
-                                <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
-                                    <span class="fas fa-circle-question"></span>
-                                </span>
-                                <div class="flex-grow-1">
-                                    <h6 class="fw-bold mb-1 fs-9">Need help?</h6>
-                                    <p class="fs-9 mb-0 fw-light">See the documentation for file structure, required variables and examples.</p>
-                                </div>
-                                <span class="fas fa-chevron-right fs-10 flex-shrink-0"></span>
-                            </a>
-
-                            <!-- Run -->
-                            <div class="mb-4">
-                                <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 mb-0" id="run-simulation-btn" disabled>
-                                    <span class="fas fa-play"></span>Run Simulation
-                                </button>
+                            <div class="table-responsive border rounded-3 scrollbar" id="signals-wrapper">
+                                <table class="table table-sm fs-9 mb-0 scenario-grid">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-fit text-center text-body-tertiary ps-3" scope="col">#</th>
+                                            {% for variable in cea_variables %}{% if variable.kind == 'signal' %}
+                                            <th class="col-signal text-end ps-3 pe-1" scope="col">
+                                                <div class="d-block mb-1"><span class="fw-bold text-body-emphasis">{{ variable.label }}</span><span
+                                                    class="variable-help text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.label }}?"
+                                                    data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top" data-bs-container="body"
+                                                    data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span></div>
+                                                <div class="d-block text-body-tertiary">{{ variable.unit }}  {{ variable.range }}</div>
+                                            </th>
+                                            {% endif %}{% endfor %}
+                                            <th class="col-fit" scope="col"><span class="visually-hidden">Remove</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="signals-body"></tbody>
+                                </table>
                             </div>
-
-                            <a href="#" id="download-example-json" class="d-inline-flex align-items-center gap-2 fs-9 fw-semibold text-decoration-none">
-                                Download Example JSON<span class="fas fa-download"></span>
-                            </a>
-                            <pre id="example-json-source" hidden>{{ sample_json }}</pre>
-
+                            <p class="text-body-tertiary fs-9 mt-2 mb-0"><span class="fas fa-lightbulb me-1"></span>Copy a block of cells from Excel and paste it into any cell; rows are added as needed. Enter moves to the next row.</p>
                         </div>
                     </div>
 
+                    <div class="card bg-body mt-6">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-body-emphasis mb-1">Scalar parameters</h5>
+                            <p class="text-body-tertiary fs-9 mb-4">Constant for the whole run, one degradation coefficient per stack.</p>
+                            <div class="row g-3">
+                                {% for variable in cea_variables %}{% if variable.kind == 'scalar' %}
+                                <div class="col-12 col-sm-6 col-xl-3">
+                                    <label class="form-label font-monospace fs-9 text-body-emphasis" for="scalar-{{ forloop.counter }}">{{ variable.name }}</label><span
+                                        class="variable-help text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.name }}?"
+                                        data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top"
+                                        data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span>
+                                    <input type="text" inputmode="decimal" autocomplete="off" class="form-control font-monospace" id="scalar-{{ forloop.counter }}" data-scalar="{{ variable.name }}">
+                                    <div class="invalid-feedback"></div>
+                                    <div class="form-text">Valid range {{ variable.range }}</div>
+                                </div>
+                                {% endif %}{% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Upload mode -->
+                <div id="upload-panel" hidden>
+                    <div class="row g-5">
+                        <div class="col-12 col-lg-7">
+                            {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="scenario-json-file" input_name="scenario_json_file" large=True %}
+                            <div id="upload-feedback"></div>
+                        </div>
+
+                        <div class="col-12 col-lg-5">
+                            <div class="p-4 border-start">
+
+                                <div class="d-flex align-items-start gap-2 mb-4">
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                        <span class="fas fa-file-lines"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Accepted format</h6>
+                                        <p class="text-body-tertiary fs-9 mb-0">JSON</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start gap-2 mb-4">
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                        <span class="fas fa-shield-halved"></span>
+                                    </span>
+                                    <div>
+                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Maximum size</h6>
+                                        <p class="text-body-tertiary fs-9 mb-0">10 MB</p>
+                                    </div>
+                                </div>
+
+                                <a href="{% url 'cea-dt-simulation-documentation' %}" class="btn btn-outline-primary w-100 d-flex align-items-center text-start gap-2 mb-3 ps-0">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                                        <span class="fas fa-circle-question"></span>
+                                    </span>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 fs-9">Need help?</h6>
+                                        <p class="fs-9 mb-0 fw-light">See the documentation for file structure, required variables and examples.</p>
+                                    </div>
+                                    <span class="fas fa-chevron-right fs-10 flex-shrink-0"></span>
+                                </a>
+
+                                <a href="#" id="download-example-json" class="d-inline-flex align-items-center gap-2 fs-9 fw-semibold text-decoration-none">
+                                    Download Example JSON<span class="fas fa-download"></span>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problems found in the scenario -->
+                <div class="alert alert-subtle-danger fs-9 mt-4 mb-0" id="scenario-errors" hidden>
+                    <p class="fw-semibold mb-1">Fix these values before running the scenario:</p>
+                    <ul class="mb-0 ps-3" id="scenario-errors-list"></ul>
+                </div>
+
+                <!-- Run -->
+                <div class="border-top pt-4 mt-5 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <p class="text-body-tertiary fs-9 mb-0" id="scenario-status"></p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-phoenix-secondary" id="download-scenario-btn"><span class="fas fa-download me-2"></span>Download JSON</button>
+                        <button type="button" class="btn btn-phoenix-secondary" data-bs-toggle="modal" data-bs-target="#scenario-preview-modal"><span class="fas fa-code me-2"></span>Preview JSON</button>
+                        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="run-simulation-btn">
+                            <span class="fas fa-play"></span>Run Simulation
+                        </button>
+                    </div>
+                </div>
+                <div id="run-feedback"></div>
 
             </div>
         </div>
+
+        <div class="modal fade" id="scenario-preview-modal" tabindex="-1" aria-labelledby="scenario-preview-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="scenario-preview-label">Scenario JSON</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-body-tertiary fs-9">This is the file that will be sent to the CEA Digital Twin.</p>
+                        <pre class="bg-body-highlight rounded-3 p-3 fs-9 mb-0" id="scenario-preview"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <pre id="example-json-source" hidden>{{ sample_json }}</pre>
+        {{ cea_variables|json_script:"cea-variables" }}
     </div>
     {% include "core/footer.html" %}
 </div>
@@ -203,57 +354,495 @@
 {% block scripts %}
 <script>
 (function () {
-    // JSON scenario dropzone
+    var VARIABLES = JSON.parse(document.getElementById('cea-variables').textContent);
+    var SIGNALS = VARIABLES.filter(function (v) { return v.kind === 'signal'; });
+    var SCALARS = VARIABLES.filter(function (v) { return v.kind === 'scalar'; });
+    // Above this many time steps the table is not drawn: thousands of inputs would
+    // freeze the page. A longer scenario can still be uploaded and run as it is.
+    var MAX_TABLE_ROWS = 500;
+    var MAX_FILE_BYTES = 10 * 1024 * 1024;
+
+    // The scenario as typed: one array of cell texts per time step (in SIGNALS
+    // order) and the scalar texts by name. Numbers are parsed only when checked
+    // or sent, so a half-typed value is kept as the user left it.
+    var state = { rows: [emptyRow()], scalars: {}, large: false };
+    // Problems are marked only from the first press of Run on, so the user is not
+    // greeted by a table of red cells they have not had the chance to fill in.
+    var showErrors = false;
+
+    var tbody = document.getElementById('signals-body');
+    var signalsWrapper = document.getElementById('signals-wrapper');
+    var largeNotice = document.getElementById('large-scenario-notice');
+    var scalarInputs = document.querySelectorAll('[data-scalar]');
+    var tablePanel = document.getElementById('table-panel');
+    var uploadPanel = document.getElementById('upload-panel');
+    var uploadFeedback = document.getElementById('upload-feedback');
+    var errorsBox = document.getElementById('scenario-errors');
+    var errorsList = document.getElementById('scenario-errors-list');
+    var statusText = document.getElementById('scenario-status');
+    var runBtn = document.getElementById('run-simulation-btn');
+    var runFeedback = document.getElementById('run-feedback');
+
+    // Each variable's description, as in the documentation, on hover over its name.
+    document.querySelectorAll('#scenario-builder [data-bs-toggle="popover"]').forEach(function (el) {
+        bootstrap.Popover.getOrCreateInstance(el);
+    });
+
+    function emptyRow() {
+        return SIGNALS.map(function () { return ''; });
+    }
+
+    // A comma followed by groups of exactly three digits, as in 3,600: an English
+    // spreadsheet's thousands separator, or a Greek one's 3.600.
+    function isAmbiguousComma(text) {
+        return /^[-+]?[1-9]\d{0,2}(,\d{3})+$/.test(String(text).trim());
+    }
+
+    function inRange(variable, value) {
+        return value >= variable.min && (variable.max === null || value <= variable.max);
+    }
+
+    // The readings of an ambiguous comma that the variable's range allows: 1,291 is
+    // a cell voltage of 1.291 V, never 1291 V, but a timeStamp of 3,600 could be
+    // either 3600 s or 3.6 s. A wrong guess would be a thousand times off.
+    function commaReadings(variable, text) {
+        var s = String(text).trim();
+        var readings = [Number(s.replace(/,/g, ''))];
+        if (s.split(',').length === 2) readings.push(Number(s.replace(',', '.')));
+        return readings.filter(function (value) { return inRange(variable, value); });
+    }
+
+    // Null for an empty cell, NaN for text that is not a number (or not a single one).
+    function parseNumber(text) {
+        var s = String(text).trim();
+        if (s === '') return null;
+        if (isAmbiguousComma(s)) return NaN;
+        // Spreadsheets in a Greek (or other European) locale copy 1,29 for 1.29.
+        if (/^[-+]?\d*,\d+$/.test(s)) s = s.replace(',', '.');
+        if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return NaN;
+        return Number(s);
+    }
+
+    // The cell's value for this variable; an ambiguous comma is settled by its range.
+    function readValue(variable, text) {
+        if (!isAmbiguousComma(text)) return parseNumber(text);
+        var readings = commaReadings(variable, text);
+        return readings.length === 1 ? readings[0] : NaN;
+    }
+
+    function valueError(variable, text) {
+        if (isAmbiguousComma(text)) {
+            var readings = commaReadings(variable, text);
+            if (readings.length > 1) return 'unclear comma, write it with a dot for decimals and no thousands separator';
+            if (!readings.length) return 'outside ' + variable.range;
+            return '';
+        }
+        var value = parseNumber(text);
+        if (value === null) return 'missing';
+        if (isNaN(value)) return 'not a number';
+        if (value < variable.min || (variable.max !== null && value > variable.max)) return 'outside ' + variable.range;
+        return '';
+    }
+
+    // Problems keyed by 'row:col' for cells and by name for scalars, in table order.
+    function validate() {
+        var cells = {}, scalars = {}, messages = [];
+        state.rows.forEach(function (row, r) {
+            SIGNALS.forEach(function (variable, c) {
+                var error = valueError(variable, row[c]);
+                if (!error && c === 0 && r > 0) {
+                    var previous = readValue(variable, state.rows[r - 1][0]);
+                    if (typeof previous === 'number' && !isNaN(previous) && readValue(variable, row[0]) <= previous) {
+                        error = 'must be later than the previous time step';
+                    }
+                }
+                if (error) {
+                    cells[r + ':' + c] = error;
+                    messages.push('Time step ' + (r + 1) + ', ' + variable.label + ': ' + error);
+                }
+            });
+        });
+        SCALARS.forEach(function (variable) {
+            var error = valueError(variable, state.scalars[variable.name] || '');
+            if (error) {
+                scalars[variable.name] = error;
+                messages.push(variable.name + ': ' + error);
+            }
+        });
+        return { cells: cells, scalars: scalars, messages: messages };
+    }
+
+    // ---- Table ----
+
+    function buildRow(row, r) {
+        var tr = document.createElement('tr');
+        var number = document.createElement('td');
+        number.className = 'text-center text-body-tertiary ps-3';
+        number.textContent = r + 1;
+        tr.appendChild(number);
+
+        SIGNALS.forEach(function (variable, c) {
+            var td = document.createElement('td');
+            td.className = 'grid-cell';
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.inputMode = 'decimal';
+            input.size = 1;
+            input.autocomplete = 'off';
+            input.className = 'form-control text-end font-monospace';
+            input.value = row[c];
+            input.dataset.row = r;
+            input.dataset.col = c;
+            input.setAttribute('aria-label', variable.label + ', time step ' + (r + 1));
+            td.appendChild(input);
+            tr.appendChild(td);
+        });
+
+        var remove = document.createElement('td');
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-link btn-sm text-body-tertiary px-2';
+        button.dataset.removeRow = r;
+        button.setAttribute('aria-label', 'Remove time step ' + (r + 1));
+        button.innerHTML = '<span class="fas fa-xmark"></span>';
+        remove.appendChild(button);
+        tr.appendChild(remove);
+        return tr;
+    }
+
+    function renderTable() {
+        tbody.replaceChildren();
+        largeNotice.hidden = !state.large;
+        signalsWrapper.hidden = state.large;
+        if (state.large) {
+            document.getElementById('large-scenario-steps').textContent = state.rows.length;
+        } else {
+            var fragment = document.createDocumentFragment();
+            state.rows.forEach(function (row, r) { fragment.appendChild(buildRow(row, r)); });
+            tbody.appendChild(fragment);
+        }
+        scalarInputs.forEach(function (input) { input.value = state.scalars[input.dataset.scalar] || ''; });
+        refresh();
+    }
+
+    // Re-checks the scenario and updates the marks, status and Run button
+    // without redrawing the table, so the focused cell keeps its caret.
+    function refresh() {
+        var result = validate();
+
+        tbody.querySelectorAll('input').forEach(function (input) {
+            var error = showErrors && result.cells[input.dataset.row + ':' + input.dataset.col];
+            input.classList.toggle('is-invalid', !!error);
+            input.title = error || '';
+        });
+        scalarInputs.forEach(function (input) {
+            var error = showErrors && result.scalars[input.dataset.scalar];
+            input.classList.toggle('is-invalid', !!error);
+            input.nextElementSibling.textContent = error ? 'Value ' + error + '.' : '';
+        });
+
+        // An untouched table is not a list of mistakes yet.
+        var blank = isBlank();
+
+        errorsList.replaceChildren();
+        result.messages.slice(0, 5).forEach(function (message) {
+            var li = document.createElement('li');
+            li.textContent = message;
+            errorsList.appendChild(li);
+        });
+        if (result.messages.length > 5) {
+            var more = document.createElement('li');
+            more.textContent = 'and ' + (result.messages.length - 5) + ' more';
+            errorsList.appendChild(more);
+        }
+        errorsBox.hidden = !showErrors || result.messages.length === 0;
+
+        var valueCount = state.rows.length * SIGNALS.length + SCALARS.length;
+        if (blank) {
+            statusText.textContent = 'Fill in the table, or load the example to see how a scenario looks.';
+        } else {
+            statusText.textContent = result.messages.length
+                ? result.messages.length + ' of ' + valueCount + ' values still need attention.'
+                : state.rows.length + ' time steps · ' + valueCount + ' values ready.';
+        }
+        runFeedback.replaceChildren();
+        return result;
+    }
+
+    function isBlank() {
+        return state.rows.every(function (row) { return row.every(function (v) { return String(v).trim() === ''; }); })
+            && SCALARS.every(function (v) { return !String(state.scalars[v.name] || '').trim(); });
+    }
+
+    function focusCell(r, c) {
+        var input = tbody.querySelector('input[data-row="' + r + '"][data-col="' + c + '"]');
+        if (input) { input.focus(); input.select(); }
+    }
+
+    tbody.addEventListener('input', function (e) {
+        var input = e.target;
+        state.rows[+input.dataset.row][+input.dataset.col] = input.value;
+        refresh();
+    });
+
+    tbody.addEventListener('keydown', function (e) {
+        var input = e.target;
+        if (input.dataset.row === undefined) return;
+        var r = +input.dataset.row, c = +input.dataset.col;
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (r + 1 >= state.rows.length && e.key === 'Enter') {
+                addRow();
+            }
+            focusCell(r + 1, c);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            focusCell(r - 1, c);
+        }
+    });
+
+    // A block copied from a spreadsheet arrives as tab-separated lines; it is
+    // spread over the table from the cell it was pasted into.
+    tbody.addEventListener('paste', function (e) {
+        var input = e.target;
+        if (input.dataset.row === undefined) return;
+        var text = (e.clipboardData || window.clipboardData).getData('text');
+        if (!/[\t\n]/.test(text.trim())) return;
+        e.preventDefault();
+
+        var lines = text.replace(/\r/g, '').replace(/\n+$/, '').split('\n');
+        var r0 = +input.dataset.row, c0 = +input.dataset.col;
+        if (r0 + lines.length > MAX_TABLE_ROWS) {
+            window.alert('The table holds up to ' + MAX_TABLE_ROWS + ' time steps. Upload a longer scenario as a JSON file instead.');
+            return;
+        }
+        lines.forEach(function (line, i) {
+            while (state.rows.length <= r0 + i) state.rows.push(emptyRow());
+            line.split('\t').forEach(function (value, j) {
+                if (c0 + j < SIGNALS.length) state.rows[r0 + i][c0 + j] = value.trim();
+            });
+        });
+        renderTable();
+        focusCell(r0, c0);
+    });
+
+    tbody.addEventListener('click', function (e) {
+        var button = e.target.closest('[data-remove-row]');
+        if (!button) return;
+        state.rows.splice(+button.dataset.removeRow, 1);
+        if (!state.rows.length) state.rows.push(emptyRow());
+        renderTable();
+    });
+
+    scalarInputs.forEach(function (input) {
+        input.addEventListener('input', function () {
+            state.scalars[input.dataset.scalar] = input.value;
+            refresh();
+        });
+    });
+
+    function addRow() {
+        if (state.rows.length >= MAX_TABLE_ROWS) {
+            window.alert('The table holds up to ' + MAX_TABLE_ROWS + ' time steps. Upload a longer scenario as a JSON file instead.');
+            return;
+        }
+        state.rows.push(emptyRow());
+        tbody.appendChild(buildRow(state.rows[state.rows.length - 1], state.rows.length - 1));
+        refresh();
+    }
+
+    document.getElementById('add-row-btn').addEventListener('click', function () {
+        addRow();
+        focusCell(state.rows.length - 1, 0);
+    });
+
+    document.getElementById('fill-down-btn').addEventListener('click', function () {
+        for (var r = 1; r < state.rows.length; r++) {
+            for (var c = 1; c < SIGNALS.length; c++) {
+                if (String(state.rows[r][c]).trim() === '') state.rows[r][c] = state.rows[r - 1][c];
+            }
+        }
+        renderTable();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', function () {
+        if (!isBlank() && !window.confirm('Clear all values of this scenario?')) return;
+        state = { rows: [emptyRow()], scalars: {}, large: false };
+        showErrors = false;
+        uploadFeedback.replaceChildren();
+        renderTable();
+    });
+
+    document.getElementById('load-example-btn').addEventListener('click', function () {
+        if (!isBlank() && !window.confirm('Replace the current values with the example scenario?')) return;
+        loadScenario(JSON.parse(document.getElementById('example-json-source').textContent));
+        renderTable();
+    });
+
+    // ---- JSON in and out ----
+
+    // Loads a parsed scenario file into the state, or returns why it cannot.
+    function loadScenario(data) {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) return 'The file must contain a JSON object.';
+        var missing = VARIABLES.filter(function (v) { return !(v.name in data); })
+            .map(function (v) { return v.name; });
+        if (missing.length) return 'Missing variables: ' + missing.join(', ') + '.';
+        if (!Array.isArray(data.timeStamp) || !data.timeStamp.length) return 'timeStamp must be a non-empty array.';
+        var length = data.timeStamp.length;
+        for (var i = 0; i < SIGNALS.length; i++) {
+            var values = data[SIGNALS[i].name];
+            if (!Array.isArray(values)) return SIGNALS[i].name + ' must be an array.';
+            if (values.length !== length) {
+                return SIGNALS[i].name + ' has ' + values.length + ' values but timeStamp has ' + length + '.';
+            }
+        }
+        for (var j = 0; j < SCALARS.length; j++) {
+            var value = data[SCALARS[j].name];
+            if (value !== null && typeof value === 'object') return SCALARS[j].name + ' must be a single value.';
+        }
+
+        function text(value) { return value === null || value === undefined ? '' : String(value); }
+        state = {
+            rows: data.timeStamp.map(function (_, r) {
+                return SIGNALS.map(function (v) { return text(data[v.name][r]); });
+            }),
+            scalars: {},
+            large: length > MAX_TABLE_ROWS,
+        };
+        SCALARS.forEach(function (v) { state.scalars[v.name] = text(data[v.name]); });
+        return '';
+    }
+
+    function buildScenario() {
+        var scenario = {};
+        SIGNALS.forEach(function (v, c) {
+            scenario[v.name] = state.rows.map(function (row) { return readValue(v, row[c]); });
+        });
+        SCALARS.forEach(function (v) { scenario[v.name] = readValue(v, state.scalars[v.name] || ''); });
+        return scenario;
+    }
+
+    // One variable per line, as in the example file, so the preview stays readable.
+    function formatScenario(scenario) {
+        return '{\n' + Object.keys(scenario).map(function (name) {
+            return '    ' + JSON.stringify(name) + ': ' + JSON.stringify(scenario[name]).replace(/,/g, ', ');
+        }).join(',\n') + '\n}';
+    }
+
+    function downloadJson(text, filename) {
+        var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function showMessage(container, kind, text) {
+        var alert = document.createElement('div');
+        alert.className = 'alert alert-subtle-' + kind + ' fs-9 mt-3 mb-0';
+        alert.textContent = text;
+        container.replaceChildren(alert);
+    }
+
+    function setMode(mode) {
+        tablePanel.hidden = mode !== 'table';
+        uploadPanel.hidden = mode !== 'upload';
+        document.getElementById('scenario-mode-' + mode).checked = true;
+    }
+
+    document.querySelectorAll('input[name="scenario-mode"]').forEach(function (radio) {
+        radio.addEventListener('change', function () { setMode(radio.value); });
+    });
+
+    function readFile(file) {
+        if (!file) return;
+        if (file.size > MAX_FILE_BYTES) {
+            showMessage(uploadFeedback, 'danger', file.name + ' is larger than 10 MB.');
+            return;
+        }
+        if (!isBlank() && !window.confirm('Replace the current values with the scenario in ' + file.name + '?')) return;
+        file.text().then(function (text) {
+            var data;
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                showMessage(uploadFeedback, 'danger', file.name + ' is not valid JSON: ' + err.message);
+                return;
+            }
+            var problem = loadScenario(data);
+            if (problem) {
+                showMessage(uploadFeedback, 'danger', file.name + ' could not be loaded. ' + problem);
+                return;
+            }
+            renderTable();
+            if (state.large) {
+                showMessage(uploadFeedback, 'success', 'Loaded ' + file.name + ' with ' + state.rows.length
+                    + ' time steps. It is too long to edit in the table and will be run as uploaded.');
+            } else {
+                showMessage(uploadFeedback, 'success', 'Loaded ' + file.name + ' into the table.');
+                setMode('table');
+            }
+        }).catch(function (err) {
+            console.error('Could not read the scenario file', err);
+            showMessage(uploadFeedback, 'danger', file.name + ' could not be read. Choose the file again.');
+        });
+    }
+
     var jsonFileInput = document.getElementById('scenario-json-file');
     var jsonDropzone = document.getElementById('json-dropzone');
-    var runBtn = document.getElementById('run-simulation-btn');
 
-    function updateJsonFileState(file) {
-        runBtn.disabled = !file;
-    }
+    jsonFileInput.addEventListener('change', function () {
+        readFile(jsonFileInput.files && jsonFileInput.files[0]);
+        // Choosing the same file again after editing it must load it again.
+        jsonFileInput.value = '';
+    });
 
-    if (jsonFileInput) {
-        jsonFileInput.addEventListener('change', function () {
-            updateJsonFileState(jsonFileInput.files && jsonFileInput.files[0]);
-        });
-    }
-
-    if (jsonDropzone && jsonFileInput) {
-        ['dragenter', 'dragover'].forEach(function (evt) {
-            jsonDropzone.addEventListener(evt, function (e) {
-                e.preventDefault();
-                jsonDropzone.classList.add('border-primary');
-            });
-        });
-        ['dragleave', 'drop'].forEach(function (evt) {
-            jsonDropzone.addEventListener(evt, function (e) {
-                e.preventDefault();
-                jsonDropzone.classList.remove('border-primary');
-            });
-        });
-        jsonDropzone.addEventListener('drop', function (e) {
-            var files = e.dataTransfer && e.dataTransfer.files;
-            if (!files || !files.length) return;
-            jsonFileInput.files = files;
-            updateJsonFileState(files[0]);
-        });
-    }
-
-    // Download example JSON
-    var downloadExampleBtn = document.getElementById('download-example-json');
-    if (downloadExampleBtn) {
-        downloadExampleBtn.addEventListener('click', function (e) {
+    ['dragenter', 'dragover'].forEach(function (evt) {
+        jsonDropzone.addEventListener(evt, function (e) {
             e.preventDefault();
-            var text = document.getElementById('example-json-source').textContent;
-            var blob = new Blob([text], { type: 'application/json' });
-            var url = URL.createObjectURL(blob);
-            var link = document.createElement('a');
-            link.href = url;
-            link.download = 'scenario-example.json';
-            link.click();
-            URL.revokeObjectURL(url);
+            jsonDropzone.classList.add('border-primary');
         });
-    }
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+        jsonDropzone.addEventListener(evt, function (e) {
+            e.preventDefault();
+            jsonDropzone.classList.remove('border-primary');
+        });
+    });
+    jsonDropzone.addEventListener('drop', function (e) {
+        var files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length) readFile(files[0]);
+    });
+
+    document.getElementById('download-example-json').addEventListener('click', function (e) {
+        e.preventDefault();
+        downloadJson(document.getElementById('example-json-source').textContent, 'scenario-example.json');
+    });
+
+    document.getElementById('download-scenario-btn').addEventListener('click', function () {
+        downloadJson(formatScenario(buildScenario()), 'cea-scenario.json');
+    });
+
+    document.getElementById('scenario-preview-modal').addEventListener('show.bs.modal', function () {
+        document.getElementById('scenario-preview').textContent = formatScenario(buildScenario());
+    });
+
+    runBtn.addEventListener('click', function () {
+        showErrors = true;
+        if (refresh().messages.length) {
+            // In upload mode the table is hidden, so the list is what can be shown.
+            var first = (!tablePanel.hidden && document.querySelector('#scenario-builder .is-invalid')) || errorsBox;
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (first !== errorsBox) first.focus({ preventScroll: true });
+            return;
+        }
+        // TODO: POST buildScenario() to the backend once the CEA simulation API exists.
+        showMessage(runFeedback, 'warning', 'Your scenario is valid, but runs cannot be started yet: the connection '
+            + 'to the CEA simulation service is still being set up. You can download the scenario JSON in the meantime.');
+    });
+
+    renderTable();
 })();
 </script>
 {% endblock scripts %}

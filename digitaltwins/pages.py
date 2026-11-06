@@ -34,6 +34,44 @@ CEA_VALIDATION_CHECKS = [
     'Signals have the same length as timeStamp',
 ]
 
+
+def _cea_variable(name, label, kind, unit, low, high, description):
+    """One input of the CEA scenario: name is its key in the file, label what the
+    scenario builder shows; high is None for an unbounded range."""
+    return {
+        'name': name, 'label': label, 'kind': kind, 'unit': unit, 'min': low, 'max': high,
+        'range': f"[{low} : {'inf' if high is None else high}]", 'description': description,
+    }
+
+
+# The scenario's inputs, in file order: the 'signal' ones are arrays as long as
+# timeStamp, the 'scalar' ones single values. Both the documentation table and the
+# scenario builder read their units and ranges from here.
+CEA_VARIABLES = [
+    _cea_variable('timeStamp', 'Time', 'signal', 's', 0, None,
+                  'Time vector of the scenario. Only needs a new entry when a signal changes value: each value '
+                  'holds until the next timestamp, so a long unchanged period can be expressed with just its end time.'),
+    _cea_variable('current', 'Current', 'signal', 'A', -100, 0,
+                  'Electrical current to apply on each stack of the electrolyser.'),
+    _cea_variable('voltageCell', 'Cell voltage', 'signal', 'V', 1.285, 1.3,
+                  'Mean cell voltage of the stacks to maintain (used only when a current is applied).'),
+    _cea_variable('temperatureHotbox', 'Hotbox temperature', 'signal', '°C', 700, 800,
+                  'Temperature of the thermal enclosure of the stacks (used only when no current is applied).'),
+    _cea_variable('steamConversion', 'Steam conversion', 'signal', '–', 0.4, 1,
+                  'Percentage of steam inlet flowrate converted into electricity by the system.'),
+    _cea_variable('fuelElectrode_ratioH2O', 'Fuel steam ratio', 'signal', '–', 0, 1,
+                  'Percentage of steam in the gas mix at the inlet of the system.'),
+    _cea_variable('fuelElectrode_flowrate', 'Fuel flow rate', 'signal', 'NL/min', 0, 200,
+                  'Total flowrate at the inlet of the fuel side.'),
+    _cea_variable('oxygenElectrode_flowrate', 'Air flow rate', 'signal', 'NL/min', 0, 200,
+                  'Total flowrate at the inlet of the air side.'),
+    _cea_variable('deltaP', 'Pressure difference', 'signal', 'mBar', 0, 100,
+                  'Pressure difference between the air and the fuel electrode of the cells inside the stacks.'),
+    *(_cea_variable(f'coef_degradPerf[{stack}]', f'Stack {stack} performance', 'scalar', '–', 0.5, 1.5,
+                    f'Coefficient to modify the initial electro-chemical performance of stack {stack}.')
+      for stack in range(1, 5)),
+]
+
 CEA_SAMPLE_JSON = """{
     "timeStamp": [0, 60, 120, 180, 240],
     "current": [-50, -60, -60, -40, -20],
@@ -108,12 +146,13 @@ def cea_ai_scenario_generation(request):
 
 @login_required
 def cea_dt_simulation(request):
-    return dt_render(request, 'digitaltwins/cea-dt-simulation.html', sample_json=CEA_SAMPLE_JSON)
+    return dt_render(request, 'digitaltwins/cea-dt-simulation.html',
+                     cea_variables=CEA_VARIABLES, sample_json=CEA_SAMPLE_JSON)
 
 
 @login_required
 def cea_dt_documentation(request):
-    return dt_render(request, 'digitaltwins/cea-dt-simulation-documentation.html',
+    return dt_render(request, 'digitaltwins/cea-dt-simulation-documentation.html', cea_variables=CEA_VARIABLES,
                      validation_checks=CEA_VALIDATION_CHECKS, sample_json=CEA_SAMPLE_JSON)
 
 
