@@ -37,7 +37,8 @@ CEA_VALIDATION_CHECKS = [
 
 def _cea_variable(name, label, kind, unit, low, high, description):
     """One input of the CEA scenario: name is its key in the file, label what the
-    scenario builder shows; high is None for an unbounded range."""
+    scenario builder shows; unit is '' for a dimensionless one and high is None
+    for an unbounded range."""
     return {
         'name': name, 'label': label, 'kind': kind, 'unit': unit, 'min': low, 'max': high,
         'range': f"[{low} : {'inf' if high is None else high}]", 'description': description,
@@ -57,9 +58,9 @@ CEA_VARIABLES = [
                   'Mean cell voltage of the stacks to maintain (used only when a current is applied).'),
     _cea_variable('temperatureHotbox', 'Hotbox temperature', 'signal', '°C', 700, 800,
                   'Temperature of the thermal enclosure of the stacks (used only when no current is applied).'),
-    _cea_variable('steamConversion', 'Steam conversion', 'signal', '–', 0.4, 1,
+    _cea_variable('steamConversion', 'Steam conversion', 'signal', '', 0.4, 1,
                   'Percentage of steam inlet flowrate converted into electricity by the system.'),
-    _cea_variable('fuelElectrode_ratioH2O', 'Fuel steam ratio', 'signal', '–', 0, 1,
+    _cea_variable('fuelElectrode_ratioH2O', 'Fuel steam ratio', 'signal', '', 0, 1,
                   'Percentage of steam in the gas mix at the inlet of the system.'),
     _cea_variable('fuelElectrode_flowrate', 'Fuel flow rate', 'signal', 'NL/min', 0, 200,
                   'Total flowrate at the inlet of the fuel side.'),
@@ -67,7 +68,7 @@ CEA_VARIABLES = [
                   'Total flowrate at the inlet of the air side.'),
     _cea_variable('deltaP', 'Pressure difference', 'signal', 'mBar', 0, 100,
                   'Pressure difference between the air and the fuel electrode of the cells inside the stacks.'),
-    *(_cea_variable(f'coef_degradPerf[{stack}]', f'Stack {stack} performance', 'scalar', '–', 0.5, 1.5,
+    *(_cea_variable(f'coef_degradPerf[{stack}]', f'Stack {stack} performance', 'scalar', '', 0.5, 1.5,
                     f'Coefficient to modify the initial electro-chemical performance of stack {stack}.')
       for stack in range(1, 5)),
 ]

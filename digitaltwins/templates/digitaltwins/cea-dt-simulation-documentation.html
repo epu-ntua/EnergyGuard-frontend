@@ -89,7 +89,7 @@
                                     <tr>
                                         <td><span class="badge badge-phoenix {% if variable.kind == 'scalar' %}badge-phoenix-success{% else %}badge-phoenix-info{% endif %}">{{ variable.name }}</span></td>
                                         <td class="text-body-tertiary pe-3">{{ variable.description }}</td>
-                                        <td class="text-body-tertiary ps-1">{{ variable.unit }}</td>
+                                        <td class="text-body-tertiary ps-1">{{ variable.unit|default:"&ndash;" }}</td>
                                         <td class="text-body-tertiary ps-1">{{ variable.range }}</td>
                                     </tr>
                                     {% endfor %}
