@@ -5,46 +5,15 @@
 
 {% block head %}
 <style>
-    .scenario-grid th,
-    .scenario-grid td {
-        vertical-align: middle;
-        white-space: nowrap;
-        background: var(--phoenix-emphasis-bg);
-    }
-    .scenario-grid thead th {
-        font-weight: 400;
-    }
-    /* White, so they stand out on the light grey card; hover keeps the theme's colour. */
-    .scenario-tools .btn {
-        --phoenix-btn-bg: var(--phoenix-emphasis-bg);
-    }
-    .variable-help {
-        cursor: help;
-    }
-    /* No gridlines: each cell is a rounded input of its own, like the scalar
-       fields below the table, with a small gap around it. */
-    .scenario-grid > :not(caption) > * > * {
-        border-width: 0;
-    }
-    .scenario-grid td.grid-cell {
-        padding: 0.25rem;
-    }
-    /* The table fills the card and the signal columns share its width equally;
-       none gets narrower than its header (which does not wrap), and past that the
-       wrapper scrolls. The # and remove columns shrink to their content. The
-       inputs (size=1) take their column's width instead of setting it. */
-    .scenario-grid {
-        width: 100%;
-    }
+    /* The signal columns share the table's width equally; none gets narrower than
+       its header (the table is text-nowrap), and past that the wrapper scrolls.
+       The # and remove columns shrink to their content. The inputs (size=1) take
+       their column's width instead of setting it. */
     .scenario-grid .col-signal {
         width: 11%;
     }
     .scenario-grid .col-fit {
         width: 1%;
-    }
-    .scenario-grid .form-control {
-        width: 100%;
-        min-width: 0;
     }
 </style>
 {% endblock head %}
@@ -174,159 +143,156 @@
         </div>
 
         <!-- Scenario builder -->
-        <div class="card" id="scenario-builder">
-            <div class="card-body p-4 p-lg-5">
+        <div id="scenario-builder">
 
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-6">
-                    <div>
-                        <h5 class="fw-bold text-body-emphasis mb-2">Build your scenario</h5>
-                        <p class="text-body-tertiary fs-8-5 mb-0">Fill in the table, or paste the values from a spreadsheet. If you already have a scenario file, upload it instead.</p>
-                    </div>
-                    <div class="btn-group" role="group" aria-label="Scenario input">
-                        <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-table" value="table" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="scenario-mode-table"><span class="fas fa-table me-2"></span>Fill in table</label>
-                        <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-upload" value="upload" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="scenario-mode-upload"><span class="fas fa-file-arrow-up me-2"></span>Upload JSON</label>
-                    </div>
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-6">
+                <div>
+                    <h4 class="fw-bold text-body-emphasis mb-2">Build your scenario</h4>
+                    <p class="text-body-tertiary fs-8-5 mb-0">Fill in the table, or paste the values from a spreadsheet. If you already have a scenario file, upload it instead.</p>
                 </div>
-
-                <!-- Table mode -->
-                <div id="table-panel">
-                    <div class="card bg-body">
-                        <div class="card-body p-4">
-                            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-                                <div>
-                                    <h5 class="fw-bold text-body-emphasis mb-1">Time-series signals</h5>
-                                    <p class="text-body-tertiary fs-9 mb-0">One row per time step. Each value holds until the next timestamp, so only add a row where a signal changes. <a href="{% url 'cea-dt-simulation-documentation' %}">What do the variables mean?</a></p>
-                                </div>
-                                <div class="scenario-tools d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="load-example-btn"><span class="fas fa-file-import me-2"></span>Load example</button>
-                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="fill-down-btn" title="Fill every empty signal cell with the value above it (timeStamp is left as is)"><span class="fas fa-arrow-down me-2"></span>Fill down</button>
-                                    <button type="button" class="btn btn-sm btn-phoenix-secondary" id="clear-btn"><span class="fas fa-eraser me-2"></span>Clear</button>
-                                    <button type="button" class="btn btn-sm btn-phoenix-primary" id="add-row-btn"><span class="fas fa-plus me-2"></span>Add time step</button>
-                                </div>
-                            </div>
-
-                            <div class="alert alert-subtle-info fs-9 mb-4" id="large-scenario-notice" hidden>
-                                <span class="fas fa-circle-info me-2"></span>The uploaded scenario has <strong id="large-scenario-steps"></strong> time steps, too many to edit in the table. It will be run exactly as uploaded; use <strong>Clear</strong> to start a new one.
-                            </div>
-
-                            <div class="table-responsive border rounded-3 scrollbar" id="signals-wrapper">
-                                <table class="table table-sm fs-9 mb-0 scenario-grid">
-                                    <thead>
-                                        <tr>
-                                            <th class="col-fit text-center text-body-tertiary ps-3" scope="col">#</th>
-                                            {% for variable in cea_variables %}{% if variable.kind == 'signal' %}
-                                            <th class="col-signal text-end ps-3 pe-1" scope="col">
-                                                <div class="d-block mb-1"><span class="fw-bold text-body-emphasis">{{ variable.label }}</span><span
-                                                    class="variable-help text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.label }}?"
-                                                    data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top" data-bs-container="body"
-                                                    data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span></div>
-                                                <div class="d-block text-body-tertiary">{{ variable.unit }}  {{ variable.range }}</div>
-                                            </th>
-                                            {% endif %}{% endfor %}
-                                            <th class="col-fit" scope="col"><span class="visually-hidden">Remove</span></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="signals-body"></tbody>
-                                </table>
-                            </div>
-                            <p class="text-body-tertiary fs-9 mt-2 mb-0"><span class="fas fa-lightbulb me-1"></span>Copy a block of cells from Excel and paste it into any cell; rows are added as needed. Enter moves to the next row.</p>
-                        </div>
-                    </div>
-
-                    <div class="card bg-body mt-6">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-body-emphasis mb-1">Scalar parameters</h5>
-                            <p class="text-body-tertiary fs-9 mb-4">Constant for the whole run, one degradation coefficient per stack.</p>
-                            <div class="row g-3">
-                                {% for variable in cea_variables %}{% if variable.kind == 'scalar' %}
-                                <div class="col-12 col-sm-6 col-xl-3">
-                                    <label class="form-label font-monospace fs-9 text-body-emphasis" for="scalar-{{ forloop.counter }}">{{ variable.name }}</label><span
-                                        class="variable-help text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.name }}?"
-                                        data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top"
-                                        data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span>
-                                    <input type="text" inputmode="decimal" autocomplete="off" class="form-control font-monospace" id="scalar-{{ forloop.counter }}" data-scalar="{{ variable.name }}">
-                                    <div class="invalid-feedback"></div>
-                                    <div class="form-text">Valid range {{ variable.range }}</div>
-                                </div>
-                                {% endif %}{% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                <div class="btn-group" role="group" aria-label="Scenario input">
+                    <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-table" value="table" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="scenario-mode-table"><span class="fas fa-table me-2"></span>Fill in table</label>
+                    <input type="radio" class="btn-check" name="scenario-mode" id="scenario-mode-upload" value="upload" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="scenario-mode-upload"><span class="fas fa-file-arrow-up me-2"></span>Upload JSON</label>
                 </div>
-
-                <!-- Upload mode -->
-                <div id="upload-panel" hidden>
-                    <div class="row g-5">
-                        <div class="col-12 col-lg-7">
-                            {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="scenario-json-file" input_name="scenario_json_file" large=True %}
-                            <div id="upload-feedback"></div>
-                        </div>
-
-                        <div class="col-12 col-lg-5">
-                            <div class="p-4 border-start">
-
-                                <div class="d-flex align-items-start gap-2 mb-4">
-                                    <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
-                                        <span class="fas fa-file-lines"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Accepted format</h6>
-                                        <p class="text-body-tertiary fs-9 mb-0">JSON</p>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex align-items-start gap-2 mb-4">
-                                    <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
-                                        <span class="fas fa-shield-halved"></span>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Maximum size</h6>
-                                        <p class="text-body-tertiary fs-9 mb-0">10 MB</p>
-                                    </div>
-                                </div>
-
-                                <a href="{% url 'cea-dt-simulation-documentation' %}" class="btn btn-outline-primary w-100 d-flex align-items-center text-start gap-2 mb-3 ps-0">
-                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
-                                        <span class="fas fa-circle-question"></span>
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold mb-1 fs-9">Need help?</h6>
-                                        <p class="fs-9 mb-0 fw-light">See the documentation for file structure, required variables and examples.</p>
-                                    </div>
-                                    <span class="fas fa-chevron-right fs-10 flex-shrink-0"></span>
-                                </a>
-
-                                <a href="#" id="download-example-json" class="d-inline-flex align-items-center gap-2 fs-9 fw-semibold text-decoration-none">
-                                    Download Example JSON<span class="fas fa-download"></span>
-                                </a>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Problems found in the scenario -->
-                <div class="alert alert-subtle-danger fs-9 mt-4 mb-0" id="scenario-errors" hidden>
-                    <p class="fw-semibold mb-1">Fix these values before running the scenario:</p>
-                    <ul class="mb-0 ps-3" id="scenario-errors-list"></ul>
-                </div>
-
-                <!-- Run -->
-                <div class="border-top pt-4 mt-5 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <p class="text-body-tertiary fs-9 mb-0" id="scenario-status"></p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-phoenix-secondary" id="download-scenario-btn"><span class="fas fa-download me-2"></span>Download JSON</button>
-                        <button type="button" class="btn btn-phoenix-secondary" data-bs-toggle="modal" data-bs-target="#scenario-preview-modal"><span class="fas fa-code me-2"></span>Preview JSON</button>
-                        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="run-simulation-btn">
-                            <span class="fas fa-play"></span>Run Simulation
-                        </button>
-                    </div>
-                </div>
-                <div id="run-feedback"></div>
-
             </div>
+
+            <!-- Table mode -->
+            <div id="table-panel">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+                            <div>
+                                <h5 class="fw-bold text-body-emphasis mb-1">Time-series signals</h5>
+                                <p class="text-body-tertiary fs-9 mb-0">One row per time step. Each value holds until the next timestamp, so only add a row where a signal changes. <a href="{% url 'cea-dt-simulation-documentation' %}">What do the variables mean?</a></p>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" id="load-example-btn"><span class="fas fa-file-import me-2"></span>Load example</button>
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" id="fill-down-btn" title="Fill every empty signal cell with the value above it (timeStamp is left as is)"><span class="fas fa-arrow-down me-2"></span>Fill down</button>
+                                <button type="button" class="btn btn-sm btn-phoenix-secondary" id="clear-btn"><span class="fas fa-eraser me-2"></span>Clear</button>
+                                <button type="button" class="btn btn-sm btn-phoenix-primary" id="add-row-btn"><span class="fas fa-plus me-2"></span>Add time step</button>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-subtle-info fs-9 mb-4" id="large-scenario-notice" hidden>
+                            <span class="fas fa-circle-info me-2"></span>The uploaded scenario has <strong id="large-scenario-steps"></strong> time steps, too many to edit in the table. It will be run exactly as uploaded; use <strong>Clear</strong> to start a new one.
+                        </div>
+
+                        <div class="table-responsive border rounded-3 scrollbar" id="signals-wrapper">
+                            <table class="table table-sm table-borderless align-middle text-nowrap fs-9 mb-0 scenario-grid">
+                                <thead class="align-middle">
+                                    <tr>
+                                        <th class="col-fit bg-body fw-normal text-center text-body-tertiary ps-3" scope="col">#</th>
+                                        {% for variable in cea_variables %}{% if variable.kind == 'signal' %}
+                                        <th class="col-signal bg-body fw-normal text-end ps-3 pe-1" scope="col">
+                                            <div class="d-block mb-1"><span class="fw-bold text-body-emphasis">{{ variable.label }}</span><span
+                                                class="cursor-pointer text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.label }}?"
+                                                data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top" data-bs-container="body"
+                                                data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span></div>
+                                            <div class="d-block text-body-tertiary">{{ variable.unit }}  {{ variable.range }}</div>
+                                        </th>
+                                        {% endif %}{% endfor %}
+                                        <th class="col-fit bg-body" scope="col"><span class="visually-hidden">Remove</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="signals-body"></tbody>
+                            </table>
+                        </div>
+                        <p class="text-body-tertiary fs-9 mt-2 mb-0"><span class="fas fa-lightbulb me-1"></span>Copy a block of cells from Excel and paste it into any cell; rows are added as needed. Enter moves to the next row.</p>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-body-emphasis mb-1">Scalar parameters</h5>
+                        <p class="text-body-tertiary fs-9 mb-4">Constant for the whole run, one degradation coefficient per stack.</p>
+                        <div class="row g-3">
+                            {% for variable in cea_variables %}{% if variable.kind == 'scalar' %}
+                            <div class="col-12 col-sm-6 col-xl-3">
+                                <label class="form-label font-monospace fs-9 text-body-emphasis" for="scalar-{{ forloop.counter }}">{{ variable.name }}</label><span
+                                    class="cursor-pointer text-body-tertiary ms-1" tabindex="0" role="button" aria-label="What is {{ variable.name }}?"
+                                    data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="top"
+                                    data-bs-custom-class="fs-9" title="{{ variable.name }}" data-bs-content="{{ variable.description }}"><span data-feather="info" style="width:13px;height:13px;vertical-align:-2px;"></span></span>
+                                <input type="text" inputmode="decimal" autocomplete="off" class="form-control font-monospace" id="scalar-{{ forloop.counter }}" data-scalar="{{ variable.name }}">
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Valid range {{ variable.range }}</div>
+                            </div>
+                            {% endif %}{% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload mode -->
+            <div id="upload-panel" hidden>
+                <div class="row g-5">
+                    <div class="col-12 col-lg-7">
+                        {% include "digitaltwins/partials/dt_json_drag_drop.html" with input_id="scenario-json-file" input_name="scenario_json_file" large=True %}
+                        <div id="upload-feedback"></div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <div class="p-4 border-start">
+
+                            <div class="d-flex align-items-start gap-2 mb-4">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-file-lines"></span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Accepted format</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">JSON</p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start gap-2 mb-4">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-2 text-primary flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-shield-halved"></span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold text-body-emphasis mb-1 fs-9">Maximum size</h6>
+                                    <p class="text-body-tertiary fs-9 mb-0">10 MB</p>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'cea-dt-simulation-documentation' %}" class="btn btn-outline-primary w-100 d-flex align-items-center text-start gap-2 mb-3 ps-0">
+                                <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;">
+                                    <span class="fas fa-circle-question"></span>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 fs-9">Need help?</h6>
+                                    <p class="fs-9 mb-0 fw-light">See the documentation for file structure, required variables and examples.</p>
+                                </div>
+                                <span class="fas fa-chevron-right fs-10 flex-shrink-0"></span>
+                            </a>
+
+                            <a href="#" id="download-example-json" class="d-inline-flex align-items-center gap-2 fs-9 fw-semibold text-decoration-none">
+                                Download Example JSON<span class="fas fa-download"></span>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problems found in the scenario -->
+            <div class="alert alert-subtle-danger fs-9 mt-4 mb-0" id="scenario-errors" hidden>
+                <p class="fw-semibold mb-1">Fix these values before running the scenario:</p>
+                <ul class="mb-0 ps-3" id="scenario-errors-list"></ul>
+            </div>
+
+            <!-- Run -->
+            <div class="border-top pt-4 mt-5 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <p class="text-body-tertiary fs-9 mb-0" id="scenario-status"></p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-phoenix-secondary" id="download-scenario-btn"><span class="fas fa-download me-2"></span>Download JSON</button>
+                    <button type="button" class="btn btn-phoenix-secondary" data-bs-toggle="modal" data-bs-target="#scenario-preview-modal"><span class="fas fa-code me-2"></span>Preview JSON</button>
+                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="run-simulation-btn">
+                        <span class="fas fa-play"></span>Run Simulation
+                    </button>
+                </div>
+            </div>
+            <div id="run-feedback"></div>
         </div>
 
         <div class="modal fade" id="scenario-preview-modal" tabindex="-1" aria-labelledby="scenario-preview-label" aria-hidden="true">
@@ -483,7 +449,7 @@
 
         SIGNALS.forEach(function (variable, c) {
             var td = document.createElement('td');
-            td.className = 'grid-cell';
+            td.className = 'p-1';
             var input = document.createElement('input');
             input.type = 'text';
             input.inputMode = 'decimal';
