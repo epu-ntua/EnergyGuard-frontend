@@ -465,6 +465,40 @@ def _get_owned_assessment(user, assessment_id, for_edit=False):
     return assessment
 
 
+def _parent_assessment(request, project):
+    """The assessment the submitted form edits, when the user may version it
+    and it belongs to `project`; else None, and the run is unversioned."""
+    parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
+    if not parent_assessment_id:
+        return None
+    try:
+        parent = _get_owned_assessment(request.user, int(parent_assessment_id), for_edit=True)
+    except (ValueError, Http404):
+        parent = None
+    if parent is None or parent.project_id != project.id:
+        logger.warning(
+            "Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
+            parent_assessment_id, request.user.id,
+        )
+        return None
+    return parent
+
+
+def _edit_context(assessment):
+    """The config form editing `assessment`: saving it runs a new version."""
+    input_data = assessment.input_data or {}
+    original_filename = input_data.get("config_file") or "config.yaml"
+    yaml_text = _config_to_yaml_text(input_data)
+    return {
+        "mode": "edit",
+        "parent_assessment_id": assessment.id,
+        "project_id": assessment.project_id,
+        "config_name": input_data.get("config_name", ""),
+        "original_filename": original_filename,
+        "ui_state": {"mode": "edit", "original_filename": original_filename, "yaml_text": yaml_text},
+    }
+
+
 @login_required
 def config_input_view(request):
     from trustworthiness.models import Assessment
@@ -476,15 +510,16 @@ def config_input_view(request):
             # No Assessment could record this run: don't start it.
             return project_picker_redirect(request, Assessment.AssessmentType.ROBUSTNESS)
 
+        parent_assessment = _parent_assessment(request, project)
+        # An error shows the form again as it was: editing keeps editing.
+        form_context = _edit_context(parent_assessment) if parent_assessment else {"project_id": project_id}
+
         config_file = request.FILES.get("config_file")
         if not config_file:
             return _robustness_render(
                 request,
                 "robustness/config_input.html",
-                {
-                    "error": "Please select a YAML configuration file before submitting.",
-                    "project_id": project_id,
-                },
+                {**form_context, "error": "Please select a YAML configuration file before submitting."},
             )
 
         config_name = request.POST.get("config_name", "").strip() or Path(config_file.name).stem
@@ -497,17 +532,6 @@ def config_input_view(request):
         parsed_config = _parse_yaml_config(tmp.name)
         job_id = _job_id_from_config(parsed_config)
 
-        parent_assessment = None
-        parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
-        if parent_assessment_id:
-            try:
-                parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id), for_edit=True)
-            except (ValueError, Http404):
-                logger.warning(
-                    "Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
-                    parent_assessment_id, request.user.id,
-                )
-
         assessment_id = _create_assessment(project, {
             "config_name": config_name,
             "config_file": config_file.name,
@@ -518,10 +542,7 @@ def config_input_view(request):
             return _robustness_render(
                 request,
                 "robustness/config_input.html",
-                {
-                    "error": "The assessment could not be started. Please try again.",
-                    "project_id": project_id,
-                },
+                {**form_context, "error": "The assessment could not be started. Please try again."},
             )
         _set_job(job_id, status="running", config_name=config_name, result=None, error=None, assessment_id=assessment_id)
 
@@ -708,17 +729,7 @@ def view_assessment(request, assessment_id):
 @login_required
 def edit_assessment(request, assessment_id):
     assessment = _get_owned_assessment(request.user, assessment_id, for_edit=True)
-    input_data = assessment.input_data or {}
-    original_filename = input_data.get("config_file") or "config.yaml"
-    yaml_text = _config_to_yaml_text(input_data)
-    return _robustness_render(request, "robustness/config_input.html", {
-        "mode": "edit",
-        "parent_assessment_id": assessment.id,
-        "project_id": assessment.project_id,
-        "config_name": input_data.get("config_name", ""),
-        "original_filename": original_filename,
-        "ui_state": {"mode": "edit", "original_filename": original_filename, "yaml_text": yaml_text},
-    })
+    return _robustness_render(request, "robustness/config_input.html", _edit_context(assessment))
 
 
 @login_required

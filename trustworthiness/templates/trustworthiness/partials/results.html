@@ -61,6 +61,11 @@ const ASSESSMENT_URL_TEMPLATES = {
     code_analysis: { view: CODE_ANALYSIS_VIEW_URL_TEMPLATE, edit: CODE_ANALYSIS_EDIT_URL_TEMPLATE },
 };
 
+// Row data comes from user input (project names, findings): never render it as HTML.
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
 function actionsHtmlFor(row) {
     // AI Act questionnaire assessments don't have a View/Edit Assessment flow wired up yet.
     const templates = ASSESSMENT_URL_TEMPLATES[row.type_raw];
@@ -83,11 +88,12 @@ $(document).ready(function () {
         data: ASSESSMENT_RUNS,
         autoWidth: false,
         columns: [
-            { data: "project", className: "ps-2 fw-semibold" },
-            { data: "assessment_type" },
+            { data: "project", className: "ps-2 fw-semibold", render: escapeHtml },
+            { data: "assessment_type", render: escapeHtml },
+            // STATUS_BADGES markup from the server.
             { data: "status", render: data => data },
-            { data: "accessed_at", className: "text-start", render: (data, type, row) => type === 'sort' ? row.accessed_at_iso : data },
-            { data: "findings_summary", className: "text-start" },
+            { data: "accessed_at", className: "text-start", render: (data, type, row) => type === 'sort' ? row.accessed_at_iso : escapeHtml(data) },
+            { data: "findings_summary", className: "text-start", render: escapeHtml },
             { data: null, className: "text-start", orderable: false, render: (data, type, row) => actionsHtmlFor(row) },
         ],
         dom: 'rt<"row"<"col-sm-12 col-md-7 fs-9 mt-4"i><"col-sm-12 col-md-5 mt-4 d-flex justify-content-end"p>>',

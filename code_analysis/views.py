@@ -727,6 +727,25 @@ def _assessment_not_started(request, source_label, project_id):
 	return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label), status=500)
 
 
+def _parent_assessment(request, project):
+	"""The assessment the submitted form edits, when the user may version it
+	and it belongs to `project`; else None, and the scan is unversioned."""
+	parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
+	if not parent_assessment_id:
+		return None
+	try:
+		parent = _get_owned_assessment(request.user, int(parent_assessment_id), for_edit=True)
+	except (ValueError, Http404):
+		parent = None
+	if parent is None or parent.project_id != project.id:
+		logger.warning(
+			"Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
+			parent_assessment_id, request.user.id,
+		)
+		return None
+	return parent
+
+
 @login_required
 def processing(request):
 	source_label = request.POST.get("source_type") or request.GET.get("source") or "Submitted source"
@@ -742,16 +761,7 @@ def processing(request):
 			# No Assessment could record this scan: don't start it.
 			return project_picker_redirect(request, Assessment.AssessmentType.CODE_ANALYSIS)
 
-		parent_assessment = None
-		parent_assessment_id = request.POST.get("parent_assessment_id", "").strip()
-		if parent_assessment_id:
-			try:
-				parent_assessment = _get_owned_assessment(request.user, int(parent_assessment_id), for_edit=True)
-			except (ValueError, Http404):
-				logger.warning(
-					"Invalid or inaccessible parent_assessment_id=%s for user %s; creating an unversioned assessment instead",
-					parent_assessment_id, request.user.id,
-				)
+		parent_assessment = _parent_assessment(request, project)
 
 		if source_label == "Local ZIP File" and request.FILES.get("archive_file"):
 			upload = request.FILES["archive_file"]

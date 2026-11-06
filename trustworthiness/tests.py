@@ -542,6 +542,36 @@ class JobPageAccessTests(PermissionFixture):
         self.check(self.job_pages("no-such-job"), [(self.owner, False)])
 
 
+class AssessmentEditTests(PermissionFixture):
+    def parent(self, assessment_type):
+        return Assessment.objects.create(project=self.project, assessment_type=assessment_type, input_data={"config": {}})
+
+    def test_a_parent_from_another_project_is_not_versioned(self):
+        other = Project.objects.create(name="Editor's own", creator=self.editor)
+        parent = self.parent(Assessment.AssessmentType.CODE_ANALYSIS)
+        self.client.force_login(self.editor)
+        with patch("code_analysis.views.threading.Thread"):
+            self.client.post(reverse("code_analysis:processing"), {
+                "source_type": "GitHub Repository", "repo_url": "https://github.com/example/repo",
+                "project_id": other.pk, "parent_assessment_id": parent.pk,
+            })
+
+        created = Assessment.objects.get(project=other)
+        self.assertIsNone(created.parent_assessment)
+        self.assertEqual(created.version, 1)
+
+    def test_a_robustness_form_error_keeps_editing(self):
+        parent = self.parent(Assessment.AssessmentType.ROBUSTNESS)
+        self.client.force_login(self.owner)
+        response = self.client.post(reverse("robustness:config_input"), {
+            "project_id": self.project.pk, "parent_assessment_id": parent.pk,
+        })
+
+        self.assertEqual(response.context["mode"], "edit")
+        self.assertEqual(response.context["parent_assessment_id"], parent.pk)
+        self.assertContains(response, "Please select a YAML configuration file")
+
+
 class AiActFindingsSummaryTests(TestCase):
     def summary(self, track_results):
         from trustworthiness.views import _ai_act_findings_summary
