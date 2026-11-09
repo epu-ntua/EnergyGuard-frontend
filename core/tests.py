@@ -1,5 +1,6 @@
 import datetime
 import json
+import subprocess
 from collections import Counter
 from unittest.mock import patch
 
@@ -12,7 +13,13 @@ from django.utils import timezone
 from django_q.models import Task
 
 from accounts.models import User
-from core.tasks import TASK_HISTORY_DAYS, clear_expired_sessions, purge_old_task_results
+from core.tasks import (
+    TASK_HISTORY_DAYS,
+    BackupError,
+    backup_database,
+    clear_expired_sessions,
+    purge_old_task_results,
+)
 from core.views.ai_models import AI_MODELS, CATEGORY_LABELS
 from core.views.journeys import JOURNEYS
 
@@ -339,3 +346,29 @@ class HousekeepingTaskTests(TestCase):
         Session.objects.create(session_key="active", session_data="", expire_date=now + datetime.timedelta(minutes=30))
         self.assertEqual(clear_expired_sessions(), 1)
         self.assertEqual(list(Session.objects.values_list("session_key", flat=True)), ["active"])
+
+
+@patch("core.tasks.boto3.client")
+@patch("core.tasks.subprocess.run")
+class DatabaseBackupTaskTests(TestCase):
+    @override_settings(BACKUP_S3_BUCKET="")
+    def test_skipped_without_a_bucket(self, run, client):
+        self.assertTrue(backup_database().startswith("skipped"))
+        run.assert_not_called()
+
+    @override_settings(BACKUP_S3_BUCKET="db-backups")
+    def test_uploads_the_dump(self, run, client):
+        run.return_value = subprocess.CompletedProcess([], 0, stderr=b"")
+        key = backup_database()
+        self.assertRegex(key, r"^energyguard-\d{4}-\d\d-\d\dT\d{6}Z\.dump$")
+        client.return_value.upload_fileobj.assert_called_once()
+        self.assertEqual(client.return_value.upload_fileobj.call_args.args[1:], ("db-backups", key))
+
+    @override_settings(BACKUP_S3_BUCKET="db-backups", ADMINS=[("Admin", "admin@example.com")])
+    def test_failed_dump_emails_the_admins_and_fails_the_task(self, run, client):
+        run.return_value = subprocess.CompletedProcess([], 1, stderr=b"connection refused")
+        with self.assertLogs("core.tasks", "ERROR"), self.assertRaises(BackupError):
+            backup_database()
+        client.return_value.upload_fileobj.assert_not_called()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("connection refused", mail.outbox[0].body)

@@ -340,6 +340,14 @@ OBJECT_STORAGE_BUCKET_SIMULATIONS = env("OBJECT_STORAGE_BUCKET_SIMULATIONS", def
 # the user's folder (e.g. "dev-", giving dev-rdn-grid-run-5).
 DT_EXPORT_NAME_PREFIX = env("DT_EXPORT_NAME_PREFIX", default="")
 
+# Nightly database backup (core.tasks.backup_database), with credentials of its
+# own that can only write to its bucket. Leave BACKUP_S3_BUCKET unset on
+# development machines: they share the production MinIO.
+BACKUP_S3_ENDPOINT = env("BACKUP_S3_ENDPOINT", default="")
+BACKUP_S3_BUCKET = env("BACKUP_S3_BUCKET", default="")
+BACKUP_S3_ACCESS_KEY = env("BACKUP_S3_ACCESS_KEY", default="")
+BACKUP_S3_SECRET_KEY = env("BACKUP_S3_SECRET_KEY", default="")
+
 # Shared cache (Postgres-backed) so cached values (e.g. the RDN API token) are
 # visible to both the web process and the qcluster process. Table is created by
 # `manage.py createcachetable` (see docker-compose.yml web command).
