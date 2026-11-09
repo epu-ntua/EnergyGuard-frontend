@@ -38,6 +38,18 @@ class AIModelsViewTests(TestCase):
             response = self.client.get(reverse("ai_models"))
         self.assertEqual(response.status_code, 200)
 
+    def _deeptsf_badge(self, has_role):
+        self.client.force_login(self.user)
+        with patch("core.views.ai_models.user_has_realm_role", return_value=has_role):
+            response = self.client.get(reverse("ai_models"))
+        return next(m for m in response.context["ai_models"] if m["slug"] == "deeptsf")["badge"]
+
+    def test_deeptsf_badge_is_available_for_users_with_the_role(self):
+        self.assertEqual(self._deeptsf_badge(has_role=True), "available")
+
+    def test_deeptsf_badge_asks_for_access_without_the_role(self):
+        self.assertEqual(self._deeptsf_badge(has_role=False), "request_access")
+
 
 class DashboardAIModelsChartTests(TestCase):
     def setUp(self):

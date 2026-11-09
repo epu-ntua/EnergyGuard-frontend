@@ -218,6 +218,7 @@ _validate_ai_models(AI_MODELS)
 
 @login_required
 def ai_models(request):
+    has_deeptsf_access = user_has_realm_role(request.user, DEEPTSF_ACCESS_ROLE)
     models = []
     for model in AI_MODELS:
         model = dict(model)
@@ -244,11 +245,12 @@ def ai_models(request):
         # detail_url takes priority: a card either opens a modal or links to a page, not both.
         model['has_modal'] = bool(model.get('modal')) and not model.get('detail_url')
         model.setdefault('compact', False)
+
+        # Users who already hold the role don't need to request access (same check as deeptsf_detail).
+        if model['slug'] == 'deeptsf' and has_deeptsf_access:
+            model['badge'] = 'available'
         models.append(model)
 
-    # TODO: the DeepTSF card badge always shows "Request access" here even for users who
-    # already hold DEEPTSF_ACCESS_ROLE (see deeptsf_detail below). Needs a decision with the
-    # team on whether/how to surface access state on this list before wiring it up.
     return render(request, 'core/ai-models.html', {
         'show_sidebar': True,
         'active_navbar_page': 'ai_models',
