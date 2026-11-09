@@ -358,6 +358,8 @@ Q_CLUSTER = {
     'retry': 3600,    # retry after 60 minutes if task is stuck
     'max_attempts': 1,
     'orm': 'default',  # use the default PostgreSQL database as broker
+    # save_limit stays at django_q's default (the last 250 successful tasks);
+    # core.tasks.purge_old_task_results drops anything older than TASK_HISTORY_DAYS.
 }
 
 DATA_MANAGEMENT_SERVER_URL = env('DATA_MANAGEMENT_SERVER_URL')

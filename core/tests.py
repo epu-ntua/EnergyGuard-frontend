@@ -1,13 +1,18 @@
+import datetime
 import json
 from collections import Counter
 from unittest.mock import patch
 
+from django.contrib.sessions.models import Session
 from django.contrib.staticfiles import finders
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
+from django_q.models import Task
 
 from accounts.models import User
+from core.tasks import TASK_HISTORY_DAYS, clear_expired_sessions, purge_old_task_results
 from core.views.ai_models import AI_MODELS, CATEGORY_LABELS
 from core.views.journeys import JOURNEYS
 
@@ -314,3 +319,23 @@ class NextJourneyTests(TestCase):
         html = self.client.get(reverse("journeys")).content.decode()
         positions = [html.index(reverse("journey_detail", args=[j["slug"]])) for j in JOURNEYS]
         self.assertEqual(positions, sorted(positions))
+
+
+class HousekeepingTaskTests(TestCase):
+    def make_task(self, task_id, days_ago, success):
+        stopped = timezone.now() - datetime.timedelta(days=days_ago)
+        Task.objects.create(id=task_id, name=task_id, func="x", started=stopped, stopped=stopped, success=success)
+
+    def test_purges_task_results_older_than_the_limit(self):
+        self.make_task("old-ok", TASK_HISTORY_DAYS + 1, success=True)
+        self.make_task("old-failed", TASK_HISTORY_DAYS + 1, success=False)
+        self.make_task("recent-failed", TASK_HISTORY_DAYS - 1, success=False)
+        self.assertEqual(purge_old_task_results(), 2)
+        self.assertEqual(list(Task.objects.values_list("id", flat=True)), ["recent-failed"])
+
+    def test_clears_only_expired_sessions(self):
+        now = timezone.now()
+        Session.objects.create(session_key="expired", session_data="", expire_date=now - datetime.timedelta(minutes=1))
+        Session.objects.create(session_key="active", session_data="", expire_date=now + datetime.timedelta(minutes=30))
+        self.assertEqual(clear_expired_sessions(), 1)
+        self.assertEqual(list(Session.objects.values_list("session_key", flat=True)), ["active"])
