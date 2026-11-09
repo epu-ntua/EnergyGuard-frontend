@@ -880,7 +880,7 @@ function buildPopupContent(feature) {
   const annualUsagePerArea = computeAnnualStats(p).perArea;
   const annualUsagePerAreaText = annualUsagePerArea !== null ? `${annualUsagePerArea.toFixed(0)} kWh/m²` : "-";
   const annualRangeText = months.length ? `${formatMonthYear(months[0])} - ${formatMonthYear(months[months.length - 1])}` : "-";
-  const apiUrl = "http://energyguard.epu.ntua.gr:9007/docs";
+  const apiUrl = "/riga-data-lake-api/docs";
   const safeApiUrl = String(apiUrl).replace(/'/g, "%27");
   const heatIndicator = parseHeatingIndicator(p.heating_indicator);
   const { indicatorClass, indicatorWidth, indicatorPointPos, indicatorEdgeClass, indicatorValueText } = computeIndicatorVisual(heatIndicator);
