@@ -1,5 +1,7 @@
 import json
 
+from django.contrib.admin.models import CHANGE, DELETION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 
@@ -527,3 +529,21 @@ class NotificationsTests(TestCase):
         from accounts.templatetags.notification_tags import ago
         self.assertEqual(ago(timezone.now() - timedelta(seconds=10)), "just now")
         self.assertEqual(ago(timezone.now() - timedelta(minutes=5)), "5 minutes ago")
+
+
+class AdminLogAnonymisationTests(TestCase):
+    def test_deleting_a_user_removes_their_email_from_the_admin_log(self):
+        admin = User.objects.create_user(email="admin@example.com", password="pw")
+        user = User.objects.create_user(email="leaving@example.com", password="pw")
+        user_type = ContentType.objects.get_for_model(User)
+        for target, action in ((user, CHANGE), (user, DELETION), (admin, CHANGE)):
+            LogEntry.objects.create(
+                user=admin, content_type=user_type, object_id=str(target.pk),
+                object_repr=str(target), action_flag=action,
+            )
+        user_pk = user.pk
+        user.delete()
+        self.assertEqual(
+            sorted(LogEntry.objects.values_list("object_repr", flat=True)),
+            ["Deleted user #%s" % user_pk] * 2 + ["admin@example.com"],
+        )

@@ -50,7 +50,8 @@ def notify_ber_staff_of_new_request(experiment_request_id):
         return
     _notify_ber_staff(
         experiment_request,
-        message=f'New BER experiment request #{experiment_request.pk} from {experiment_request.user.email}',
+        # No requester email: the notification outlives the requester's account
+        message=f'New BER experiment request #{experiment_request.pk}',
         icon='flask',
     )
     send_ber_notification_email(experiment_request.pk)
