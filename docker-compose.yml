@@ -32,6 +32,15 @@
 #
 #   docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 
+# Docker keeps a container's logs, unrotated, until the container is recreated.
+# Cap them at 5 files of 10 MB per service, the oldest dropped first. Changing
+# this takes effect only for recreated containers (`up -d`, not `restart`).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   web:
     build: .
@@ -53,6 +62,7 @@ services:
     depends_on:
       - db
     restart: always
+    logging: *logging
 
   db:
     image: postgres:16
@@ -68,6 +78,7 @@ services:
       timeout: 5s
       retries: 10
     restart: always
+    logging: *logging
 
   qcluster:
     build: .
@@ -79,6 +90,7 @@ services:
     depends_on:
       - db
     restart: always
+    logging: *logging
 
   pgadmin:
     image: dpage/pgadmin4
@@ -92,6 +104,7 @@ services:
     depends_on:
       - db
     restart: always
+    logging: *logging
 
 volumes:
   postgres_data:
