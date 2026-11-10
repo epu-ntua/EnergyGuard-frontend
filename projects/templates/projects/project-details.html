@@ -71,261 +71,228 @@
   function getThemeBgColor() {
     return getComputedStyle(document.documentElement).getPropertyValue("--phoenix-body-bg").trim();
   }
-  // metrics where lower value = better (all others assumed higher is better)
-  var lowerIsBetter = ["mae", "mse", "rmse", "loss", "error", "false_positive_rate"];
   function formatMetricLabel(m) {
-    var label = m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-    var arrow = lowerIsBetter.indexOf(m.toLowerCase()) !== -1 ? " ↓" : " ↑";
-    return label + arrow;
+    return m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  }
+  function formatMetricValue(v) {
+    var a = Math.abs(v);
+    if (a !== 0 && (a < 0.001 || a >= 1e6)) return v.toExponential(2);
+    return String(parseFloat(v.toFixed(a >= 100 ? 1 : 3)));
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
-  // ── Mock data ─────────────────────────────────────────────────────────────
-  var mockData = {
-    experiments: [
-      { id: 1, name: "Experiment A — LSTM Baseline" },
-      { id: 2, name: "Experiment B — XGBoost Tuned" },
-      { id: 3, name: "Experiment C — Transformer v2" }
-    ],
-    runs_per_experiment: {
-      "1": [
-        { run_index: 1, metrics: { f1_score: 0.72, precision: 0.74, recall: 0.70, accuracy: 0.75, mae: 0.12, r_squared: 0.68 } },
-        { run_index: 2, metrics: { f1_score: 0.79, precision: 0.81, recall: 0.76, accuracy: 0.80, mae: 0.09, r_squared: 0.74 } },
-        { run_index: 3, metrics: { f1_score: 0.85, precision: 0.87, recall: 0.83, accuracy: 0.86, mae: 0.06, r_squared: 0.82 } },
-        { run_index: 4, metrics: { f1_score: 0.88, precision: 0.90, recall: 0.86, accuracy: 0.89, mae: 0.04, r_squared: 0.87 } }
-      ],
-      "2": [
-        { run_index: 1, metrics: { f1_score: 0.80, precision: 0.82, recall: 0.78, accuracy: 0.81, mae: 0.08, r_squared: 0.77 } },
-        { run_index: 2, metrics: { f1_score: 0.86, precision: 0.88, recall: 0.84, accuracy: 0.87, mae: 0.05, r_squared: 0.84 } },
-        { run_index: 3, metrics: { f1_score: 0.91, precision: 0.93, recall: 0.89, accuracy: 0.92, mae: 0.03, r_squared: 0.90 } }
-      ],
-      "3": [
-        { run_index: 1, metrics: { f1_score: 0.65, precision: 0.67, recall: 0.63, accuracy: 0.68, mae: 0.18, r_squared: 0.60 } },
-        { run_index: 2, metrics: { f1_score: 0.76, precision: 0.78, recall: 0.74, accuracy: 0.77, mae: 0.11, r_squared: 0.72 } },
-        { run_index: 3, metrics: { f1_score: 0.83, precision: 0.85, recall: 0.81, accuracy: 0.84, mae: 0.07, r_squared: 0.80 } },
-        { run_index: 4, metrics: { f1_score: 0.89, precision: 0.91, recall: 0.87, accuracy: 0.90, mae: 0.04, r_squared: 0.88 } },
-        { run_index: 5, metrics: { f1_score: 0.93, precision: 0.94, recall: 0.92, accuracy: 0.94, mae: 0.02, r_squared: 0.93 } }
-      ]
-    },
-    best_run_per_experiment: {
-      "1": { metrics: { f1_score: 0.88, precision: 0.90, recall: 0.86, accuracy: 0.89, mae: 0.04, r_squared: 0.87 } },
-      "2": { metrics: { f1_score: 0.91, precision: 0.93, recall: 0.89, accuracy: 0.92, mae: 0.03, r_squared: 0.90 } },
-      "3": { metrics: { f1_score: 0.93, precision: 0.94, recall: 0.92, accuracy: 0.94, mae: 0.02, r_squared: 0.93 } }
-    }
-  };
+  // ── Data from MLflow ──────────────────────────────────────────────────────
+  var expSelect     = document.getElementById("experimentSelect");
+  var metricsState  = document.getElementById("metricsState");
+  var metricsCharts = document.getElementById("metricsCharts");
+  var payloadCache  = {};
+  var latestRequest = 0;
 
-  // ── Populate dropdown ─────────────────────────────────────────────────────
-  var expSelect = document.getElementById("experimentSelect");
-  mockData.experiments.forEach(function(exp) {
-    var o = document.createElement("option");
-    o.value = exp.id; o.textContent = exp.name;
-    expSelect.appendChild(o);
-  });
+  // Runs in the chronological order the endpoint returns, numeric metrics only
+  function toRuns(payload) {
+    return (payload.all_run_metrics_chronological || []).map(function(row, i) {
+      var metrics = {};
+      Object.keys(row.metrics || {}).forEach(function(k) {
+        var v = row.metrics[k];
+        if (typeof v === "number" && isFinite(v)) metrics[k] = v;
+      });
+      return { run_index: i + 1, run_id: row.run_id || "", metrics: metrics };
+    });
+  }
+
+  // Whether a value is better higher or lower depends on the metric, which the
+  // page cannot know, so it only reports values: no "best run".
+  function runsWithMetric(runs, metric) {
+    return runs.filter(function(r) { return r.metrics[metric] !== undefined; });
+  }
+
+  function showState(message) {
+    disposeCharts();
+    currentPayload = null;
+    metricsCharts.classList.add("d-none");
+    metricsState.textContent = message;
+    metricsState.classList.remove("d-none");
+  }
+
+  function loadExperiment(url) {
+    var requestId = ++latestRequest;
+    showAllMetrics = false;
+    if (payloadCache[url]) { renderCharts(payloadCache[url]); return; }
+    showState("Loading metrics from MLflow…");
+    fetch(url, { headers: { "Accept": "application/json" }, credentials: "same-origin" })
+      .then(function(resp) {
+        return resp.json().then(function(body) {
+          if (!resp.ok) throw new Error(body.error || ("HTTP " + resp.status));
+          return body;
+        });
+      })
+      .then(function(payload) {
+        payloadCache[url] = payload;
+        if (requestId === latestRequest) renderCharts(payload);
+      })
+      .catch(function(err) {
+        console.error("Project metrics could not be loaded:", err);
+        if (requestId === latestRequest) showState("Metrics could not be loaded from MLflow. Try again later.");
+      });
+  }
 
   // ── Chart state ───────────────────────────────────────────────────────────
-  var lineRoot = null, barRoot = null;
+  var metricGrid  = document.getElementById("metricGrid");
+  var metricsMore = document.getElementById("metricsMore");
+  var chartRoots = [];
+  var currentPayload = null;
+  // Two rows at first; the other cards and their charts are built on demand
+  var METRICS_SHOWN = 6;
+  var showAllMetrics = false;
 
   function disposeCharts() {
-    if (lineRoot) { lineRoot.dispose(); lineRoot = null; }
-    if (barRoot)  { barRoot.dispose();  barRoot  = null; }
+    chartRoots.forEach(function(root) { root.dispose(); });
+    chartRoots = [];
+    metricGrid.innerHTML = "";
   }
 
-  function renderCharts(experimentId) {
-    disposeCharts();
-    var runs    = mockData.runs_per_experiment[String(experimentId)] || [];
-    var bestRun = mockData.best_run_per_experiment[String(experimentId)];
-    if (!runs.length) return;
+  // Change from the first run that logged the metric to the latest one, with
+  // no color: whether it is an improvement depends on the metric
+  function deltaHtml(logged) {
+    var first = logged[0], latest = logged[logged.length - 1];
+    if (first === latest) return '<div class="fs-10 text-body-tertiary">Only run so far</div>';
+    var diff = latest.value - first.value;
+    var sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
+    return '<div class="fs-9 fw-bold text-body-emphasis">' + sign + formatMetricValue(Math.abs(diff)) + '</div>' +
+           '<div class="fs-10 text-body-tertiary">since Run ' + first.run_index + '</div>';
+  }
 
-    var metrics     = Object.keys(runs[0].metrics);
-    var textColor   = cssColorToAmColor(getThemeTextColor());
-    var gridOpacity = 0.06;
+  function metricCard(metric, logged, chartId) {
+    var latest = logged[logged.length - 1];
+    // Metric names come from MLflow, so they are escaped
+    var col = document.createElement("div");
+    col.className = "col";
+    col.innerHTML =
+      '<div class="card h-100 shadow-none"><div class="card-body p-3">' +
+        '<h6 class="fs-9 fw-bold text-body-emphasis text-uppercase mb-1" style="letter-spacing:.04em;">' + escapeHtml(formatMetricLabel(metric)) + '</h6>' +
+        '<div class="d-flex justify-content-between align-items-end gap-2">' +
+          '<div class="d-flex align-items-baseline gap-2">' +
+            '<span class="fw-bold text-body-emphasis" style="font-size:1.75rem;line-height:1.1;">' + formatMetricValue(latest.value) + '</span>' +
+            '<span class="fs-10 fw-semibold text-body-tertiary" title="' + escapeHtml(latest.run_id) + '">in Run ' + latest.run_index + '</span>' +
+          '</div>' +
+          '<div class="text-end lh-sm">' + deltaHtml(logged) + '</div>' +
+        '</div>' +
+        '<div id="' + chartId + '" style="height:160px;width:100%;"></div>' +
+      '</div></div>';
+    return col;
+  }
 
-    // ── Line chart ────────────────────────────────────────────────────────
-    var seriesColors = [];
-    am5.ready(function() {
-      lineRoot = am5.Root.new("lineChart");
-      lineRoot.setThemes([am5themes_Animated.new(lineRoot)]);
+  function renderMetricChart(chartId, metric, runs, latest) {
+    var textColor = cssColorToAmColor(getThemeTextColor());
+    var bgColor   = cssColorToAmColor(getThemeBgColor());
+    var lineColor = cssColorToAmColor(getComputedStyle(document.documentElement).getPropertyValue("--phoenix-primary"));
 
-      var lc = lineRoot.container.children.push(am5xy.XYChart.new(lineRoot, {
-        panX: false, panY: false,
-        wheelX: "none", wheelY: "none",
-        paddingLeft: 0, paddingRight: 8,
-        layout: lineRoot.verticalLayout
-      }));
-      lc.zoomOutButton.set("forceHidden", true);
+    var root = am5.Root.new(chartId);
+    chartRoots.push(root);
+    root.setThemes([am5themes_Animated.new(root)]);
+    root.numberFormatter.set("numberFormat", "#,###.###");
 
-      var xRen = am5xy.AxisRendererX.new(lineRoot, { minGridDistance: 60, strokeOpacity: 0 });
-      xRen.labels.template.setAll({ fill: textColor, fontSize: 12, paddingTop: 6 });
-      xRen.grid.template.setAll({ strokeOpacity: 0 });
-      var xAxis = lc.xAxes.push(am5xy.CategoryAxis.new(lineRoot, {
-        categoryField: "category", renderer: xRen
-      }));
+    var chart = root.container.children.push(am5xy.XYChart.new(root, {
+      panX: false, panY: false, wheelX: "none", wheelY: "none",
+      paddingLeft: 0, paddingRight: 4, paddingTop: 8, paddingBottom: 0
+    }));
+    chart.zoomOutButton.set("forceHidden", true);
 
-      var yRen = am5xy.AxisRendererY.new(lineRoot, { strokeOpacity: 0 });
-      yRen.labels.template.setAll({ fill: textColor, fontSize: 11, paddingRight: 6 });
-      yRen.grid.template.setAll({ strokeOpacity: gridOpacity });
-      var yAxis = lc.yAxes.push(am5xy.ValueAxis.new(lineRoot, {
-        min: 0, max: 1, strictMinMax: true, renderer: yRen
-      }));
+    var xRen = am5xy.AxisRendererX.new(root, { minGridDistance: 28, strokeOpacity: 0 });
+    xRen.labels.template.setAll({ fill: textColor, fontSize: 10, paddingTop: 2 });
+    xRen.grid.template.setAll({ strokeOpacity: 0 });
+    var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, { categoryField: "category", renderer: xRen }));
 
-      var cursor = lc.set("cursor", am5xy.XYCursor.new(lineRoot, {
-        behavior: "none", xAxis: xAxis
-      }));
-      cursor.lineY.setAll({ strokeOpacity: 0.08, strokeDasharray: [4, 4] });
-      cursor.lineX.setAll({ strokeOpacity: 0.08, strokeDasharray: [4, 4] });
+    var yRen = am5xy.AxisRendererY.new(root, { minGridDistance: 30, strokeOpacity: 0 });
+    yRen.labels.template.setAll({ fill: textColor, fontSize: 10, paddingRight: 4 });
+    yRen.grid.template.setAll({ strokeOpacity: 0.06 });
+    var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, { renderer: yRen, extraMin: 0.1, extraMax: 0.1 }));
 
-      var legend = lc.children.push(am5.Legend.new(lineRoot, {
-        centerX: am5.percent(50), x: am5.percent(55),
-        marginTop: 30, useDefaultMarker: true
-      }));
-      legend.labels.template.setAll({ fill: textColor, fontSize: 12 });
-      legend.markerRectangles.template.setAll({ cornerRadiusTL: 3, cornerRadiusTR: 3, cornerRadiusBL: 3, cornerRadiusBR: 3 });
-
-      xAxis.data.setAll(runs.map(function(r) { return { category: "Run " + r.run_index }; }));
-
-      var bgCircles = [];
-      metrics.forEach(function(metric) {
-        var series = lc.series.push(am5xy.LineSeries.new(lineRoot, {
-          name: formatMetricLabel(metric),
-          xAxis: xAxis, yAxis: yAxis,
-          valueYField: "value", categoryXField: "category",
-          tooltip: am5.Tooltip.new(lineRoot, {
-            labelText: "[fontWeight: 500 fontSize: 0.8rem]{name}\n[fontWeight: 350 fontSize: 0.8rem]{valueY}"
-          })
-        }));
-        lc.set("cursor", am5xy.XYCursor.new(lineRoot, {
-          behavior: "none", xAxis: xAxis, snapToSeries: lc.series.values
-        }));
-        series.strokes.template.setAll({ strokeWidth: 2.5 });
-        series.fills.template.setAll({ visible: false });
-        series.bullets.push(function() {
-          var circle = am5.Circle.new(lineRoot, {
-            radius: 5, strokeWidth: 2,
-            fill: cssColorToAmColor(getThemeBgColor()),
-            stroke: series.get("fill"),
-            interactive: true
-          });
-          circle.states.create("hover", { radius: 8 });
-          bgCircles.push(circle);
-          return am5.Bullet.new(lineRoot, { sprite: circle });
-        });
-        series.data.setAll(runs.map(function(r) {
-          return { category: "Run " + r.run_index, value: r.metrics[metric] };
-        }));
-        legend.data.push(series);
-        series.appear(1000);
-      });
-
-      lc.appear(1000, 100);
-
-      // extract colors & render summary cards
-      seriesColors = [];
-      lc.series.each(function(s) { seriesColors.push(s.get("fill")); });
-
-      if (bestRun) {
-        var cardMetrics = Object.keys(bestRun.metrics);
-        var cardContainer = document.getElementById("metricCards");
-        cardContainer.innerHTML = "";
-        cardMetrics.forEach(function(m, i) {
-          var color = seriesColors[i % seriesColors.length].toCSSHex();
-          var label = formatMetricLabel(m);
-          var val   = bestRun.metrics[m].toFixed(2);
-          var runId = bestRun.run_id || "—";
-          var col = document.createElement("div");
-          col.className = "col";
-          col.innerHTML =
-            '<div class="rounded-3 p-2 text-center h-100" style="border:1px solid ' + color + '33;background:' + color + '11;">' +
-              '<div class="text-uppercase mb-1" style="font-size:9px;letter-spacing:.08em;color:' + color + 'bb;font-weight:600;">' + label + '</div>' +
-              '<div class="fw-bold" style="font-size:1.25rem;line-height:1.2;color:' + color + ';">' + val + '</div>' +
-              '<div style="font-size:9px;color:#6c757d;">' + runId + '</div>' +
-            '</div>';
-          cardContainer.appendChild(col);
-        });
-      }
-
-      var obs = new MutationObserver(function() {
-        var tc = cssColorToAmColor(getThemeTextColor());
-        var bg = cssColorToAmColor(getThemeBgColor());
-        xRen.labels.template.setAll({ fill: tc });
-        yRen.labels.template.setAll({ fill: tc });
-        legend.labels.template.setAll({ fill: tc });
-        bgCircles.forEach(function(c) { c.set("fill", bg); });
-      });
-      obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-bs-theme"] });
-      lineRoot.events.on("dispose", function() { obs.disconnect(); });
-    });
-
-    // ── Bar chart ─────────────────────────────────────────────────────────
-    if (!bestRun) return;
-
-    am5.ready(function() {
-      barRoot = am5.Root.new("barChart");
-      barRoot.setThemes([am5themes_Animated.new(barRoot)]);
-
-      var bc = barRoot.container.children.push(am5xy.XYChart.new(barRoot, {
-        panX: false, panY: false,
-        wheelX: "none", wheelY: "none",
-        paddingLeft: 0, paddingRight: 0
-      }));
-      bc.zoomOutButton.set("forceHidden", true);
-      bc.set("cursor", am5xy.XYCursor.new(barRoot, { behavior: "none" }));
-      bc.get("colors").set("colors", seriesColors);
-
-      var bxRen = am5xy.AxisRendererX.new(barRoot, { minGridDistance: 40, strokeOpacity: 0 });
-      bxRen.labels.template.setAll({ fill: textColor, fontSize: 12, paddingTop: 6 });
-      bxRen.grid.template.setAll({ strokeOpacity: 0 });
-      var bxAxis = bc.xAxes.push(am5xy.CategoryAxis.new(barRoot, {
-        categoryField: "metric", renderer: bxRen
-      }));
-
-      var byRen = am5xy.AxisRendererY.new(barRoot, { strokeOpacity: 0 });
-      byRen.labels.template.setAll({ fill: textColor, fontSize: 11, paddingRight: 6 });
-      byRen.grid.template.setAll({ strokeOpacity: gridOpacity });
-      var byAxis = bc.yAxes.push(am5xy.ValueAxis.new(barRoot, {
-        min: 0, max: 1.05, strictMinMax: true, renderer: byRen
-      }));
-
-      var bSeries = bc.series.push(am5xy.ColumnSeries.new(barRoot, {
-        xAxis: bxAxis, yAxis: byAxis,
-        valueYField: "value", categoryXField: "metric",
-        tooltip: am5.Tooltip.new(barRoot, {
-          labelText: "[fontWeight: 500 fontSize: 0.8rem]{categoryX}: {valueY}[/]\n[fontWeight: 200 fontSize: 0.8rem]Run: {runId}"
+    var series = chart.series.push(am5xy.LineSeries.new(root, {
+      xAxis: xAxis, yAxis: yAxis,
+      valueYField: "value", categoryXField: "category",
+      stroke: lineColor, fill: lineColor,
+      tooltip: am5.Tooltip.new(root, { labelText: "{categoryX}: {valueY}" })
+    }));
+    series.strokes.template.setAll({ strokeWidth: 2 });
+    series.bullets.push(function(_root, _series, dataItem) {
+      var isLatest = dataItem.dataContext.isLatest;
+      return am5.Bullet.new(root, {
+        sprite: am5.Circle.new(root, {
+          radius: isLatest ? 5 : 3, strokeWidth: 2,
+          stroke: lineColor, fill: isLatest ? lineColor : bgColor
         })
-      }));
-      bSeries.columns.template.setAll({
-        cornerRadiusTL: 8, cornerRadiusTR: 8,
-        strokeOpacity: 0, width: am5.percent(55)
       });
-      bSeries.columns.template.adapters.add("fill", function(fill, target) {
-        return bc.get("colors").getIndex(bSeries.columns.indexOf(target));
-      });
-      bSeries.columns.template.adapters.add("stroke", function(stroke, target) {
-        return bc.get("colors").getIndex(bSeries.columns.indexOf(target));
-      });
-      bSeries.columns.template.states.create("hover", { fillOpacity: 0.75 });
+    });
+    chart.set("cursor", am5xy.XYCursor.new(root, { behavior: "none", xAxis: xAxis, snapToSeries: [series] }));
+    chart.get("cursor").lineY.set("visible", false);
 
-      var barData = Object.keys(bestRun.metrics).map(function(m) {
-        return {
-          metric: formatMetricLabel(m),
-          value: parseFloat(bestRun.metrics[m].toFixed(2)),
-          runId: bestRun.run_id || "-"
-        };
-      });
-      bxAxis.data.setAll(barData);
-      bSeries.data.setAll(barData);
-      bSeries.appear(1000);
-      bc.appear(1000, 100);
+    var data = runs.map(function(r) {
+      return { category: "R" + r.run_index, value: r.metrics[metric], isLatest: r.run_index === latest.run_index };
+    });
+    xAxis.data.setAll(data);
+    series.data.setAll(data);
+    series.appear(800);
+    chart.appear(800, 100);
+  }
 
-      var obs2 = new MutationObserver(function() {
-        var tc = cssColorToAmColor(getThemeTextColor());
-        bxRen.labels.template.setAll({ fill: tc });
-        byRen.labels.template.setAll({ fill: tc });
+  function renderCharts(payload) {
+    disposeCharts();
+    currentPayload = payload;
+    var runs    = toRuns(payload);
+    var metrics = [];
+    runs.forEach(function(r) {
+      Object.keys(r.metrics).forEach(function(m) { if (metrics.indexOf(m) === -1) metrics.push(m); });
+    });
+    if (!metrics.length) {
+      showState("This experiment has no runs with metrics in MLflow yet.");
+      return;
+    }
+    // MLflow returns metrics in no fixed order
+    metrics.sort(function(a, b) { return a.localeCompare(b, undefined, { sensitivity: "base" }); });
+    var total = metrics.length;
+    if (!showAllMetrics) metrics = metrics.slice(0, METRICS_SHOWN);
+    metricsMore.classList.toggle("d-none", total <= METRICS_SHOWN);
+    metricsMore.textContent = showAllMetrics ? "Show fewer metrics" : "Show all " + total + " metrics";
+    // The runs that logged each metric, as { run_index, run_id, value }
+    var logged = {};
+    metrics.forEach(function(m) {
+      logged[m] = runsWithMetric(runs, m).map(function(r) {
+        return { run_index: r.run_index, run_id: r.run_id, value: r.metrics[m] };
       });
-      obs2.observe(document.documentElement, { attributes: true, attributeFilter: ["data-bs-theme"] });
-      barRoot.events.on("dispose", function() { obs2.disconnect(); });
+    });
+
+    // Shown before the roots are created, or amCharts measures a hidden div
+    metricsState.classList.add("d-none");
+    metricsCharts.classList.remove("d-none");
+
+    metrics.forEach(function(m, i) {
+      metricGrid.appendChild(metricCard(m, logged[m], "metricChart" + i));
+    });
+    am5.ready(function() {
+      metrics.forEach(function(m, i) {
+        renderMetricChart("metricChart" + i, m, runs, logged[m][logged[m].length - 1]);
+      });
     });
   }
 
-  renderCharts(mockData.experiments[0].id);
-  expSelect.addEventListener("change", function(e) { renderCharts(e.target.value); });
+  metricsMore.addEventListener("click", function() {
+    showAllMetrics = !showAllMetrics;
+    if (currentPayload) renderCharts(currentPayload);
+  });
+
+  // Axis labels and hollow points take their colors from the theme
+  new MutationObserver(function() {
+    if (currentPayload && chartRoots.length) renderCharts(currentPayload);
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-bs-theme"] });
+
+  if (expSelect) {
+    loadExperiment(expSelect.selectedOptions[0].dataset.url);
+    expSelect.addEventListener("change", function() { loadExperiment(expSelect.selectedOptions[0].dataset.url); });
+  }
 </script>
 {% endblock %}

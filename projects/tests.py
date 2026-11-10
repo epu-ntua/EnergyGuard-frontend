@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from unittest.mock import patch
 
@@ -242,3 +243,72 @@ class DeleteProjectViewMlflowTests(TestCase):
             self.delete()
         self.assertTrue(Project.objects.filter(pk=self.project.pk).exists())
         delete.assert_not_called()
+
+
+RUN = {
+    "info": {"run_id": "r1", "status": "FINISHED", "start_time": 1, "end_time": 2},
+    "data": {"metrics": [{"key": "rmse", "value": 0.5}]},
+}
+
+
+@patch("projects.views.experiments.list_registered_model_versions_for_run", return_value=[])
+@patch("projects.views.experiments.list_experiment_runs", return_value=[RUN])
+class EvalResultsViewTests(TestCase):
+    """The endpoint behind the metrics charts on the project details page."""
+
+    def setUp(self):
+        self.owner = make_user_without_mlflow("eval-owner@example.com")
+        self.project = Project.objects.create(name="P", creator=self.owner)
+        self.experiment = Experiment.objects.create(
+            project=self.project, creator=self.owner, name="Exp", mlflow_experiment_id="7"
+        )
+        self.client.force_login(self.owner)
+
+    def url(self, experiment_id=None):
+        return reverse("eval_results", kwargs={
+            "project_id": self.project.pk,
+            "experiment_id": experiment_id or self.experiment.pk,
+        })
+
+    def test_charts_skip_the_registered_models(self, runs, model_versions):
+        response = self.client.get(self.url(), {"include_models": "0"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["all_run_metrics_chronological"],
+            [{"run_id": "r1", "metrics": {"rmse": 0.5}}],
+        )
+        model_versions.assert_not_called()
+
+    def test_registered_models_are_included_by_default(self, runs, model_versions):
+        self.client.get(self.url())
+        model_versions.assert_called_once()
+
+    def test_unknown_experiment_answers_json_not_a_redirect(self, runs, model_versions):
+        response = self.client.get(self.url(experiment_id=self.experiment.pk + 1000))
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("error", response.json())
+
+    def test_mlflow_failure_is_logged_but_not_sent_to_the_browser(self, runs, model_versions):
+        runs.side_effect = MlflowClientError("boom: MLflow response body")
+        with self.assertLogs("projects.views.experiments", "WARNING") as logs:
+            response = self.client.get(self.url(), {"include_models": "0"})
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("MLflow response body", logs.output[0])
+        self.assertNotIn("MLflow response body", response.json()["error"])
+
+    def test_non_finite_metrics_are_dropped(self, runs, model_versions):
+        run = {**RUN, "data": {"metrics": [
+            {"key": "rmse", "value": 0.5},
+            {"key": "loss", "value": float("nan")},
+            {"key": "grad", "value": float("inf")},
+        ]}}
+        runs.return_value = [run]
+        response = self.client.get(self.url(), {"include_models": "0"})
+        # Parsed by the strict json module, as a browser would
+        body = json.loads(response.content, parse_constant=lambda c: self.fail(f"{c} in JSON"))
+        self.assertEqual(body["all_run_metrics_chronological"][0]["metrics"], {"rmse": 0.5})
+
+    def test_details_page_offers_each_experiment_to_the_charts(self, runs, model_versions):
+        response = self.client.get(reverse("project_details", kwargs={"project_id": self.project.pk}))
+        self.assertContains(response, f'data-url="{self.url()}?include_models=0"')
+        self.assertNotContains(response, "mock data")

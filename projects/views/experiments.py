@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from typing import Any
 
 from django.contrib import messages
@@ -382,7 +383,7 @@ def experiments_list(request, project_id: int):
     )
 
 
-def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
+def _extract_eval_payload(experiment: Experiment, user, include_models: bool = True) -> dict[str, Any]:
     if not experiment.mlflow_experiment_id:
         return {
             "latest_run_metrics": {},
@@ -398,7 +399,13 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
         info = run.get("info", {})
         data = run.get("data", {})
         run_id = info.get("run_id")
-        metrics = {m.get("key"): m.get("value") for m in data.get("metrics", []) if m.get("key")}
+        # NaN or Infinity (a diverging loss) would make the JSON response
+        # unparseable in the browser, so only finite values are kept
+        metrics = {
+            m.get("key"): m.get("value")
+            for m in data.get("metrics", [])
+            if m.get("key") and isinstance(m.get("value"), (int, float)) and math.isfinite(m.get("value"))
+        }
         # params = {p.get("key"): p.get("value") for p in data.get("params", []) if p.get("key")}
         # run_tags = {t.get("key"): t.get("value") for t in data.get("tags", []) if t.get("key")}
 
@@ -441,7 +448,8 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
 
     registered_models: list[dict[str, Any]] = []
     seen_models: set[tuple[str, str]] = set()
-    for row in run_rows:
+    # One MLflow request per run, so callers that only chart metrics skip it
+    for row in run_rows if include_models else []:
         run_id = row.get("run_id")
         if not run_id:
             continue
@@ -482,17 +490,17 @@ def _extract_eval_payload(experiment: Experiment, user) -> dict[str, Any]:
 @login_required
 @require_GET
 def eval_results(request, project_id: int, experiment_id: int):
+    # A JSON endpoint, also fetched by the project metrics charts: a redirect
+    # would hand them an HTML page.
     try:
         project = _get_accessible_project_or_404(request.user, project_id)
     except Http404:
-        messages.error(request, "The requested project could not be found.")
-        return redirect("projects_list")
+        return JsonResponse({"error": "The requested project could not be found."}, status=404)
 
     try:
         experiment = get_object_or_404(Experiment, pk=experiment_id, project_id=project.id)
     except Http404:
-        messages.error(request, "The requested experiment could not be found.")
-        return redirect("project_details", project_id=project_id)
+        return JsonResponse({"error": "The requested experiment could not be found."}, status=404)
 
     payload: dict[str, Any] = {
         "experiment": {
@@ -502,10 +510,13 @@ def eval_results(request, project_id: int, experiment_id: int):
             "mlflow_experiment_id": experiment.mlflow_experiment_id,
         }
     }
+    include_models = request.GET.get("include_models") != "0"
     try:
-        payload.update(_extract_eval_payload(experiment, request.user))
+        payload.update(_extract_eval_payload(experiment, request.user, include_models=include_models))
     except MlflowClientError as exc:
-        return JsonResponse({"error": str(exc), **payload}, status=502)
+        logger.warning("Eval results of experiment %s failed: %s", experiment.pk, exc)
+        # The MLflow response body stays in the log, not in the browser
+        return JsonResponse({"error": "MLflow could not be reached.", **payload}, status=502)
     return JsonResponse(payload)
 
 

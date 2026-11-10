@@ -2,41 +2,25 @@
 <div class="col-12">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="text-body-emphasis mb-0">Performance Metrics</h3>
-    <select id="experimentSelect" class="form-select form-select-sm w-auto"></select>
+    {% if experiments %}
+    <select id="experimentSelect" class="form-select form-select-sm w-auto" aria-label="Experiment">
+      {% for experiment in experiments %}
+      <option value="{{ experiment.id }}" data-url="{% url 'eval_results' project_details.id experiment.id %}?include_models=0">{{ experiment }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
   </div>
-  <div class="alert d-flex align-items-start gap-3 mb-4 px-4 py-3" style="background-color:#eef4ff;border:1px solid #c9d9f7;border-radius:10px;">
-    <span class="text-primary mt-1" style="font-size:1.5rem;">&#9432;</span>
-    <div>
-      <div class="fw-semibold text-body-emphasis" style="font-size:.875rem;">You're viewing mock data</div>
-      <div class="text-body-secondary" style="font-size:.8125rem;">These charts display example metrics for demonstration purposes only.</div>
-    </div>
-  </div>
-  <div class="row g-3 mb-8">
-    <!-- Line chart card -->
-    <div class="col-12 col-xl-6 shadow-none">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-              <h6 class="fs-8 fw-bold text-body-emphasis mb-0">Metrics Evolution</h6>
-              <p class="fs-9 text-body-tertiary mb-0">Performance across all runs (chronological)</p>
-            </div>
-            <div id="lineLegend" class="d-flex flex-wrap gap-1 justify-content-end" style="max-width:58%"></div>
-          </div>
-          <div id="lineChart" style="height:420px;width:100%"></div>
-        </div>
-      </div>
-    </div>
-    <!-- Bar chart card -->
-    <div class="col-12 col-xl-6 shadow-none">
-      <div class="card h-100">
-        <div class="card-body">
-          <h6 class="fs-8 fw-bold text-body-emphasis mb-0">Best Run Metrics</h6>
-          <p class="fs-9 text-body-tertiary mb-0">Optimal value per metric — ↑ higher is better, ↓ lower is better</p>
-          <div id="barChart" style="height:360px;width:100%"></div>
-          <div id="metricCards" class="row row-cols-3 row-cols-sm-6 g-2 mt-1"></div>
-        </div>
-      </div>
+  <p id="metricsState" class="text-body-tertiary fs-9 mb-8{% if experiments %} d-none{% endif %}">
+    {% if not experiments %}No experiments yet. Metrics appear here once an experiment logs runs to MLflow.{% endif %}
+  </p>
+  <div id="metricsCharts" class="mb-8 d-none">
+    <p class="fs-9 text-body-tertiary mb-3">
+      Each card follows one metric across the experiment's runs, oldest first,
+      and shows its value in the latest run (the filled point).
+    </p>
+    <div id="metricGrid" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3"></div>
+    <div class="text-center mt-3">
+      <button id="metricsMore" type="button" class="btn btn-sm btn-phoenix-secondary d-none"></button>
     </div>
   </div>
 </div>
