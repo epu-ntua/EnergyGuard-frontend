@@ -6,8 +6,10 @@ public project, or a view-only collaboration, is not enough. Viewing an existing
 assessment still only needs read access.
 """
 
+import json
 import os
 import tempfile
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlencode
@@ -461,13 +463,6 @@ class JobPageAccessTests(PermissionFixture):
         self.code_analysis = code_analysis_views
         self.addCleanup(robustness_views.EVAL_JOBS.clear)
         self.addCleanup(code_analysis_views.SCAN_JOBS.clear)
-        # Jobs persisted to disk go to throwaway report folders.
-        for module in (robustness_views, code_analysis_views):
-            reports_dir = tempfile.TemporaryDirectory()
-            self.addCleanup(reports_dir.cleanup)
-            patcher = patch.object(module, "REPORTS_DIR", Path(reports_dir.name))
-            patcher.start()
-            self.addCleanup(patcher.stop)
 
     def assessment_id(self, assessment_type, project):
         return Assessment.objects.create(project=project, assessment_type=assessment_type).pk
@@ -481,39 +476,20 @@ class JobPageAccessTests(PermissionFixture):
             assessment_id = self.assessment_id(assessment_type, project) if project else None
             set_job(job_id, status="completed", result={}, assessment_id=assessment_id)
 
-    def persisted_jobs(self, job_id, project):
-        """The same job_id, only on disk: how robustness results are reached
-        (by the backend's job id) and every job after a server restart."""
-        self.robustness._persist_result(
-            job_id, "config", {}, assessment_id=self.assessment_id(Assessment.AssessmentType.ROBUSTNESS, project),
-        )
-        self.code_analysis._persist_scan_result(
-            job_id, "GitHub Repository", {},
-            assessment_id=self.assessment_id(Assessment.AssessmentType.CODE_ANALYSIS, project),
-        )
-
-    def job_pages(self, job_id, persisted_only=False):
+    def job_pages(self, job_id):
         """(url, visible(response)) for each job page: what a visible job
         answers, as opposed to a missing one."""
         not_404 = lambda r: r.status_code != 404
-        pages = [
+        return [
+            # A completed job's results page hands over to its Assessment's.
             (reverse("robustness:results", args=[job_id]), not_404),
             (reverse("robustness:results_json", args=[job_id]), not_404),
-            (reverse("robustness:list_adversarial_csvs", args=[job_id]), not_404),
-            # A visible job without backend CSVs is a 404 too, with its own message.
-            (reverse("robustness:download_adversarial_csv", args=[job_id, "fgsm"]),
-             lambda r: r.json().get("error") != "Job not found."),
-            (reverse("code_analysis:results", args=[job_id]), lambda r: r.context["error"] is None),
-            (reverse("code_analysis:results_json", args=[job_id]), not_404),
+            (reverse("code_analysis:results", args=[job_id]), lambda r: r.status_code == 302),
+            (f"{reverse('robustness:processing')}?job={job_id}", not_404),
+            (f"{reverse('robustness:job_status')}?job={job_id}", not_404),
+            (f"{reverse('code_analysis:processing')}?job={job_id}", not_404),
+            (f"{reverse('code_analysis:job_status_api')}?job={job_id}", not_404),
         ]
-        if not persisted_only:
-            pages += [
-                (f"{reverse('robustness:processing')}?job={job_id}", not_404),
-                (f"{reverse('robustness:job_status')}?job={job_id}", not_404),
-                (f"{reverse('code_analysis:processing')}?job={job_id}", not_404),
-                (f"{reverse('code_analysis:job_status_api')}?job={job_id}", not_404),
-            ]
-        return pages
 
     def check(self, pages, cases):
         for user, visible in cases:
@@ -526,10 +502,6 @@ class JobPageAccessTests(PermissionFixture):
         self.in_memory_jobs("private-job", self.private_project)
         self.check(self.job_pages("private-job"), [(self.owner, True), (self.stranger, False)])
 
-    def test_persisted_private_project_jobs_are_only_visible_to_its_members(self):
-        self.persisted_jobs("persisted-job", self.private_project)
-        self.check(self.job_pages("persisted-job", persisted_only=True), [(self.owner, True), (self.stranger, False)])
-
     def test_public_project_jobs_are_visible_like_its_assessments(self):
         self.in_memory_jobs("public-job", self.project)
         self.check(self.job_pages("public-job"), [(self.viewer, True), (self.stranger, True)])
@@ -540,6 +512,149 @@ class JobPageAccessTests(PermissionFixture):
 
     def test_a_missing_job_answers_the_same_as_a_hidden_one(self):
         self.check(self.job_pages("no-such-job"), [(self.owner, False)])
+
+
+class AssessmentResultsSourceTests(PermissionFixture):
+    """Results are read from the Assessment only: a finished job hands over
+    to its Assessment's results page, and the downloads go through it too."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.private_project = Project.objects.create(name="Private project", creator=cls.owner, visibility=False)
+
+    def setUp(self):
+        from code_analysis import views as code_analysis_views
+        from robustness import views as robustness_views
+
+        self.robustness = robustness_views
+        self.code_analysis = code_analysis_views
+        self.addCleanup(robustness_views.EVAL_JOBS.clear)
+        self.addCleanup(code_analysis_views.SCAN_JOBS.clear)
+
+    def completed(self, assessment_type, **input_data):
+        return Assessment.objects.create(
+            project=self.private_project, assessment_type=assessment_type,
+            status=Assessment.Status.COMPLETED, results={"report_meta": {}}, input_data=input_data,
+        )
+
+    def test_submitting_records_the_job_id_on_the_assessment(self):
+        self.client.force_login(self.owner)
+        config = SimpleUploadedFile("config.yaml", b"model:\n  backend: mlflow\n", content_type="application/x-yaml")
+        with patch("robustness.views.threading.Thread"), patch("code_analysis.views.threading.Thread"):
+            robustness = self.client.post(reverse("robustness:config_input"), {"config_file": config, "project_id": self.project.pk})
+            code_analysis = self.client.post(reverse("code_analysis:processing"), {
+                "source_type": "GitHub Repository", "repo_url": "https://github.com/example/repo", "project_id": self.project.pk,
+            })
+        for response, assessment_type in (
+            (robustness, Assessment.AssessmentType.ROBUSTNESS),
+            (code_analysis, Assessment.AssessmentType.CODE_ANALYSIS),
+        ):
+            with self.subTest(assessment_type=assessment_type):
+                job_id = self.assessments(assessment_type).get().input_data["job_id"]
+                self.assertIn(f"job={job_id}", response.url)
+
+    def test_a_finished_job_hands_over_to_its_assessments_results_page(self):
+        self.client.force_login(self.owner)
+        for set_job, assessment_type, app in (
+            (self.robustness._set_job, Assessment.AssessmentType.ROBUSTNESS, "robustness"),
+            (self.code_analysis._set_scan_job, Assessment.AssessmentType.CODE_ANALYSIS, "code_analysis"),
+        ):
+            with self.subTest(app=app):
+                assessment = self.completed(assessment_type)
+                set_job("job-1", status="completed", result={}, assessment_id=assessment.pk)
+                response = self.client.get(reverse(f"{app}:results", args=["job-1"]))
+                self.assertRedirects(
+                    response, reverse(f"{app}:view_assessment_results", args=[assessment.pk]), fetch_redirect_response=False,
+                )
+
+    def test_the_robustness_job_records_its_results_and_backend_id_and_writes_no_file(self):
+        assessment = Assessment.objects.create(project=self.project, assessment_type=Assessment.AssessmentType.ROBUSTNESS)
+        with tempfile.NamedTemporaryFile(delete=False) as config:
+            pass
+        with patch("robustness.views._call_backend_api", return_value=({"report_meta": {}}, "backend-7")), \
+                patch("pathlib.Path.write_text") as write_text:
+            self.robustness._run_eval_job("job-1", "config", config.name, assessment_id=assessment.pk)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.status, Assessment.Status.COMPLETED)
+        self.assertEqual(assessment.results, {"report_meta": {}})
+        self.assertEqual(assessment.input_data["backend_job_id"], "backend-7")
+        write_text.assert_not_called()
+
+    def test_downloads_need_read_access_to_the_assessment(self):
+        code_analysis = self.completed(Assessment.AssessmentType.CODE_ANALYSIS)
+        robustness = self.completed(Assessment.AssessmentType.ROBUSTNESS, backend_job_id="backend-7")
+        backend = {"adversarial_examples": [{"attack_key": "fgsm"}]}
+        pages = [
+            reverse("code_analysis:assessment_results_json", args=[code_analysis.pk]),
+            reverse("robustness:list_adversarial_csvs", args=[robustness.pk]),
+        ]
+        for user, status in ((self.owner, 200), (self.stranger, 404)):
+            self.client.force_login(user)
+            for url in pages:
+                with self.subTest(user=user.email, url=url), \
+                        self.settings(ROBUSTNESS_API_URL="http://backend"), \
+                        patch("robustness.views.requests.get") as get:
+                    get.return_value.json.return_value = backend
+                    self.assertEqual(self.client.get(url).status_code, status)
+
+        self.client.force_login(self.owner)
+        with self.settings(ROBUSTNESS_API_URL="http://backend"), patch("robustness.views.requests.get") as get:
+            get.return_value.json.return_value = backend
+            items = self.client.get(pages[1]).json()["items"]
+        get.assert_called_once_with("http://backend/api/evaluations/backend-7/adversarial-examples", timeout=10)
+        self.assertEqual([item["attack_key"] for item in items], ["fgsm"])
+
+
+class PurgeAssessmentReportFoldersTests(PermissionFixture):
+    def setUp(self):
+        base_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(base_dir.cleanup)
+        self.base_dir = Path(base_dir.name)
+        override = self.settings(BASE_DIR=self.base_dir)
+        override.enable()
+        self.addCleanup(override.disable)
+
+    def folder(self, dir_name, name, meta, report):
+        folder = self.base_dir / dir_name / name
+        folder.mkdir(parents=True)
+        (folder / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+        (folder / "final_report.json").write_text(report, encoding="utf-8")
+        return folder
+
+    def run_command(self, *args):
+        from django.core.management import call_command
+
+        out = StringIO()
+        call_command("purge_assessment_report_folders", *args, stdout=out)
+        return out.getvalue()
+
+    def test_deletes_only_what_the_database_holds_and_copies_what_it_lacks(self):
+        robustness = Assessment.AssessmentType.ROBUSTNESS
+        in_db = Assessment.objects.create(project=self.project, assessment_type=robustness, results={"a": 1})
+        lacking = Assessment.objects.create(project=self.project, assessment_type=robustness, input_data={"job_id": "j2"})
+        unreadable = Assessment.objects.create(project=self.project, assessment_type=robustness)
+        folders = {
+            "in_db": self.folder("robustness_reports", "b1", {"job_id": "j1", "backend_job_id": "b1", "assessment_id": in_db.pk}, '{"a": 1}'),
+            "copied": self.folder("robustness_reports", "b2", {"job_id": "j2", "backend_job_id": "b2", "assessment_id": lacking.pk}, '{"b": 2}'),
+            "orphan": self.folder("analysis_reports", "j3", {"job_id": "j3"}, "{}"),
+            "unreadable": self.folder("robustness_reports", "b4", {"assessment_id": unreadable.pk}, "not json"),
+        }
+
+        output = self.run_command()
+        self.assertIn("1 in the database, 1 copied to the database, 1 no assessment, 1 kept, unreadable", output)
+        self.assertTrue(all(folder.exists() for folder in folders.values()))
+        lacking.refresh_from_db()
+        self.assertIsNone(lacking.results)
+
+        self.run_command("--apply")
+        self.assertEqual([name for name, folder in folders.items() if folder.exists()], ["unreadable"])
+        self.assertFalse((self.base_dir / "analysis_reports").exists())
+        lacking.refresh_from_db()
+        self.assertEqual((lacking.status, lacking.results), (Assessment.Status.COMPLETED, {"b": 2}))
+        self.assertEqual(lacking.input_data, {"job_id": "j2", "backend_job_id": "b2"})
+        in_db.refresh_from_db()
+        self.assertEqual(in_db.input_data, {"job_id": "j1", "backend_job_id": "b1"})
 
 
 class AssessmentEditTests(PermissionFixture):

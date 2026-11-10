@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 SCAN_JOBS = {}
 SCAN_JOBS_LOCK = threading.Lock()
-REPORTS_DIR = Path(settings.BASE_DIR) / "analysis_reports"
 SCAN_API_MAX_RETRIES = max(1, int(os.getenv("SCAN_API_MAX_RETRIES", "3")))
 SCAN_API_RETRY_BACKOFF_SEC = max(0.0, float(os.getenv("SCAN_API_RETRY_BACKOFF_SEC", "1.0")))
 SCAN_API_RETRY_STATUS_CODES = {502, 503, 504}
@@ -49,55 +48,6 @@ def _get_configure_url(source_label):
 		"JupyterHub Workspace": "code_analysis:configure_jupyter",
 	}
 	return routes.get(source_label)
-
-
-def _report_paths(job_id):
-	job_dir = REPORTS_DIR / str(job_id)
-	return {
-		"job_dir": job_dir,
-		"report": job_dir / "final_report.json",
-		"meta": job_dir / "meta.json",
-	}
-
-
-def _persist_scan_result(job_id, source_label, result, assessment_id=None):
-	paths = _report_paths(job_id)
-	paths["job_dir"].mkdir(parents=True, exist_ok=True)
-	paths["report"].write_text(json.dumps(result, indent=2), encoding="utf-8")
-	meta = {"job_id": job_id, "source_label": source_label}
-	if assessment_id is not None:
-		meta["assessment_id"] = assessment_id
-	paths["meta"].write_text(json.dumps(meta, indent=2), encoding="utf-8")
-
-
-def _load_persisted_scan(job_id):
-	paths = _report_paths(job_id)
-	if not paths["report"].exists():
-		return None
-	try:
-		result = json.loads(paths["report"].read_text(encoding="utf-8"))
-	except (OSError, ValueError):
-		return None
-
-	source_label = "Stored report"
-	assessment_id = None
-	if paths["meta"].exists():
-		try:
-			meta = json.loads(paths["meta"].read_text(encoding="utf-8"))
-			if isinstance(meta, dict):
-				if meta.get("source_label"):
-					source_label = str(meta.get("source_label"))
-				assessment_id = meta.get("assessment_id")
-		except (OSError, ValueError):
-			pass
-
-	return {
-		"status": "completed",
-		"result": result,
-		"source_label": source_label,
-		"error": None,
-		"assessment_id": assessment_id,
-	}
 
 
 def _add_stepper_context(context, source_label=None, job_id=None):
@@ -639,7 +589,6 @@ def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None, assessm
 			)
 
 		result_payload = response.json()
-		_persist_scan_result(job_id, source_label, result_payload, assessment_id=assessment_id)
 		_set_scan_job(job_id, status="completed", result=result_payload, error=None)
 		if assessment_id:
 			try:
@@ -767,8 +716,10 @@ def processing(request):
 			upload = request.FILES["archive_file"]
 			project_name = _derive_project_name(source_label, request.POST, request.FILES)
 
+			job_id = uuid.uuid4().hex
 			assessment_id = _create_assessment(project, {
 				"source": source_label,
+				"job_id": job_id,
 				"analysis_name": project_name,
 				"root_folder": request.POST.get("root_folder", "").strip(),
 				"archive_filename": upload.name,
@@ -782,7 +733,6 @@ def processing(request):
 					tmp_file.write(chunk)
 			temp_path = tmp_file.name
 
-			job_id = uuid.uuid4().hex
 			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 
 			threading.Thread(
@@ -819,6 +769,7 @@ def processing(request):
 			job_id = uuid.uuid4().hex
 			assessment_id = _create_assessment(project, {
 				"source": source_label,
+				"job_id": job_id,
 				"repo_url": request.POST.get("repo_url", "").strip(),
 				"branch": request.POST.get("branch", "").strip(),
 				"subdirectory": request.POST.get("subdirectory", "").strip(),
@@ -897,26 +848,16 @@ def job_status_api(request):
 
 
 @login_required
-def results_json(request, job_id):
-	job = _get_scan_job(job_id) or _load_persisted_scan(job_id)
-	assessment = visible_job_assessment(request.user, job_id, job)
-	if assessment is None:
-		return JsonResponse({"error": "Job not found."}, status=404)
-	result = job.get("result") or {}
-	response = JsonResponse(result, json_dumps_params={"indent": 2})
-	response["Content-Disposition"] = f'attachment; filename="analysis-report-{job_id}.json"'
-	return response
-
-
-@login_required
 def results(request, job_id):
-	"""Display the raw JSON result of a completed scan job."""
-	job = _get_scan_job(job_id) or _load_persisted_scan(job_id)
+	"""Where the processing page lands when the scan completes: the results
+	are on the Assessment, so this hands over to its results page. The job
+	itself lives only in memory, until the server restarts."""
+	job = _get_scan_job(job_id)
 	assessment = visible_job_assessment(request.user, job_id, job)
 	if assessment is None:
 		return render(request, "code_analysis/results.html", {
 			"job_id": job_id,
-			"error": "Job not found. The server may have restarted since the scan ran.",
+			"error": "Job not found. The server may have restarted since the scan ran: open its results from the project's assessments.",
 			"result_json": None,
 			"show_sidebar": True,
 			"active_navbar_page": "trustworthiness",
@@ -924,7 +865,6 @@ def results(request, job_id):
 	if job.get("status") != "completed":
 		query = urlencode({"job": job_id, "source": job.get("source_label", "")})
 		return redirect(reverse("code_analysis:processing") + f"?{query}")
-	source_label = job.get("source_label")
 	if assessment.results is None or assessment.status != assessment.Status.COMPLETED:
 		try:
 			assessment.results = job.get("result") or {}
@@ -932,21 +872,7 @@ def results(request, job_id):
 			assessment.save(update_fields=["results", "status"])
 		except Exception:
 			logger.exception("Failed to sync results for assessment_id=%s", assessment.id)
-	return render(
-		request,
-		"code_analysis/results.html",
-		_add_stepper_context(
-			{
-				**_build_results_context(job.get("result") or {}, source_label, job_id),
-				"project_id": assessment.project_id,
-				"error": None,
-				"show_sidebar": True,
-				"active_navbar_page": "trustworthiness",
-			},
-			source_label=source_label,
-			job_id=job_id,
-		),
-	)
+	return redirect("code_analysis:view_assessment_results", assessment_id=assessment.id)
 
 
 def _template_for_source(source_label):
@@ -1010,7 +936,7 @@ def view_assessment_results(request, assessment_id):
 		"code_analysis/results.html",
 		_add_stepper_context(
 			{
-				**_build_results_context(assessment.results, source_label, None),
+				**_build_results_context(assessment.results, source_label, input_data.get("job_id")),
 				"assessment_id": assessment.id,
 				"project_id": assessment.project_id,
 				"error": None,
@@ -1020,3 +946,13 @@ def view_assessment_results(request, assessment_id):
 			source_label=source_label,
 		),
 	)
+
+
+@login_required
+def assessment_results_json(request, assessment_id):
+	assessment = _get_owned_assessment(request.user, assessment_id)
+	if assessment.status != assessment.Status.COMPLETED or not assessment.results:
+		return JsonResponse({"error": "This assessment has no completed results."}, status=404)
+	response = JsonResponse(assessment.results, json_dumps_params={"indent": 2})
+	response["Content-Disposition"] = f'attachment; filename="analysis-report-{assessment.id}.json"'
+	return response

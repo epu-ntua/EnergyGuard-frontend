@@ -302,8 +302,7 @@
                     .then(function (r) { return r.json(); })
                     .then(function (d) {
                         if (d.status === 'completed') {
-                            var resultId = d.backend_job_id || data.jobId;
-                            window.location.href = resultsBase + resultId + '/';
+                            window.location.href = resultsBase + data.jobId + '/';
                         } else if (d.status === 'failed' || d.status === 'not_found') {
                             window.location.reload();
                         } else {

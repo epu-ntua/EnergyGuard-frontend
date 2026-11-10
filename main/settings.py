@@ -395,7 +395,6 @@ SCAN_API_URL = env('SCAN_API_URL', default='').rstrip('/')
 # DeepTSF codeless forecasting UI, gated behind the inergy_admin Keycloak realm role.
 DEEPTSF_URL = env('DEEPTSF_URL', default='https://deeptsf.energy-guard.eu/')
 
-REPORTS_DIR = str(BASE_DIR / 'robustness_reports')
 ROBUSTNESS_API_URL = env('ROBUSTNESS_API_URL', default='')
 ROBUSTNESS_API_TIMEOUT = env.int('ROBUSTNESS_API_TIMEOUT', default=1800)
 ROBUSTNESS_API_SUBMIT_TIMEOUT = env.int('ROBUSTNESS_API_SUBMIT_TIMEOUT', default=60)

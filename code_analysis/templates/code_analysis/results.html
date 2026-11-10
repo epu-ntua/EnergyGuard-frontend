@@ -87,12 +87,12 @@
                                             </div>
                                         </div>
                                         <p class="text-body-tertiary fw-light mb-0">{{ report_subtitle }}</p>
-                                        <a class="btn btn-primary btn-sm mt-6 d-sm-none" href="{% url 'code_analysis:results_json' job_id=job_id %}">
+                                        <a class="btn btn-primary btn-sm mt-6 d-sm-none" href="{% url 'code_analysis:assessment_results_json' assessment_id=assessment_id %}">
                                             <span class="fas fa-download me-1"></span>Download JSON
                                         </a>
                                     </div>
                                     <div class="d-none d-sm-block flex-shrink-0">
-                                        <a class="btn btn-primary btn-sm" href="{% url 'code_analysis:results_json' job_id=job_id %}">
+                                        <a class="btn btn-primary btn-sm" href="{% url 'code_analysis:assessment_results_json' assessment_id=assessment_id %}">
                                             <span class="fas fa-download me-1"></span>Download JSON
                                         </a>
                                     </div>
@@ -122,7 +122,7 @@
                                                 <h6 class="fw-bold text-body-emphasis mb-3">Project run details and quality summary</h6>
                                                 <table class="table table-sm mb-0">
                                                     <tbody>
-                                                        <tr><td class="text-body-tertiary fw-semibold" style="width:44%">Job ID</td><td class="fw-semibold text-body-emphasis">{{ job_id }}</td></tr>
+                                                        <tr><td class="text-body-tertiary fw-semibold" style="width:44%">Job ID</td><td class="fw-semibold text-body-emphasis">{{ job_id|default:"-" }}</td></tr>
                                                         <tr><td class="text-body-tertiary fw-semibold">Project key</td><td class="fw-semibold text-body-emphasis">{{ project_key }}</td></tr>
                                                         <tr><td class="text-body-tertiary fw-semibold">Source</td><td class="fw-semibold text-body-emphasis">{{ source_label }}</td></tr>
                                                         <tr><td class="text-body-tertiary fw-semibold">Total findings</td><td class="fw-semibold text-body-emphasis">{{ semgrep_stats.findings_total }}</td></tr>

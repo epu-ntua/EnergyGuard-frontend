@@ -300,7 +300,7 @@
         }
         // ── CSV download buttons ──────────────────────────────────────────────
         {% if backend_job_id %}
-        fetch('{% url "robustness:list_adversarial_csvs" job_id=job_id %}')
+        fetch('{% url "robustness:list_adversarial_csvs" assessment_id=assessment_id %}')
           .then(r => r.ok ? r.json() : null)
           .then(data => {
             const container = document.getElementById('csv-download-btns');
@@ -323,7 +323,7 @@
               }
               if (!labelText) labelText = filename;
               const a = document.createElement('a');
-              a.href = '{% url "robustness:download_adversarial_csv" job_id=job_id attack_key="__KEY__" %}'.replace('__KEY__', attack_key);
+              a.href = '{% url "robustness:download_adversarial_csv" assessment_id=assessment_id attack_key="__KEY__" %}'.replace('__KEY__', attack_key);
               a.className = 'download-btn';
               a.style.cssText = 'display:block;text-align:center;text-decoration:none;margin-top:0.4rem;';
               a.textContent = '↓ ' + labelText;
