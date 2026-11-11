@@ -127,6 +127,14 @@ DATABASES = {
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'PORT': env('POSTGRES_PORT'),
         'HOST': env('POSTGRES_HOST'),
+        # Keep each thread's connection open for a minute instead of opening a
+        # new one on every request, which every page and the 15s notification
+        # poll paid for. That is at most one connection per gunicorn thread plus
+        # qcluster's, well under Postgres's default max_connections of 100.
+        # Health checks drop a connection the database closed meanwhile (e.g. a
+        # db container restart) before a request uses it, not after it fails.
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
