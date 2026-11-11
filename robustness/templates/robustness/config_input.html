@@ -156,12 +156,11 @@
                                             <h6 class="fw-bold text-body-emphasis border-bottom pb-2 mb-3">Config requirements</h6>
                                             <ul class="ps-3 text-body-tertiary mb-3 fs-9">
                                                 <li class="mb-2">Set a top-level <code>name:</code> and optional <code>description:</code>.</li>
-                                                <li class="mb-2">Provide dataset details under <code>dataset:</code> — <code>path</code>, <code>format</code>, and <code>target_column</code>.</li>
-                                                <li class="mb-2">Declare the model under <code>model:</code> with <code>backend</code>, <code>task_type</code>, and MLflow connection fields.</li>
-                                                <li class="mb-2">List attack scenarios under <code>robustness.attacks:</code> — each with <code>type</code>, <code>epsilon</code>, and attack-specific parameters.</li>
-                                                <li>Define output paths under <code>output:</code> — <code>output_dir</code>, <code>metrics_filename</code>, and <code>report_filename</code>.</li>
+                                                <li class="mb-2">Provide dataset details under <code>dataset:</code> — <code>path</code>, <code>target_columns</code>, and <code>feature_columns</code>.</li>
+                                                <li class="mb-2">Declare the model under <code>model:</code> with <code>backend</code>, <code>task_type</code>, and <code>mlflow_model_uri</code>.</li>
+                                                <li>List attack scenarios under <code>robustness.attacks:</code> — each with <code>type</code>, <code>epsilon</code>, and attack-specific parameters.</li>
                                             </ul>
-                                            <a href="#" class="btn btn-link btn-sm p-0 text-decoration-none">
+                                            <a href="{% static 'robustness/example-config.yaml' %}" download="config.yaml" class="btn btn-link btn-sm p-0 text-decoration-none">
                                                 <span class="fas fa-download me-1"></span>Download example config.yaml
                                             </a>
                                         </div>

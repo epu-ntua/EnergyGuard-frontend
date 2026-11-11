@@ -1,0 +1,38 @@
+# Example robustness configuration for EnergyGuard.
+# Replace every <...> placeholder with the values of your own MLflow run and dataset.
+
+name: my_model_robustness
+description: White-box FGSM and PGD attacks on a regression model logged in MLflow
+
+dataset:
+  # A CSV logged as an artifact of the same MLflow run as the model.
+  path: runs:/<run_id>/datasets/<dataset_file>.csv
+  target_columns:
+    - <target_column>
+  feature_columns:
+    - <feature_1>
+    - <feature_2>
+    - <feature_3>
+
+model:
+  backend: mlflow
+  task_type: regression            # or: classification
+  mlflow_model_uri: runs:/<run_id>/model
+  # Valid input range of the features. [0.0, 1.0] assumes min-max scaled inputs.
+  clip_values: [0.0, 1.0]
+
+robustness:
+  sample_size: 80                  # leave out to evaluate every row
+  attacks:
+    - type: fgsm
+      epsilon: 0.05
+      norm: inf
+      targeted: false
+      regression_objective: maximize_loss
+    - type: pgd
+      epsilon: 0.05
+      eps_step: 0.01
+      max_iter: 20
+      norm: inf
+      targeted: false
+      regression_objective: maximize_loss
