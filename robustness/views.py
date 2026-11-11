@@ -22,7 +22,6 @@ def _fmt_metrics_list(metrics):
 
 import json
 import os
-import re
 import tempfile
 import threading
 import time
@@ -36,15 +35,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from trustworthiness.jobs import record_job_outcome, release_thread_connection
 from trustworthiness.project_access import editable_project, project_picker_redirect, visible_job_assessment
-
-
-# ---------------------------------------------------------------------------
-# In-memory job store (thread-safe)
-# ---------------------------------------------------------------------------
-
-EVAL_JOBS = {}
-EVAL_JOBS_LOCK = threading.Lock()
 
 
 def _robustness_context(context=None):
@@ -61,21 +53,10 @@ def _robustness_render(request, template_name, context=None, status=None):
     return render(request, template_name, _robustness_context(context), status=status)
 
 
-def _set_job(job_id, **values):
-    with EVAL_JOBS_LOCK:
-        job = EVAL_JOBS.setdefault(job_id, {})
-        job.update(values)
+def _job_assessment(user, job_id):
+    from trustworthiness.models import Assessment
+    return visible_job_assessment(user, job_id, Assessment.AssessmentType.ROBUSTNESS)
 
-
-def _get_job(job_id):
-    with EVAL_JOBS_LOCK:
-        job = EVAL_JOBS.get(job_id)
-        return dict(job) if job else None
-
-
-# ---------------------------------------------------------------------------
-# Job ID helpers
-# ---------------------------------------------------------------------------
 
 def _parse_yaml_config(temp_path):
     """Parse the uploaded YAML config file. Returns {} if parsing fails."""
@@ -87,31 +68,6 @@ def _parse_yaml_config(temp_path):
     except Exception:
         logger.exception("Failed to parse uploaded YAML config at %s", temp_path)
         return {}
-
-
-def _job_id_from_config(cfg):
-    """Derive a stable job_id from the YAML config's MLflow identifiers.
-
-    Priority:
-    1. model.mlflow_run_id  — used verbatim if it looks safe for a URL segment
-    2. run_id extracted from a runs:/<run_id>/... model URI
-    3. Fallback: random UUID hex
-    """
-    try:
-        model = cfg.get("model", {}) if isinstance(cfg, dict) else {}
-
-        run_id = model.get("mlflow_run_id")
-        if run_id and isinstance(run_id, str) and re.fullmatch(r"[a-zA-Z0-9_-]+", run_id.strip()):
-            return run_id.strip()
-
-        model_uri = model.get("mlflow_model_uri") or ""
-        if isinstance(model_uri, str):
-            m = re.match(r"runs:/([a-zA-Z0-9_-]+)", model_uri)
-            if m:
-                return m.group(1)
-    except Exception:
-        pass
-    return uuid.uuid4().hex
 
 
 # ---------------------------------------------------------------------------
@@ -198,38 +154,19 @@ def _call_backend_api(config_name, temp_path):
         raise RuntimeError(f"Backend API request failed: {exc}") from exc
 
 
-def _run_eval_job(job_id, config_name, temp_path, assessment_id=None):
+def _run_eval_job(job_id, assessment_id, config_name, temp_path):
+    """Runs in a thread; see trustworthiness.jobs."""
     try:
         result, backend_job_id = _call_backend_api(config_name, temp_path)
-        _set_job(job_id, status="completed", result=result, error=None, backend_job_id=backend_job_id)
-
-        if assessment_id:
-            try:
-                from trustworthiness.models import Assessment
-                assessment = Assessment.objects.get(id=assessment_id)
-                assessment.results = result
-                assessment.status = Assessment.Status.COMPLETED
-                # The CSV downloads ask the backend by its own job id
-                assessment.input_data = {**(assessment.input_data or {}), "backend_job_id": backend_job_id}
-                assessment.save(update_fields=["results", "status", "input_data"])
-            except Exception:
-                logger.exception("Failed to save results for assessment_id=%s", assessment_id)
-
+        # The CSV downloads ask the backend by its own job id
+        record_job_outcome(assessment_id, results=result, input_data={"backend_job_id": backend_job_id})
     except Exception as exc:
-        error_message = str(exc)
-        _set_job(job_id, status="failed", result=None, error=error_message)
-        if assessment_id:
-            try:
-                from trustworthiness.models import Assessment
-                Assessment.objects.filter(id=assessment_id).update(
-                    status=Assessment.Status.FAILED, error_message=error_message,
-                )
-            except Exception:
-                logger.exception("Failed to mark assessment_id=%s as failed", assessment_id)
-
+        logger.exception("Robustness job %s failed", job_id)
+        record_job_outcome(assessment_id, error_message=str(exc))
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
+        release_thread_connection()
 
 
 # ---------------------------------------------------------------------------
@@ -401,7 +338,9 @@ def config_input_view(request):
                 tmp.write(chunk)
 
         parsed_config = _parse_yaml_config(tmp.name)
-        job_id = _job_id_from_config(parsed_config)
+        # Random, not the config's MLflow run id: the job is looked up by this id,
+        # and two runs of one config must not share it.
+        job_id = uuid.uuid4().hex
 
         assessment_id = _create_assessment(project, {
             "job_id": job_id,
@@ -416,12 +355,10 @@ def config_input_view(request):
                 "robustness/config_input.html",
                 {**form_context, "error": "The assessment could not be started. Please try again."},
             )
-        _set_job(job_id, status="running", config_name=config_name, result=None, error=None, assessment_id=assessment_id)
 
         threading.Thread(
             target=_run_eval_job,
-            args=(job_id, config_name, tmp.name),
-            kwargs={"assessment_id": assessment_id},
+            args=(job_id, assessment_id, config_name, tmp.name),
             daemon=True,
         ).start()
 
@@ -441,8 +378,7 @@ def processing_view(request):
     if not job_id:
         return redirect("robustness:config_input")
 
-    job = _get_job(job_id)
-    assessment = visible_job_assessment(request.user, job_id, job)
+    assessment = _job_assessment(request.user, job_id)
     if assessment is None:
         return _robustness_render(
             request,
@@ -456,30 +392,21 @@ def processing_view(request):
             status=404,
         )
 
-    config_name = job.get("config_name", "-")
+    config_name = (assessment.input_data or {}).get("config_name", "-")
     project_id = assessment.project_id
-    job_status = job.get("status")
+    job_status = assessment.status
 
-    if job_status == "completed":
+    if job_status == assessment.Status.COMPLETED:
         return redirect("robustness:results", job_id=job_id)
 
-    if job_status == "failed":
-        assessment_id = job.get("assessment_id")
-        if assessment_id:
-            try:
-                from trustworthiness.models import Assessment
-                Assessment.objects.filter(id=assessment_id, status=Assessment.Status.RUNNING).update(
-                    status=Assessment.Status.FAILED, error_message=job.get("error") or "Unknown evaluation error.",
-                )
-            except Exception:
-                logger.exception("Failed to sync failed status for assessment_id=%s", assessment_id)
+    if job_status == assessment.Status.FAILED:
         return _robustness_render(
             request,
             "robustness/processing.html",
             {
                 "job_id": job_id,
                 "job_status": job_status,
-                "analysis_error": job.get("error") or "Unknown evaluation error.",
+                "analysis_error": assessment.error_message or "Unknown evaluation error.",
                 "config_name": config_name,
                 "project_id": project_id,
             },
@@ -506,14 +433,13 @@ def job_status_api(request):
     job_id = request.GET.get("job")
     if not job_id:
         return JsonResponse({"status": "not_found"}, status=400)
-    job = _get_job(job_id)
-    assessment = visible_job_assessment(request.user, job_id, job)
+    assessment = _job_assessment(request.user, job_id)
     if assessment is None:
         return JsonResponse({"status": "not_found"}, status=404)
     return JsonResponse({
-        "status": job.get("status"),
-        "error": job.get("error"),
-        "backend_job_id": job.get("backend_job_id"),
+        "status": assessment.status,
+        "error": assessment.error_message,
+        "backend_job_id": (assessment.input_data or {}).get("backend_job_id"),
     })
 
 
@@ -554,25 +480,14 @@ def _report_context_from_result(data):
 @login_required
 def results_view(request, job_id):
     """Where the processing page lands when the evaluation completes: the
-    results are on the Assessment, so this hands over to its results page. The
-    job itself lives only in memory, until the server restarts."""
-    job = _get_job(job_id)
-    assessment = visible_job_assessment(request.user, job_id, job)
+    results are on the Assessment, so this hands over to its results page."""
+    assessment = _job_assessment(request.user, job_id)
     if assessment is None:
         # results_report.html has no place for an error message.
         raise Http404("Job not found.")
 
-    if job.get("status") != "completed":
+    if assessment.status != assessment.Status.COMPLETED:
         return redirect(f"{reverse('robustness:processing')}?job={job_id}")
-
-    if assessment.results is None or assessment.status != assessment.Status.COMPLETED:
-        try:
-            assessment.results = job.get("result") or {}
-            assessment.status = assessment.Status.COMPLETED
-            assessment.input_data = {**(assessment.input_data or {}), "backend_job_id": job.get("backend_job_id")}
-            assessment.save(update_fields=["results", "status", "input_data"])
-        except Exception:
-            logger.exception("Failed to sync results for assessment_id=%s", assessment.id)
 
     return redirect("robustness:view_assessment_results", assessment_id=assessment.id)
 
@@ -621,12 +536,10 @@ def view_assessment_results(request, assessment_id):
 
 @login_required
 def results_json_view(request, job_id):
-    job = _get_job(job_id)
-    assessment = visible_job_assessment(request.user, job_id, job)
+    assessment = _job_assessment(request.user, job_id)
     if assessment is None:
         return JsonResponse({"error": "Job not found."}, status=404)
-    result = job.get("result") or {}
-    response = JsonResponse(result, json_dumps_params={"indent": 2})
+    response = JsonResponse(assessment.results or {}, json_dumps_params={"indent": 2})
     response["Content-Disposition"] = f'attachment; filename="robustness-report-{job_id}.json"'
     return response
 

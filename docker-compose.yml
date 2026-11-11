@@ -8,13 +8,20 @@
 # of runserver, which is single-process, auto-reloading and explicitly not
 # security-audited:
 #
-#   WEB_SERVER_CMD=gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 1 --threads 8 --timeout 120
+#   WEB_SERVER_CMD=gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 3 --threads 8 --timeout 120
 #
-# Keep --workers at 1. code_analysis and robustness hold background-job state in
-# module-level dicts (SCAN_JOBS / EVAL_JOBS), which is per-process, so extra
-# worker processes make the status poll miss the job. --threads still gives real
-# concurrency, so one slow download no longer blocks the site. Raise the worker
-# count only once those two apps keep job state in the database.
+# 3 workers x 8 threads = 24 requests at once. The slow requests (EnGreen and
+# CIEMAT simulations, data lake queries, streamed downloads) wait on the network
+# for up to 30s each, so 8 of them at once were enough to stall every other page
+# when there was a single 8-thread worker. Threads cover that waiting; the extra
+# workers let Python use more than one of the VM's 4 cores, which it shares with
+# the database, MinIO and the other services, hence 3 rather than gunicorn's
+# usual 2 x cores + 1. Each worker holds its own copy of the cached Riga
+# buildings (~150 MB), so mind the memory before raising it further.
+#
+# Every job's state lives in the database (code_analysis and robustness read it
+# from their Assessment), so any worker can answer any request. Keep it that
+# way: state kept in a module-level variable is per-worker.
 #
 # Also set BIND_ADDR=127.0.0.1 in the server's .env so the published ports (web
 # 8080, pgadmin 5051) are reachable only from the VM itself. Docker publishes
@@ -45,9 +52,12 @@ services:
   web:
     build: .
     # exec, so signals reach the server process instead of the wrapping shell.
+    # fail_interrupted_assessments must run here, before the server: the
+    # assessment jobs it fails ran in the threads of the server that just stopped.
     command: >
       sh -c "
       python manage.py migrate &&
+      python manage.py fail_interrupted_assessments &&
       python manage.py createcachetable &&
       python manage.py collectstatic --noinput &&
       exec ${WEB_SERVER_CMD:-python manage.py runserver 0.0.0.0:8000}

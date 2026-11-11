@@ -17,28 +17,20 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from trustworthiness.jobs import record_job_outcome, release_thread_connection
 from trustworthiness.project_access import editable_project, project_picker_redirect, visible_job_assessment
 
 
 logger = logging.getLogger(__name__)
 
-SCAN_JOBS = {}
-SCAN_JOBS_LOCK = threading.Lock()
 SCAN_API_MAX_RETRIES = max(1, int(os.getenv("SCAN_API_MAX_RETRIES", "3")))
 SCAN_API_RETRY_BACKOFF_SEC = max(0.0, float(os.getenv("SCAN_API_RETRY_BACKOFF_SEC", "1.0")))
 SCAN_API_RETRY_STATUS_CODES = {502, 503, 504}
 
 
-def _set_scan_job(job_id, **values):
-	with SCAN_JOBS_LOCK:
-		job = SCAN_JOBS.setdefault(job_id, {})
-		job.update(values)
-
-
-def _get_scan_job(job_id):
-	with SCAN_JOBS_LOCK:
-		job = SCAN_JOBS.get(job_id)
-		return dict(job) if job else None
+def _job_assessment(user, job_id):
+	from trustworthiness.models import Assessment
+	return visible_job_assessment(user, job_id, Assessment.AssessmentType.CODE_ANALYSIS)
 
 
 def _get_configure_url(source_label):
@@ -559,11 +551,12 @@ def _build_results_context(analysis_result, source_label, job_id):
 	}
 
 
-def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None, assessment_id=None):
-	if not getattr(settings, "SCAN_API_URL", ""):
-		_set_scan_job(job_id, status="failed", result=None, error="SCAN_API_URL is not configured")
-		return
+def _run_scan_job(job_id, assessment_id, mode, payload, upload_meta=None):
+	"""Runs in a thread; see trustworthiness.jobs."""
 	try:
+		if not getattr(settings, "SCAN_API_URL", ""):
+			record_job_outcome(assessment_id, error_message="SCAN_API_URL is not configured")
+			return
 		if mode == "upload":
 			temp_path = upload_meta["temp_path"]
 			filename = upload_meta["filename"]
@@ -588,31 +581,14 @@ def _run_scan_job(job_id, source_label, mode, payload, upload_meta=None, assessm
 				timeout=settings.SCAN_API_TIMEOUT,
 			)
 
-		result_payload = response.json()
-		_set_scan_job(job_id, status="completed", result=result_payload, error=None)
-		if assessment_id:
-			try:
-				from trustworthiness.models import Assessment
-				Assessment.objects.filter(id=assessment_id).update(
-					results=result_payload, status=Assessment.Status.COMPLETED,
-				)
-			except Exception:
-				logger.exception("Failed to save results for assessment_id=%s", assessment_id)
+		record_job_outcome(assessment_id, results=response.json())
 	except Exception as exc:
 		logger.exception("Scan job %s failed", job_id)
-		error_message = _format_backend_error(exc)
-		_set_scan_job(job_id, status="failed", result=None, error=error_message)
-		if assessment_id:
-			try:
-				from trustworthiness.models import Assessment
-				Assessment.objects.filter(id=assessment_id).update(
-					status=Assessment.Status.FAILED, error_message=error_message,
-				)
-			except Exception:
-				logger.exception("Failed to mark assessment_id=%s as failed", assessment_id)
+		record_job_outcome(assessment_id, error_message=_format_backend_error(exc))
 	finally:
 		if upload_meta and os.path.exists(upload_meta["temp_path"]):
 			os.remove(upload_meta["temp_path"])
+		release_thread_connection()
 
 
 @login_required
@@ -733,13 +709,11 @@ def processing(request):
 					tmp_file.write(chunk)
 			temp_path = tmp_file.name
 
-			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
-
 			threading.Thread(
 				target=_run_scan_job,
 				args=(
 					job_id,
-					source_label,
+					assessment_id,
 					"upload",
 					{"project_name": project_name},
 					{
@@ -748,7 +722,6 @@ def processing(request):
 						"content_type": upload.content_type or "application/octet-stream",
 					},
 				),
-				kwargs={"assessment_id": assessment_id},
 				daemon=True,
 			).start()
 
@@ -776,41 +749,29 @@ def processing(request):
 			}, parent_assessment=parent_assessment)
 			if assessment_id is None:
 				return _assessment_not_started(request, source_label, project_id)
-			_set_scan_job(job_id, status="running", source_label=source_label, result=None, error=None, assessment_id=assessment_id)
 			threading.Thread(
 				target=_run_scan_job,
-				args=(job_id, source_label, "github", payload),
-				kwargs={"assessment_id": assessment_id},
+				args=(job_id, assessment_id, "github", payload),
 				daemon=True,
 			).start()
 			query = urlencode({"job": job_id, "source": source_label})
 			return redirect(f"{request.path}?{query}")
 
 	if job_id:
-		job = _get_scan_job(job_id)
-		assessment = visible_job_assessment(request.user, job_id, job)
+		assessment = _job_assessment(request.user, job_id)
 		if assessment is None:
 			context = _build_processing_context(source_label, analysis_error="Scan job not found. Please submit the analysis again.")
 			context["job_id"] = job_id
 			context["job_status"] = "failed"
 			return render(request, "code_analysis/processing.html", _add_stepper_context(context, source_label=source_label, job_id=job_id), status=404)
 
-		source_label = job.get("source_label") or source_label
+		source_label = (assessment.input_data or {}).get("source") or source_label
 		project_id = assessment.project_id
-		job_status = job.get("status")
-		if job_status == "completed":
+		job_status = assessment.status
+		if job_status == assessment.Status.COMPLETED:
 			return redirect("code_analysis:results", job_id=job_id)
-		elif job_status == "failed":
-			assessment_id = job.get("assessment_id")
-			if assessment_id:
-				try:
-					from trustworthiness.models import Assessment
-					Assessment.objects.filter(id=assessment_id, status=Assessment.Status.RUNNING).update(
-						status=Assessment.Status.FAILED, error_message=job.get("error") or "Unknown scan error.",
-					)
-				except Exception:
-					logger.exception("Failed to sync failed status for assessment_id=%s", assessment_id)
-			context = _build_processing_context(source_label, analysis_error=job.get("error") or "Unknown scan error.")
+		elif job_status == assessment.Status.FAILED:
+			context = _build_processing_context(source_label, analysis_error=assessment.error_message or "Unknown scan error.")
 			return render(
 				request,
 				"code_analysis/processing.html",
@@ -837,41 +798,31 @@ def job_status_api(request):
 	job_id = request.GET.get("job")
 	if not job_id:
 		return JsonResponse({"status": "not_found"}, status=400)
-	job = _get_scan_job(job_id)
-	assessment = visible_job_assessment(request.user, job_id, job)
+	assessment = _job_assessment(request.user, job_id)
 	if assessment is None:
 		return JsonResponse({"status": "not_found"}, status=404)
 	return JsonResponse({
-		"status": job.get("status"),
-		"error": job.get("error"),
+		"status": assessment.status,
+		"error": assessment.error_message,
 	})
 
 
 @login_required
 def results(request, job_id):
 	"""Where the processing page lands when the scan completes: the results
-	are on the Assessment, so this hands over to its results page. The job
-	itself lives only in memory, until the server restarts."""
-	job = _get_scan_job(job_id)
-	assessment = visible_job_assessment(request.user, job_id, job)
+	are on the Assessment, so this hands over to its results page."""
+	assessment = _job_assessment(request.user, job_id)
 	if assessment is None:
 		return render(request, "code_analysis/results.html", {
 			"job_id": job_id,
-			"error": "Job not found. The server may have restarted since the scan ran: open its results from the project's assessments.",
+			"error": "Job not found. Open the scan's results from the project's assessments.",
 			"result_json": None,
 			"show_sidebar": True,
 			"active_navbar_page": "trustworthiness",
 		})
-	if job.get("status") != "completed":
-		query = urlencode({"job": job_id, "source": job.get("source_label", "")})
+	if assessment.status != assessment.Status.COMPLETED:
+		query = urlencode({"job": job_id, "source": (assessment.input_data or {}).get("source", "")})
 		return redirect(reverse("code_analysis:processing") + f"?{query}")
-	if assessment.results is None or assessment.status != assessment.Status.COMPLETED:
-		try:
-			assessment.results = job.get("result") or {}
-			assessment.status = assessment.Status.COMPLETED
-			assessment.save(update_fields=["results", "status"])
-		except Exception:
-			logger.exception("Failed to sync results for assessment_id=%s", assessment.id)
 	return redirect("code_analysis:view_assessment_results", assessment_id=assessment.id)
 
 

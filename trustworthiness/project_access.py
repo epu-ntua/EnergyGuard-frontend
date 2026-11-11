@@ -35,24 +35,27 @@ def editable_project(user, project_id):
     return project
 
 
-def visible_job_assessment(user, job_id, job):
-    """The Assessment that records `job`, when `user` may see the job's pages
-    (status, results, downloads), else None - answered like a missing job.
+def visible_job_assessment(user, job_id, assessment_type):
+    """The `assessment_type` Assessment that records job `job_id`, when `user`
+    may see the job's pages (status, results, downloads), else None - answered
+    like a missing job.
 
-    The rule is read access to the Assessment's project, the same as viewing
-    that Assessment. A job no Assessment records (one run before every run
-    needed a project) belongs to no one.
+    The Assessment is the job's only record (see trustworthiness.jobs). The rule
+    is read access to the Assessment's project, the same as viewing that
+    Assessment. Robustness runs from before job ids were random may share one
+    (it was the config's MLflow run id): the newest the user may read wins, so
+    a shared id never leads to a run in someone else's project.
     """
     from .models import Assessment
 
-    if not job:
+    if not job_id:
         return None
-    assessment_id = job.get('assessment_id')
-    assessment = (
-        Assessment.objects.select_related('project').filter(id=assessment_id).first()
-        if assessment_id else None
+    candidates = (
+        Assessment.objects.select_related('project')
+        .filter(assessment_type=assessment_type, input_data__job_id=job_id)
     )
-    if assessment is None or not assessment.project.is_accessible_by(user):
+    assessment = next((a for a in candidates if a.project.is_accessible_by(user)), None)
+    if assessment is None:
         logger.warning("User %s denied access to job_id=%s", user.id, job_id)
         return None
     return assessment

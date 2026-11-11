@@ -117,11 +117,11 @@ Question/step/item content lives in `questionnaire/questionnaire.json` and is re
 Deployment is `git pull` + restart on the server — the source tree is bind-mounted, and the same `docker-compose.yml` runs on both machines. The server adds an untracked `docker-compose.server.yml` overlay (for the nginx-proxy network) and sets `WEB_SERVER_CMD` in `.env` to run Gunicorn instead of `runserver`:
 
 ```bash
-WEB_SERVER_CMD=gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 1 --threads 8 --timeout 120
+WEB_SERVER_CMD=gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 3 --threads 8 --timeout 120
 docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 ```
 
-`--workers` must stay at `1`: `code_analysis` and `robustness` hold background-job state in module-level dicts, which is per-process, so extra worker processes would make the status poll miss the job. Raise the worker count only once those two apps move job state into the database.
+Every job's state lives in the database, so any of the workers can answer any request; don't keep state in module-level variables, which are per-worker. `docker-compose.yml` explains the worker and thread counts.
 
 ## Environment Variables
 

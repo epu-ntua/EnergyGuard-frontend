@@ -18,6 +18,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
@@ -455,26 +456,13 @@ class JobPageAccessTests(PermissionFixture):
         super().setUpTestData()
         cls.private_project = Project.objects.create(name="Private project", creator=cls.owner, visibility=False)
 
-    def setUp(self):
-        from code_analysis import views as code_analysis_views
-        from robustness import views as robustness_views
-
-        self.robustness = robustness_views
-        self.code_analysis = code_analysis_views
-        self.addCleanup(robustness_views.EVAL_JOBS.clear)
-        self.addCleanup(code_analysis_views.SCAN_JOBS.clear)
-
-    def assessment_id(self, assessment_type, project):
-        return Assessment.objects.create(project=project, assessment_type=assessment_type).pk
-
-    def in_memory_jobs(self, job_id, project):
-        """The same job_id, completed, in both apps' in-memory job stores."""
-        for set_job, assessment_type in (
-            (self.robustness._set_job, Assessment.AssessmentType.ROBUSTNESS),
-            (self.code_analysis._set_scan_job, Assessment.AssessmentType.CODE_ANALYSIS),
-        ):
-            assessment_id = self.assessment_id(assessment_type, project) if project else None
-            set_job(job_id, status="completed", result={}, assessment_id=assessment_id)
+    def completed_jobs(self, job_id, project):
+        """The same job_id, completed, recorded by an Assessment of each app."""
+        for assessment_type in (Assessment.AssessmentType.ROBUSTNESS, Assessment.AssessmentType.CODE_ANALYSIS):
+            Assessment.objects.create(
+                project=project, assessment_type=assessment_type, status=Assessment.Status.COMPLETED,
+                results={"report_meta": {}}, input_data={"job_id": job_id},
+            )
 
     def job_pages(self, job_id):
         """(url, visible(response)) for each job page: what a visible job
@@ -499,16 +487,12 @@ class JobPageAccessTests(PermissionFixture):
                     self.assertEqual(is_visible(self.client.get(url)), visible)
 
     def test_private_project_jobs_are_only_visible_to_its_members(self):
-        self.in_memory_jobs("private-job", self.private_project)
+        self.completed_jobs("private-job", self.private_project)
         self.check(self.job_pages("private-job"), [(self.owner, True), (self.stranger, False)])
 
     def test_public_project_jobs_are_visible_like_its_assessments(self):
-        self.in_memory_jobs("public-job", self.project)
+        self.completed_jobs("public-job", self.project)
         self.check(self.job_pages("public-job"), [(self.viewer, True), (self.stranger, True)])
-
-    def test_a_job_no_assessment_records_is_visible_to_no_one(self):
-        self.in_memory_jobs("orphan-job", None)
-        self.check(self.job_pages("orphan-job"), [(self.owner, False)])
 
     def test_a_missing_job_answers_the_same_as_a_hidden_one(self):
         self.check(self.job_pages("no-such-job"), [(self.owner, False)])
@@ -529,8 +513,6 @@ class AssessmentResultsSourceTests(PermissionFixture):
 
         self.robustness = robustness_views
         self.code_analysis = code_analysis_views
-        self.addCleanup(robustness_views.EVAL_JOBS.clear)
-        self.addCleanup(code_analysis_views.SCAN_JOBS.clear)
 
     def completed(self, assessment_type, **input_data):
         return Assessment.objects.create(
@@ -538,14 +520,22 @@ class AssessmentResultsSourceTests(PermissionFixture):
             status=Assessment.Status.COMPLETED, results={"report_meta": {}}, input_data=input_data,
         )
 
-    def test_submitting_records_the_job_id_on_the_assessment(self):
+    def submit_both(self):
+        """One robustness and one GitHub code analysis submission, with the
+        background threads not started: (robustness, code analysis) responses."""
         self.client.force_login(self.owner)
-        config = SimpleUploadedFile("config.yaml", b"model:\n  backend: mlflow\n", content_type="application/x-yaml")
+        config = SimpleUploadedFile(
+            "config.yaml", b"model:\n  mlflow_run_id: run-1\n", content_type="application/x-yaml",
+        )
         with patch("robustness.views.threading.Thread"), patch("code_analysis.views.threading.Thread"):
             robustness = self.client.post(reverse("robustness:config_input"), {"config_file": config, "project_id": self.project.pk})
             code_analysis = self.client.post(reverse("code_analysis:processing"), {
                 "source_type": "GitHub Repository", "repo_url": "https://github.com/example/repo", "project_id": self.project.pk,
             })
+        return robustness, code_analysis
+
+    def test_submitting_records_the_job_id_on_the_assessment(self):
+        robustness, code_analysis = self.submit_both()
         for response, assessment_type in (
             (robustness, Assessment.AssessmentType.ROBUSTNESS),
             (code_analysis, Assessment.AssessmentType.CODE_ANALYSIS),
@@ -554,15 +544,118 @@ class AssessmentResultsSourceTests(PermissionFixture):
                 job_id = self.assessments(assessment_type).get().input_data["job_id"]
                 self.assertIn(f"job={job_id}", response.url)
 
-    def test_a_finished_job_hands_over_to_its_assessments_results_page(self):
-        self.client.force_login(self.owner)
-        for set_job, assessment_type, app in (
-            (self.robustness._set_job, Assessment.AssessmentType.ROBUSTNESS, "robustness"),
-            (self.code_analysis._set_scan_job, Assessment.AssessmentType.CODE_ANALYSIS, "code_analysis"),
+    def test_two_runs_of_one_robustness_config_get_their_own_job_ids(self):
+        # The config names an MLflow run; the job id must not come from it.
+        self.submit_both()
+        self.submit_both()
+        job_ids = {a.input_data["job_id"] for a in self.assessments(Assessment.AssessmentType.ROBUSTNESS)}
+        self.assertEqual(len(job_ids), 2)
+        self.assertNotIn("run-1", job_ids)
+
+    def test_a_just_submitted_job_reports_running(self):
+        # Straight from the Assessment, so any gunicorn worker answers the same.
+        self.submit_both()
+        for app, url_name, assessment_type in (
+            ("robustness", "robustness:job_status", Assessment.AssessmentType.ROBUSTNESS),
+            ("code_analysis", "code_analysis:job_status_api", Assessment.AssessmentType.CODE_ANALYSIS),
         ):
             with self.subTest(app=app):
-                assessment = self.completed(assessment_type)
-                set_job("job-1", status="completed", result={}, assessment_id=assessment.pk)
+                job_id = self.assessments(assessment_type).get().input_data["job_id"]
+                response = self.client.get(f"{reverse(url_name)}?job={job_id}")
+                self.assertEqual(response.json()["status"], "running")
+
+    def test_a_failed_job_reports_its_assessments_error(self):
+        self.client.force_login(self.owner)
+        for app, url_name, assessment_type in (
+            ("robustness", "robustness:job_status", Assessment.AssessmentType.ROBUSTNESS),
+            ("code_analysis", "code_analysis:job_status_api", Assessment.AssessmentType.CODE_ANALYSIS),
+        ):
+            with self.subTest(app=app):
+                Assessment.objects.create(
+                    project=self.private_project, assessment_type=assessment_type, status=Assessment.Status.FAILED,
+                    error_message="backend down", input_data={"job_id": "failed-job"},
+                )
+                data = self.client.get(f"{reverse(url_name)}?job=failed-job").json()
+                self.assertEqual((data["status"], data["error"]), ("failed", "backend down"))
+
+    def run_code_analysis_job(self, assessment, error=None):
+        with self.settings(SCAN_API_URL="http://scanner"), \
+                patch("code_analysis.views._post_with_retry", side_effect=error) as post:
+            post.return_value.json.return_value = {"issues_found": 0}
+            self.code_analysis._run_scan_job("job-1", assessment.pk, "github", {})
+
+    def run_robustness_job(self, assessment, error=None):
+        with tempfile.NamedTemporaryFile(delete=False) as config:
+            pass
+        with patch("robustness.views._call_backend_api", side_effect=error, return_value=({"issues_found": 0}, "backend-7")):
+            self.robustness._run_eval_job("job-1", assessment.pk, "config", config.name)
+
+    def job_runners(self):
+        return (
+            (Assessment.AssessmentType.CODE_ANALYSIS, self.run_code_analysis_job),
+            (Assessment.AssessmentType.ROBUSTNESS, self.run_robustness_job),
+        )
+
+    def test_a_job_records_its_outcome_on_its_assessment(self):
+        cases = (
+            (None, Assessment.Status.COMPLETED, {"issues_found": 0}, None),
+            (RuntimeError("backend down"), Assessment.Status.FAILED, None, "backend down"),
+        )
+        for assessment_type, run_job in self.job_runners():
+            for error, status, results, error_message in cases:
+                with self.subTest(assessment_type=assessment_type, status=status):
+                    assessment = Assessment.objects.create(project=self.project, assessment_type=assessment_type)
+                    run_job(assessment, error)
+                    assessment.refresh_from_db()
+                    self.assertEqual(
+                        (assessment.status, assessment.results, assessment.error_message), (status, results, error_message),
+                    )
+
+    def test_a_job_whose_results_cannot_be_saved_fails_instead_of_running_on(self):
+        # The in-memory job used to hold the results until a page saved them;
+        # now the job must leave its Assessment finished either way.
+        real_save = Assessment.save
+
+        def save_fails_on_results(assessment, *args, **kwargs):
+            if "results" in kwargs.get("update_fields", ()):
+                raise RuntimeError("database hiccup")
+            return real_save(assessment, *args, **kwargs)
+
+        for assessment_type, run_job in self.job_runners():
+            with self.subTest(assessment_type=assessment_type):
+                assessment = Assessment.objects.create(project=self.project, assessment_type=assessment_type)
+                with patch.object(Assessment, "save", save_fails_on_results), self.assertLogs("trustworthiness.jobs", "ERROR"):
+                    run_job(assessment)
+                assessment.refresh_from_db()
+                self.assertEqual(assessment.status, Assessment.Status.FAILED)
+                self.assertIn("could not be saved", assessment.error_message)
+
+    def test_a_shared_job_id_leads_to_the_newest_run_the_user_may_read(self):
+        # Robustness job ids were once the config's MLflow run id, so old runs
+        # in different projects can share one.
+        mine = self.completed(Assessment.AssessmentType.ROBUSTNESS, job_id="run-1")
+        theirs = Assessment.objects.create(
+            project=Project.objects.create(name="Someone else's", creator=self.stranger, visibility=False),
+            assessment_type=Assessment.AssessmentType.ROBUSTNESS, status=Assessment.Status.COMPLETED,
+            results={"report_meta": {}}, input_data={"job_id": "run-1"},
+        )
+        self.assertGreater(theirs.created_at, mine.created_at)
+        for user, expected in ((self.owner, mine), (self.stranger, theirs)):
+            with self.subTest(user=user.email):
+                self.client.force_login(user)
+                response = self.client.get(reverse("robustness:results", args=["run-1"]))
+                self.assertRedirects(
+                    response, reverse("robustness:view_assessment_results", args=[expected.pk]), fetch_redirect_response=False,
+                )
+
+    def test_a_finished_job_hands_over_to_its_assessments_results_page(self):
+        self.client.force_login(self.owner)
+        for assessment_type, app in (
+            (Assessment.AssessmentType.ROBUSTNESS, "robustness"),
+            (Assessment.AssessmentType.CODE_ANALYSIS, "code_analysis"),
+        ):
+            with self.subTest(app=app):
+                assessment = self.completed(assessment_type, job_id="job-1")
                 response = self.client.get(reverse(f"{app}:results", args=["job-1"]))
                 self.assertRedirects(
                     response, reverse(f"{app}:view_assessment_results", args=[assessment.pk]), fetch_redirect_response=False,
@@ -574,7 +667,7 @@ class AssessmentResultsSourceTests(PermissionFixture):
             pass
         with patch("robustness.views._call_backend_api", return_value=({"report_meta": {}}, "backend-7")), \
                 patch("pathlib.Path.write_text") as write_text:
-            self.robustness._run_eval_job("job-1", "config", config.name, assessment_id=assessment.pk)
+            self.robustness._run_eval_job("job-1", assessment.pk, "config", config.name)
         assessment.refresh_from_db()
         self.assertEqual(assessment.status, Assessment.Status.COMPLETED)
         self.assertEqual(assessment.results, {"report_meta": {}})
@@ -604,6 +697,38 @@ class AssessmentResultsSourceTests(PermissionFixture):
             items = self.client.get(pages[1]).json()["items"]
         get.assert_called_once_with("http://backend/api/evaluations/backend-7/adversarial-examples", timeout=10)
         self.assertEqual([item["attack_key"] for item in items], ["fgsm"])
+
+
+class FailInterruptedAssessmentsTests(PermissionFixture):
+    """The web container's start fails the jobs the stopped server was running."""
+
+    def test_running_jobs_fail_and_the_rest_are_left_alone(self):
+        def create(assessment_type, status):
+            return Assessment.objects.create(project=self.project, assessment_type=assessment_type, status=status)
+
+        interrupted = [
+            create(Assessment.AssessmentType.CODE_ANALYSIS, Assessment.Status.RUNNING),
+            create(Assessment.AssessmentType.ROBUSTNESS, Assessment.Status.RUNNING),
+        ]
+        untouched = [
+            create(Assessment.AssessmentType.CODE_ANALYSIS, Assessment.Status.COMPLETED),
+            create(Assessment.AssessmentType.ROBUSTNESS, Assessment.Status.FAILED),
+            # No AI Act run is a thread job, whatever its status
+            create(Assessment.AssessmentType.AI_ACT, Assessment.Status.RUNNING),
+        ]
+        out = StringIO()
+        with self.assertLogs("trustworthiness.jobs", "WARNING"):
+            call_command("fail_interrupted_assessments", stdout=out)
+
+        self.assertIn("2 interrupted", out.getvalue())
+        for assessment in interrupted:
+            assessment.refresh_from_db()
+            self.assertEqual(assessment.status, Assessment.Status.FAILED)
+            self.assertIn("server restart", assessment.error_message)
+        for assessment in untouched:
+            status = assessment.status
+            assessment.refresh_from_db()
+            self.assertEqual(assessment.status, status)
 
 
 class PurgeAssessmentReportFoldersTests(PermissionFixture):
