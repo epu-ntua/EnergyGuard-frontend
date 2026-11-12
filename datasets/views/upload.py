@@ -113,7 +113,10 @@ class AddDatasetView(LoginRequiredMixin, BaseWizardView):
         if self.request.headers.get("X-Wizard-Ajax") == "1":
             html = render_to_string(
                 "datasets/upload-dataset-success-fragment.html",
-                {"wizard_steps": DATASET_STEP_METADATA.values()},
+                {
+                    "wizard_steps": DATASET_STEP_METADATA.values(),
+                    "dataset_visibility": general_data["visibility"],
+                },
                 request=self.request,
             )
             return JsonResponse({"html": html, "step": "done"})

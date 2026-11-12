@@ -38,7 +38,14 @@
             <div class="mb-3 form-check">
                 {{ wizard.form.visibility }}
                 <label for="{{ wizard.form.visibility.id_for_label }}" class="form-check-label ms-1 fs-9-5 fw-bold">DO YOU WANT THIS DATASET TO BE PUBLICLY AVAILABLE?</label>
+                <div class="visibility-review-note form-text fs-9 mt-2">
+                    <i class="fa-solid fa-circle-info me-1"></i>Public datasets are reviewed before they appear in the platform catalogue.
+                    You can use your dataset right away. Other users will see it once a reviewer approves it, and you will be
+                    notified by email of the decision.
+                </div>
             </div>
+            {# Pure CSS so it also works when the wizard swaps this step in over AJAX (inline scripts would not run). #}
+            <style>.form-check-input:not(:checked) ~ .visibility-review-note { display: none; }</style>
 
             <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
                 <button type="submit" class="btn btn-primary px-6 px-sm-6">Next</button>
