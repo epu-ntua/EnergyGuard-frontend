@@ -1,13 +1,17 @@
-"""Guided journeys: step-by-step guides for common tasks on the platform.
+"""Guided journeys: tutorials and how-to guides in the documentation.
 
 Documentation only: a journey lists the steps to follow and links to the pages where
 each one is done. Nothing is tracked.
 
+Each journey belongs to a `section` of SECTIONS: a tutorial is a complete walkthrough
+on sample data for someone learning the platform, a how-to guide covers one task for
+someone who already knows what they want to do.
+
 A journey can open with a `scenario`: one or two sentences about a persona and what they
 want to achieve. `icon` is its FontAwesome icon.
 
-The order of JOURNEYS is the order of the cards, and each journey suggests the one after
-it as its next journey.
+The order of JOURNEYS is the order of the cards, and each journey suggests the next one
+of its own section as its next journey.
 
 Each step has a title, a short `body` (one paragraph per item), `optional` when the
 journey works without it, an optional `link` to
@@ -34,8 +38,153 @@ from django.utils.safestring import mark_safe
 logger = logging.getLogger(__name__)
 
 JOURNEYS = [
+    # The quick start describes a tutorial dataset and notebook that do not exist yet.
+    # Every "REVIEW(quick-start)" comment marks text to check against them once they do
+    # (grep -n "REVIEW(quick-start)" core/views/journeys.py).
+    {
+        'slug': 'quick-start',
+        'section': 'tutorials',
+        'title': 'Quick start: your first forecasting model',
+        'summary': 'Train, track and compare forecasting models on a small public smart building dataset, '
+                   'with an example notebook that is ready to run.',
+        'scenario': (
+            'Sam is new to the platform and has no model yet. Sam wants to see how a forecast of a '
+            "building's energy use is built, tracked and checked on EnergyGuard before trying it on "
+            'other data.'
+        ),
+        'icon': 'fa-rocket',
+        'audience': 'New users, AI developers and data scientists',
+        # REVIEW(quick-start): estimate; time it once the notebook and the robustness test exist.
+        'duration': 'About 30 minutes',
+        'tools': 'Datasets, Projects, JupyterHub, MLflow, Trustworthiness Assessments',
+        'steps': [
+            {
+                'title': 'Create a project',
+                'body': [
+                    'In Projects, choose "Add new project", give it a name, for example "Smart building '
+                    'forecast", and choose the project type AI Model.',
+                ],
+                'link': {'label': 'Add new project', 'url_name': 'project_creation'},
+                'result': 'The project opens with a default MLflow experiment already created for it. '
+                          'You can see the experiment in the project\'s Experiments table.',
+            },
+            {
+                'title': 'Open the tutorial dataset and load it into your project',
+                'body': [
+                    # REVIEW(quick-start): dataset name and "hourly readings from one building" must
+                    # match the tutorial dataset once it is uploaded.
+                    'In Assets, open Datasets and choose "Smart Building Energy Demand (Tutorial)" in the '
+                    '"Public datasets" tab. It is a small CSV file with hourly readings from one building.',
+                    # REVIEW(quick-start): column names must match the dataset's CSV and Metadata Table.
+                    'Choose "Preview Data" to see the first rows, then read the Metadata Table. It describes '
+                    'each column with its unit: timestamp, energy_kwh (the value to forecast), outdoor_temp_c, '
+                    'humidity_pct, occupancy_pct and is_holiday.',
+                    # REVIEW(quick-start): Load in Project does not copy a notebook yet (provisioning
+                    # sends "notebooks": None); notebook file name to be confirmed.
+                    'Then choose "Load in Project", select your project and press Load. Together with the '
+                    'data, the example notebook smart_building_forecasting.ipynb is copied into your '
+                    'workspace.',
+                ],
+                'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
+                # REVIEW(quick-start): where the notebook lands in the workspace depends on the provisioning.
+                'result': 'JupyterHub opens in a new tab with the data in your read-only "datasets" folder '
+                          'and the notebook in your workspace. The dataset is listed under "Datasets used" '
+                          'on your project page.',
+            },
+            {
+                'title': 'Run the example notebook',
+                'body': [
+                    # REVIEW(quick-start): notebook name; first cell holds EXPERIMENT_NAME (or drop this
+                    # if the provisioning fills it in); "no GPU, nothing to install, a few minutes" must
+                    # hold on the EnergyGuard kernel.
+                    'Open smart_building_forecasting.ipynb and keep the EnergyGuard kernel. In its first '
+                    'cell, set the name of your project\'s experiment, as shown in the Experiments table of '
+                    'your project. Then choose "Run All Cells" in the Run menu. The notebook needs no GPU '
+                    'and nothing to install, and it finishes in a few minutes.',
+                    # REVIEW(quick-start): test split (last four weeks) and the three models must match
+                    # the notebook; the neural network is there because FGSM/PGD need gradients.
+                    'It keeps the last four weeks of the data for testing and trains three models on the '
+                    'rest: a naive baseline that repeats the same hour of the previous week, a linear '
+                    'regression and a small neural network. Each model is logged as a run in your '
+                    'experiment, with its parameters, its metrics and the model itself.',
+                ],
+                # REVIEW(quick-start): variable name as written in the notebook's first cell.
+                'code': 'EXPERIMENT_NAME = "<your experiment name>"',
+                # REVIEW(quick-start): metrics the notebook prints and logs.
+                'result': 'Three runs are logged, and the notebook prints the error (RMSE and MAE) of each '
+                          'model on the test weeks.',
+            },
+            {
+                'title': 'Compare the runs in MLflow',
+                'body': [
+                    'In Projects, open your project and click the experiment\'s name. MLflow opens on the '
+                    'experiment with the three runs listed. Tick them and choose "Compare" to see their '
+                    'parameters and metrics side by side.',
+                ],
+                'link': {'label': 'My projects', 'url_name': 'projects_list'},
+                'result': 'You can tell which model has the lowest error and whether it beats the naive '
+                          'baseline.',
+            },
+            {
+                'title': 'Try your own variation',
+                'body': [
+                    # REVIEW(quick-start): the notebook needs a cell marked "Try it yourself".
+                    'In the notebook cell marked "Try it yourself", change a setting of a model or the '
+                    'features it uses, and run the notebook again.',
+                ],
+                'result': 'A new run appears in the experiment. Compare it with the earlier runs to see '
+                          'whether your change helped.',
+            },
+            {
+                'title': 'Register your best model',
+                'optional': True,
+                'body': [
+                    'In the experiment, open the "Models" tab, click your best model and choose "Register '
+                    'model", then "Create new model". Each improved model you register later under the same '
+                    'name becomes a new version. [Register your model in MLflow](journey:register-model) '
+                    'shows each step with screenshots.',
+                ],
+                'result': 'Version 1 of your model appears in MLflow, linked to the run it came from.',
+            },
+            {
+                'title': 'Test the robustness of your model',
+                'body': [
+                    # REVIEW(quick-start): the notebook's last cell must write config.yaml for the neural
+                    # network's run (and log the test set the attacks use); check the robustness backend
+                    # accepts this model.
+                    'The last cell of the notebook writes config.yaml, a configuration that points to the '
+                    'neural network\'s run in MLflow. Download it from the file browser of JupyterHub.',
+                    'In Trustworthiness Assessments, choose "Start Assessment" on the "Adversarial '
+                    'Robustness" card, select your project and upload config.yaml. The same page offers the '
+                    'AI Act Questionnaire and Code Analysis, which '
+                    '[Assess a project for trustworthiness](journey:assess-project) explains.',
+                ],
+                'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
+                'result': 'When the test finishes, the Results tab shows how much each attack degrades the '
+                          'forecasts of your model.',
+            },
+            {
+                'title': 'Try it on other data',
+                'optional': True,
+                'body': [
+                    # REVIEW(quick-start): file name and column names must be settings in the notebook's
+                    # first cell.
+                    'Open another dataset, for example one of the pilot datasets, or '
+                    '[contribute your own](journey:contribute-dataset), and load it into the same project. '
+                    'In the first cell of the notebook, change the file name and the column names, then run '
+                    'it again.',
+                    'If the new data comes in other units or another format, preprocess it first, as '
+                    '[Improve your model with public data](journey:improve-with-public-data) describes.',
+                ],
+                'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
+                'result': 'The same notebook runs on the new data, and its runs sit next to the earlier '
+                          'ones in your experiment.',
+            },
+        ],
+    },
     {
         'slug': 'first-experiment',
+        'section': 'guides',
         'title': 'Your first experiment',
         'summary': 'Create a project, open a dataset in JupyterHub and track your first run in MLflow.',
         'scenario': (
@@ -127,6 +276,7 @@ JOURNEYS = [
     },
     {
         'slug': 'improve-with-public-data',
+        'section': 'guides',
         'title': 'Improve your model with public data',
         'summary': 'Train the same model on a richer public dataset from the platform, compare the runs and '
                    'keep the better model as a new version.',
@@ -196,6 +346,7 @@ JOURNEYS = [
     },
     {
         'slug': 'register-model',
+        'section': 'guides',
         'title': 'Register your model in MLflow',
         'summary': 'Register a model logged in MLflow, keep each improved model as a new version and compare '
                    'the versions.',
@@ -292,6 +443,7 @@ JOURNEYS = [
     },
     {
         'slug': 'contribute-dataset',
+        'section': 'guides',
         'title': 'Contribute a dataset',
         'summary': 'Upload a dataset, describe it and publish it so that others on the platform can use it.',
         'scenario': (
@@ -359,6 +511,7 @@ JOURNEYS = [
     },
     {
         'slug': 'pilot-twin-scenario',
+        'section': 'guides',
         'title': 'Run a scenario on a pilot digital twin',
         'summary': 'Pick one of the pilot digital twins, run a scenario on it and take the result into a notebook.',
         'scenario': (
@@ -423,6 +576,7 @@ JOURNEYS = [
     },
     {
         'slug': 'assess-project',
+        'section': 'guides',
         'title': 'Assess a project for trustworthiness',
         'summary': 'Run the EU AI Act questionnaire, a code analysis and a robustness test on one of your projects.',
         'scenario': (
@@ -485,6 +639,30 @@ JOURNEYS = [
 
 JOURNEYS_BY_SLUG = {journey['slug']: journey for journey in JOURNEYS}
 
+# The documentation sections journeys are listed in, in the order of their cards on the
+# Documentation page: title, description and icon, and the URL names of their list and
+# detail pages. The journeys of the last one of a section lead to the next section.
+SECTIONS = {
+    'tutorials': {
+        'title': 'Tutorials',
+        'description': 'Complete walkthroughs on sample data, from a dataset to a tracked and assessed model.',
+        'icon': 'fa-graduation-cap',
+        'list_url': 'tutorials',
+        'detail_url': 'tutorial_detail',
+    },
+    'guides': {
+        'title': 'How-to guides',
+        'description': 'Step-by-step guides for common tasks. Each guide shows the steps to follow and where '
+                       'to do them.',
+        'icon': 'fa-bars-staggered',
+        'list_url': 'how_to_guides',
+        'detail_url': 'how_to_guide_detail',
+    },
+}
+
+# The tutorial the dashboard suggests to users who do not know where to start.
+QUICK_START_SLUG = 'quick-start'
+
 
 def _validate_journeys(journeys):
     slugs = set()
@@ -493,11 +671,30 @@ def _validate_journeys(journeys):
         if not slug or slug in slugs:
             raise ImproperlyConfigured(f"JOURNEYS has a missing or duplicate slug: {slug!r}")
         slugs.add(slug)
+        if journey.get('section') not in SECTIONS:
+            raise ImproperlyConfigured(f"JOURNEYS['{slug}'] has an unknown section: {journey.get('section')!r}")
         if not journey.get('steps'):
             raise ImproperlyConfigured(f"JOURNEYS['{slug}'] has no steps")
+    quick_start = next((journey for journey in journeys if journey['slug'] == QUICK_START_SLUG), None)
+    if quick_start is None or quick_start['section'] != 'tutorials':
+        raise ImproperlyConfigured(f"QUICK_START_SLUG {QUICK_START_SLUG!r} is not a tutorial in JOURNEYS")
 
 
 _validate_journeys(JOURNEYS)
+
+
+def journey_url(journey):
+    """The detail page of `journey`, under its own section."""
+    return reverse(SECTIONS[journey['section']]['detail_url'], args=[journey['slug']])
+
+
+def quick_start_url():
+    return journey_url(JOURNEYS_BY_SLUG[QUICK_START_SLUG])
+
+
+def sections():
+    """The sections in the order of SECTIONS, each with its key."""
+    return [{'key': key, **section} for key, section in SECTIONS.items()]
 
 
 INLINE_LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
@@ -508,7 +705,7 @@ def _inline_url(target):
         slug = target.split(':', 1)[1]
         if slug not in JOURNEYS_BY_SLUG:
             raise NoReverseMatch(f'unknown journey {slug!r}')
-        return reverse('journey_detail', args=[slug])
+        return journey_url(JOURNEYS_BY_SLUG[slug])
     return reverse(target)
 
 
@@ -547,31 +744,47 @@ def _with_links(steps):
     return resolved
 
 
-def _next_journey(slug):
-    """The journey after `slug` in JOURNEYS, or None for the last one."""
-    slugs = [journey['slug'] for journey in JOURNEYS]
-    position = slugs.index(slug)
-    return JOURNEYS[position + 1] if position + 1 < len(JOURNEYS) else None
+def _section_journeys(section):
+    return [journey for journey in JOURNEYS if journey['section'] == section]
+
+
+def _next_journey(journey):
+    """The journey after `journey` in its own section, or None for the last one."""
+    siblings = _section_journeys(journey['section'])
+    position = [sibling['slug'] for sibling in siblings].index(journey['slug'])
+    return siblings[position + 1] if position + 1 < len(siblings) else None
+
+
+def _next_section(section):
+    """The section after `section` in SECTIONS, or None for the last one."""
+    keys = list(SECTIONS)
+    position = keys.index(section)
+    return SECTIONS[keys[position + 1]] if position + 1 < len(keys) else None
 
 
 @login_required
-def journeys(request):
+def journeys(request, section):
     return render(request, 'core/journeys.html', {
         'show_sidebar': True,
         'active_navbar_page': 'documentation',
-        'journeys': JOURNEYS,
+        'section': SECTIONS[section],
+        'journeys': _section_journeys(section),
     })
 
 
 @login_required
-def journey_detail(request, slug):
+def journey_detail(request, slug, section):
     journey = JOURNEYS_BY_SLUG.get(slug)
-    if journey is None:
+    if journey is None or journey['section'] != section:
         raise Http404
+    next_journey = _next_journey(journey)
     return render(request, 'core/journey-detail.html', {
         'show_sidebar': True,
         'active_navbar_page': 'documentation',
+        'section': SECTIONS[section],
         'journey': journey,
         'steps': _with_links(journey['steps']),
-        'next_journey': _next_journey(slug),
+        'next_journey': next_journey,
+        # The last journey of a section leads on to the next section instead.
+        'next_section': None if next_journey else _next_section(section),
     })

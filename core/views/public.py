@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from .journeys import sections as journey_sections
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +36,7 @@ def documentation(request):
     return render(
         request,
         "core/documentation.html",
-        {"active_navbar_page": "documentation", "show_sidebar": True},
+        {"active_navbar_page": "documentation", "show_sidebar": True, "sections": journey_sections()},
     )
 
 

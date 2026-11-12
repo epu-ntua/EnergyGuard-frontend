@@ -1,6 +1,6 @@
 {% extends "core/authenticated-base.html" %}
 
-{% block title %}Getting Started | Documentation | EnergyGuard{% endblock %}
+{% block title %}{{ section.title }} | Documentation | EnergyGuard{% endblock %}
 
 {% block content %}
 <div class="content">
@@ -9,17 +9,17 @@
     <nav class="mb-3" aria-label="breadcrumb">
       <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="{% url 'documentation' %}">Documentation</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Getting Started</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ section.title }}</li>
       </ol>
     </nav>
 
-    <h2 class="text-body-emphasis fw-bolder mb-2">Getting Started</h2>
-    <p class="text-body-tertiary fs-8-5 mb-5">Step-by-step guides for common tasks. Each journey shows the steps to follow and where to do them.</p>
+    <h2 class="text-body-emphasis fw-bolder mb-2">{{ section.title }}</h2>
+    <p class="text-body-tertiary fs-8-5 mb-5">{{ section.description }}</p>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
       {% for journey in journeys %}
       <div class="col">
-        <a class="card journey-card h-100 text-decoration-none" href="{% url 'journey_detail' journey.slug %}">
+        <a class="card journey-card h-100 text-decoration-none" href="{% url section.detail_url journey.slug %}">
           <div class="card-body">
             <h5 class="fw-bold text-body-emphasis mb-3">{{ journey.title }}</h5>
             <p class="text-body-secondary fs-9 mb-3">{{ journey.summary }}</p>
