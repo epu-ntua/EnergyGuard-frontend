@@ -1,4 +1,5 @@
 {% extends "questionnaire/base_questionnaire.html" %}
+{% load ai_act_extras %}
 
 {% block disclaimer %}{% endblock disclaimer %}
 
@@ -90,7 +91,7 @@
                         <div class="d-flex flex-column gap-2 mt-3">
                             {% if entry_action == 'resume' %}
                                 <a href="{% url 'questionnaire:step' track=entry_track step_id=entry_step %}"
-                                   class="btn btn-outline-secondary rounded-pill py-2 shadow-sm">
+                                   class="btn btn-outline-secondary rounded-pill py-2 shadow-sm js-session-notice">
                                     Resume Assessment <i class="fa-solid fa-angle-right ms-2"></i>
                                 </a>
                             {% elif entry_action == 'results' %}
@@ -101,12 +102,13 @@
                             {% endif %}
 
                             <a href="{% if has_existing %}{% url 'questionnaire:restart' %}{% else %}{% url 'questionnaire:start_track' track='ai_system' %}{% endif %}"
-                               class="btn rounded-pill py-2 btn-primary">
+                               class="btn rounded-pill py-2 btn-primary js-session-notice"
+                               {% if discards_progress %}data-discards-progress="true"{% endif %}>
                                 Start Assessment <i class="fa-solid fa-play ms-2"></i>
                             </a>
                         </div>
 
-                        <p class="text-body-tertiary small text-center mb-0 mt-3">Progress is saved as you go.</p>
+                        {% include "questionnaire/partials/_session_notice.html" with extra_class="mt-3" %}
                     </div>
                 </div>
 
@@ -126,4 +128,80 @@
         </div>
 
     </div>
+
+    {% session_timeout_minutes as timeout_minutes %}
+    <div class="modal fade" id="sessionNoticeModal" tabindex="-1" aria-labelledby="sessionNoticeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sessionNoticeModalLabel">
+                        <i class="fa-regular fa-clock me-2 text-warning"></i>Complete the questionnaire in one sitting
+                    </h5>
+                    <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-subtle-danger d-none" id="sessionNoticeDiscard" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>Starting again discards the answers of
+                        your unfinished questionnaire. To keep them, cancel and choose Resume Assessment.
+                    </div>
+                    <p class="text-body-secondary lh-lg">
+                        Unfinished answers are not stored permanently. If more than <strong>{{ timeout_minutes }} minutes</strong>
+                        pass after your last answer, or if you sign out, the answers of the unfinished questionnaire
+                        are lost and you are signed out of the platform. Opening the questionnaire for another
+                        project also discards them.
+                    </p>
+                    <p class="text-body-secondary lh-lg mb-0">
+                        The questionnaire takes about 10-15 minutes. Results are saved to the project once the
+                        questionnaire is completed.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" id="sessionNoticeContinue" href="#">I understand, continue</a>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock questionnaire_content %}
+
+{% block scripts %}
+<script>
+    // The notice is shown once per tab (sessionStorage is per tab, unrelated
+    // to the server session). A Start that discards unfinished answers asks
+    // every time.
+    (function () {
+        var SEEN_KEY = 'aiActSessionNoticeSeen';
+        var modalEl = document.getElementById('sessionNoticeModal');
+        var continueBtn = document.getElementById('sessionNoticeContinue');
+        var discardAlert = document.getElementById('sessionNoticeDiscard');
+
+        function alreadySeen() {
+            try { return sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) { return false; }
+        }
+
+        continueBtn.addEventListener('click', function () {
+            try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* storage blocked: show it again next time */ }
+        });
+
+        document.querySelectorAll('.js-session-notice').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                // Leave ctrl/cmd/shift/middle clicks to the browser (new tab or window).
+                if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+                    return;
+                }
+                var discards = link.dataset.discardsProgress === 'true';
+                if (!window.bootstrap || (alreadySeen() && !discards)) {
+                    return;
+                }
+                event.preventDefault();
+                discardAlert.classList.toggle('d-none', !discards);
+                continueBtn.textContent = discards ? 'Discard and start again' : 'I understand, continue';
+                continueBtn.classList.toggle('btn-danger', discards);
+                continueBtn.classList.toggle('btn-primary', !discards);
+                continueBtn.href = link.href;
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            });
+        });
+    })();
+</script>
+{% endblock scripts %}

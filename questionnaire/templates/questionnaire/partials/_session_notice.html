@@ -1,0 +1,7 @@
+{% load ai_act_extras %}{% session_timeout_minutes as timeout_minutes %}
+<p class="text-body-tertiary small mb-0 {{ extra_class }}">
+    <i class="fa-regular fa-clock me-1"></i>
+    Unfinished answers are kept for {{ timeout_minutes }} minutes after your last answer. They are lost if you
+    stay inactive longer, sign out or open the questionnaire for another project, so complete it in one sitting.
+    Results are saved to the project once the questionnaire is completed.
+</p>

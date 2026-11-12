@@ -1,6 +1,7 @@
 import re
 
 from django import template
+from django.conf import settings
 
 from .. import engine
 
@@ -41,6 +42,13 @@ def guideline_badge_icon(guideline_type):
 
 register.filter('humanize_label', engine.humanize_label)
 register.filter('risk_category_label', engine.risk_category_label)
+
+
+@register.simple_tag
+def session_timeout_minutes():
+    """In-progress answers live only in the session, which expires this long
+    after the last answer saved to it."""
+    return settings.SESSION_COOKIE_AGE // 60
 
 
 @register.filter

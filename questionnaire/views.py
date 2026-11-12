@@ -247,6 +247,11 @@ def intro(request):
         'entry_track': entry_track,
         'entry_step': entry_state['current_step'],
         'has_existing': entry_action != 'start',
+        # Start restarts, and a restart throws away tracks still in progress.
+        'discards_progress': any(
+            state['tracks'][name]['started'] and not state['tracks'][name]['completed']
+            for name in engine.TRACK_NAMES
+        ),
         'show_sidebar': True,
         'active_navbar_page': 'trustworthiness',
     })

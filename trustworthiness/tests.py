@@ -326,6 +326,42 @@ class AiActRestartTests(PermissionFixture):
         self.assertNotIn("ai_act_project_id", self.client.session)
 
 
+class AiActSessionNoticeTests(PermissionFixture):
+    """The intro warns that unfinished answers live only in the session, and
+    that Start throws them away when there are any."""
+
+    def start_track(self):
+        from questionnaire import engine, views
+
+        session = self.client.session
+        session[views.SESSION_KEY] = {
+            "tracks": {name: views._empty_track_state() for name in engine.TRACK_NAMES},
+            "active_track": "ai_system",
+            "project_id": str(self.project.pk),
+        }
+        session[views.SESSION_KEY]["tracks"]["ai_system"].update(started=True, current_step="AI-1.1")
+        session.save()
+
+    def test_intro_shows_the_session_timeout(self):
+        self.client.force_login(self.owner)
+        with self.settings(SESSION_COOKIE_AGE=1800):
+            response = self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+
+        self.assertContains(response, 'id="sessionNoticeModal"')
+        self.assertContains(response, "30 minutes")
+        self.assertNotContains(response, "data-discards-progress")
+
+    def test_start_is_flagged_when_it_discards_unfinished_answers(self):
+        self.client.force_login(self.owner)
+        self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+        self.start_track()
+
+        response = self.client.get(reverse("questionnaire:intro"), {"project_id": self.project.pk})
+
+        self.assertContains(response, "Resume Assessment")
+        self.assertContains(response, 'data-discards-progress="true"')
+
+
 class NoRunWithoutProjectTests(PermissionFixture):
     """Every assessment entry without a project the user can edit goes back to
     the hub's project picker, and no job starts."""
