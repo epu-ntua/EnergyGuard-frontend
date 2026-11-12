@@ -1,4 +1,6 @@
+import io
 import json
+import zipfile
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -9,6 +11,15 @@ from django.urls import reverse
 
 from datasets import forms as forms_module
 from datasets.forms import FileUploadPlaceholderForm, MetadataDatasetForm
+from datasets.services.zip_archive import (
+    CSV_IS_ZIP,
+    ZIP_INVALID,
+    ZIP_NO_CSV,
+    ZIP_NON_CSV,
+    check_uploaded_file,
+    csv_entries,
+    zip_contents_problem,
+)
 from datasets.tasks import finalize_dataset_upload
 from datasets.views import AddDatasetView
 
@@ -185,3 +196,141 @@ class AddDatasetViewDoneTests(SimpleTestCase):
         step_data = self._step_data(file_size_bytes=1024)
         _, mock_async_task, _ = self._run_done(step_data)
         self.assertEqual(mock_async_task.call_args.kwargs["dataset_size_gb"], Decimal("0.01"))
+
+
+class ZipContentsRuleTests(SimpleTestCase):
+    """A dataset ZIP holds CSV files only (folders allowed), and at least one."""
+
+    def test_csv_files_in_folders_are_accepted(self):
+        self.assertIsNone(zip_contents_problem(["a.csv", "sub/", "sub/b.CSV"]))
+
+    def test_macos_metadata_is_ignored(self):
+        names = ["a.csv", "__MACOSX/", "__MACOSX/._a.csv", "sub/.DS_Store", "sub/._b.csv"]
+        self.assertIsNone(zip_contents_problem(names))
+
+    def test_any_non_csv_file_is_refused(self):
+        self.assertEqual(zip_contents_problem(["a.csv", "README.md"]), ZIP_NON_CSV)
+
+    def test_archive_without_csv_is_refused(self):
+        self.assertEqual(zip_contents_problem(["sub/", "__MACOSX/._x"]), ZIP_NO_CSV)
+        self.assertEqual(zip_contents_problem([]), ZIP_NO_CSV)
+
+    def test_csv_entries_skip_macos_copies(self):
+        self.assertEqual(csv_entries(["__MACOSX/._a.csv", "._b.csv", "a.csv"]), ["a.csv"])
+
+
+class FinalizeRefusesBadZipTests(SimpleTestCase):
+    KWARGS = dict(
+        object_key="pending/alice/abc/data.zip",
+        bucket_name="datasets",
+        user_id=1,
+        user_email="alice@example.com",
+        user_display_name="Alice",
+        dataset_name="My data",
+        dataset_label="energy",
+        dataset_visibility=False,
+        dataset_description="",
+        dataset_size_gb=Decimal("0.01"),
+        dataset_metadata=None,
+        site_url="https://platform.test/",
+    )
+
+    @patch("datasets.tasks.Dataset.objects.create")
+    @patch("datasets.tasks._send_notification_email")
+    @patch("datasets.tasks.delete_dataset_objects")
+    @patch("datasets.tasks.check_uploaded_file", return_value=ZIP_NON_CSV)
+    @patch("datasets.tasks.object_exists", return_value=True)
+    def test_refused_zip_is_deleted_and_user_told_why(
+        self, _exists, _check, mock_delete, mock_email, mock_create
+    ):
+        finalize_dataset_upload(**self.KWARGS)
+
+        mock_create.assert_not_called()
+        mock_delete.assert_called_once_with(
+            bucket_name="datasets", data_file_key="pending/alice/abc/data.zip"
+        )
+        self.assertFalse(mock_email.call_args.kwargs["success"])
+        self.assertEqual(mock_email.call_args.kwargs["reason"], ZIP_NON_CSV)
+
+    @patch("datasets.tasks.submit_new_upload")
+    @patch("datasets.tasks._move_to_canonical_path", return_value="user_alice/my-data/data.zip")
+    @patch("datasets.tasks.Dataset.objects.create")
+    @patch("datasets.tasks._send_notification_email")
+    @patch("datasets.tasks.delete_dataset_objects")
+    @patch("datasets.tasks.check_uploaded_file", return_value=None)
+    @patch("datasets.tasks.object_exists", return_value=True)
+    def test_accepted_file_becomes_a_dataset(
+        self, _exists, _check, mock_delete, mock_email, mock_create, _move, mock_submit
+    ):
+        finalize_dataset_upload(**self.KWARGS)
+
+        mock_delete.assert_not_called()
+        mock_create.assert_called_once()
+        self.assertEqual(mock_create.call_args.kwargs["data_file"], "user_alice/my-data/data.zip")
+        self.assertTrue(mock_email.call_args.kwargs["success"])
+        mock_submit.assert_called_once()
+
+
+class _FakeS3:
+    """Just enough of a boto3 S3 client for check_uploaded_file: HEAD and ranged GET."""
+
+    def __init__(self, data: bytes = b"", error: Exception | None = None):
+        self.data = data
+        self.error = error
+
+    def head_object(self, Bucket, Key):
+        if self.error:
+            raise self.error
+        return {"ContentLength": len(self.data)}
+
+    def get_object(self, Bucket, Key, Range):
+        if self.error:
+            raise self.error
+        start, end = (int(x) for x in Range.removeprefix("bytes=").split("-"))
+        return {"Body": io.BytesIO(self.data[start:end + 1])}
+
+
+def _zip_bytes(names) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name in names:
+            zf.writestr(name, "a,b\n1,2\n")
+    return buf.getvalue()
+
+
+class CheckUploadedFileTests(SimpleTestCase):
+    def _check(self, key, client):
+        return check_uploaded_file(bucket_name="datasets", object_key=key, client=client)
+
+    def test_zip_of_csv_files_is_accepted(self):
+        data = _zip_bytes(["a.csv", "sub/b.csv", "__MACOSX/._a.csv"])
+        self.assertIsNone(self._check("pending/u/x/data.zip", _FakeS3(data)))
+
+    def test_zip_with_other_files_is_refused(self):
+        data = _zip_bytes(["a.csv", "notes.txt"])
+        self.assertEqual(self._check("pending/u/x/data.zip", _FakeS3(data)), ZIP_NON_CSV)
+
+    def test_zip_without_csv_is_refused(self):
+        self.assertEqual(self._check("pending/u/x/data.zip", _FakeS3(_zip_bytes([]))), ZIP_NO_CSV)
+
+    def test_zip_that_is_not_a_zip_is_refused(self):
+        self.assertEqual(self._check("pending/u/x/data.zip", _FakeS3(b"a,b\n1,2\n")), ZIP_INVALID)
+
+    def test_corrupt_zip_is_refused(self):
+        data = _zip_bytes(["a.csv"])[:40]  # keeps the signature, loses the central directory
+        self.assertEqual(self._check("pending/u/x/data.zip", _FakeS3(data)), ZIP_INVALID)
+
+    def test_plain_csv_is_accepted(self):
+        self.assertIsNone(self._check("pending/u/x/data.csv", _FakeS3(b"a,b\n1,2\n")))
+
+    def test_csv_whose_header_starts_with_pk_is_accepted(self):
+        self.assertIsNone(self._check("pending/u/x/data.csv", _FakeS3(b"PK_id,value\n1,2\n")))
+
+    def test_zip_renamed_to_csv_is_refused(self):
+        data = _zip_bytes(["a.csv", "photo.png"])
+        self.assertEqual(self._check("pending/u/x/data.csv", _FakeS3(data)), CSV_IS_ZIP)
+
+    def test_storage_error_lets_the_file_through(self):
+        client = _FakeS3(error=ConnectionError("minio down"))
+        with self.assertLogs("datasets.services.zip_archive", level="ERROR"):
+            self.assertIsNone(self._check("pending/u/x/data.zip", client))

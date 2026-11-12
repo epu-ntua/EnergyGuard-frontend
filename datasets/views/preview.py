@@ -11,81 +11,12 @@ from django.shortcuts import get_object_or_404
 from core.services.object_storage import MinioUploadError, build_minio_client
 
 from ..models import Dataset
+from ..services.zip_archive import S3SeekableStream, csv_entries, is_zip_signature
 
 logger = logging.getLogger(__name__)
 
 PREVIEW_MAX_ROWS = 50
 PREVIEW_CHUNK_BYTES = 256 * 1024  # 256 KB
-
-
-class _S3SeekableStream:
-    """
-    Wraps an S3/MinIO object as a seekable stream using Range requests.
-    Allows zipfile.ZipFile to read only the bytes it needs (EOCD + central
-    directory + the specific entry) instead of downloading the full file.
-    Uses a 512 KB read-ahead buffer to minimise the number of HTTP requests.
-    """
-
-    _BUFFER_SIZE = 512 * 1024
-
-    def __init__(self, client, bucket: str, key: str) -> None:
-        self._client = client
-        self._bucket = bucket
-        self._key = key
-        self._pos = 0
-        head = client.head_object(Bucket=bucket, Key=key)
-        self._size: int = head["ContentLength"]
-        self._buf = b""
-        self._buf_start = 0
-
-    def _fetch(self, start: int, length: int) -> bytes:
-        end = min(start + length - 1, self._size - 1)
-        if start > end:
-            return b""
-        r = self._client.get_object(
-            Bucket=self._bucket, Key=self._key, Range=f"bytes={start}-{end}"
-        )
-        return r["Body"].read()
-
-    def read(self, n: int = -1) -> bytes:
-        if n == -1:
-            n = self._size - self._pos
-        if n <= 0:
-            return b""
-
-        buf_end = self._buf_start + len(self._buf)
-        if self._pos >= self._buf_start and self._pos + n <= buf_end:
-            offset = self._pos - self._buf_start
-            data = self._buf[offset: offset + n]
-            self._pos += len(data)
-            return data
-
-        fetch_size = max(n, self._BUFFER_SIZE)
-        raw = self._fetch(self._pos, fetch_size)
-        self._buf = raw
-        self._buf_start = self._pos
-        data = raw[:n]
-        self._pos += len(data)
-        return data
-
-    def seek(self, pos: int, whence: int = 0) -> int:
-        if whence == 0:
-            self._pos = pos
-        elif whence == 1:
-            self._pos += pos
-        elif whence == 2:
-            self._pos = self._size + pos
-        self._pos = max(0, min(self._pos, self._size))
-        return self._pos
-
-    def tell(self) -> int:
-        return self._pos
-
-    def seekable(self) -> bool:
-        return True
-
-    def readable(self) -> bool:
-        return True
 
 
 def _parse_csv(raw: bytes, max_rows: int) -> tuple[list, list]:
@@ -142,16 +73,13 @@ def dataset_preview(request, dataset_id):
             Range="bytes=0-3",
         )
         magic = probe["Body"].read()
-        is_zip = magic[:4] == b"PK\x03\x04"
+        is_zip = is_zip_signature(magic)
 
         if is_zip:
             # Seekable stream: zipfile reads only EOCD + central dir + CSV entry
-            stream = _S3SeekableStream(client, dataset.bucket_name, dataset.data_file)
+            stream = S3SeekableStream(client, dataset.bucket_name, dataset.data_file)
             with zipfile.ZipFile(stream) as zf:
-                csv_names = [
-                    n for n in zf.namelist()
-                    if n.lower().endswith(".csv") and not n.startswith("__MACOSX")
-                ]
+                csv_names = csv_entries(zf.namelist())
                 if not csv_names:
                     return JsonResponse(
                         {"error": "No CSV file found inside the ZIP archive."},

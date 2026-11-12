@@ -17,6 +17,7 @@ from core.services.notifications import notify_in_app, platform_link, users_with
 from .models import Dataset
 from .services import MinioUploadError, delete_dataset_cache, delete_dataset_objects, move_dataset_object, object_exists
 from .services.review import submit_new_upload
+from .services.zip_archive import check_uploaded_file
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,28 @@ def finalize_dataset_upload(
             dataset_name=dataset_name,
             success=False,
             reason="timeout",
+            site_url=site_url,
+        )
+        return
+
+    # The browser refuses a ZIP that holds anything but CSV files, but that check
+    # is easy to bypass - so the file is checked again here, before it becomes
+    # a dataset. This also catches a ZIP renamed to .csv.
+    zip_problem = check_uploaded_file(bucket_name=bucket_name, object_key=object_key)
+    if zip_problem:
+        logger.warning(
+            "Refused uploaded file '%s' (%s). No Dataset record created.", object_key, zip_problem
+        )
+        try:
+            delete_dataset_objects(bucket_name=bucket_name, data_file_key=object_key)
+        except MinioUploadError:
+            logger.exception("Failed to delete refused upload '%s'.", object_key)
+        _send_notification_email(
+            user_email=user_email,
+            user_display_name=user_display_name,
+            dataset_name=dataset_name,
+            success=False,
+            reason=zip_problem,
             site_url=site_url,
         )
         return
@@ -223,6 +246,22 @@ FAILURE_REASONS = {
     "error": (
         "because of an unexpected error while saving it",
         "Please try again",
+    ),
+    "zip_no_csv": (
+        "because the ZIP archive does not contain any CSV file",
+        "Please upload a ZIP that contains your CSV files",
+    ),
+    "zip_non_csv": (
+        "because the ZIP archive contains files that are not CSV",
+        "Please upload a ZIP that contains only CSV files",
+    ),
+    "zip_invalid": (
+        "because the file is not a valid ZIP archive",
+        "Please check the file and upload it again",
+    ),
+    "csv_is_zip": (
+        "because the file is a ZIP archive with a .csv extension",
+        "Please upload it as a .zip file that contains only CSV files",
     ),
 }
 

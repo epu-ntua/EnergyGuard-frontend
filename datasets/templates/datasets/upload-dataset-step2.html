@@ -37,7 +37,7 @@
                         data-bs-html="true"
                         data-bs-sanitize="false"
                         data-bs-custom-class="fs-9"
-                        data-bs-content='Accepted formats:<br><br><strong>.csv</strong> — a single CSV file<br><strong>.zip</strong> — a ZIP archive containing only CSV files'
+                        data-bs-content='Accepted formats:<br><br><strong>.csv</strong> — a single CSV file<br><strong>.zip</strong> — a ZIP archive containing only CSV files (folders are allowed)'
                     ><span data-feather="info" style="height:14px;width:14px;"></span></span>
                 </label>
 
@@ -155,7 +155,11 @@
     // ── Drop zone ─────────────────────────────────────────────────────────────────
     dropZone.addEventListener('click', function () { fileInput.click(); });
     fileInput.addEventListener('change', function () {
-        if (fileInput.files.length) handleFile(fileInput.files[0]);
+        var file = fileInput.files[0];
+        // Clear it, or picking the same file again (say, a ZIP the user just
+        // fixed) fires no change event. The chosen file lives in selectedFile.
+        fileInput.value = '';
+        if (file) handleFile(file);
     });
     dropZone.addEventListener('dragover', function (e) {
         e.preventDefault(); dropZone.classList.add('border-primary');
@@ -169,7 +173,12 @@
         if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
 
+    // Bumped on every pick, so a ZIP check that finishes after the user has
+    // already picked another file is ignored instead of replacing that file.
+    var selectionSeq = 0;
+
     function handleFile(file) {
+        var seq = ++selectionSeq;
         var ext = (file.name.split('.').pop() || '').toLowerCase();
         if (ext !== 'csv' && ext !== 'zip') {
             showError('Only .csv or .zip files are allowed.');
@@ -179,6 +188,76 @@
             showError('File size must not exceed ' + MAX_DATA_FILE_SIZE_MB + ' MB.');
             return;
         }
+        if (ext !== 'zip') { acceptFile(file); return; }
+        readZipEntryNames(file).then(function (names) {
+            if (seq !== selectionSeq) return;
+            var problem = names === false ? 'The file is not a valid ZIP archive.'
+                                          : names && zipContentsProblem(names);
+            if (problem) { showError(problem); return; }
+            acceptFile(file);
+        });
+    }
+
+    // ── ZIP check: CSV files only (folders allowed), at least one ──────────────────
+    // Mirrors datasets/services/zip_archive.py, which re-checks on the server.
+    function isIgnoredZipEntry(name) {
+        if (name.slice(-1) === '/' || name.indexOf('__MACOSX/') === 0) return true;
+        var base = name.split('/').pop();
+        return base === '.DS_Store' || base.indexOf('._') === 0;
+    }
+
+    function zipContentsProblem(names) {
+        var files = names.filter(function (n) { return !isIgnoredZipEntry(n); });
+        var nonCsv = files.filter(function (n) { return !/\.csv$/i.test(n); });
+        if (nonCsv.length) {
+            return 'The ZIP must contain only CSV files. Not allowed: ' +
+                nonCsv.slice(0, 3).join(', ') + (nonCsv.length > 3 ? ' and ' + (nonCsv.length - 3) + ' more.' : '.');
+        }
+        if (!files.length) return 'The ZIP does not contain any CSV file.';
+        return null;
+    }
+
+    // Reads only the ZIP's central directory (the list of entries at the end of
+    // the file). Resolves to false when the file is not a ZIP at all, and to null
+    // when it cannot be read here (a damaged or ZIP64 archive) - the server
+    // decides then.
+    function readZipEntryNames(file) {
+        function readSlice(start, end) {
+            return new Promise(function (resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function () { resolve(new DataView(reader.result)); };
+                reader.onerror = function () { reject(reader.error); };
+                reader.readAsArrayBuffer(file.slice(start, end));
+            });
+        }
+        // End-of-central-directory record: 22 bytes plus a comment of up to 64 KB.
+        var tailStart = Math.max(0, file.size - (22 + 65535));
+        return readSlice(tailStart, file.size).then(function (tail) {
+            var eocd = -1;
+            for (var i = tail.byteLength - 22; i >= 0; i--) {
+                if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+            }
+            if (eocd < 0) return false;
+            var count = tail.getUint16(eocd + 10, true);
+            var cdSize = tail.getUint32(eocd + 12, true);
+            var cdOffset = tail.getUint32(eocd + 16, true);
+            if (count === 0xffff || cdSize === 0xffffffff || cdOffset === 0xffffffff) return null;  // ZIP64
+            return readSlice(cdOffset, cdOffset + cdSize).then(function (cd) {
+                var names = [], pos = 0, utf8 = new TextDecoder('utf-8');
+                for (var n = 0; n < count; n++) {
+                    if (pos + 46 > cd.byteLength || cd.getUint32(pos, true) !== 0x02014b50) return null;
+                    var nameLen = cd.getUint16(pos + 28, true);
+                    var extraLen = cd.getUint16(pos + 30, true);
+                    var commentLen = cd.getUint16(pos + 32, true);
+                    names.push(utf8.decode(new Uint8Array(cd.buffer, cd.byteOffset + pos + 46, nameLen)));
+                    pos += 46 + nameLen + extraLen + commentLen;
+                }
+                return names;
+            });
+        }).catch(function () { return null; });
+    }
+
+    function acceptFile(file) {
         // Reset state for re-selection
         uploadDone = false; uploadKey = null; uploadBucket = null;
         if (uploadXhr) { uploadXhr.abort(); uploadXhr = null; }
