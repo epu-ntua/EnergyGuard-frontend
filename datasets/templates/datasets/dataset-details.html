@@ -254,23 +254,39 @@
                 <thead>
                   <tr class="text-body-tertiary fs-9-5 text-uppercase" style="letter-spacing:0.06em;">
                     <th class="border-0 pb-2 ps-0 pe-2 fw-semibold" style="width:20%;">Feature Name</th>
-                    <th class="border-0 pb-2 px-2 fw-semibold" style="width:20%;">Unit</th>
-                    <th class="border-0 pb-2 px-2 fw-semibold " style="width:60%;">Description</th>
+                    <th class="border-0 pb-2 px-2 fw-semibold" style="width:{% if dt.metadata.has_data_type or dt.metadata.has_valid_range %}12{% else %}20{% endif %}%;">Unit</th>
+                    <th class="border-0 pb-2 px-2 fw-semibold">Description</th>
+                    {% if dt.metadata.has_data_type %}
+                    <th class="border-0 pb-2 px-2 fw-semibold" style="width:12%;">Data Type</th>
+                    {% endif %}
+                    {% if dt.metadata.has_valid_range %}
+                    <th class="border-0 pb-2 px-2 fw-semibold" style="width:16%;">Valid Range</th>
+                    {% endif %}
                   </tr>
                 </thead>
                 <tbody id="metadataTableBody">
-                  {% for key, value in dt.metadata.items %}
+                  {% for row in dt.metadata.rows %}
                   <tr class="fs-9{% if forloop.counter > 5 %} metadata-extra d-none{% endif %}">
-                    <td class="fw-semibold py-2 border-0 pe-2" style="width:20%;">{{ key }}</td>
-                    <td class="py-2 border-0 text-body-secondary px-2" style="width:20%;">{{ value.0 }}</td>
-                    <td class="py-2 border-0 text-body-secondary px-2" style="width:60%;">{{ value.1 }}</td>
+                    <td class="fw-semibold py-2 border-0 pe-2">{{ row.name }}</td>
+                    <td class="py-2 border-0 text-body-secondary px-2">{{ row.unit|default:"—" }}</td>
+                    <td class="py-2 border-0 text-body-secondary px-2">{{ row.description|default:"—" }}</td>
+                    {% if dt.metadata.has_data_type %}
+                    <td class="py-2 border-0 text-body-secondary px-2">{{ row.data_type|default:"—" }}</td>
+                    {% endif %}
+                    {% if dt.metadata.has_valid_range %}
+                    <td class="py-2 border-0 text-body-secondary px-2">{{ row.valid_range|default:"—" }}</td>
+                    {% endif %}
+                  </tr>
+                  {% empty %}
+                  <tr class="fs-9">
+                    <td class="py-2 border-0 ps-0 text-body-tertiary" colspan="3">No feature metadata has been provided for this dataset.</td>
                   </tr>
                   {% endfor %}
                 </tbody>
               </table>
             </div>
 
-            {% with extra=dt.metadata|length|add:"-5" %}
+            {% with extra=dt.metadata.rows|length|add:"-5" %}
             {% if extra > 0 %}
             <div class="text-center mt-2 pt-2 border-top">
               <button class="btn btn-link text-primary fs-9 text-decoration-none p-0"

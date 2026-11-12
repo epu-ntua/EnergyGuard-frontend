@@ -5,12 +5,14 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, SimpleTestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from datasets import forms as forms_module
 from datasets.forms import FileUploadPlaceholderForm, MetadataDatasetForm
+from datasets.models import Dataset
 from datasets.services.zip_archive import (
     CSV_IS_ZIP,
     ZIP_INVALID,
@@ -22,6 +24,7 @@ from datasets.services.zip_archive import (
 )
 from datasets.tasks import finalize_dataset_upload
 from datasets.views import AddDatasetView
+from datasets.views.details import metadata_table
 
 
 class MetadataDatasetFormTests(SimpleTestCase):
@@ -334,3 +337,84 @@ class CheckUploadedFileTests(SimpleTestCase):
         client = _FakeS3(error=ConnectionError("minio down"))
         with self.assertLogs("datasets.services.zip_archive", level="ERROR"):
             self.assertIsNone(self._check("pending/u/x/data.zip", client))
+
+
+class MetadataTableTests(SimpleTestCase):
+    def test_two_item_features_keep_their_columns(self):
+        table = metadata_table({"distance": ["m", "distance between 2 points"]})
+        self.assertEqual(
+            table["rows"],
+            [{"name": "distance", "unit": "m", "description": "distance between 2 points",
+              "data_type": "", "valid_range": ""}],
+        )
+        self.assertFalse(table["has_data_type"])
+        self.assertFalse(table["has_valid_range"])
+
+    def test_optional_type_and_range_are_read(self):
+        table = metadata_table({
+            "frequency": ["Hz", "Grid frequency", "float", "49.5 – 50.5"],
+            "sensor_id": ["", "Sensor identifier", "string"],
+        })
+        self.assertEqual(table["rows"][0]["valid_range"], "49.5 – 50.5")
+        self.assertEqual(table["rows"][1]["data_type"], "string")
+        self.assertEqual(table["rows"][1]["valid_range"], "")
+        self.assertTrue(table["has_data_type"])
+        self.assertTrue(table["has_valid_range"])
+
+    def test_pilot_partner_is_not_a_feature(self):
+        table = metadata_table({"pilot_partner": "RDN", "frequency": ["Hz", "Grid frequency"]})
+        self.assertEqual([row["name"] for row in table["rows"]], ["frequency"])
+
+    def test_missing_metadata_gives_no_rows(self):
+        self.assertEqual(metadata_table(None)["rows"], [])
+
+    def test_rows_are_sorted_by_name_not_jsonb_key_length(self):
+        table = metadata_table({"ED09": ["W", "a"], "BOMBAS": ["W", "b"], "LEVI": ["-", "c"]})
+        self.assertEqual([row["name"] for row in table["rows"]], ["BOMBAS", "ED09", "LEVI"])
+
+    def test_entry_that_is_not_a_list_is_shown_not_dropped(self):
+        table = metadata_table({"frequency": "Hz", "flow": {"unit": "l/s"}})
+        rows = {row["name"]: row for row in table["rows"]}
+        self.assertEqual(rows["frequency"]["description"], "Hz")
+        self.assertEqual(rows["flow"]["description"], '{"unit": "l/s"}')
+
+    def test_nested_cells_are_json_not_python_repr(self):
+        table = metadata_table({"power": ["kW", "Active power", "float", [0, 100]]})
+        self.assertEqual(table["rows"][0]["valid_range"], "[0, 100]")
+
+
+class MetadataTableRenderTests(TestCase):
+    """The details page draws the optional columns only when a feature fills them."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(email="meta@example.com", password="pw-for-tests")
+
+    def _render(self, metadata):
+        dataset = Dataset.objects.create(
+            name="meta-test", publisher=self.user, visibility=False,
+            status=Dataset.Status.APPROVED, size_gb=Decimal("1.00"),
+            data_file="user_x/meta-test/data.csv", bucket_name="energyguard-datasets",
+            metadata=metadata,
+        )
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("dataset_details", args=[dataset.pk]))
+        self.assertEqual(response.status_code, 200)
+        return response.content.decode()
+
+    def test_unit_and_description_only_keeps_three_columns(self):
+        html = self._render({"distance": ["m", "distance between 2 points"]})
+        self.assertIn("distance between 2 points", html)
+        self.assertNotIn("Data Type</th>", html)
+        self.assertNotIn("Valid Range</th>", html)
+
+    def test_type_and_range_add_their_columns(self):
+        html = self._render({"frequency": ["Hz", "Grid frequency", "float", "49.5 – 50.5"]})
+        self.assertIn("Data Type</th>", html)
+        self.assertIn("Valid Range</th>", html)
+        self.assertIn("49.5 – 50.5", html)
+
+    def test_pilot_partner_only_shows_the_empty_state(self):
+        html = self._render({"pilot_partner": "BER"})
+        self.assertIn("No feature metadata has been provided", html)
+        self.assertNotIn(">pilot_partner<", html)
