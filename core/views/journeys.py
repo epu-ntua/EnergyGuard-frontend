@@ -74,7 +74,7 @@ JOURNEYS = [
                 'body': [
                     'To train on data, open a dataset ([contribute your own](journey:contribute-dataset), '
                     'or choose a public one), '
-                    'choose "Use in a Project", select your project and press Run.',
+                    'choose "Load in Project", select your project and press Load.',
                     'The dataset is copied into the "datasets" folder of your workspace. That folder is '
                     'read-only: the original data can only be changed from the platform.',
                 ],
@@ -153,8 +153,8 @@ JOURNEYS = [
             {
                 'title': 'Add it to your project',
                 'body': [
-                    'On the dataset page, choose "Use in a Project", select the same project as your first '
-                    'model and press Run.',
+                    'On the dataset page, choose "Load in Project", select the same project as your first '
+                    'model and press Load.',
                 ],
                 'result': 'JupyterHub opens with the new dataset in your "datasets" folder, next to your own.',
             },
