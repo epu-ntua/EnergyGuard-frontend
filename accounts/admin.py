@@ -1,10 +1,18 @@
+import re
+
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.urls import path
 
-from .models import PrivacyRequest, Profile, User
+from .models import PreapprovedEmail, PrivacyRequest, Profile, User
 from .services.privacy_requests import (
     DELETION_GRACE_DAYS, AccountDeletionError, approve_privacy_request, delete_account, reject_privacy_request,
 )
@@ -126,3 +134,70 @@ class PrivacyRequestAdmin(admin.ModelAdmin):
         else:
             return super().response_change(request, obj)
         return HttpResponseRedirect(request.path)
+
+
+class PreapprovedEmailBulkForm(forms.Form):
+    emails = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 15, 'cols': 60}),
+        help_text='One per line, or separated by commas, semicolons or spaces.',
+    )
+    note = forms.CharField(max_length=255, required=False, help_text='Stored on every email added, e.g. "Beta testers, November 2026".')
+
+    def clean_emails(self):
+        emails = {e.lower() for e in re.split(r'[\s,;]+', self.cleaned_data['emails']) if e}
+        invalid = []
+        for email in sorted(emails):
+            try:
+                validate_email(email)
+            except ValidationError:
+                invalid.append(email)
+        if invalid:
+            raise ValidationError(f'Not valid emails, nothing was added: {", ".join(invalid)}')
+        return sorted(emails)
+
+
+@admin.register(PreapprovedEmail)
+class PreapprovedEmailAdmin(admin.ModelAdmin):
+    list_display = ('email', 'note', 'added_by', 'created_at', 'registered')
+    search_fields = ('email', 'note')
+    readonly_fields = ('added_by', 'created_at', 'updated_at')
+    fields = ('email', 'note', 'added_by', 'created_at', 'updated_at')
+    change_list_template = 'admin/accounts/preapprovedemail/change_list.html'
+
+    @admin.display(boolean=True, description='Registered')
+    def registered(self, obj):
+        return User.objects.filter(email__iexact=obj.email).exists()
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.added_by = request.user
+        super().save_model(request, obj, form, change)
+
+    def get_urls(self):
+        return [
+            path('add-several/', self.admin_site.admin_view(self.add_several_view), name='accounts_preapprovedemail_add_several'),
+        ] + super().get_urls()
+
+    def add_several_view(self, request):
+        if not self.has_add_permission(request):
+            return redirect('admin:index')
+        form = PreapprovedEmailBulkForm(request.POST or None)
+        if request.method == 'POST' and form.is_valid():
+            emails = form.cleaned_data['emails']
+            existing = set(PreapprovedEmail.objects.filter(email__in=emails).values_list('email', flat=True))
+            new = [e for e in emails if e not in existing]
+            PreapprovedEmail.objects.bulk_create(
+                PreapprovedEmail(email=e, note=form.cleaned_data['note'], added_by=request.user) for e in new
+            )
+            message = f'{len(new)} email(s) added.'
+            if existing:
+                message += f' {len(existing)} already on the list.'
+            self.message_user(request, message)
+            return redirect('admin:accounts_preapprovedemail_changelist')
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'title': 'Add several pre-approved emails',
+            'form': form,
+        }
+        return TemplateResponse(request, 'admin/accounts/preapprovedemail/add_several.html', context)

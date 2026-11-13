@@ -278,6 +278,39 @@ class PrivacyRequest(TimeStampedModel):
         ]
 
 
+class PreapprovedEmail(TimeStampedModel):
+    """An email whose new account skips admin approval (e.g. invited beta testers).
+
+    Only applies when Keycloak reports the email as verified, see accounts/adapter.py.
+    """
+
+    email = models.EmailField(unique=True)
+    note = models.CharField(max_length=255, blank=True, help_text='e.g. "Beta testers, November 2026"')
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    def clean(self):
+        # Before the admin form's uniqueness check, so A@x.com is caught as a duplicate of a@x.com
+        self.email = self.email.strip().lower()
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def covers(cls, email):
+        # iexact: rows written without save() (bulk_create, update) are not normalised
+        return bool(email) and cls.objects.filter(email__iexact=email.strip()).exists()
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        db_table = 'preapproved_email'
+        verbose_name = 'Pre-approved Email'
+        verbose_name_plural = 'Pre-approved Emails'
+        ordering = ['email']
+
+
 # ------------------- SIGNALS ------------------- #
 
 # Automatically create a Profile for each new User and save the Profile when the User is saved

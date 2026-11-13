@@ -15,3 +15,10 @@ def anonymise_admin_log(sender, instance, **kwargs):
         content_type=ContentType.objects.get_for_model(sender),
         object_id=str(instance.pk),
     ).update(object_repr=f'Deleted user #{instance.pk}')
+
+
+@receiver(post_delete, sender=settings.AUTH_USER_MODEL, dispatch_uid='user_delete_preapproved_email')
+def delete_preapproved_email(sender, instance, **kwargs):
+    """The pre-approval list holds the email too, and it must go with the account."""
+    from .models import PreapprovedEmail
+    PreapprovedEmail.objects.filter(email__iexact=instance.email).delete()

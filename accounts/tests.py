@@ -547,3 +547,110 @@ class AdminLogAnonymisationTests(TestCase):
             sorted(LogEntry.objects.values_list("object_repr", flat=True)),
             ["Deleted user #%s" % user_pk] * 2 + ["admin@example.com"],
         )
+
+
+class PreapprovedEmailSignupTests(TestCase):
+    """KeycloakApprovalAdapter.save_user: listed + verified emails skip approval."""
+
+    def setUp(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from allauth.exceptions import ImmediateHttpResponse
+        from django.contrib.sessions.backends.db import SessionStore
+        from django.test import RequestFactory
+        from accounts.adapter import KeycloakApprovalAdapter
+        from accounts.models import PreapprovedEmail
+
+        PreapprovedEmail.objects.create(email="Tester@Example.com")
+        self.SimpleNamespace = SimpleNamespace
+        self.ImmediateHttpResponse = ImmediateHttpResponse
+        self.adapter = KeycloakApprovalAdapter()
+        self.request = RequestFactory().get("/")
+        self.request.session = SessionStore()
+        mail_patcher = patch("accounts.adapter.mail_admins")
+        self.mail_admins = mail_patcher.start()
+        self.addCleanup(mail_patcher.stop)
+        # super().save_user() persists the user; simulate it so the test needs no Keycloak data
+        save_patcher = patch(
+            "allauth.socialaccount.adapter.DefaultSocialAccountAdapter.save_user",
+            side_effect=lambda request, sociallogin, form=None: User.objects.create_user(email=sociallogin.user.email, password=None),
+        )
+        save_patcher.start()
+        self.addCleanup(save_patcher.stop)
+
+    def sign_up(self, email, verified=True):
+        sociallogin = self.SimpleNamespace(
+            user=User(email=email),
+            email_addresses=[self.SimpleNamespace(email=email, verified=verified)],
+        )
+        return self.adapter.save_user(self.request, sociallogin)
+
+    def test_listed_verified_email_is_active_right_away(self):
+        user = self.sign_up("tester@example.com")
+        self.assertTrue(User.objects.get(pk=user.pk).is_active)
+        self.assertIn("pre-approved", self.mail_admins.call_args.kwargs["subject"])
+
+    def test_match_ignores_case(self):
+        user = self.sign_up("TESTER@example.COM")
+        self.assertTrue(User.objects.get(pk=user.pk).is_active)
+
+    def test_unverified_email_still_needs_approval(self):
+        with self.assertRaises(self.ImmediateHttpResponse):
+            self.sign_up("tester@example.com", verified=False)
+        self.assertFalse(User.objects.get(email="tester@example.com").is_active)
+        self.assertIn("pending approval", self.mail_admins.call_args.kwargs["subject"])
+
+    def test_unlisted_email_still_needs_approval(self):
+        with self.assertRaises(self.ImmediateHttpResponse):
+            self.sign_up("stranger@example.com")
+        self.assertFalse(User.objects.get(email="stranger@example.com").is_active)
+        self.assertTrue(self.request.session["pending_approval"])
+
+
+class PreapprovedEmailAdminTests(TestCase):
+
+    def setUp(self):
+        from accounts.models import PreapprovedEmail
+        self.PreapprovedEmail = PreapprovedEmail
+        self.admin = User.objects.create_superuser(email="root@example.com", password="pw")
+        self.client.force_login(self.admin)
+        self.url = reverse("admin:accounts_preapprovedemail_add_several")
+
+    def test_adds_pasted_emails_once_each(self):
+        self.PreapprovedEmail.objects.create(email="old@example.com")
+        response = self.client.post(self.url, {
+            "emails": "A@example.com, b@example.com;\nold@example.com\n a@example.com ",
+            "note": "Beta",
+        })
+        self.assertRedirects(response, reverse("admin:accounts_preapprovedemail_changelist"))
+        self.assertCountEqual(
+            self.PreapprovedEmail.objects.filter(note="Beta").values_list("email", "added_by"),
+            [("a@example.com", self.admin.pk), ("b@example.com", self.admin.pk)],
+        )
+
+    def test_an_invalid_email_adds_nothing(self):
+        response = self.client.post(self.url, {"emails": "good@example.com\nnot-an-email"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "not-an-email")
+        self.assertFalse(self.PreapprovedEmail.objects.exists())
+
+    def test_changelist_links_to_add_several(self):
+        response = self.client.get(reverse("admin:accounts_preapprovedemail_changelist"))
+        self.assertContains(response, self.url)
+
+    def test_single_add_rejects_a_duplicate_in_other_case(self):
+        self.PreapprovedEmail.objects.create(email="dup@example.com")
+        response = self.client.post(reverse("admin:accounts_preapprovedemail_add"), {"email": "DUP@example.com", "note": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already exists")
+        self.assertEqual(self.PreapprovedEmail.objects.count(), 1)
+
+
+class PreapprovedEmailUserDeletionTests(TestCase):
+
+    def test_deleting_the_account_removes_its_email_from_the_list(self):
+        from accounts.models import PreapprovedEmail
+        PreapprovedEmail.objects.create(email="leaving@example.com")
+        PreapprovedEmail.objects.create(email="staying@example.com")
+        User.objects.create_user(email="Leaving@example.com", password="pw").delete()
+        self.assertEqual(list(PreapprovedEmail.objects.values_list("email", flat=True)), ["staying@example.com"])
