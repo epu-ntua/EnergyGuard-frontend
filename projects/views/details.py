@@ -9,6 +9,8 @@ from ..forms import EditProjectForm
 from ..models import Project
 from ..services import MlflowClientError, list_experiment_runs
 
+ADD_EXPERIMENT_SESSION_KEY = "add_experiment_form"
+
 
 def _can_access_project(user, project: Project) -> bool:
     return project.is_accessible_by(user)
@@ -79,6 +81,11 @@ def project_details(request, project_id):
             messages.success(request, "Project updated successfully.")
             return redirect("project_details", project_id=project_id)
 
+    # A failed Add Experiment submit left its input and errors here, read once
+    add_experiment = request.session.pop(ADD_EXPERIMENT_SESSION_KEY, None)
+    if not add_experiment or add_experiment.get("project_id") != project.id:
+        add_experiment = {}
+
     # A dataset can go private after it was attached, so filter through
     # visible_to rather than listing project.datasets wholesale.
     datasets_total = project.datasets.count()
@@ -112,6 +119,7 @@ def project_details(request, project_id):
             "project_datasets_total": datasets_total,
             "project_datasets_hidden": datasets_total - len(visible_datasets),
             "edit_project_form": edit_project_form,
+            "add_experiment": add_experiment,
             "active_navbar_page": "projects",
             "show_sidebar": True,
             "is_creator": is_creator,

@@ -10,12 +10,16 @@
         <div class="modal-body">
           <p class="text-body-tertiary fs-9 mb-3">This creates a tracking experiment in MLflow.</p>
           <div class="mb-3">
-            <label class="form-label">Experiment Name *</label>
-            <input type="text" name="name" class="form-control" placeholder="Enter experiment name" maxlength="255" required>
+            <label class="form-label" for="addExperimentName">Experiment Name *</label>
+            <input type="text" id="addExperimentName" name="name" class="form-control{% if add_experiment.errors.name %} is-invalid{% endif %}" placeholder="Enter experiment name" maxlength="255" required value="{{ add_experiment.name|default:'' }}" aria-describedby="addExperimentNameHelp">
+            {% for error in add_experiment.errors.name %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <div id="addExperimentNameHelp" class="form-text fs-10">Experiment names must be unique across the platform.</div>
           </div>
           <div class="mb-0">
-            <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" rows="3" placeholder="Enter experiment description"></textarea>
+            <label class="form-label" for="addExperimentDescription">Description</label>
+            <textarea id="addExperimentDescription" name="description" class="form-control" rows="3" placeholder="Enter experiment description">{{ add_experiment.description|default:'' }}</textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -26,3 +30,15 @@
     </div>
   </div>
 </div>
+{% if add_experiment.errors %}
+<script>
+  // The create request came back with errors: reopen the modal on them
+  document.addEventListener("DOMContentLoaded", function () {
+    var modalEl = document.getElementById("addExperimentModal");
+    modalEl.addEventListener("shown.bs.modal", function () {
+      document.getElementById("addExperimentName").focus();
+    }, { once: true });
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  });
+</script>
+{% endif %}

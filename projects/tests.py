@@ -245,6 +245,102 @@ class DeleteProjectViewMlflowTests(TestCase):
         delete.assert_not_called()
 
 
+@patch("projects.views.experiments.mlflow_create_experiment_permission")
+@patch("projects.views.experiments.mlflow_set_experiment_tags")
+@patch("projects.views.experiments.mlflow_create_experiment", return_value="11")
+class CreateExperimentModalTests(TestCase):
+    def setUp(self):
+        self.owner = make_user_without_mlflow("exp-owner@example.com")
+        self.project = Project.objects.create(name="P", creator=self.owner)
+        self.client.force_login(self.owner)
+
+    def details_url(self):
+        return reverse("project_details", kwargs={"project_id": self.project.pk})
+
+    def post(self, name="baseline", description="first try"):
+        return self.client.post(
+            reverse("create_experiment_modal", kwargs={"project_id": self.project.pk}),
+            {"name": name, "description": description},
+            follow=True,
+        )
+
+    def assertModalReopened(self, response, error):
+        # Back on the details page, not the POST-only create URL
+        self.assertRedirects(response, self.details_url())
+        self.assertContains(response, error)
+        self.assertContains(response, 'value="baseline"')
+        self.assertContains(response, "first try</textarea>")
+        self.assertContains(response, "bootstrap.Modal.getOrCreateInstance")
+        # Read once: a reload shows a clean modal
+        again = self.client.get(self.details_url())
+        self.assertNotContains(again, error)
+        self.assertNotContains(again, "bootstrap.Modal.getOrCreateInstance")
+
+    def test_creates_the_experiment(self, create, tags, permission):
+        response = self.post()
+        self.assertRedirects(response, self.details_url())
+        self.assertNotContains(response, "bootstrap.Modal.getOrCreateInstance")
+        self.assertTrue(self.project.experiments.filter(name="baseline", mlflow_experiment_id="11").exists())
+
+    def test_name_taken_in_the_project_is_refused_before_mlflow(self, create, tags, permission):
+        Experiment.objects.create(project=self.project, creator=self.owner, name="baseline")
+        response = self.post()
+        self.assertModalReopened(response, "This project already has an experiment named")
+        create.assert_not_called()
+
+    def test_name_taken_elsewhere_in_mlflow_reopens_the_modal_with_the_input(self, create, tags, permission):
+        create.side_effect = MlflowClientError(
+            'MLflow POST /api/2.0/mlflow/experiments/create failed with 400: '
+            '{"error_code": "RESOURCE_ALREADY_EXISTS"}'
+        )
+        with self.assertLogs("projects.views.experiments", "INFO"):
+            response = self.post()
+        self.assertModalReopened(response, "is already used by another experiment on the platform")
+        self.assertFalse(self.project.experiments.exists())
+
+    def test_input_is_not_shown_on_another_project(self, create, tags, permission):
+        Experiment.objects.create(project=self.project, creator=self.owner, name="baseline")
+        other = Project.objects.create(name="Other", creator=self.owner)
+        self.client.post(
+            reverse("create_experiment_modal", kwargs={"project_id": self.project.pk}),
+            {"name": "baseline", "description": "first try"},
+        )
+        response = self.client.get(reverse("project_details", kwargs={"project_id": other.pk}))
+        self.assertNotContains(response, "This project already has an experiment named")
+
+    def test_other_mlflow_errors_keep_the_generic_message(self, create, tags, permission):
+        create.side_effect = MlflowClientError("MLflow POST failed with 500: boom")
+        with self.assertLogs("projects.views.experiments", "ERROR"):
+            response = self.post()
+        self.assertRedirects(response, self.details_url())
+        self.assertContains(response, "Experiment could not be created.")
+
+
+class ProjectDetailsViewTests(TestCase):
+    def setUp(self):
+        self.owner = make_user_without_mlflow("details-owner@example.com")
+        self.project = Project.objects.create(name="P", creator=self.owner)
+        self.client.force_login(self.owner)
+        self.url = reverse("project_details", kwargs={"project_id": self.project.pk})
+
+    def test_renders_with_a_clean_add_experiment_modal(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="addExperimentModal"')
+        self.assertNotContains(response, "bootstrap.Modal.getOrCreateInstance")
+
+    def test_edit_project_saves(self):
+        response = self.client.post(self.url, {
+            "action": "edit_project",
+            "name": "Renamed",
+            "description": "",
+            "project_type": self.project.project_type,
+        })
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.name, "Renamed")
+
+
 RUN = {
     "info": {"run_id": "r1", "status": "FINISHED", "start_time": 1, "end_time": 2},
     "data": {"metrics": [{"key": "rmse", "value": 0.5}]},

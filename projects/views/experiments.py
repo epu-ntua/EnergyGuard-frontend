@@ -31,6 +31,7 @@ from ..services import (
 )
 from ..signals import MLFLOW_ALREADY_REMOVED
 from .creation import _cleanup_mlflow_experiment
+from .details import ADD_EXPERIMENT_SESSION_KEY
 from ..services.mlflow_client import (
     delete_all_experiment_tags as mlflow_delete_all_experiment_tags,
     find_any_run_id as mlflow_find_any_run_id,
@@ -182,6 +183,17 @@ def _delete_experiment_strict(project: Project, experiment: Experiment, user) ->
         return redirect("project_details", project_id=self.project.id)"""
 
 
+def _reopen_add_experiment_modal(request, project: Project, form: ExperimentGeneralInfoForm):
+    # Redirect rather than render: the page must not stay on this POST-only URL
+    request.session[ADD_EXPERIMENT_SESSION_KEY] = {
+        "project_id": project.id,
+        "name": form.data.get("name", ""),
+        "description": form.data.get("description", ""),
+        "errors": {field: list(errors) for field, errors in form.errors.items()},
+    }
+    return redirect("project_details", project_id=project.id)
+
+
 @login_required
 @require_POST
 def create_experiment_modal(request, project_id: int):
@@ -190,11 +202,16 @@ def create_experiment_modal(request, project_id: int):
     project = _get_editable_project_or_404(request.user, project_id)
     form = ExperimentGeneralInfoForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "Invalid experiment data. Please try again.")
-        return redirect("project_details", project_id=project.id)
+        return _reopen_add_experiment_modal(request, project, form)
 
     name = form.cleaned_data["name"].strip()
     description = form.cleaned_data.get("description", "")
+
+    # Checked here first so the user hears it is their own project's experiment,
+    # not just that MLflow refused the name
+    if project.experiments.filter(name=name).exists():
+        form.add_error("name", f'This project already has an experiment named "{name}".')
+        return _reopen_add_experiment_modal(request, project, form)
 
     mlflow_experiment_id = ""
     try:
@@ -219,7 +236,17 @@ def create_experiment_modal(request, project_id: int):
             )
             mlflow_delete_experiment(mlflow_experiment_id, user=request.user)
             raise
-    except MlflowClientError:
+    except MlflowClientError as exc:
+        # MLflow names are unique server-wide, so the name can belong to an
+        # experiment in a project this user cannot see
+        if not mlflow_experiment_id and "RESOURCE_ALREADY_EXISTS" in str(exc):
+            logger.info("Experiment name %r is taken in MLflow (project %s)", name, project.id)
+            form.add_error(
+                "name",
+                f'The name "{name}" is already used by another experiment on the platform. '
+                "Please choose a different name.",
+            )
+            return _reopen_add_experiment_modal(request, project, form)
         logger.exception("Experiment creation MLflow sync failed for project %s", project.id)
         messages.error(request, "Experiment could not be created. Please try again or contact support if the issue persists.")
         return redirect("project_details", project_id=project.id)
