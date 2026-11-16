@@ -310,7 +310,7 @@
               <div class="col-12 col-md-9">
                 <p class="text-body-secondary mb-0 text-justify">
                   {% if dt.description %}
-                    {{ dt.description }}
+                    {{ dt.description|linebreaksbr }}
                   {% else %}
                     <em>No description available.</em>
                   {% endif %}
