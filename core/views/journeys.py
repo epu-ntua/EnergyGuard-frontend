@@ -61,8 +61,8 @@ JOURNEYS = [
             {
                 'title': 'Create a project',
                 'body': [
-                    'In Projects, choose "Add new project", give it a name, for example "Smart building '
-                    'forecast", and choose the project type AI Model.',
+                    'In Projects, choose "Add new project", give it a name that starts with your username, '
+                    'for example "sam smart building forecast", and choose the project type AI Model.',
                 ],
                 'link': {'label': 'Add new project', 'url_name': 'project_creation'},
                 'result': 'The project opens with a default MLflow experiment already created for it. '
@@ -71,14 +71,12 @@ JOURNEYS = [
             {
                 'title': 'Open the tutorial dataset and load it into your project',
                 'body': [
-                    # REVIEW(quick-start): dataset name and "hourly readings from one building" must
+                    # REVIEW(quick-start): dataset name and "hourly readings from five buildings" must
                     # match the tutorial dataset once it is uploaded.
                     'In Assets, open Datasets and choose "Smart Building Energy Demand (Tutorial)" in the '
-                    '"Public datasets" tab. It is a small CSV file with hourly readings from one building.',
-                    # REVIEW(quick-start): column names must match the dataset's CSV and Metadata Table.
+                    '"Public datasets" tab. It is a small CSV file with hourly readings from five buildings.',
                     'Choose "Preview Data" to see the first rows, then read the Metadata Table. It describes '
-                    'each column with its unit: timestamp, energy_kwh (the value to forecast), outdoor_temp_c, '
-                    'humidity_pct, occupancy_pct and is_holiday.',
+                    'each time series present in the CSV along with its units.',
                     # REVIEW(quick-start): Load in Project does not copy a notebook yet (provisioning
                     # sends "notebooks": None); notebook file name to be confirmed.
                     'Then choose "Load in Project", select your project and press Load. Together with the '
@@ -101,9 +99,9 @@ JOURNEYS = [
                     'cell, set the name of your project\'s experiment, as shown in the Experiments table of '
                     'your project. Then choose "Run All Cells" in the Run menu. The notebook needs no GPU '
                     'and nothing to install, and it finishes in a few minutes.',
-                    # REVIEW(quick-start): test split (last four weeks) and the three models must match
+                    # REVIEW(quick-start): test split (last 10%) and the three models must match
                     # the notebook; the neural network is there because FGSM/PGD need gradients.
-                    'It keeps the last four weeks of the data for testing and trains three models on the '
+                    'It keeps the last 10% of the data for testing and trains three models on the '
                     'rest: a naive baseline that repeats the same hour of the previous week, a linear '
                     'regression and a small neural network. Each model is logged as a run in your '
                     'experiment, with its parameters, its metrics and the model itself.',
@@ -112,7 +110,7 @@ JOURNEYS = [
                 'code': 'EXPERIMENT_NAME = "<your experiment name>"',
                 # REVIEW(quick-start): metrics the notebook prints and logs.
                 'result': 'Three runs are logged, and the notebook prints the error (RMSE and MAE) of each '
-                          'model on the test weeks.',
+                          'model on the test data.',
             },
             {
                 'title': 'Compare the runs in MLflow',
@@ -171,6 +169,7 @@ JOURNEYS = [
                     # first cell.
                     'Open another dataset, for example one of the pilot datasets, or '
                     '[contribute your own](journey:contribute-dataset), and load it into the same project. '
+                    'If you input your own dataset, make sure it is less than 500MB and that you do no long training due to memory constraints and lack of GPU.'
                     'In the first cell of the notebook, change the file name and the column names, then run '
                     'it again.',
                     'If the new data comes in other units or another format, preprocess it first, as '
