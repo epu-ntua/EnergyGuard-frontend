@@ -18,9 +18,15 @@
       Each card follows one metric across the experiment's runs, oldest first,
       and shows its value in the latest run (the filled point).
     </p>
+    <!-- One legend for every chart: the R1, R2... on the axes and their MLflow run names -->
+    <div class="d-flex flex-wrap align-items-baseline column-gap-3 row-gap-1 fs-9 mb-3">
+      <span id="runLegendTitle" class="fw-semibold text-body-tertiary">Runs:</span>
+      <ul id="runLegend" class="list-unstyled d-flex flex-wrap column-gap-3 row-gap-1 mb-0" style="min-width:0;" aria-labelledby="runLegendTitle"></ul>
+      <button id="runLegendMore" type="button" class="btn btn-link btn-sm fs-9 p-0 d-none" aria-controls="runLegend" aria-expanded="false"></button>
+    </div>
     <div id="metricGrid" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3"></div>
     <div class="text-center mt-3">
-      <button id="metricsMore" type="button" class="btn btn-sm btn-phoenix-secondary d-none"></button>
+      <button id="metricsMore" type="button" class="btn btn-sm btn-phoenix-secondary d-none" aria-controls="metricGrid" aria-expanded="false"></button>
     </div>
   </div>
 </div>
