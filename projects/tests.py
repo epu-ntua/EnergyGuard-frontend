@@ -342,7 +342,7 @@ class ProjectDetailsViewTests(TestCase):
 
 
 RUN = {
-    "info": {"run_id": "r1", "status": "FINISHED", "start_time": 1, "end_time": 2},
+    "info": {"run_id": "r1", "run_name": "bold-hawk-12", "status": "FINISHED", "start_time": 1, "end_time": 2},
     "data": {"metrics": [{"key": "rmse", "value": 0.5}]},
 }
 
@@ -371,9 +371,23 @@ class EvalResultsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json()["all_run_metrics_chronological"],
-            [{"run_id": "r1", "metrics": {"rmse": 0.5}}],
+            [{"run_id": "r1", "run_name": "bold-hawk-12", "metrics": {"rmse": 0.5}}],
         )
         model_versions.assert_not_called()
+
+    def test_run_name_falls_back_to_the_run_name_tag(self, runs, model_versions):
+        # Older MLflow servers have no info.run_name, only the mlflow.runName tag
+        runs.return_value = [{
+            "info": {"run_id": "r1", "start_time": 1},
+            "data": {"tags": [{"key": "mlflow.runName", "value": "old-run"}]},
+        }]
+        response = self.client.get(self.url(), {"include_models": "0"})
+        self.assertEqual(response.json()["all_run_metrics_chronological"][0]["run_name"], "old-run")
+
+    def test_run_without_a_name_sends_an_empty_name(self, runs, model_versions):
+        runs.return_value = [{"info": {"run_id": "r1", "start_time": 1}, "data": {}}]
+        response = self.client.get(self.url(), {"include_models": "0"})
+        self.assertEqual(response.json()["all_run_metrics_chronological"][0]["run_name"], "")
 
     def test_registered_models_are_included_by_default(self, runs, model_versions):
         self.client.get(self.url())

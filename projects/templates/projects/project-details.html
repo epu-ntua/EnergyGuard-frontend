@@ -92,7 +92,14 @@
   var payloadCache  = {};
   var latestRequest = 0;
 
-  // Runs in the chronological order the endpoint returns, numeric metrics only
+  // amCharts reads [...] in a label as formatting and {...} as a data field;
+  // doubled, both are literal
+  function escapeAmText(s) {
+    return String(s).replace(/[\[\]{}]/g, "$&$&");
+  }
+
+  // Runs in the chronological order the endpoint returns, numeric metrics only.
+  // The label is the MLflow run name, or "Run N" for a run without one.
   function toRuns(payload) {
     return (payload.all_run_metrics_chronological || []).map(function(row, i) {
       var metrics = {};
@@ -100,7 +107,12 @@
         var v = row.metrics[k];
         if (typeof v === "number" && isFinite(v)) metrics[k] = v;
       });
-      return { run_index: i + 1, run_id: row.run_id || "", metrics: metrics };
+      return {
+        run_index: i + 1,
+        run_id: row.run_id || "",
+        label: row.run_name || ("Run " + (i + 1)),
+        metrics: metrics
+      };
     });
   }
 
@@ -163,7 +175,7 @@
     var diff = latest.value - first.value;
     var sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
     return '<div class="fs-9 fw-bold text-body-emphasis">' + sign + formatMetricValue(Math.abs(diff)) + '</div>' +
-           '<div class="fs-10 text-body-tertiary">since Run ' + first.run_index + '</div>';
+           '<div class="fs-10 text-body-tertiary text-truncate" style="max-width:9rem;" title="' + escapeHtml(first.label) + '">since ' + escapeHtml(first.label) + '</div>';
   }
 
   function metricCard(metric, logged, chartId) {
@@ -175,18 +187,21 @@
       '<div class="card h-100 shadow-none"><div class="card-body p-3">' +
         '<h6 class="fs-9 fw-bold text-body-emphasis text-uppercase mb-1" style="letter-spacing:.04em;">' + escapeHtml(formatMetricLabel(metric)) + '</h6>' +
         '<div class="d-flex justify-content-between align-items-end gap-2">' +
-          '<div class="d-flex align-items-baseline gap-2">' +
+          '<div class="d-flex align-items-baseline gap-2" style="min-width:0;">' +
             '<span class="fw-bold text-body-emphasis" style="font-size:1.75rem;line-height:1.1;">' + formatMetricValue(latest.value) + '</span>' +
-            '<span class="fs-10 fw-semibold text-body-tertiary" title="' + escapeHtml(latest.run_id) + '">in Run ' + latest.run_index + '</span>' +
+            '<span class="fs-10 fw-semibold text-body-tertiary text-truncate" title="' + escapeHtml(latest.run_id ? latest.label + " (" + latest.run_id + ")" : latest.label) + '">in ' + escapeHtml(latest.label) + '</span>' +
           '</div>' +
-          '<div class="text-end lh-sm">' + deltaHtml(logged) + '</div>' +
+          '<div class="text-end lh-sm flex-shrink-0">' + deltaHtml(logged) + '</div>' +
         '</div>' +
         '<div id="' + chartId + '" style="height:160px;width:100%;"></div>' +
       '</div></div>';
     return col;
   }
 
-  function renderMetricChart(chartId, metric, runs, latest) {
+  // Only the runs that logged the metric get a point, so the axis names no
+  // run without a value
+  function renderMetricChart(chartId, logged) {
+    var latest    = logged[logged.length - 1];
     var textColor = cssColorToAmColor(getThemeTextColor());
     var bgColor   = cssColorToAmColor(getThemeBgColor());
     var lineColor = cssColorToAmColor(getComputedStyle(document.documentElement).getPropertyValue("--phoenix-primary"));
@@ -202,10 +217,28 @@
     }));
     chart.zoomOutButton.set("forceHidden", true);
 
-    var xRen = am5xy.AxisRendererX.new(root, { minGridDistance: 28, strokeOpacity: 0 });
-    xRen.labels.template.setAll({ fill: textColor, fontSize: 10, paddingTop: 2 });
+    // Run names can be long: amCharts skips labels closer than minGridDistance,
+    // the rest are cut to their cell, and the tooltip carries the full name
+    var X_LABEL_GAP = 4;
+    var X_LABEL_MIN_DISTANCE = 60;
+    var xRen = am5xy.AxisRendererX.new(root, { minGridDistance: X_LABEL_MIN_DISTANCE, strokeOpacity: 0 });
+    xRen.labels.template.setAll({
+      fill: textColor, fontSize: 10, paddingTop: 2,
+      maxWidth: X_LABEL_MIN_DISTANCE - X_LABEL_GAP, oversizedBehavior: "truncate", ellipsis: "…"
+    });
+    // The category is the run id, unique where run names may repeat; the label
+    // shows the name
+    xRen.labels.template.adapters.add("text", function(text, target) {
+      var context = target.dataItem && target.dataItem.dataContext;
+      return context ? context.axisLabel : text;
+    });
     xRen.grid.template.setAll({ strokeOpacity: 0 });
     var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, { categoryField: "category", renderer: xRen }));
+    // With few runs a cell is wider than minGridDistance, so a label may use it
+    // all; below that every other label is skipped and the minimum still fits
+    xAxis.onPrivate("cellWidth", function(cellWidth) {
+      xRen.labels.template.set("maxWidth", Math.max(cellWidth, X_LABEL_MIN_DISTANCE) - X_LABEL_GAP);
+    });
 
     var yRen = am5xy.AxisRendererY.new(root, { minGridDistance: 30, strokeOpacity: 0 });
     yRen.labels.template.setAll({ fill: textColor, fontSize: 10, paddingRight: 4 });
@@ -216,7 +249,7 @@
       xAxis: xAxis, yAxis: yAxis,
       valueYField: "value", categoryXField: "category",
       stroke: lineColor, fill: lineColor,
-      tooltip: am5.Tooltip.new(root, { labelText: "{categoryX}: {valueY}" })
+      tooltip: am5.Tooltip.new(root, { labelText: "{axisLabel}: {valueY}" })
     }));
     series.strokes.template.setAll({ strokeWidth: 2 });
     series.bullets.push(function(_root, _series, dataItem) {
@@ -231,8 +264,14 @@
     chart.set("cursor", am5xy.XYCursor.new(root, { behavior: "none", xAxis: xAxis, snapToSeries: [series] }));
     chart.get("cursor").lineY.set("visible", false);
 
-    var data = runs.map(function(r) {
-      return { category: "R" + r.run_index, value: r.metrics[metric], isLatest: r.run_index === latest.run_index };
+    var data = logged.map(function(r) {
+      return {
+        // A run without an id still needs a category of its own
+        category: r.run_id || ("#" + r.run_index),
+        axisLabel: escapeAmText(r.label),
+        value: r.value,
+        isLatest: r === latest
+      };
     });
     xAxis.data.setAll(data);
     series.data.setAll(data);
@@ -258,11 +297,11 @@
     if (!showAllMetrics) metrics = metrics.slice(0, METRICS_SHOWN);
     metricsMore.classList.toggle("d-none", total <= METRICS_SHOWN);
     metricsMore.textContent = showAllMetrics ? "Show fewer metrics" : "Show all " + total + " metrics";
-    // The runs that logged each metric, as { run_index, run_id, value }
+    // The runs that logged each metric, as { run_index, run_id, label, value }
     var logged = {};
     metrics.forEach(function(m) {
       logged[m] = runsWithMetric(runs, m).map(function(r) {
-        return { run_index: r.run_index, run_id: r.run_id, value: r.metrics[m] };
+        return { run_index: r.run_index, run_id: r.run_id, label: r.label, value: r.metrics[m] };
       });
     });
 
@@ -275,7 +314,7 @@
     });
     am5.ready(function() {
       metrics.forEach(function(m, i) {
-        renderMetricChart("metricChart" + i, m, runs, logged[m][logged[m].length - 1]);
+        renderMetricChart("metricChart" + i, logged[m]);
       });
     });
   }

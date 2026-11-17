@@ -410,6 +410,19 @@ def experiments_list(request, project_id: int):
     )
 
 
+def _run_name(run: dict[str, Any]) -> str:
+    """The run's display name, or "" when it has none.
+
+    Older MLflow servers keep the name only in the mlflow.runName tag, so the
+    tag is the fallback when info.run_name is missing.
+    """
+    name = run.get("info", {}).get("run_name")
+    if not name:
+        tags = run.get("data", {}).get("tags", [])
+        name = next((t.get("value") for t in tags if t.get("key") == "mlflow.runName"), None)
+    return str(name or "").strip()
+
+
 def _extract_eval_payload(experiment: Experiment, user, include_models: bool = True) -> dict[str, Any]:
     if not experiment.mlflow_experiment_id:
         return {
@@ -439,6 +452,7 @@ def _extract_eval_payload(experiment: Experiment, user, include_models: bool = T
         run_rows.append(
             {
                 "run_id": run_id,
+                "run_name": _run_name(run),
                 "status": info.get("status"),
                 "start_time": info.get("start_time"),
                 "end_time": info.get("end_time"),
@@ -507,7 +521,11 @@ def _extract_eval_payload(experiment: Experiment, user, include_models: bool = T
         "latest_run_metrics": latest_run_metrics,
         "best_metrics": best_metrics,
         "all_run_metrics_chronological": [
-            {"run_id": row.get("run_id"), "metrics": row.get("metrics") or {}}
+            {
+                "run_id": row.get("run_id"),
+                "run_name": row.get("run_name"),
+                "metrics": row.get("metrics") or {},
+            }
             for row in run_rows
         ],
         "registered_models": registered_models,
