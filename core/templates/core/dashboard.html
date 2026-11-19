@@ -28,8 +28,8 @@
               <a href="{% url 'team_management' %}?create=1" class="btn bg-white text-dark fw-semibold" id="dashboard-create-team-btn">
                 <span class="fas fa-plus me-2" aria-hidden="true"></span>Create Team
               </a>
-              <a href="{% url 'journeys' %}" class="text-white fs-9 fw-semibold text-decoration-underline link-offset-2">
-                <span class="far fa-compass me-2" aria-hidden="true"></span>Not sure where to start? Follow a guided journey<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span>
+              <a href="{{ quick_start_url }}" class="text-white fs-9 fw-semibold text-decoration-underline link-offset-2">
+                <span class="far fa-compass me-2" aria-hidden="true"></span>Not sure where to start? Follow the quick start tutorial<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span>
               </a>
             </div>
           </div>
@@ -44,8 +44,8 @@
     <div class="card mb-6 overflow-hidden" id="dashboard-journeys-banner" data-dismiss-key="dashboard-journeys-banner-dismissed-{{ request.user.pk }}">
       <div class="card-body d-flex flex-wrap align-items-center gap-3 py-3 px-4">
         <span class="far fa-compass text-primary fs-8" aria-hidden="true"></span>
-        <p class="text-body mb-0 flex-1">Guided journeys show you how the tools fit together, step by step.</p>
-        <a href="{% url 'journeys' %}" class="fw-bold text-decoration-none">Browse journeys<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span></a>
+        <p class="text-body mb-0 flex-1">Tutorials and how-to guides show you how the tools fit together, step by step.</p>
+        <a href="{% url 'documentation' %}" class="fw-bold text-decoration-none">Browse the documentation<span class="fas fa-arrow-right ms-2" aria-hidden="true"></span></a>
         <button type="button" class="btn-close ms-2" aria-label="Close" data-banner-close></button>
       </div>
     </div>

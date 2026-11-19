@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from accounts.models import Profile
 from core.views.ai_models import AI_MODELS, CATEGORY_LABELS
+from core.views.journeys import quick_start_url
 from datasets.models import Dataset
 from digitaltwins.catalog import DIGITAL_TWINS
 from projects.models import Project
@@ -86,5 +87,6 @@ def dashboard(request):
             "digital_twins_total": digital_twins_total,
             "digital_twins_in_preparation_count": digital_twins_in_preparation_count,
             "team": team,
+            "quick_start_url": quick_start_url(),
         },
     )
