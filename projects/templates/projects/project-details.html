@@ -97,11 +97,6 @@
     var s = getComputedStyle(document.documentElement);
     return s.getPropertyValue("--phoenix-emphasis-color") || s.getPropertyValue("--phoenix-body-color");
   }
-  // The charts sit on cards, so hollow points take the card background
-  // (--phoenix-card-bg is --phoenix-emphasis-bg), not the page's
-  function getThemeBgColor() {
-    return getComputedStyle(document.documentElement).getPropertyValue("--phoenix-emphasis-bg").trim();
-  }
   function formatMetricLabel(m) {
     return m.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
   }
@@ -330,15 +325,9 @@
   }
 
   // ── Metric charts ─────────────────────────────────────────────────────────
-  // Hollow points, the latest filled, the selected one larger with a ring
+  // A small dot per run, in the line's color; the selected run's is larger
   function pointStyle(plot, point) {
-    if (point.runIndex === selectedRun) {
-      return { radius: 7, strokeWidth: 3, stroke: plot.bgColor, fill: plot.lineColor };
-    }
-    return {
-      radius: point.isLatest ? 5 : 3, strokeWidth: 2,
-      stroke: plot.lineColor, fill: point.isLatest ? plot.lineColor : plot.bgColor
-    };
+    return { radius: point.runIndex === selectedRun ? 6 : 3, fill: plot.lineColor, strokeOpacity: 0 };
   }
 
   // A band behind the selected run's column, shown even where the run did not
@@ -366,9 +355,7 @@
 
   function renderMetricChart(view, runs) {
     var textColor = cssColorToAmColor(getThemeTextColor());
-    var bgColor   = cssColorToAmColor(getThemeBgColor());
     var lineColor = cssColorToAmColor(getComputedStyle(document.documentElement).getPropertyValue("--phoenix-primary"));
-    var latest    = view.logged[view.logged.length - 1];
 
     var root = am5.Root.new(view.chartId);
     chartRoots.push(root);
@@ -398,7 +385,7 @@
       tooltip: am5.Tooltip.new(root, { labelText: "{runLabel}: {valueY}" })
     }));
     series.strokes.template.setAll({ strokeWidth: 2 });
-    view.plot = { xAxis: xAxis, series: series, lineColor: lineColor, bgColor: bgColor, band: null };
+    view.plot = { xAxis: xAxis, series: series, lineColor: lineColor, band: null };
     // Points created later, as the series renders, read the selection here
     series.bullets.push(function(_root, _series, dataItem) {
       return am5.Bullet.new(root, {
@@ -414,8 +401,7 @@
         runIndex: r.run_index,
         // The tooltip names the run, so the legend is not needed to read a point
         runLabel: "R" + r.run_index + (r.run_name ? " · " + escapeAmText(r.run_name) : ""),
-        value: r.metrics[view.metric],
-        isLatest: r.run_index === latest.run_index
+        value: r.metrics[view.metric]
       };
     });
     xAxis.data.setAll(data);
@@ -472,7 +458,7 @@
     if (currentPayload) renderCharts(currentPayload);
   });
 
-  // Axis labels and hollow points take their colors from the theme
+  // Axis labels, line and points take their colors from the theme
   new MutationObserver(function() {
     if (currentPayload && chartRoots.length) renderCharts(currentPayload);
   }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-bs-theme"] });
