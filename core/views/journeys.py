@@ -83,8 +83,6 @@ JOURNEYS = [
             'SERIES_IDS to pick a few sensors, or set RESAMPLE = "1h".',
             'For larger datasets, such as the pilot ones, restart the kernel before running the notebook to '
             'save memory.',
-            'JupyterHub admits a limited number of users at the same time. If you cannot get in, try again '
-            'later.',
         ],
         'steps': [
             {
@@ -133,7 +131,8 @@ JOURNEYS = [
                     'It keeps the last 10% of the data for testing and trains three models on the '
                     'rest: a naive baseline that repeats the same hour of the previous week, a linear '
                     'regression and a small neural network. Each model is logged as a run in your '
-                    'experiment, with its parameters, its metrics and the model itself.',
+                    'experiment, with its parameters, its metrics and the model itself.', 
+                    'JupyterHub admits a limited number of users at the same time. If you cannot get in, try again later.',
                 ],
                 # REVIEW(quick-start): variable name as written in the notebook's first cell.
                 'code': 'EXPERIMENT_NAME = "<your experiment name>"',
@@ -142,11 +141,17 @@ JOURNEYS = [
                           'model on the test data.',
             },
             {
-                'title': 'Compare the runs in MLflow',
+                'title': 'Compare the runs',
                 'body': [
-                    'In Projects, open your project and click the experiment\'s name. MLflow opens on the '
-                    'experiment with the three runs listed. Tick them and choose "Compare" to see their '
-                    'parameters and metrics side by side.',
+                    'In Projects, open your project. The Performance Metrics section shows a card for each '
+                    'metric your runs logged, with a chart of its value in every run, and lists the runs '
+                    'as R1, R2 and R3 in the order they were logged. If your project has more than one '
+                    'experiment, choose yours in the list next to the heading.',
+                    'Click a run in the list to highlight it on every chart and see its values on the '
+                    'cards. Click it again to clear the selection.',
+                    'To see the parameters of each run as well, click the experiment\'s name in the '
+                    'Experiments table. MLflow opens on the experiment, where you can tick the runs and '
+                    'choose "Compare".',
                 ],
                 'link': {'label': 'My projects', 'url_name': 'projects_list'},
                 'result': 'You can tell which model has the lowest error and whether it beats the naive '
@@ -156,7 +161,7 @@ JOURNEYS = [
                 'title': 'Try your own variation',
                 'body': [
                     # REVIEW(quick-start): the notebook needs a cell marked "Try it yourself".
-                    'In the notebook cell marked "Try it yourself", change a setting of a model or the '
+                    'In the notebook cell marked "Settings", change a setting of a model or the '
                     'features it uses, and run the notebook again.',
                 ],
                 'result': 'A new run appears in the experiment. Compare it with the earlier runs to see '
