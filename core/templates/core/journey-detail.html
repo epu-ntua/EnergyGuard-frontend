@@ -47,10 +47,33 @@
 
     <div class="row">
       <div class="col-12 col-lg-9 col-xl-8">
+        {% if intro %}
+        <div class="mb-5" data-journey-intro>
+          {% for paragraph in intro %}
+            <p class="text-body-secondary fs-8-5 mb-2">{{ paragraph }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if limitations %}
+        <div class="mb-5" data-journey-limitations>
+          <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-3" style="letter-spacing:.04em;">Limitations</h6>
+          <ul class="text-body-secondary fs-8-5 ps-3 mb-0">
+            {% for paragraph in limitations %}
+              <li class="mb-2">{{ paragraph }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+        {% if journey.reference %}
+        <div class="mb-5" data-journey-reference>
+          <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-2" style="letter-spacing:.04em;">Quick reference</h6>
+          <pre class="bg-body-highlight border border-translucent rounded-2 p-3 fs-9 mb-0"><code>{{ journey.reference }}</code></pre>
+        </div>
+        {% endif %}
         <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-1" style="letter-spacing:.04em;">Steps</h6>
         <ol class="list-unstyled mb-0">
           {% for step in steps %}
-          <li class="d-flex align-items-start gap-3 py-4{% if not forloop.last %} border-bottom{% endif %}">
+          <li class="d-flex align-items-start gap-3 py-4{% if not forloop.last %} border-bottom{% endif %}" data-journey-step>
             <span class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-primary-subtle text-primary fw-bold fs-9" style="width:30px;height:30px;" aria-hidden="true">{{ forloop.counter }}</span>
             <div class="flex-1 min-w-0">
               <h3 class="fw-bolder text-body-emphasis mb-2 fs-8-5">{{ step.title }}{% if step.optional %} <span class="badge badge-phoenix badge-phoenix-secondary fs-10 ms-1 align-middle">Optional</span>{% endif %}</h3>
@@ -78,6 +101,34 @@
           </li>
           {% endfor %}
         </ol>
+
+        {% if extras %}
+        <div class="border-top pt-5 mt-4" data-journey-extras>
+          <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-1" style="letter-spacing:.04em;">More you can do</h6>
+          {% for extra in extras %}
+          <div class="py-4{% if not forloop.last %} border-bottom{% endif %}">
+            <h3 class="fw-bolder text-body-emphasis mb-2 fs-8-5">{{ extra.title }}</h3>
+            {% for paragraph in extra.body %}
+              <p class="text-body-secondary fs-8-5 mb-2">{{ paragraph }}</p>
+            {% endfor %}
+            {% if extra.code %}
+              <pre class="bg-body-highlight border border-translucent rounded-2 p-3 fs-9 mt-3 mb-0"><code>{{ extra.code }}</code></pre>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if notes %}
+        <div class="border-top pt-5 mt-4" data-journey-notes>
+          <h6 class="text-uppercase text-body-tertiary fw-bolder fs-9 mb-3" style="letter-spacing:.04em;">Good to know</h6>
+          <ul class="text-body-secondary fs-8-5 ps-3 mb-0">
+            {% for paragraph in notes %}
+              <li class="mb-2">{{ paragraph }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
 
         {% if next_journey %}
         <div class="border-top pt-5 mt-4">

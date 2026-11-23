@@ -7,6 +7,7 @@ from unittest.mock import patch
 from django.contrib.sessions.models import Session
 from django.contrib.staticfiles import finders
 from django.core import mail
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -21,7 +22,9 @@ from core.tasks import (
     purge_old_task_results,
 )
 from core.views.ai_models import AI_MODELS, CATEGORY_LABELS
-from core.views.journeys import JOURNEYS, JOURNEYS_BY_SLUG, QUICK_START_SLUG, SECTIONS, journey_url
+from core.views.journeys import (
+    INLINE_LINK, JOURNEYS, JOURNEYS_BY_SLUG, QUICK_START_SLUG, SECTIONS, _paragraphs, _validate_journeys, journey_url,
+)
 
 
 class AIModelsViewTests(TestCase):
@@ -227,6 +230,69 @@ class JourneysViewTests(TestCase):
                 self.assertContains(response, step["title"])
                 if step.get("link"):
                     self.assertContains(response, reverse(step["link"]["url_name"], kwargs=step["link"].get("kwargs")))
+
+    def test_reference_material_is_shown_outside_the_steps(self):
+        self.client.force_login(self.user)
+        guide = JOURNEYS_BY_SLUG["custom-kernels"]
+        html = self.client.get(journey_url(guide)).content.decode()
+        intro = html.index("data-journey-intro")
+        reference = html.index("data-journey-reference")
+        steps = html.index(">Steps</h6>")
+        extras = html.index("data-journey-extras")
+        notes = html.index("data-journey-notes")
+        self.assertLess(intro, reference)
+        self.assertLess(reference, steps)
+        self.assertLess(steps, extras)
+        self.assertLess(extras, notes)
+        # The extras are not numbered steps
+        self.assertEqual(html[steps:extras].count("data-journey-step"), len(guide["steps"]))
+        self.assertNotIn("data-journey-step", html[extras:])
+        for extra in guide["extras"]:
+            self.assertIn(extra["title"], html[extras:notes])
+        self.assertIn("eg-new-kernel --list", html[reference:steps])
+
+    def test_quick_start_lists_its_limitations_before_the_steps(self):
+        self.client.force_login(self.user)
+        guide = JOURNEYS_BY_SLUG[QUICK_START_SLUG]
+        html = self.client.get(journey_url(guide)).content.decode()
+        limitations = html.index("data-journey-limitations")
+        steps = html.index(">Steps</h6>")
+        self.assertLess(limitations, steps)
+        self.assertEqual(html[limitations:steps].count("<li"), len(guide["limitations"]))
+
+    def test_each_optional_block_is_shown_only_when_the_journey_has_its_field(self):
+        self.client.force_login(self.user)
+        for journey in JOURNEYS:
+            html = self.client.get(journey_url(journey)).content.decode()
+            for field in ("intro", "limitations", "reference", "extras", "notes"):
+                with self.subTest(journey=journey["slug"], field=field):
+                    self.assertEqual(f"data-journey-{field}" in html, bool(journey.get(field)))
+
+    def test_every_inline_link_to_a_page_resolves(self):
+        # Links to other journeys are checked at import (_validate_journeys); links to
+        # pages cannot be, as the URLconf is not loaded then.
+        for journey in JOURNEYS:
+            for paragraph in _paragraphs(journey):
+                for _label, target in INLINE_LINK.findall(paragraph):
+                    if not target.startswith("journey:"):
+                        with self.subTest(journey=journey["slug"], target=target):
+                            reverse(target)
+
+    def test_validation_rejects_malformed_journeys(self):
+        guide = JOURNEYS_BY_SLUG["first-experiment"]
+        cases = {
+            "unknown field": dict(guide, limitation=["typo"]),
+            "paragraphs as a string": dict(guide, notes="one note"),
+            "unknown step field": dict(guide, steps=[dict(guide["steps"][0], reslut="typo")]),
+            "extra without a title": dict(guide, extras=[{"body": ["text"]}]),
+            "link to an unknown journey": dict(guide, notes=["See [this](journey:no-such-journey)."]),
+        }
+        quick_start = JOURNEYS_BY_SLUG[QUICK_START_SLUG]
+        for name, broken in cases.items():
+            with self.subTest(name):
+                with self.assertRaises(ImproperlyConfigured):
+                    _validate_journeys([quick_start, broken])
+        _validate_journeys(JOURNEYS)  # the real list passes
 
     def test_journey_is_not_found_under_the_other_section(self):
         self.client.force_login(self.user)

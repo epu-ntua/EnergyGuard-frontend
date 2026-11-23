@@ -22,6 +22,18 @@ sees afterwards.
 
 A body paragraph can link inline: `[text](journey:<slug>)` links to another journey,
 `[text](<url_name>)` to a page of the platform. The rest of the text is escaped.
+
+Only the steps are numbered. Whatever is not a step of the flow goes in optional fields
+outside the numbered list: `intro` (paragraphs above the steps), `limitations` (a list
+shown above the steps under "Limitations"), `reference` (a code block of commands at a
+glance, above the steps), `extras` (tasks with no fixed order, shown after the steps
+under "More you can do", each with a title, a `body` and an optional `code`) and `notes`
+(a list shown last, under "Good to know"). Their paragraphs link inline like the steps'
+do; `reference` is code, so the template reads it from the journey as it is.
+
+_validate_journeys checks the fields when the module is imported: an unknown field, a
+paragraph field that is not a list of strings, or a link to an unknown journey stops
+the start-up.
 """
 
 import logging
@@ -55,8 +67,25 @@ JOURNEYS = [
         'icon': 'fa-rocket',
         'audience': 'New users, AI developers and data scientists',
         # REVIEW(quick-start): estimate; time it once the notebook and the robustness test exist.
-        'duration': 'About 30 minutes',
+        'duration': 'About 1 hour',
         'tools': 'Datasets, Projects, JupyterHub, MLflow, Trustworthiness Assessments',
+        # The server's limits are also given in the notes of 'custom-kernels': keep both in step
+        # with the JupyterHub configuration.
+        'limitations': [
+            'Resources: your server has 3 GB of memory, 1 vCPU core and no GPU. If a notebook goes over '
+            '3 GB, the kernel is stopped and everything in memory is lost, so you have to run the notebook '
+            'again from the top.',
+            'Neural networks (TiDE here, or N-HiTS and similar models if you add them) need the most memory '
+            'and time. Train them on small data and for a few NN_EPOCHS.',
+            'This is a testing environment: please do not run long trainings here. One epoch of training '
+            'over a file that is too big can take tens of minutes.',
+            'Large files at their own resolution (1 second or 1 minute) are the most demanding: use '
+            'SERIES_IDS to pick a few sensors, or set RESAMPLE = "1h".',
+            'For larger datasets, such as the pilot ones, restart the kernel before running the notebook to '
+            'save memory.',
+            'JupyterHub admits a limited number of users at the same time. If you cannot get in, try again '
+            'later.',
+        ],
         'steps': [
             {
                 'title': 'Create a project',
@@ -169,7 +198,7 @@ JOURNEYS = [
                     # first cell.
                     'Open another dataset, for example one of the pilot datasets, or '
                     '[contribute your own](journey:contribute-dataset), and load it into the same project. '
-                    'If you input your own dataset, make sure it is less than 500MB and that you do no long training due to memory constraints and lack of GPU.'
+                    'Keep your own dataset under 500 MB, and mind the limitations at the top of this page. '
                     'In the first cell of the notebook, change the file name and the column names, then run '
                     'it again.',
                     'If the new data comes in other units or another format, preprocess it first, as '
@@ -179,6 +208,11 @@ JOURNEYS = [
                 'result': 'The same notebook runs on the new data, and its runs sit next to the earlier '
                           'ones in your experiment.',
             },
+        ],
+        'notes': [
+            'If you wish to install new libraries, read '
+            '[Your own Python environments and kernels](journey:custom-kernels) to create your own Python '
+            'environment and use it as a kernel.',
         ],
     },
     {
@@ -634,6 +668,168 @@ JOURNEYS = [
             },
         ],
     },
+    {
+        'slug': 'custom-kernels',
+        'section': 'guides',
+        'title': 'Your own Python environments and kernels',
+        'summary': 'Create your own Python environment in JupyterHub, install the packages and versions you '
+                   'need and use it as a kernel in your notebooks.',
+        'scenario': (
+            'Nikos needs a newer version of a forecasting library than the one in the EnergyGuard '
+            'kernel, and wants to install it without losing the packages the platform already provides.'
+        ),
+        'icon': 'fa-cubes',
+        'audience': 'AI developers and data scientists',
+        'duration': 'About 10 minutes',
+        'tools': 'JupyterHub',
+        'intro': [
+            'Every notebook runs in a kernel. The default kernel, EnergyGuard (Python), already has the '
+            'EnergyGuard SDK, pandas, PyTorch, Darts, MLflow, scikit-learn and more. This kernel is '
+            'read-only, so everyone gets the same, tested versions.',
+            'If you need other packages or versions, you can create your own environment. Each environment '
+            'you create appears as a new kernel. It is saved in your personal storage, so it is still there '
+            'after your server stops and starts again.',
+        ],
+        'reference': (
+            '# Create an environment with all EnergyGuard packages\n'
+            'eg-new-kernel my-env\n'
+            '\n'
+            '# Create an empty environment\n'
+            'eg-new-kernel my-env --clean\n'
+            '\n'
+            '# Add your own label in the launcher\n'
+            'eg-new-kernel my-env --display-name "Forecasting"\n'
+            '\n'
+            '# Install a package (terminal)\n'
+            '/home/jovyan/.local/envs/my-env/bin/pip install <package>\n'
+            '\n'
+            '# Install a package (notebook cell)\n'
+            '!/home/jovyan/.local/envs/my-env/bin/pip install <package>\n'
+            '\n'
+            '# Add the EnergyGuard SDK to a clean environment\n'
+            '/home/jovyan/.local/envs/my-env/bin/pip install /opt/energyguard-sdk/energyguard_sdk-*.whl mlflow==3.8.1\n'
+            '\n'
+            '# Activate it in a terminal\n'
+            'source /home/jovyan/.local/envs/my-env/bin/activate\n'
+            '\n'
+            '# List kernels\n'
+            'eg-new-kernel --list\n'
+            '\n'
+            '# Delete an environment and its kernel\n'
+            'eg-new-kernel --remove my-env'
+        ),
+        'steps': [
+            {
+                'title': 'Create an environment',
+                'body': [
+                    'Open a terminal (File › New › Terminal) and run one of the commands below. Each comment '
+                    'says what you get and how the kernel is shown in the launcher. Then reload the '
+                    'JupyterLab page (F5).',
+                    'The environment is stored in the folder /home/jovyan/.local/envs/my-env. The launcher '
+                    'always shows this real name first. Names may contain letters, digits, ., _ and -. The '
+                    'names eg-default and python3 are reserved.',
+                    'Based on EnergyGuard (the default): your environment uses every EnergyGuard package '
+                    'without copying it, so it takes almost no space. A package you install there replaces '
+                    'the EnergyGuard version only in your environment.',
+                    'With --clean: nothing from EnergyGuard is included, not even the SDK (see "Add the '
+                    'EnergyGuard SDK to a clean environment" below). Everything you install uses your disk '
+                    'space. PyTorch alone is several hundred MB.',
+                ],
+                'code': (
+                    '# Everything EnergyGuard has, plus your own packages\n'
+                    '# Shown as: my-env (EnergyGuard)\n'
+                    'eg-new-kernel my-env\n'
+                    '\n'
+                    '# The same, with your own label\n'
+                    '# Shown as: my-env (Forecasting)\n'
+                    'eg-new-kernel my-env --display-name "Forecasting"\n'
+                    '\n'
+                    '# An empty environment (only Python and pip)\n'
+                    '# Shown as: my-env\n'
+                    'eg-new-kernel my-env --clean'
+                ),
+                'result': 'The kernel appears in the launcher and under Kernel › Change Kernel.',
+            },
+            {
+                'title': 'Install packages',
+                'body': [
+                    'Always use the full path to the pip of your environment, unless you have activated the '
+                    'environment and you are working in the terminal.',
+                ],
+                'code': (
+                    '# In a notebook cell\n'
+                    '!/home/jovyan/.local/envs/my-env/bin/pip install <package>\n'
+                    '\n'
+                    '# In a terminal\n'
+                    '/home/jovyan/.local/envs/my-env/bin/pip install <package>'
+                ),
+            },
+            {
+                'title': 'Use it in a notebook',
+                'body': [
+                    'For a new notebook, pick your kernel in the launcher. For an existing notebook, choose '
+                    'Kernel › Change Kernel… and then your kernel.',
+                ],
+            },
+        ],
+        'extras': [
+            {
+                'title': 'Use it in a terminal',
+                'body': [
+                    'Activating an environment affects only that terminal window. Notebooks always use the '
+                    'kernel chosen in the notebook, and a new terminal starts without any environment active.',
+                ],
+                'code': (
+                    'source /home/jovyan/.local/envs/my-env/bin/activate   # the prompt now starts with (my-env)\n'
+                    'pip install <package>                                 # inside an activated environment, plain pip works\n'
+                    'python my_script.py\n'
+                    'deactivate                                            # back to normal'
+                ),
+            },
+            {
+                'title': 'List or remove environments',
+                'body': [
+                    'If a name is taken ("Environment already exists"), choose another one or remove the '
+                    'old environment first.',
+                ],
+                'code': (
+                    'eg-new-kernel --list            # all kernels you can use\n'
+                    'eg-new-kernel --remove my-env   # delete the kernel and its environment'
+                ),
+            },
+            # mlflow==3.8.1, here and in 'reference': keep in step with the MLflow version of the
+            # EnergyGuard kernel image.
+            {
+                'title': 'Add the EnergyGuard SDK to a clean environment',
+                'body': [
+                    'The SDK is what logs you in to MLflow automatically, without tokens to copy. '
+                    'Environments based on EnergyGuard already have it. In a --clean environment, install it '
+                    'from the package that ships with the server, together with MLflow.',
+                    'mlflow==3.8.1 is the same version as in the EnergyGuard kernel, so it matches the MLflow '
+                    'server. Restart the kernel afterwards.',
+                ],
+                'code': (
+                    '# In a terminal\n'
+                    '/home/jovyan/.local/envs/my-env/bin/pip install /opt/energyguard-sdk/energyguard_sdk-*.whl mlflow==3.8.1\n'
+                    '\n'
+                    '# Or in a notebook cell\n'
+                    '!/home/jovyan/.local/envs/my-env/bin/pip install /opt/energyguard-sdk/energyguard_sdk-*.whl mlflow==3.8.1'
+                ),
+            },
+        ],
+        # The server's limits are also given in the limitations of 'quick-start': keep both in
+        # step with the JupyterHub configuration.
+        'notes': [
+            'Resources: your server has 3 GB of memory and 1 CPU core, and no GPU, whichever kernel you use. '
+            'If a notebook goes over 3 GB, its kernel is stopped and you run the notebook again from the top.',
+            'PyTorch in your own environment: put torch.set_num_threads(1) at the top of the notebook. '
+            'Otherwise PyTorch starts one thread per core of the whole machine and runs many times slower on '
+            'your single core.',
+            'Kernels share memory: every open kernel counts towards your 3 GB. Shut down the ones you do not '
+            'need (Kernel › Shut Down All Kernels).',
+            'Kernel not in the launcher? Reload the page. If it is still missing, check eg-new-kernel --list.',
+        ],
+    },
 ]
 
 JOURNEYS_BY_SLUG = {journey['slug']: journey for journey in JOURNEYS}
@@ -663,6 +859,40 @@ SECTIONS = {
 QUICK_START_SLUG = 'quick-start'
 
 
+INLINE_LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
+
+JOURNEY_FIELDS = {
+    'slug', 'section', 'title', 'summary', 'scenario', 'icon', 'audience', 'duration', 'tools',
+    'steps', 'intro', 'limitations', 'reference', 'extras', 'notes',
+}
+STEP_FIELDS = {'title', 'body', 'optional', 'link', 'code', 'images', 'result'}
+EXTRA_FIELDS = {'title', 'body', 'code'}
+# The fields that hold a list of paragraphs, rendered with their inline links
+PARAGRAPH_FIELDS = ('intro', 'limitations', 'notes')
+
+
+def _check_paragraphs(where, paragraphs):
+    # A string here would be shown one character per paragraph
+    if not isinstance(paragraphs, list) or not all(isinstance(p, str) for p in paragraphs):
+        raise ImproperlyConfigured(f"{where} must be a list of strings")
+
+
+def _check_fields(where, item, allowed):
+    unknown = set(item) - allowed
+    if unknown:
+        raise ImproperlyConfigured(f"{where} has unknown fields: {sorted(unknown)}")
+
+
+def _paragraphs(journey):
+    """Every paragraph of `journey` that can hold an inline link."""
+    for step in journey['steps']:
+        yield from step.get('body', [])
+    for extra in journey.get('extras', []):
+        yield from extra.get('body', [])
+    for field in PARAGRAPH_FIELDS:
+        yield from journey.get(field, [])
+
+
 def _validate_journeys(journeys):
     slugs = set()
     for journey in journeys:
@@ -670,10 +900,36 @@ def _validate_journeys(journeys):
         if not slug or slug in slugs:
             raise ImproperlyConfigured(f"JOURNEYS has a missing or duplicate slug: {slug!r}")
         slugs.add(slug)
+        where = f"JOURNEYS['{slug}']"
+        _check_fields(where, journey, JOURNEY_FIELDS)
         if journey.get('section') not in SECTIONS:
-            raise ImproperlyConfigured(f"JOURNEYS['{slug}'] has an unknown section: {journey.get('section')!r}")
+            raise ImproperlyConfigured(f"{where} has an unknown section: {journey.get('section')!r}")
         if not journey.get('steps'):
-            raise ImproperlyConfigured(f"JOURNEYS['{slug}'] has no steps")
+            raise ImproperlyConfigured(f"{where} has no steps")
+        for step in journey['steps']:
+            _check_fields(f"{where} step {step.get('title')!r}", step, STEP_FIELDS)
+            _check_paragraphs(f"{where} step {step.get('title')!r} body", step.get('body', []))
+        if not isinstance(journey.get('extras', []), list):
+            raise ImproperlyConfigured(f"{where}['extras'] must be a list")
+        for extra in journey.get('extras', []):
+            _check_fields(f"{where} extra {extra.get('title')!r}", extra, EXTRA_FIELDS)
+            if not extra.get('title'):
+                raise ImproperlyConfigured(f"{where} has an extra with no title")
+            _check_paragraphs(f"{where} extra {extra['title']!r} body", extra.get('body', []))
+        for field in PARAGRAPH_FIELDS:
+            _check_paragraphs(f"{where}['{field}']", journey.get(field, []))
+        if not isinstance(journey.get('reference', ''), str):
+            raise ImproperlyConfigured(f"{where}['reference'] must be a string")
+    # Links to other journeys are checked here, once every slug is known, so that a typo
+    # stops the start-up rather than leaving a plain-text "link" on the page. Links to
+    # pages of the platform cannot be: the URLconf is not loaded yet (see core/tests.py).
+    for journey in journeys:
+        for paragraph in _paragraphs(journey):
+            for _label, target in INLINE_LINK.findall(paragraph):
+                if target.startswith('journey:') and target.split(':', 1)[1] not in slugs:
+                    raise ImproperlyConfigured(
+                        f"JOURNEYS['{journey['slug']}'] links to an unknown journey: {target!r}"
+                    )
     quick_start = next((journey for journey in journeys if journey['slug'] == QUICK_START_SLUG), None)
     if quick_start is None or quick_start['section'] != 'tutorials':
         raise ImproperlyConfigured(f"QUICK_START_SLUG {QUICK_START_SLUG!r} is not a tutorial in JOURNEYS")
@@ -694,9 +950,6 @@ def quick_start_url():
 def sections():
     """The sections in the order of SECTIONS, each with its key."""
     return [{'key': key, **section} for key, section in SECTIONS.items()]
-
-
-INLINE_LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
 
 
 def _inline_url(target):
@@ -782,7 +1035,14 @@ def journey_detail(request, slug, section):
         'active_navbar_page': 'documentation',
         'section': SECTIONS[section],
         'journey': journey,
+        'intro': [_render_paragraph(paragraph) for paragraph in journey.get('intro', [])],
+        'limitations': [_render_paragraph(paragraph) for paragraph in journey.get('limitations', [])],
         'steps': _with_links(journey['steps']),
+        'extras': [
+            {**extra, 'body': [_render_paragraph(paragraph) for paragraph in extra.get('body', [])]}
+            for extra in journey.get('extras', [])
+        ],
+        'notes': [_render_paragraph(paragraph) for paragraph in journey.get('notes', [])],
         'next_journey': next_journey,
         # The last journey of a section leads on to the next section instead.
         'next_section': None if next_journey else _next_section(section),
