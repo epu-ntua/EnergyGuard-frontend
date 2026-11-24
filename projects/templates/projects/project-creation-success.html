@@ -14,10 +14,12 @@
     </div>
     <div class="col-12 col-sm-auto">
       <div class="text-center text-sm-start">
-        <h5 class="mb-3">Thank you for submitting<br/> your project!</h5>
-        <!-- <p class="text-body-emphasis fs-9">A confirmation email will be sent to your<br /> email address when upload is complete.</p> -->
-        <!-- <p class="text-body-tertiary fs-9">In the next few days you will receive<br />the result of your submission.</p> -->
-        <a class="btn btn-primary px-6" href="{% url 'projects_list' %}?tab=my">Go to My Projects</a>
+        <h5 class="mb-2">Your project &ldquo;{{ project.name }}&rdquo; has been created</h5>
+        <p class="text-body-tertiary fs-9 mb-4">Its default MLflow experiment is ready to track your runs.</p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+          <a class="btn btn-primary px-5" href="{% url 'project_details' project_id=project.id %}">Open project</a>
+          <a class="btn btn-phoenix-secondary px-5" href="{% url 'projects_list' %}?tab=my">Go to My Projects</a>
+        </div>
       </div>
     </div>
   </div>

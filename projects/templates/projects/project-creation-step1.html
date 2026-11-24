@@ -12,26 +12,28 @@
       {% if wizard.form.non_field_errors %}
         <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.non_field_errors }}</div>
       {% endif %}
+      {# Each required field's message: shown by the browser check (was-validated) or, #}
+      {# after a server-side error, with d-block. The script below ties it to its field. #}
       <div class="mb-2">
-        <label class="form-label text-body">Project Name*</label>
+        <label class="form-label text-body" for="{{ wizard.form.name.id_for_label }}">Project Name*</label>
         {{ wizard.form.name }}
-        {% if wizard.form.errors.name %}
-          <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.name }}</div>
-        {% endif %}
+        <div id="projectNameFeedback" class="invalid-feedback{% if wizard.form.errors.name %} d-block{% endif %}" data-feedback-for="{{ wizard.form.name.id_for_label }}">
+          {% if wizard.form.errors.name %}{{ wizard.form.errors.name.0 }}{% else %}Please enter a project name.{% endif %}
+        </div>
       </div>
       <div class="mb-2">
-        <label class="form-label text-body">Description</label>
+        <label class="form-label text-body" for="{{ wizard.form.description.id_for_label }}">Description</label>
         {{ wizard.form.description }}
         {% if wizard.form.errors.description %}
           <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.description }}</div>
         {% endif %}
       </div>
       <div class="mb-2">
-        <label class="form-label text-body">Project Type*</label>
+        <label class="form-label text-body" for="{{ wizard.form.project_type.id_for_label }}">Project Type*</label>
         {{ wizard.form.project_type }}
-        {% if wizard.form.errors.project_type %}
-          <div class="mt-1 p-0 alert text-danger-emphasis small" role="alert">{{ wizard.form.errors.project_type }}</div>
-        {% endif %}
+        <div id="projectTypeFeedback" class="invalid-feedback{% if wizard.form.errors.project_type %} d-block{% endif %}" data-feedback-for="{{ wizard.form.project_type.id_for_label }}">
+          {% if wizard.form.errors.project_type %}{{ wizard.form.errors.project_type.0 }}{% else %}Please choose a project type.{% endif %}
+        </div>
       </div>
       <div class="d-flex justify-content-end gap-2 mt-5 mb-3">
         <button type="submit" class="btn btn-primary px-6 px-sm-6">Create</button>
@@ -40,3 +42,51 @@
   </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var form = document.querySelector('form.needs-validation');
+    if (!form) return;
+
+    // aria-describedby only while the field is invalid: a screen reader reads the
+    // description on every focus, and "Please enter a project name" read over a
+    // field that is fine would sound like an error
+    function markField(field, feedback, invalid) {
+      field.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+      if (invalid) {
+        field.setAttribute('aria-describedby', feedback.id);
+      } else {
+        field.removeAttribute('aria-describedby');
+        // Clears a server-side error once the field is filled in
+        field.classList.remove('is-invalid');
+        feedback.classList.remove('d-block');
+      }
+    }
+
+    var checked = [];
+    form.querySelectorAll('[data-feedback-for]').forEach(function (feedback) {
+      var field = document.getElementById(feedback.dataset.feedbackFor);
+      if (!field) return;
+      checked.push({ field: field, feedback: feedback });
+      // A field the server rejected gets the same red state as a browser-side check
+      if (feedback.classList.contains('d-block')) {
+        field.classList.add('is-invalid');
+        markField(field, feedback, true);
+      }
+    });
+
+    // phoenix.js stops an invalid submit and shows the messages (was-validated).
+    // Focus moves to the first invalid field, so a screen reader reads its message.
+    form.addEventListener('submit', function () {
+      var first = null;
+      checked.forEach(function (item) {
+        var valid = item.field.checkValidity();
+        markField(item.field, item.feedback, !valid);
+        if (!valid && !first) first = item.field;
+      });
+      if (first) first.focus();
+    });
+  })();
+</script>
+{% endblock scripts %}

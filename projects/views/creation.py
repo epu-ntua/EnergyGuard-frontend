@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from core.views import BaseWizardView
 
@@ -49,7 +50,10 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
 
     def dispatch(self, request, *args, **kwargs):
         next_url = request.GET.get('next', '')
-        if next_url and next_url.startswith('/'):
+        # Only a page of this site: "//host" also starts with "/" but leaves it
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
             request.session['project_creation_next'] = next_url
         return super().dispatch(request, *args, **kwargs)
 
@@ -111,15 +115,23 @@ class AddProjectView(LoginRequiredMixin, BaseWizardView):
             return redirect("project_creation")
 
         next_url = self.request.session.pop('project_creation_next', None)
-        self.request.session["project_creation_success"] = True
         if next_url:
             return redirect(next_url)
+        # The confirmation page names the new project and links to it
+        self.request.session["project_creation_success"] = project.pk
         return redirect("project_creation_success")
 
 
 @login_required
 def project_creation_success(request):
-    if not request.session.pop("project_creation_success", False):
+    project_id = request.session.pop("project_creation_success", None)
+    # Only the creator's own project, and only once, right after it was created: a
+    # reload or a stale session value goes back to the form. Sessions from before this
+    # page named the project hold True, which would otherwise read as pk 1.
+    if isinstance(project_id, bool) or not isinstance(project_id, int):
+        return redirect("project_creation")
+    project = Project.objects.filter(pk=project_id, creator=request.user).first()
+    if project is None:
         return redirect("project_creation")
     wizard = {"steps": {"current": "done", "index": 0}}
     wizard_steps = PROJECT_STEP_METADATA.values()
@@ -130,6 +142,7 @@ def project_creation_success(request):
             "wizard": wizard,
             "wizard_steps": wizard_steps,
             "cancel_url": "/projects/list/",
+            "project": project,
         },
     )
 

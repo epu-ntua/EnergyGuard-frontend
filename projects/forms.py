@@ -11,6 +11,11 @@ class ProjectGeneralInfoForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter project description', 'rows': 3}),
             'project_type': forms.Select(attrs={'class': 'form-select'}),
         }
+        # The same text as the browser-side message, for a form that reaches the server
+        error_messages = {
+            'name': {'required': 'Please enter a project name.'},
+            'project_type': {'required': 'Please choose a project type.'},
+        }
 
 class EditProjectForm(forms.ModelForm):
     class Meta:

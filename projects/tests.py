@@ -422,3 +422,77 @@ class EvalResultsViewTests(TestCase):
         response = self.client.get(reverse("project_details", kwargs={"project_id": self.project.pk}))
         self.assertContains(response, f'data-url="{self.url()}?include_models=0"')
         self.assertNotContains(response, "mock data")
+
+
+@patch("projects.views.creation.mlflow_create_experiment_permission")
+@patch("projects.views.creation.mlflow_set_experiment_tags")
+@patch("projects.views.creation.mlflow_create_experiment", return_value="42")
+class ProjectCreationTests(TestCase):
+    def setUp(self):
+        self.user = make_user_without_mlflow("creator@example.com")
+        self.client.force_login(self.user)
+        self.url = reverse("project_creation")
+
+    def _submit(self, name="Solar forecast", url=None):
+        return self.client.post(url or self.url, {
+            "add_project_view-current_step": "0",
+            "0-name": name,
+            "0-description": "",
+            "0-project_type": Project.ProjectType.AI_MODEL,
+        })
+
+    def test_confirmation_names_the_project_and_links_to_it(self, *_mocks):
+        response = self._submit()
+        self.assertRedirects(response, reverse("project_creation_success"), fetch_redirect_response=False)
+        project = Project.objects.get(creator=self.user)
+
+        page = self.client.get(reverse("project_creation_success"))
+        self.assertContains(page, "Your project &ldquo;Solar forecast&rdquo; has been created")
+        self.assertContains(page, f'href="{reverse("project_details", kwargs={"project_id": project.pk})}"')
+        self.assertContains(page, "Go to My Projects")
+        self.assertNotContains(page, "Thank you for submitting")
+
+    def test_confirmation_is_shown_once(self, *_mocks):
+        self._submit()
+        self.client.get(reverse("project_creation_success"))
+        self.assertRedirects(self.client.get(reverse("project_creation_success")), self.url,
+                             fetch_redirect_response=False)
+
+    def test_return_url_skips_the_confirmation(self, *_mocks):
+        response = self._submit(url=f"{self.url}?next=/datasets/7/")
+        self.assertRedirects(response, "/datasets/7/", fetch_redirect_response=False)
+        # Not left behind for a later visit to the confirmation page
+        self.assertNotIn("project_creation_success", self.client.session)
+
+    def test_confirmation_never_shows_another_users_project(self, *_mocks):
+        other = Project.objects.create(name="Not yours", creator=make_user_without_mlflow("other@example.com"))
+        for stale in (other.pk, True):  # True: a session from before the page named the project
+            session = self.client.session
+            session["project_creation_success"] = stale
+            session.save()
+            response = self.client.get(reverse("project_creation_success"))
+            self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_return_url_must_be_a_page_of_this_site(self, create_experiment, *_mocks):
+        create_experiment.side_effect = ["1", "2", "3"]  # one MLflow experiment per project
+        for target in ("//evil.example.com/", "https://evil.example.com/", "/\\evil.example.com/"):
+            with self.subTest(target=target):
+                response = self._submit(url=f"{self.url}?next={target}")
+                self.assertRedirects(response, reverse("project_creation_success"), fetch_redirect_response=False)
+
+    def test_empty_name_shows_its_message(self, *_mocks):
+        response = self._submit(name="   ")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Project.objects.exists())
+        # d-block: shown without the browser check; the page script then ties it to the field
+        self.assertContains(response, 'id="projectNameFeedback" class="invalid-feedback d-block"')
+        self.assertContains(response, "Please enter a project name.")
+
+    def test_messages_are_not_tied_to_fields_that_are_not_invalid(self, *_mocks):
+        # A screen reader reads aria-describedby on every focus, so it is set by the
+        # page script only while a field is invalid
+        response = self.client.get(self.url)
+        self.assertContains(response, 'id="projectNameFeedback" class="invalid-feedback"')
+        self.assertContains(response, 'data-feedback-for="id_0-name"')
+        self.assertContains(response, 'data-feedback-for="id_0-project_type"')
+        self.assertNotContains(response, "aria-describedby=")
