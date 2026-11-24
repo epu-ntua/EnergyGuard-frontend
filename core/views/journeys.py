@@ -254,7 +254,7 @@ JOURNEYS = [
                     'Questionnaire" card, select your project and answer the questions about your AI '
                     'system and your role. [Assess a project for trustworthiness](journey:assess-project) '
                     'describes every assessment of that page.',
-                    'This step adds about 5 to 30 minutes.',
+                    'This step adds about 10 to 15 minutes.',
                     'Your answers are kept in your browser session: finish the questionnaire before you '
                     'log out.',
                 ],
