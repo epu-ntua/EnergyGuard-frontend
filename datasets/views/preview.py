@@ -19,26 +19,45 @@ PREVIEW_MAX_ROWS = 50
 PREVIEW_CHUNK_BYTES = 256 * 1024  # 256 KB
 
 
-def _parse_csv(raw: bytes, max_rows: int) -> tuple[list, list]:
-    """Parse up to max_rows from raw CSV bytes. Tries UTF-8, falls back to latin-1."""
+def _parse_csv(raw: bytes, max_rows: int) -> tuple[list, list, bool]:
+    """
+    The header row and up to max_rows data rows of raw CSV bytes, and whether the
+    bytes hold more rows than that. Tries UTF-8, falls back to latin-1.
+
+    The total row count is not known: only the first chunk of the file is read.
+    """
     for encoding in ("utf-8", "latin-1"):
         try:
             reader = csv.reader(
                 io.TextIOWrapper(io.BytesIO(raw), encoding=encoding, newline="")
             )
-            headers: list = []
+            headers: list = next(reader, [])
             rows: list = []
-            for i, row in enumerate(reader):
-                if i == 0:
-                    headers = row
-                else:
-                    rows.append(row)
-                if i > max_rows:
+            truncated = False
+            for row in reader:
+                if len(rows) == max_rows:
+                    truncated = True
                     break
-            return headers, rows
+                rows.append(row)
+            return headers, rows, truncated
         except UnicodeDecodeError:
             continue
     raise ValueError("Could not decode the file as UTF-8 or latin-1.")
+
+
+def _preview_response(raw: bytes, chunk: bytes, **extra) -> JsonResponse:
+    """
+    The preview of `raw`, the CSV text read from `chunk`, the bytes fetched from
+    storage (compressed, for a gzip file). A full chunk means the file goes on
+    past it: there are more rows than the ones parsed, and the last of them may be
+    cut short, so it is left out.
+    """
+    headers, rows, truncated = _parse_csv(raw, PREVIEW_MAX_ROWS)
+    if len(chunk) >= PREVIEW_CHUNK_BYTES:
+        if not truncated and rows:
+            rows = rows[:-1]
+        truncated = True
+    return JsonResponse({"headers": headers, "rows": rows, "truncated": truncated, **extra})
 
 
 def _inflate_prefix(raw: bytes) -> bytes:
@@ -88,8 +107,7 @@ def dataset_preview(request, dataset_id):
                 with zf.open(csv_names[0]) as f:
                     raw = f.read(PREVIEW_CHUNK_BYTES)
 
-            headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
-            return JsonResponse({"headers": headers, "rows": rows, "source_file": csv_names[0]})
+            return _preview_response(raw, raw, source_file=csv_names[0])
 
         elif magic[:2] == b"\x1f\x8b":
             # gzip — not seekable, but it inflates from the start, so the first
@@ -99,9 +117,8 @@ def dataset_preview(request, dataset_id):
                 Key=dataset.data_file,
                 Range=f"bytes=0-{PREVIEW_CHUNK_BYTES - 1}",
             )
-            raw = _inflate_prefix(response["Body"].read())
-            headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
-            return JsonResponse({"headers": headers, "rows": rows})
+            compressed = response["Body"].read()
+            return _preview_response(_inflate_prefix(compressed), compressed)
 
         else:
             # Plain CSV — Range request, no full download needed
@@ -111,8 +128,7 @@ def dataset_preview(request, dataset_id):
                 Range=f"bytes=0-{PREVIEW_CHUNK_BYTES - 1}",
             )
             raw = response["Body"].read()
-            headers, rows = _parse_csv(raw, PREVIEW_MAX_ROWS)
-            return JsonResponse({"headers": headers, "rows": rows})
+            return _preview_response(raw, raw)
 
     except MinioUploadError:
         logger.exception("Storage error building preview for dataset %s", dataset_id)
