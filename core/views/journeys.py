@@ -110,17 +110,18 @@ JOURNEYS = [
                     '"Public datasets" tab. It is a small CSV file with hourly readings from five homes.',
                     'Choose "Preview Data" to see the first rows, then read the Metadata Table. It describes '
                     'each time series present in the CSV along with its units.',
-                    'Then choose "Load in Project", select your project and press Load. Together with the '
-                    'data, the example notebook smart_building_forecasting.ipynb is copied into your '
-                    'workspace.',
+                    'Then choose "Load in Project", select your project and press Load. Because this is the '
+                    'tutorial dataset, the example notebook smart_building_forecasting.ipynb is copied into '
+                    'your workspace together with the data.',
                     'With your own model, you can load this dataset as well, or load your own or another '
-                    'public dataset instead.',
+                    'public dataset instead. Only the tutorial dataset comes with the example notebook: '
+                    'any other dataset is loaded without one.',
                 ],
                 'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
                 'result': 'JupyterHub opens in a new tab, which can take up to about 15 seconds the first '
-                          'time. The data is in your read-only "datasets" folder and the notebook in your '
-                          '"notebooks" folder. The dataset is listed under "Datasets used" on your project '
-                          'page.',
+                          'time. The data is in your read-only "datasets" folder and, if you loaded the '
+                          'tutorial dataset, the example notebook is in your "notebooks" folder. The dataset '
+                          'is listed under "Datasets used" on your project page.',
             },
             {
                 'title': 'Run a notebook that logs your models',

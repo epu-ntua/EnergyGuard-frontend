@@ -9,6 +9,16 @@ from core.models import TimeStampedModel
 
 REVIEW_PERMISSION = 'datasets.review_dataset'
 
+# Notebooks the data management server copies into the user's "notebooks"
+# folder when one of these datasets is loaded into a project, keyed by dataset
+# name. Matched by name because the tutorial dataset is an ordinary user upload
+# (its publisher is a team member), so it has no other stable marker: renaming
+# it silently stops the notebook from being provisioned, and the Tutorials
+# journey in core/views/journeys.py names both the dataset and the notebook.
+PROVISION_NOTEBOOKS = {
+    'SMART Building Energy Demand (Tutorial)': ('smart_building_forecasting.ipynb',),
+}
+
 
 # The review rules, as queries. Dataset.is_published / is_awaiting_review are
 # the same rules on a loaded instance - change them together.
@@ -179,6 +189,17 @@ class Dataset(TimeStampedModel):
     @property
     def is_pilot(self) -> bool:
         return self.pilot_partner is not None
+
+    @property
+    def provision_notebooks(self) -> list[str]:
+        """
+        Notebooks to provision alongside this dataset. Only a published dataset
+        qualifies: names are unique per publisher, so anyone can upload a
+        private dataset under the tutorial's name.
+        """
+        if not self.is_published:
+            return []
+        return list(PROVISION_NOTEBOOKS.get(self.name, ()))
 
     @property
     def publisher_display(self) -> str:

@@ -58,7 +58,9 @@ def dataset_run(request, dataset_id):
 
         try:
             provision_user_datasets(
-                jupyterhub_username, {minio_prefix: dataset_local_name}
+                jupyterhub_username,
+                {minio_prefix: dataset_local_name},
+                notebooks=dataset.provision_notebooks,
             )
         except requests.RequestException as exc:
             return JsonResponse(

@@ -219,3 +219,70 @@ class PilotProvisioningTests(SimpleTestCase):
         )
         mock_regular.assert_not_called()
         self.assertEqual(response.status_code, 200)
+
+
+TUTORIAL_NAME = "SMART Building Energy Demand (Tutorial)"
+
+
+def _user_dataset(name, *, published=True):
+    """A user upload with a data file; published means public and approved."""
+    return Dataset(
+        name=name,
+        size_gb=1,
+        data_file=f"user_5/{name}/data.csv",
+        publisher_id=5,
+        visibility=published,
+        status=Dataset.Status.APPROVED,
+    )
+
+
+class ProvisionNotebooksTests(SimpleTestCase):
+    def test_published_tutorial_dataset_gets_its_notebook(self):
+        self.assertEqual(
+            _user_dataset(TUTORIAL_NAME).provision_notebooks,
+            ["smart_building_forecasting.ipynb"],
+        )
+
+    def test_private_dataset_with_tutorial_name_gets_none(self):
+        self.assertEqual(_user_dataset(TUTORIAL_NAME, published=False).provision_notebooks, [])
+
+    def test_other_dataset_gets_none(self):
+        self.assertEqual(_user_dataset("my data").provision_notebooks, [])
+
+    def _run(self, dataset):
+        from datasets.views import run as run_view
+
+        dataset.id = 7
+        project = SimpleNamespace(id=3, can_edit=lambda user: True)
+        request = RequestFactory().post(
+            "/", data=json.dumps({"project_id": 3}), content_type="application/json"
+        )
+        request.user = SimpleNamespace(email="theo@example.com")
+        with patch.object(run_view, "get_object_or_404", side_effect=[dataset, project]), \
+             patch.object(run_view, "provision_user_datasets") as mock_provision, \
+             patch.object(Dataset, "projects", create=True), \
+             patch.object(run_view.settings, "JUPYTERHUB_URL", "https://hub.example.com"):
+            response = run_view.dataset_run.__wrapped__.__wrapped__(request, 7)
+        self.assertEqual(response.status_code, 200)
+        return mock_provision
+
+    def test_run_sends_tutorial_notebook(self):
+        mock_provision = self._run(_user_dataset(TUTORIAL_NAME))
+        mock_provision.assert_called_once_with(
+            "theo@example.com",
+            {f"user_5/{TUTORIAL_NAME}": TUTORIAL_NAME},
+            notebooks=["smart_building_forecasting.ipynb"],
+        )
+
+    def test_run_sends_empty_list_for_other_datasets(self):
+        mock_provision = self._run(_user_dataset("my data"))
+        self.assertEqual(mock_provision.call_args.kwargs["notebooks"], [])
+
+    def test_client_sends_empty_list_by_default(self):
+        from datasets.services import data_management_client as client
+
+        with patch.object(client.requests, "post") as mock_post, \
+             patch.object(client.settings, "DATA_MANAGEMENT_SERVER_URL", "https://dms", create=True), \
+             patch.object(client.settings, "DATA_MANAGEMENT_SERVER_API_KEY", "k", create=True):
+            client.provision_user_datasets("u@example.com", {"user_5/d": "d"})
+        self.assertEqual(mock_post.call_args.kwargs["json"]["notebooks"], [])

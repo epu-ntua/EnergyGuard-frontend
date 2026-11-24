@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 from urllib.parse import quote
 
 import requests
@@ -18,11 +19,16 @@ def _base_url() -> str:
     return settings.DATA_MANAGEMENT_SERVER_URL
 
 
-def provision_user_datasets(username: str, datasets: dict[str, str]) -> None:
+def provision_user_datasets(
+    username: str, datasets: dict[str, str], notebooks: Iterable[str] = ()
+) -> None:
     """
     POST /api/v1/provision/user
 
     datasets: {minio_prefix: local_name}
+    notebooks: notebook file names the server copies into the user's
+    "notebooks" folder; empty for every dataset except the tutorial one
+    (see Dataset.provision_notebooks).
     """
     try:
         response = requests.post(
@@ -31,7 +37,7 @@ def provision_user_datasets(username: str, datasets: dict[str, str]) -> None:
             json={
                 "username": username,
                 "datasets": datasets,
-                "notebooks": None,
+                "notebooks": list(notebooks),
             },
             timeout=30,
         )
