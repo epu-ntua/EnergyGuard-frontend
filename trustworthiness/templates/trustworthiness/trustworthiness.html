@@ -44,19 +44,33 @@
 
 {% block scripts %}
 <script>
-const TAB_PARAMS = { '#tab-assessments': 'assessments', '#tab-results': 'results' };
+const TAB_HASHES = new Set(['#tab-assessments', '#tab-results']);
 
-// The page renders on Assessments; ?tab=results (kept in the URL below) lets a
-// reload or Back return to the Results tab.
-if (new URLSearchParams(window.location.search).get('tab') === 'results') {
-    const tabEl = document.querySelector('#trustworthinessTab a[href="#tab-results"]');
+function showTab(hash) {
+    const tabEl = document.querySelector(`#trustworthinessTab a[href="${hash}"]`);
     if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
 }
+
+// The page renders on Assessments. The open tab is kept in the URL hash
+// (#tab-results), so a link, a reload or Back opens it; ?tab=results is what
+// earlier links and bookmarks hold.
+function showTabFromUrl() {
+    if (TAB_HASHES.has(window.location.hash)) {
+        showTab(window.location.hash);
+    } else if (new URLSearchParams(window.location.search).get('tab') === 'results') {
+        showTab('#tab-results');
+    }
+}
+showTabFromUrl();
+// A link to #tab-results from this same page changes only the hash
+window.addEventListener('hashchange', showTabFromUrl);
 
 document.querySelectorAll('#trustworthinessTab a[data-bs-toggle="tab"]').forEach(tabEl => {
     tabEl.addEventListener('shown.bs.tab', e => {
         const url = new URL(window.location.href);
-        url.searchParams.set('tab', TAB_PARAMS[e.target.getAttribute('href')]);
+        url.searchParams.delete('tab');
+        url.hash = e.target.getAttribute('href');
+        // replaceState fires no hashchange, and keeps one history entry per visit
         history.replaceState(null, '', url);
     });
 });
