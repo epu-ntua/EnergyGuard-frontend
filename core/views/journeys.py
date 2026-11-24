@@ -57,13 +57,21 @@ JOURNEYS = [
         'slug': 'quick-start',
         'section': 'tutorials',
         'title': 'Quick start: your first forecasting model',
-        'summary': 'Train, track and compare forecasting models on a small public smart building dataset, '
-                   'with an example notebook that is ready to run.',
+        'summary': 'Bring your own forecasting model, or start from an example notebook that is ready to '
+                   'run, and take it through the platform: train it on a dataset, track and compare its '
+                   'runs in MLflow, register the best one and test its robustness.',
         'scenario': (
-            'Sam is new to the platform and has no model yet. Sam wants to see how a forecast of a '
-            "building's energy use is built, tracked and checked on EnergyGuard before trying it on "
-            'other data.'
+            'Sam is new to the platform. Sam wants to see how a forecast of a building\'s energy use is '
+            'trained, tracked and checked on EnergyGuard. Sam can bring a model of Sam\'s own or, without '
+            'one, start from the example notebook that comes with the tutorial dataset.'
         ),
+        'intro': [
+            'The steps follow the example notebook. If you have your own model, follow the same steps '
+            'with your own notebook: each step says what changes. Your notebook runs under the same '
+            'limitations, listed below, and '
+            '[Your own Python environments and kernels](journey:custom-kernels) explains how to add the '
+            'libraries it needs.',
+        ],
         'icon': 'fa-rocket',
         'audience': 'New users, AI developers and data scientists',
         # REVIEW(quick-start): estimate; time it once the notebook and the robustness test exist.
@@ -88,84 +96,91 @@ JOURNEYS = [
             {
                 'title': 'Create a project',
                 'body': [
-                    'In Projects, choose "Add new project", give it a name that starts with your username, '
+                    'In Projects, choose "Add new project", give it a name that starts with your name, '
                     'for example "sam smart building forecast", and choose the project type AI Model.',
                 ],
                 'link': {'label': 'Add new project', 'url_name': 'project_creation'},
-                'result': 'The project opens with a default MLflow experiment already created for it. '
-                          'You can see the experiment in the project\'s Experiments table.',
+                'result': 'A confirmation page appears. Choose "Open project": its Experiments table shows '
+                          'the MLflow experiment created for it, named "<project name>-default".',
             },
             {
                 'title': 'Open the tutorial dataset and load it into your project',
                 'body': [
-                    # REVIEW(quick-start): dataset name and "hourly readings from five buildings" must
-                    # match the tutorial dataset once it is uploaded.
-                    'In Assets, open Datasets and choose "Smart Building Energy Demand (Tutorial)" in the '
-                    '"Public datasets" tab. It is a small CSV file with hourly readings from five buildings.',
+                    'In Assets, open Datasets and choose "SMART Building Energy Demand (Tutorial)" in the '
+                    '"Public datasets" tab. It is a small CSV file with hourly readings from five homes.',
                     'Choose "Preview Data" to see the first rows, then read the Metadata Table. It describes '
                     'each time series present in the CSV along with its units.',
-                    # REVIEW(quick-start): Load in Project does not copy a notebook yet (provisioning
-                    # sends "notebooks": None); notebook file name to be confirmed.
                     'Then choose "Load in Project", select your project and press Load. Together with the '
                     'data, the example notebook smart_building_forecasting.ipynb is copied into your '
                     'workspace.',
+                    'With your own model, you can load this dataset as well, or load your own or another '
+                    'public dataset instead.',
                 ],
                 'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
-                # REVIEW(quick-start): where the notebook lands in the workspace depends on the provisioning.
-                'result': 'JupyterHub opens in a new tab with the data in your read-only "datasets" folder '
-                          'and the notebook in your workspace. The dataset is listed under "Datasets used" '
-                          'on your project page.',
+                'result': 'JupyterHub opens in a new tab, which can take up to about 15 seconds the first '
+                          'time. The data is in your read-only "datasets" folder and the notebook in your '
+                          '"notebooks" folder. The dataset is listed under "Datasets used" on your project '
+                          'page.',
             },
             {
-                'title': 'Run the example notebook',
+                'title': 'Run a notebook that logs your models',
                 'body': [
-                    # REVIEW(quick-start): notebook name; first cell holds EXPERIMENT_NAME (or drop this
-                    # if the provisioning fills it in); "no GPU, nothing to install, a few minutes" must
-                    # hold on the EnergyGuard kernel.
-                    'Open smart_building_forecasting.ipynb and keep the EnergyGuard kernel. In its first '
-                    'cell, set the name of your project\'s experiment, as shown in the Experiments table of '
+                    'Open smart_building_forecasting.ipynb and keep the EnergyGuard kernel. In its Settings '
+                    'cell (section 1), set the name of your project\'s experiment, as shown in the Experiments table of '
                     'your project. Then choose "Run All Cells" in the Run menu. The notebook needs no GPU '
                     'and nothing to install, and it finishes in a few minutes.',
                     # REVIEW(quick-start): test split (last 10%) and the three models must match
                     # the notebook; the neural network is there because FGSM/PGD need gradients.
                     'It keeps the last 10% of the data for testing and trains three models on the '
-                    'rest: a naive baseline that repeats the same hour of the previous week, a linear '
-                    'regression and a small neural network. Each model is logged as a run in your '
-                    'experiment, with its parameters, its metrics and the model itself.', 
+                    'rest: a naive baseline that repeats the same hour of the previous day (24 steps '
+                    'earlier), a linear regression and a small neural network. Each model is logged as a '
+                    'run in your experiment, with its parameters, its metrics and the model itself.',
+                    'The notebook also has a Code Analysis section. It is optional and not part of this '
+                    'tutorial.',
+                    'With your own model, drag your notebook into the "notebooks" folder of the JupyterHub '
+                    'file browser. In it, set your project\'s experiment with mlflow.set_experiment and log '
+                    'each model you train as a separate run, with its metrics and the model itself '
+                    '(mlflow.<flavor>.log_model). No login or token is needed. '
+                    '[Your first experiment](journey:first-experiment) shows the MLflow commands.',
                     'JupyterHub admits a limited number of users at the same time. If you cannot get in, try again later.',
                 ],
-                # REVIEW(quick-start): variable name as written in the notebook's first cell.
-                'code': 'EXPERIMENT_NAME = "<your experiment name>"',
+                'code':'EXPERIMENT_NAME = "<your experiment name>"',
                 # REVIEW(quick-start): metrics the notebook prints and logs.
-                'result': 'Three runs are logged, and the notebook prints the error (RMSE and MAE) of each '
-                          'model on the test data.',
+                'result': 'One run is logged per model: three with the example notebook, which also prints '
+                          'the error (RMSE and MAE) of each model on the test data.',
             },
             {
                 'title': 'Compare the runs',
                 'body': [
                     'In Projects, open your project. The Performance Metrics section shows a card for each '
                     'metric your runs logged, with a chart of its value in every run, and lists the runs '
-                    'as R1, R2 and R3 in the order they were logged. If your project has more than one '
+                    'as R1, R2, R3 and so on, in the order they were logged. If your project has more than one '
                     'experiment, choose yours in the list next to the heading.',
+                    'Each metric card shows the value of the latest run, while its chart shows every run. '
+                    'For error metrics such as RMSE and MAE, the best run is the lowest point of the chart.',
                     'Click a run in the list to highlight it on every chart and see its values on the '
                     'cards. Click it again to clear the selection.',
                     'To see the parameters of each run as well, click the experiment\'s name in the '
-                    'Experiments table. MLflow opens on the experiment, where you can tick the runs and '
-                    'choose "Compare".',
+                    'Experiments table. The first time, MLflow asks you to log in again: choose "Login with '
+                    'Keycloak". MLflow then opens on the experiment, where you can tick the runs and choose '
+                    '"Compare".',
                 ],
                 'link': {'label': 'My projects', 'url_name': 'projects_list'},
-                'result': 'You can tell which model has the lowest error and whether it beats the naive '
-                          'baseline.',
+                'result': 'You can tell which model has the lowest error and, with the example notebook, '
+                          'whether it beats the naive baseline.',
             },
             {
                 'title': 'Try your own variation',
                 'body': [
-                    # REVIEW(quick-start): the notebook needs a cell marked "Try it yourself".
-                    'In the notebook cell marked "Settings", change a setting of a model or the '
-                    'features it uses, and run the notebook again.',
+                    'In the Settings cell of the notebook (section 1), change a setting of a model or the '
+                    'features it uses, for example LAGS, NN_INPUT_LENGTH or NN_EPOCHS, as section 5 '
+                    '"Try it yourself" suggests. Then run the Settings cell and step 4 again.',
+                    'With your own model, change a setting of your model and run your notebook again in '
+                    'the same experiment.',
                 ],
-                'result': 'A new run appears in the experiment. Compare it with the earlier runs to see '
-                          'whether your change helped.',
+                'result': 'New runs appear in the experiment, one per model: with the example notebook, '
+                          'they have the same names as the earlier ones. Compare them with the earlier runs '
+                          'to see whether your change helped.',
             },
             {
                 'title': 'Register your best model',
@@ -181,34 +196,53 @@ JOURNEYS = [
             {
                 'title': 'Test the robustness of your model',
                 'body': [
-                    # REVIEW(quick-start): the notebook's last cell must write config.yaml for the neural
-                    # network's run (and log the test set the attacks use); check the robustness backend
-                    # accepts this model.
-                    'The last cell of the notebook writes config.yaml, a configuration that points to the '
-                    'neural network\'s run in MLflow. Download it from the file browser of JupyterHub.',
+                    'The cell of section 6 of the notebook, "Prepare the robustness test", writes '
+                    'config.yaml next to the notebook. It is a configuration that points to the neural '
+                    'network\'s run in MLflow. Download it from the file browser of JupyterHub.',
                     'In Trustworthiness Assessments, choose "Start Assessment" on the "Adversarial '
-                    'Robustness" card, select your project and upload config.yaml. The same page offers the '
-                    'AI Act Questionnaire and Code Analysis, which '
-                    '[Assess a project for trustworthiness](journey:assess-project) explains.',
+                    'Robustness" card, select your project and upload config.yaml.',
+                    # Kept general on purpose: which models the robustness service accepts is not
+                    # confirmed yet. Add the requirements once the colleague who owns it confirms them.
+                    'With your own model, write a config.yaml of your own, starting from "Download example '
+                    'config.yaml" on the same page or from the one the example notebook writes. The '
+                    'configuration points to your model and to a test set in MLflow, and names the feature '
+                    'and target columns of the test set, the task type and the range of the input values. '
+                    'The attacks it lists, FGSM and PGD, are computed from the gradients of the model.',
+                    'The same page offers the AI Act Questionnaire and Code Analysis, which '
+                    '[Assess a project for trustworthiness](journey:assess-project) explains. They are '
+                    'optional and not part of this tutorial.',
                 ],
                 'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
-                'result': 'When the test finishes, the Results tab shows how much each attack degrades the '
-                          'forecasts of your model.',
+                'result': 'When the test finishes, the Robustness Report opens after the processing page '
+                          'and shows how much the attacks degrade the forecasts of your model, one attack at '
+                          'a time. "Download Report" saves the metrics as JSON, and a CSV per attack holds the '
+                          'attacked windows and both forecasts. The "Results" tab of Trustworthiness '
+                          'Assessments lists your past assessments.',
             },
             {
                 'title': 'Try it on other data',
                 'optional': True,
                 'body': [
-                    # REVIEW(quick-start): file name and column names must be settings in the notebook's
-                    # first cell.
+                    # The column names are fixed in the notebook's load_long (step 2), not settings:
+                    # keep this text in step with it.
                     'Open another dataset, for example one of the pilot datasets, or '
                     '[contribute your own](journey:contribute-dataset), and load it into the same project. '
-                    'Keep your own dataset under 500 MB, and mind the limitations at the top of this page. '
-                    'In the first cell of the notebook, change the file name and the column names, then run '
-                    'it again.',
-                    'If the new data comes in other units or another format, preprocess it first, as '
+                    'Keep your own dataset under 500 MB, and mind the limitations at the top of this page.',
+                    'In the file browser of JupyterHub, open the "datasets" folder. Each dataset loaded into '
+                    'your project has a folder there, named after the dataset, and the files inside it keep '
+                    'the names the data provider gave them, which can differ from the name of the dataset. '
+                    'To get the path of a file, right-click it and choose "Copy Path".',
+                    'With the example notebook, in its Settings cell (section 1), set DATA_FILE to that path with "../" '
+                    'in front of it, because the notebook sits in the "notebooks" folder, and set UNIT to the '
+                    'unit of the values. Leave SERIES_IDS at None to use every series in the file, or list a '
+                    'few of them to save memory. Then run the notebook again.',
+                    'The notebook reads files with one reading per row, in the columns datetime, values and '
+                    'sensor_id (or timeseries_id), as in the tutorial and pilot datasets, and the time step '
+                    'of the data must divide one day. Its settings have no column names to change. If the '
+                    'new data has other columns, other units or another format, convert it first, as '
                     '[Improve your model with public data](journey:improve-with-public-data) describes.',
                 ],
+                'code': 'DATA_FILE = "../datasets/<dataset name>/<file name>.csv"',
                 'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
                 'result': 'The same notebook runs on the new data, and its runs sit next to the earlier '
                           'ones in your experiment.',
