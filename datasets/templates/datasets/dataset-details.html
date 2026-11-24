@@ -493,6 +493,7 @@
           <div class="run-project-card border rounded-3 px-3 py-3 d-flex align-items-center gap-3"
                style="cursor:pointer;transition:border-color 0.15s;"
                data-project-id="{{ project.id }}"
+               data-project-name="{{ project.name }}"
                data-project-url="{% url 'project_details' project_id=project.id %}">
             {% include "projects/partials/type-icon.html" %}
             <div class="flex-grow-1 min-w-0">
@@ -508,6 +509,9 @@
           {% endfor %}
         </div>
       </div>
+
+      <!-- Progress, and the link to JupyterHub when the browser blocks the new tab -->
+      <div id="runProjectStatus" class="d-none mx-3 mb-2 fs-9" role="status" aria-live="polite"></div>
 
       <!-- Error banner -->
       <div id="runProjectError" class="d-none mx-3 mb-2 alert alert-danger py-2 px-3 fs-9 mb-0" role="alert"></div>
@@ -576,7 +580,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <small class="text-body-tertiary me-auto">Showing first 50 rows</small>
+        <small class="text-body-tertiary me-auto" id="preview-footer-count"></small>
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
@@ -607,9 +611,13 @@ function toggleMetadataRows(btn) {
 
   var selectedCard = null;
   var runBtn = document.getElementById('runProjectBtn');
+  // While a load runs, choosing another project would enable Load again and
+  // start a second load before the first one ends
+  var loading = false;
 
   modal.querySelectorAll('.run-project-card').forEach(function (card) {
     card.addEventListener('click', function () {
+      if (loading) return;
       if (selectedCard && selectedCard !== card) {
         selectedCard.style.borderColor = '';
         var prev = selectedCard.querySelector('.run-project-radio');
@@ -631,12 +639,33 @@ function toggleMetadataRows(btn) {
   var RUN_URL = "{% url 'dataset_run' dataset_id=dataset.id %}";
   var CSRF_TOKEN = "{{ csrf_token }}";
 
+  var statusEl = document.getElementById('runProjectStatus');
+
+  // Progress and outcome in the modal; project names come from users, so text only
+  function setStatus(message, link) {
+    statusEl.textContent = message;
+    statusEl.classList.toggle('d-none', !message);
+    if (link) {
+      var a = document.createElement('a');
+      a.className = 'btn btn-primary btn-sm ms-2';
+      a.href = link;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'Open JupyterHub';
+      statusEl.appendChild(a);
+    }
+  }
+
   runBtn.addEventListener('click', function () {
     if (!selectedCard) return;
     var projectId = selectedCard.dataset.projectId;
+    var projectName = selectedCard.dataset.projectName;
 
+    loading = true;
     runBtn.disabled = true;
     runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Loading…';
+    document.getElementById('runProjectError').classList.add('d-none');
+    setStatus('Loading the dataset into “' + projectName + '”… JupyterHub will open in a new tab when it is ready.');
 
     fetch(RUN_URL, {
       method: 'POST',
@@ -648,19 +677,37 @@ function toggleMetadataRows(btn) {
     })
       .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
       .then(function (res) {
+        loading = false;
         if (!res.ok) {
           showRunError(res.data.error || 'Something went wrong.');
           return;
         }
-        window.open(res.data.redirect_url, '_blank');
+        // Not "noopener" in the features: window.open then returns null even when
+        // the tab opens, and a blocked popup could not be told apart
+        var tab = window.open(res.data.redirect_url, '_blank');
+        if (!tab) {
+          // Blocked: the open runs after the request, outside the click
+          runBtn.innerHTML = 'Load';
+          setStatus('The dataset is loaded into “' + projectName + '”. Your browser blocked the new tab:', res.data.redirect_url);
+          return;
+        }
+        tab.opener = null;
         bootstrap.Modal.getInstance(modal).hide();
+        if (window.EnergyGuardToast) {
+          window.EnergyGuardToast.show('fa-check-circle text-success',
+            'The dataset is loaded into “' + projectName + '”. JupyterHub is opening in a new tab, '
+            + 'which can take up to 15 seconds the first time.');
+        }
       })
       .catch(function (err) {
+        loading = false;
         showRunError('Network error: ' + err.message);
       });
   });
 
+  // The modal is still open, so the failure is shown in it, where Load can be retried
   function showRunError(msg) {
+    setStatus('');
     runBtn.disabled = false;
     runBtn.innerHTML = 'Load';
     var errorEl = document.getElementById('runProjectError');
@@ -679,6 +726,7 @@ function toggleMetadataRows(btn) {
     }
     runBtn.setAttribute('disabled', '');
     runBtn.innerHTML = 'Load';
+    setStatus('');
     document.getElementById('runProjectError').classList.add('d-none');
   });
 
@@ -763,9 +811,16 @@ function toggleMetadataRows(btn) {
           tbody.appendChild(tr);
         });
 
-        var info = data.rows.length + ' rows × ' + data.headers.length + ' columns';
+        // Data rows only, without the header row. Only the start of the file is
+        // read, so the total is unknown when there are more rows than shown.
+        var shown = data.rows.length;
+        var info = (data.truncated ? 'First ' : '') + shown + (shown === 1 ? ' row' : ' rows')
+          + ' × ' + data.headers.length + ' columns';
         if (data.source_file) info += ' — ' + data.source_file;
         rowCount.textContent = info;
+        document.getElementById('preview-footer-count').textContent = data.truncated
+          ? 'Showing the first ' + shown + ' rows'
+          : 'Showing all ' + shown + (shown === 1 ? ' row' : ' rows');
         tableWrapper.classList.remove('d-none');
         loaded = true;
       })

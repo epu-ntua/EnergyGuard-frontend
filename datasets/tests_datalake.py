@@ -106,7 +106,40 @@ class GzipPreviewTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(body["headers"], ["ts_id", "sensor_id"])
         self.assertEqual(body["rows"][0], ["0", "sensor_0"])
-        self.assertEqual(len(body["rows"]), preview_view.PREVIEW_MAX_ROWS + 1)
+        # Data rows only: the header row is not one of them
+        self.assertEqual(len(body["rows"]), preview_view.PREVIEW_MAX_ROWS)
+        self.assertTrue(body["truncated"])
+
+    def test_preview_counts_data_rows_and_says_whether_there_are_more(self):
+        from datasets.views.preview import _parse_csv
+
+        def csv_with(n):
+            return b"a,b\n" + b"".join(f"{i},{i}\n".encode() for i in range(n))
+
+        for n, expected_rows, expected_truncated in ((3, 3, False), (50, 50, False), (51, 50, True)):
+            with self.subTest(rows_in_file=n):
+                headers, rows, truncated = _parse_csv(csv_with(n), 50)
+                self.assertEqual(headers, ["a", "b"])
+                self.assertEqual(len(rows), expected_rows)
+                self.assertEqual(rows[0], ["0", "0"])
+                self.assertEqual(truncated, expected_truncated)
+        self.assertEqual(_parse_csv(b"", 50), ([], [], False))
+
+    def test_full_chunk_means_more_rows_and_drops_the_cut_one(self):
+        from datasets.views import preview as preview_view
+
+        # Few, wide rows: under 50 of them fill the chunk, and the read stops mid-row
+        wide = b"a,b\n" + b"".join(f"{i},{'x' * 20_000}\n".encode() for i in range(30))
+        chunk = wide[:preview_view.PREVIEW_CHUNK_BYTES]
+        body = json.loads(preview_view._preview_response(chunk, chunk).content)
+        self.assertTrue(body["truncated"])
+        self.assertTrue(all(len(row[1]) == 20_000 for row in body["rows"]))
+
+        # The whole file fits: every row, and nothing more to show
+        small = b"a,b\n1,2\n3,4\n"
+        body = json.loads(preview_view._preview_response(small, small).content)
+        self.assertEqual(body["rows"], [["1", "2"], ["3", "4"]])
+        self.assertFalse(body["truncated"])
 
     def test_truncated_gzip_stream_still_previews(self):
         """A Range request cuts the gzip member mid-stream; that must not fail."""
