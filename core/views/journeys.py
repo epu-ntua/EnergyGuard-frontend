@@ -75,7 +75,7 @@ JOURNEYS = [
         'icon': 'fa-rocket',
         'audience': 'New users, AI developers and data scientists',
         # REVIEW(quick-start): estimate; time it once the notebook and the robustness test exist.
-        'duration': 'About 1 hour',
+        'duration': 'About 1 to 1.5 hours',
         'tools': 'Datasets, Projects, JupyterHub, MLflow, Trustworthiness Assessments',
         # The server's limits are also given in the notes of 'custom-kernels': keep both in step
         # with the JupyterHub configuration.
@@ -136,8 +136,8 @@ JOURNEYS = [
                     'rest: a naive baseline that repeats the same hour of the previous day (24 steps '
                     'earlier), a linear regression and a small neural network. Each model is logged as a '
                     'run in your experiment, with its parameters, its metrics and the model itself.',
-                    'The notebook also has a Code Analysis section. It is optional and not part of this '
-                    'tutorial.',
+                    'Section 8 of the notebook has no code to run: it explains the results of the code '
+                    'analysis in step 8 of this tutorial.',
                     'With your own model, drag your notebook into the "notebooks" folder of the JupyterHub '
                     'file browser. In it, set your project\'s experiment with mlflow.set_experiment and log '
                     'each model you train as a separate run, with its metrics and the model itself '
@@ -209,9 +209,6 @@ JOURNEYS = [
                     'configuration points to your model and to a test set in MLflow, and names the feature '
                     'and target columns of the test set, the task type and the range of the input values. '
                     'The attacks it lists, FGSM and PGD, are computed from the gradients of the model.',
-                    'The same page offers the AI Act Questionnaire and Code Analysis, which '
-                    '[Assess a project for trustworthiness](journey:assess-project) explains. They are '
-                    'optional and not part of this tutorial.',
                 ],
                 'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
                 'result': 'When the test finishes, the Robustness Report opens after the processing page '
@@ -219,6 +216,44 @@ JOURNEYS = [
                           'a time. "Download Report" saves the metrics as JSON, and a CSV per attack holds the '
                           'attacked windows and both forecasts. The "Results" tab of Trustworthiness '
                           'Assessments lists your past assessments.',
+            },
+            {
+                'title': 'Analyse the code of your model',
+                'body': [
+                    # The notebook does not write the archive on purpose: users make it themselves.
+                    # code_analysis_upload.zip is the name section 8 of the notebook uses.
+                    'Code Analysis scans a ZIP file with your code.',
+                    'Save the notebook (Ctrl+S). In the file browser of JupyterHub, right-click '
+                    'smart_building_forecasting.ipynb and choose "Download". On your computer, put the '
+                    'downloaded notebook in a ZIP file named code_analysis_upload.zip: on Windows and '
+                    'macOS, right-click the file and choose the option that compresses it to a ZIP file, '
+                    'then rename the result.',
+                    'In Trustworthiness Assessments, choose "Start Assessment" on the "Code Analysis" '
+                    'card and select your project. Choose "Upload ZIP File", select '
+                    'code_analysis_upload.zip, give the analysis a name and press "Upload and Continue".',
+                    'With your own model, put your code in a .zip or .tar.gz file of up to 500 MB, or '
+                    'choose "GitHub Repository" and enter the URL of its repository.',
+                ],
+                'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
+                'result': 'A processing page follows, usually for under a minute, then the Analysis Report '
+                          'with its Overview and Details tabs. Section 8 of the notebook, "Look at the code '
+                          'analysis results", explains how to read it. The "Results" tab of Trustworthiness '
+                          'Assessments lists the analysis with your other assessments.',
+            },
+            {
+                'title': 'Complete the AI Act Questionnaire',
+                'optional': True,
+                'body': [
+                    'In Trustworthiness Assessments, choose "Start Assessment" on the "AI Act '
+                    'Questionnaire" card, select your project and answer the questions about your AI '
+                    'system and your role. [Assess a project for trustworthiness](journey:assess-project) '
+                    'describes every assessment of that page.',
+                    'Your answers are kept in your browser session: finish the questionnaire before you '
+                    'log out.',
+                ],
+                'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
+                'result': 'You see your role, the risk category of your AI system and the obligations that '
+                          'apply. The assessment is saved on your project.',
             },
             {
                 'title': 'Try it on other data',
