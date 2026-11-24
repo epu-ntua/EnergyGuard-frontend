@@ -137,7 +137,7 @@ JOURNEYS = [
                     'earlier), a linear regression and a small neural network. Each model is logged as a '
                     'run in your experiment, with its parameters, its metrics and the model itself.',
                     'Section 8 of the notebook has no code to run: it explains the results of the code '
-                    'analysis in step 8 of this tutorial.',
+                    'analysis in step 8 of this tutorial, which is optional.',
                     'With your own model, drag your notebook into the "notebooks" folder of the JupyterHub '
                     'file browser. In it, set your project\'s experiment with mlflow.set_experiment and log '
                     'each model you train as a separate run, with its metrics and the model itself '
@@ -219,10 +219,11 @@ JOURNEYS = [
             },
             {
                 'title': 'Analyse the code of your model',
+                'optional': True,
                 'body': [
                     # The notebook does not write the archive on purpose: users make it themselves.
                     # code_analysis_upload.zip is the name section 8 of the notebook uses.
-                    'Code Analysis scans a ZIP file with your code.',
+                    'Code Analysis scans a ZIP file with your code. This step adds about 5 minutes.',
                     'Save the notebook (Ctrl+S). In the file browser of JupyterHub, right-click '
                     'smart_building_forecasting.ipynb and choose "Download". On your computer, put the '
                     'downloaded notebook in a ZIP file named code_analysis_upload.zip: on Windows and '
@@ -248,6 +249,7 @@ JOURNEYS = [
                     'Questionnaire" card, select your project and answer the questions about your AI '
                     'system and your role. [Assess a project for trustworthiness](journey:assess-project) '
                     'describes every assessment of that page.',
+                    'This step adds about 5 to 30 minutes.',
                     'Your answers are kept in your browser session: finish the questionnaire before you '
                     'log out.',
                 ],
