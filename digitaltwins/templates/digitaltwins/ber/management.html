@@ -273,6 +273,14 @@
         const existingError = form.querySelector('[data-upload-error]');
         if (existingError) existingError.remove();
 
+        // Refuse an oversized file before sending it, not after a long upload.
+        const fileInput = form.querySelector('input[type="file"][data-max-bytes]');
+        const chosen = fileInput && fileInput.files[0];
+        if (chosen && chosen.size > Number(fileInput.dataset.maxBytes)) {
+            showUploadError(form, `Result file exceeds the ${fileInput.dataset.maxLabel} limit.`);
+            return;
+        }
+
         // Two phases: the browser sending the file (XHR upload events), then the
         // server copying it to MinIO (polled from the server under uploadId).
         const uploadId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()

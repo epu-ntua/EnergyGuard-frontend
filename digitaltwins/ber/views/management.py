@@ -18,7 +18,10 @@ from django.views.decorators.http import require_POST
 from digitaltwins.common import dt_render, format_duration
 from digitaltwins.models import BerExperimentRequest
 
-from ..forms import CompleteRequestForm, RejectRequestForm, ReplaceResultForm, first_error
+from ..forms import (
+    RESULT_FILE_MAX_SIZE_BYTES, RESULT_FILE_MAX_SIZE_LABEL, CompleteRequestForm, RejectRequestForm, ReplaceResultForm,
+    first_error,
+)
 from ..services import requests as ber_requests
 from ..services.requests import TransitionError
 from ..upload_progress import UPLOAD_ID_RE, progress_callback_for, read_progress
@@ -65,6 +68,8 @@ def _panel_context(experiment_request, status, page, error=None):
         'status_filter': status,
         'page_number': page,
         'error': error,
+        'result_file_max_bytes': RESULT_FILE_MAX_SIZE_BYTES,
+        'result_file_max_label': RESULT_FILE_MAX_SIZE_LABEL,
     }
 
 
@@ -174,7 +179,7 @@ def ber_management_detail(request, request_id):
         ber_requests.ensure_pending(experiment_request)
 
         if action == 'complete':
-            form = CompleteRequestForm(request.POST, request.FILES, experiment_request=experiment_request)
+            form = CompleteRequestForm(request.POST, request.FILES)
         else:
             form = RejectRequestForm(request.POST)
         if not form.is_valid():

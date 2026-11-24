@@ -363,6 +363,9 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'django_cache',
+        # The default of 300 entries would start evicting long-lived entries,
+        # e.g. the built BER results, whose rebuild parses a ~500 MB file.
+        'OPTIONS': {'MAX_ENTRIES': 10000},
     }
 }
 

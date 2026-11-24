@@ -23,6 +23,7 @@ from django_q.tasks import async_task
 from core.services.object_storage import MinioUploadError
 from digitaltwins.models import BerExperimentRequest
 
+from .results import queue_results_build
 from .storage import discard_result_file, store_result_file
 
 logger = logging.getLogger(__name__)
@@ -120,7 +121,7 @@ def hide_request(experiment_request):
 
 # ── BER staff ────────────────────────────────────────────────────────────────
 
-def complete_request(experiment_request, *, actual_start, actual_end, result_file, progress_callback=None):
+def complete_request(experiment_request, *, result_file, progress_callback=None):
     """pending -> completed with the uploaded result file; notifies the requester."""
     ensure_pending(experiment_request)
     result_key = _store_result_file(experiment_request, result_file, progress_callback)
@@ -130,11 +131,10 @@ def complete_request(experiment_request, *, actual_start, actual_end, result_fil
             # Conditional update: two staff members deciding the same request at
             # once must not both succeed (and both notify the requester).
             updated = BerExperimentRequest.objects.filter(pk=experiment_request.pk, status=Status.PENDING).update(
-                actual_start=actual_start, actual_end=actual_end, result_key=result_key,
-                status=Status.COMPLETED, updated_at=_now(),
+                result_key=result_key, status=Status.COMPLETED, updated_at=_now(),
             )
             if updated:
-                async_task('digitaltwins.ber.tasks.warm_ber_results_cache', experiment_request.pk)
+                queue_results_build(experiment_request.pk, result_key)
                 async_task('digitaltwins.ber.tasks.notify_ber_request_decision', experiment_request.pk)
     except DatabaseError:
         logger.exception('Could not save the completion of BER request %s', experiment_request.pk)
@@ -184,7 +184,7 @@ def replace_result(experiment_request, *, actor, result_file, progress_callback=
                 pk=experiment_request.pk, status=Status.COMPLETED, result_key=old_key,
             ).update(result_key=new_key, updated_at=_now())
             if switched:
-                async_task('digitaltwins.ber.tasks.warm_ber_results_cache', experiment_request.pk)
+                queue_results_build(experiment_request.pk, new_key)
                 async_task('digitaltwins.ber.tasks.notify_ber_results_updated', experiment_request.pk)
     except DatabaseError:
         logger.exception('Could not save the new result file of BER request %s', experiment_request.pk)

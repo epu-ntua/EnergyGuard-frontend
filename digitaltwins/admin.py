@@ -11,7 +11,7 @@ class BerExperimentRequestAdmin(admin.ModelAdmin):
     # Status changes go through the BER management page, which enforces the allowed
     # transitions and notifies the requester - editing it here would bypass both.
     readonly_fields = (
-        'user', 'experiment_json', 'status', 'actual_start', 'actual_end', 'result_key',
+        'user', 'experiment_json', 'status', 'result_key',
         'cancelled_at', 'archived_at', 'archived_by', 'hidden_by_user_at', 'created_at', 'updated_at',
     )
 

@@ -11,7 +11,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
-from core.services.object_storage import MinioUploadError
 from digitaltwins.common import check_rate_limit, dt_render
 from digitaltwins.models import BerExperimentRequest
 from digitaltwins.services.jupyterhub_export import remove_exports
@@ -19,7 +18,7 @@ from digitaltwins.services.jupyterhub_export import remove_exports
 from ..exports import ber_source_prefix
 from ..services import requests as ber_requests
 from ..services.requests import SubmissionLimitError
-from ..services.results import BER_SIGNAL_INFO, BerResultUnreadable, build_ber_results_context
+from ..services.results import BER_SIGNAL_INFO, get_ber_results
 from ..services.validation import validate_ber_experiment
 from .shared import PAGE_SIZE, result_file_response
 
@@ -145,18 +144,27 @@ def _render_results(request, experiment_request):
     if not experiment_request.result_key:
         return _unavailable('This experiment has been completed, but its result file is not available yet.')
 
-    try:
-        context = build_ber_results_context(experiment_request)
-    except MinioUploadError:
-        logger.exception('Could not read BER result file for request %s', experiment_request.pk)
-        return _unavailable('The results could not be loaded right now. Please try again later.')
-    except BerResultUnreadable:
-        logger.exception('BER result file for request %s has no usable data', experiment_request.pk)
+    # Never parses here: a ~500 MB file is built in the qcluster (the failures are
+    # logged there), and this page shows its progress until it is cached.
+    results = get_ber_results(experiment_request)
+    if results.unreadable:
         return _unavailable('The result file for this experiment could not be read. Please contact the BER laboratory team.')
+    if results.storage_failed:
+        return _unavailable('The results could not be loaded right now. Please try again later.')
+    if results.build_failed:
+        return _unavailable(
+            'Something went wrong while preparing the results. The error has been logged '
+            'for the platform team. Please try again later.'
+        )
+    if results.context is None:
+        return dt_render(
+            request, 'digitaltwins/ber/request-detail.html',
+            experiment_request=experiment_request, results_preparing=True,
+        )
 
     return dt_render(
         request, 'digitaltwins/ber/results.html',
-        experiment_request=experiment_request, signal_info=BER_SIGNAL_INFO, **context,
+        experiment_request=experiment_request, signal_info=BER_SIGNAL_INFO, **results.context,
     )
 
 

@@ -1,18 +1,17 @@
 """Forms of the BER staff management panel."""
 
-from datetime import datetime, timedelta, timezone
-
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS
 
 from .services.results import BER_SIGNAL_INFO, has_power_signals
 
-RESULT_FILE_MAX_SIZE_MB = 50  # real .lp signal logs, not the JSON request itself
+# Real .lp signal logs are ~500 MB. The cap is there to protect the server's
+# disk (Django spools each upload to a temp file) rather than to be reached, and
+# sits under the reverse proxy's client_max_body_size of 2000m so staff get this
+# message instead of a bare HTTP 413 from the proxy.
+RESULT_FILE_MAX_SIZE_BYTES = 1900 * 1024 * 1024
+RESULT_FILE_MAX_SIZE_LABEL = '1.9 GB'
 REJECTION_REASON_MAX_WORDS = 2000
-
-_INVALID_TIMES = 'Provide a valid start and end time.'
-# Slack for the staff member's clock vs the server's when entering "just now".
-_CLOCK_TOLERANCE = timedelta(minutes=5)
 
 
 def first_error(form):
@@ -33,8 +32,8 @@ class _ResultFileForm(forms.Form):
 
     def clean_result_file(self):
         result_file = self.cleaned_data['result_file']
-        if result_file.size > RESULT_FILE_MAX_SIZE_MB * 1024 * 1024:
-            raise forms.ValidationError(f'Result file exceeds the {RESULT_FILE_MAX_SIZE_MB} MB limit.')
+        if result_file.size > RESULT_FILE_MAX_SIZE_BYTES:
+            raise forms.ValidationError(f'Result file exceeds the {RESULT_FILE_MAX_SIZE_LABEL} limit.')
         # Checked before anything is stored or the requester is told their results
         # are ready: a file the results page can't chart would only reach them as
         # an error.
@@ -49,48 +48,7 @@ class _ResultFileForm(forms.Form):
 
 
 class CompleteRequestForm(_ResultFileForm):
-    # Text, not DateTimeField: the panel's datetime-local inputs are labelled UTC
-    # and must be read as UTC whatever the server's TIME_ZONE.
-    # required=False so a missing value gets the same message as an invalid one.
-    actual_start = forms.CharField(required=False)
-    actual_end = forms.CharField(required=False)
-
-    field_order = ['actual_start', 'actual_end', 'result_file']
-
-    def __init__(self, *args, experiment_request, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.experiment_request = experiment_request
-
-    @staticmethod
-    def _parse_utc(raw):
-        try:
-            return datetime.strptime(raw, '%Y-%m-%dT%H:%M').replace(tzinfo=timezone.utc)
-        except (ValueError, TypeError):
-            raise forms.ValidationError(_INVALID_TIMES)
-
-    def clean_actual_start(self):
-        return self._parse_utc(self.cleaned_data['actual_start'])
-
-    def clean_actual_end(self):
-        return self._parse_utc(self.cleaned_data['actual_end'])
-
-    def clean(self):
-        cleaned = super().clean()
-        start, end = cleaned.get('actual_start'), cleaned.get('actual_end')
-        if not (start and end):
-            return cleaned
-        if end <= start:
-            self.add_error('actual_end', 'End time must be after start time.')
-        elif end > datetime.now(timezone.utc) + _CLOCK_TOLERANCE:
-            self.add_error('actual_end', 'The end time cannot be in the future. Times are in UTC.')
-        # The inputs have minute precision, so compare against the minute of submission.
-        submitted = self.experiment_request.created_at.replace(second=0, microsecond=0)
-        if start < submitted:
-            self.add_error('actual_start', (
-                'The experiment cannot have started before the request was submitted '
-                f'({submitted:%d %b %Y, %H:%M} UTC).'
-            ))
-        return cleaned
+    pass
 
 
 class RejectRequestForm(forms.Form):

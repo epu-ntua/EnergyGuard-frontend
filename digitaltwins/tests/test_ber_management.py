@@ -1,13 +1,13 @@
 """BER experiment management (BER staff side), through the URLs."""
 
 import json
-from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
+from digitaltwins.ber.tasks import warm_ber_results_cache
 from digitaltwins.models import BerExperimentRequest
 
 from .ber_factories import make_completed_request, make_request, make_user
@@ -20,17 +20,6 @@ BUCKET = settings.OBJECT_STORAGE_BUCKET_SIMULATIONS
 
 def result_upload(name='result.lp', data=SAMPLE_LP):
     return SimpleUploadedFile(name, data, content_type='application/octet-stream')
-
-
-def recent_times():
-    """An execution window the form accepts for a request submitted just now:
-    not before the submission minute, not in the future."""
-    start = datetime.now(timezone.utc).replace(second=0, microsecond=0)
-    return start, start + timedelta(minutes=1)
-
-
-def as_input(moment):
-    return moment.strftime('%Y-%m-%dT%H:%M')
 
 
 class BerManagementPermissionTests(TestCase):
@@ -156,13 +145,8 @@ class BerDecisionTests(TestCase):
     def setUp(self):
         self.client.force_login(self.staff)
 
-    def _complete(self, experiment_request, *, upload=None, start=None, end=None, **extra):
-        default_start, default_end = recent_times()
-        data = {
-            'action': 'complete', 'status': 'pending', 'page': '1',
-            'actual_start': as_input(default_start) if start is None else start,
-            'actual_end': as_input(default_end) if end is None else end,
-        }
+    def _complete(self, experiment_request, *, upload=None, **extra):
+        data = {'action': 'complete', 'status': 'pending', 'page': '1'}
         if upload is not None:
             data['result_file'] = upload
         return self.client.post(reverse('ber-management-detail', args=[experiment_request.pk]), data, **extra)
@@ -170,11 +154,8 @@ class BerDecisionTests(TestCase):
     def test_completing_stores_the_file_and_notifies_the_requester(self):
         experiment_request = make_request(self.requester)
 
-        start, end = recent_times()
         with fake_object_storage() as storage:
-            response = self._complete(
-                experiment_request, upload=result_upload(), start=as_input(start), end=as_input(end), **XHR,
-            )
+            response = self._complete(experiment_request, upload=result_upload(), **XHR)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -183,8 +164,6 @@ class BerDecisionTests(TestCase):
         )
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.status, Status.COMPLETED)
-        self.assertEqual(experiment_request.actual_start, start)
-        self.assertEqual(experiment_request.actual_end, end)
         self.assertTrue(experiment_request.result_key.startswith(f'ber-hydrogen/{experiment_request.pk}/result-'))
         self.assertTrue(experiment_request.result_key.endswith('.lp'))
         self.assertEqual(storage.objects[(BUCKET, experiment_request.result_key)], SAMPLE_LP)
@@ -203,9 +182,8 @@ class BerDecisionTests(TestCase):
 
     def test_invalid_completion_input_changes_nothing(self):
         cases = {
-            'missing times': {'start': '', 'end': ''},
-            'end before start': {'start': '2026-01-01T10:00', 'end': '2026-01-01T09:00'},
             'missing file': {'upload': None},
+            'file without power signals': {'upload': result_upload(data=b'')},
         }
         for label, overrides in cases.items():
             with self.subTest(label), fake_object_storage() as storage:
@@ -222,9 +200,9 @@ class BerDecisionTests(TestCase):
     def test_invalid_input_without_js_rerenders_the_page_with_the_error(self):
         experiment_request = make_request(self.requester)
 
-        response = self._complete(experiment_request, upload=result_upload(), start='')
+        response = self._complete(experiment_request)
 
-        self.assertContains(response, 'Provide a valid start and end time.', status_code=400)
+        self.assertContains(response, 'Choose a result file to upload.', status_code=400)
 
     def test_storage_failure_keeps_the_request_pending(self):
         experiment_request = make_request(self.requester)
@@ -378,13 +356,22 @@ class BerReplaceResultTests(TestCase):
             experiment_request = make_completed_request(self.requester, storage, data=SAMPLE_LP)
             detail_url = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
 
+            warm_ber_results_cache(experiment_request.pk)  # what the qcluster does
             self.client.force_login(self.requester)
             self.assertEqual(self.client.get(detail_url).context['kpis']['peak_total_power'], 6.5)
 
             self.client.force_login(self.staff)
             self._replace(experiment_request, result_upload(data=SAMPLE_LP.replace(b'JT_3001=6.5', b'JT_3001=7.5')))
 
+            # Until the queued build runs, the old results are not shown for the new file.
             self.client.force_login(self.requester)
+            self.assertContains(self.client.get(detail_url), 'results are being prepared')
+            self.assertEqual(
+                queued_task_funcs().count('digitaltwins.ber.tasks.warm_ber_results_cache'), 1,
+                'the view must wait for the build the replace queued, not queue a second one',
+            )
+
+            warm_ber_results_cache(experiment_request.pk)
             self.assertEqual(self.client.get(detail_url).context['kpis']['peak_total_power'], 7.5)
 
     def test_replacing_with_an_unreadable_file_keeps_the_current_one(self):
@@ -436,11 +423,9 @@ class BerUploadProgressTests(TestCase):
         upload_id = 'abcdef12-3456'
         self.client.force_login(self.staff)
 
-        start, end = recent_times()
         with fake_object_storage():
             self.client.post(reverse('ber-management-detail', args=[experiment_request.pk]), {
-                'action': 'complete', 'actual_start': as_input(start), 'actual_end': as_input(end),
-                'result_file': result_upload(), 'upload_id': upload_id,
+                'action': 'complete', 'result_file': result_upload(), 'upload_id': upload_id,
             }, **XHR)
 
         progress_url = reverse('ber-management-upload-progress')

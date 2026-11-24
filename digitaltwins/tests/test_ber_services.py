@@ -5,7 +5,6 @@ through HTTP: two people acting at once, and a failure between the state change
 and its notification.
 """
 
-from datetime import datetime, timezone
 from unittest.mock import patch
 
 from django.core import mail
@@ -25,8 +24,6 @@ from .fakes import SAMPLE_LP, fake_object_storage, queued_task_funcs
 
 Status = BerExperimentRequest.Status
 PLATFORM_URL = 'https://dashboard.example.com/'
-START = datetime(2026, 1, 1, 9, 0, tzinfo=timezone.utc)
-END = datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc)
 ENQUEUE = 'digitaltwins.ber.services.requests.async_task'
 
 
@@ -35,9 +32,7 @@ def upload(data=SAMPLE_LP):
 
 
 def complete(experiment_request):
-    ber_requests.complete_request(
-        experiment_request, actual_start=START, actual_end=END, result_file=upload(),
-    )
+    ber_requests.complete_request(experiment_request, result_file=upload())
 
 
 class StateChangeAndNotificationAreAtomicTests(TestCase):
@@ -74,6 +69,18 @@ class StateChangeAndNotificationAreAtomicTests(TestCase):
         experiment_request.refresh_from_db()
         self.assertEqual(experiment_request.result_key, old_key)
         self.assertEqual(storage.keys(), [old_key])
+
+    def test_failed_results_build_enqueue_leaves_the_request_pending(self):
+        experiment_request = make_request(self.requester)
+
+        with fake_object_storage() as storage, \
+                patch('digitaltwins.ber.services.results.async_task', side_effect=DatabaseError('broker down')):
+            with self.assertRaisesMessage(TransitionError, 'Could not save the decision'):
+                complete(experiment_request)
+
+        experiment_request.refresh_from_db()
+        self.assertEqual(experiment_request.status, Status.PENDING)
+        self.assertEqual(storage.keys(), [])
 
     def test_failed_enqueue_on_reject_leaves_the_request_pending(self):
         experiment_request = make_request(self.requester)

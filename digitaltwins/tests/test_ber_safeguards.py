@@ -1,5 +1,5 @@
 """Safeguards around BER requests: submission limits, duplicate submissions,
-plausible execution times, result files of deleted requests, and email links."""
+result files of deleted requests, and email links."""
 
 import json
 from datetime import datetime, timedelta, timezone
@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.core import mail
 from django.core.cache import cache
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -22,11 +21,6 @@ from .ber_factories import VALID_EXPERIMENT, make_completed_request, make_reques
 from .fakes import SAMPLE_LP, fake_object_storage, queued_task_funcs
 
 Status = BerExperimentRequest.Status
-XHR = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
-
-def as_input(moment):
-    return moment.strftime('%Y-%m-%dT%H:%M')
 
 
 @override_settings(BER_EMAIL='ber-lab@example.com')
@@ -112,48 +106,6 @@ class DuplicateSubmissionTests(TestCase):
 
         self.assertEqual(response.status_code, 409)
         self.assertFalse(BerExperimentRequest.objects.exists())
-
-
-class ExecutionTimeTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.staff = make_user('times-staff@example.com', ber_staff=True)
-        cls.requester = make_user('times-requester@example.com')
-
-    def _complete(self, start, end):
-        experiment_request = make_request(self.requester)
-        self.client.force_login(self.staff)
-        with fake_object_storage():
-            response = self.client.post(reverse('ber-management-detail', args=[experiment_request.pk]), {
-                'action': 'complete', 'actual_start': as_input(start), 'actual_end': as_input(end),
-                'result_file': SimpleUploadedFile('r.lp', SAMPLE_LP),
-            }, **XHR)
-        experiment_request.refresh_from_db()
-        return response, experiment_request
-
-    def test_start_before_submission_is_refused(self):
-        now = datetime.now(timezone.utc)
-        response, experiment_request = self._complete(now - timedelta(days=1), now - timedelta(hours=23))
-
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('cannot have started before the request was submitted', response.json()['error'])
-        self.assertEqual(experiment_request.status, Status.PENDING)
-
-    def test_end_in_the_future_is_refused(self):
-        now = datetime.now(timezone.utc)
-        response, experiment_request = self._complete(now, now + timedelta(hours=2))
-
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('cannot be in the future', response.json()['error'])
-        self.assertEqual(experiment_request.status, Status.PENDING)
-
-    def test_end_a_few_minutes_ahead_is_tolerated(self):
-        """Staff clocks drift; "just now" typed on a fast clock must still work."""
-        now = datetime.now(timezone.utc)
-        response, experiment_request = self._complete(now, now + timedelta(minutes=3))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(experiment_request.status, Status.COMPLETED)
 
 
 class DeletedRequestFileTests(TestCase):

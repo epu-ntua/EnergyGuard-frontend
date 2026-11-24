@@ -5,16 +5,24 @@ reorganisation of the digitaltwins app must preserve.
 """
 
 import json
+from unittest.mock import patch
 
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from digitaltwins.ber.tasks import warm_ber_results_cache
 from digitaltwins.models import BerExperimentRequest
 
 from .ber_factories import VALID_EXPERIMENT, make_completed_request, make_request, make_user
 from .fakes import SAMPLE_LP, fake_object_storage, queued_task_funcs
 
 Status = BerExperimentRequest.Status
+
+
+def build(experiment_request):
+    """Run the qcluster build of the results page, as the worker would."""
+    warm_ber_results_cache(experiment_request.pk)
 
 
 class BerSubmitTests(TestCase):
@@ -196,10 +204,33 @@ class BerResultsPageTests(TestCase):
         self.assertTemplateUsed(response, 'digitaltwins/ber/request-detail.html')
         self.assertContains(response, 'Waiting for the BER laboratory')
 
+    def _view(self, experiment_request):
+        return self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
+
+    def test_first_view_queues_one_build_and_shows_it_is_being_prepared(self):
+        with fake_object_storage() as storage:
+            experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
+            first = self._view(experiment_request)
+            second = self._view(experiment_request)
+
+        for response in (first, second):
+            self.assertTemplateUsed(response, 'digitaltwins/ber/request-detail.html')
+            self.assertContains(response, 'results are being prepared')
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.warm_ber_results_cache'])
+
+    def test_the_view_never_reads_the_result_file(self):
+        with fake_object_storage() as storage:
+            experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
+            with patch('digitaltwins.ber.services.results.open_result_file') as open_file:
+                self._view(experiment_request)
+
+        open_file.assert_not_called()
+
     def test_completed_request_renders_kpis_parsed_from_the_result_file(self):
         with fake_object_storage() as storage:
             experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
-            response = self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
+            build(experiment_request)
+            response = self._view(experiment_request)
 
         self.assertTemplateUsed(response, 'digitaltwins/ber/results.html')
         kpis = response.context['kpis']
@@ -219,27 +250,52 @@ class BerResultsPageTests(TestCase):
     def test_parsed_results_are_cached(self):
         with fake_object_storage() as storage:
             experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
-            url = reverse('ber-hydrogen-request-detail', args=[experiment_request.pk])
-            self.client.get(url)
+            build(experiment_request)
             storage.fail_reads = True
-            response = self.client.get(url)
+            response = self._view(experiment_request)
 
         self.assertTemplateUsed(response, 'digitaltwins/ber/results.html')
 
     def test_result_file_without_power_signals_shows_a_message(self):
         with fake_object_storage() as storage:
             experiment_request = make_completed_request(self.owner, storage, data=b'not,a power file\n')
-            response = self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
+            build(experiment_request)
+            response = self._view(experiment_request)
 
         self.assertContains(response, 'could not be read')
+        self.assertEqual(queued_task_funcs(), [], 'a file known to be unreadable must not be rebuilt')
 
     def test_unreachable_storage_shows_a_retry_message(self):
         with fake_object_storage() as storage:
             experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
             storage.fail_reads = True
-            response = self.client.get(reverse('ber-hydrogen-request-detail', args=[experiment_request.pk]))
+            build(experiment_request)
+            response = self._view(experiment_request)
 
         self.assertContains(response, 'could not be loaded right now')
+
+    def test_an_unexpected_build_error_is_reported_and_not_retried_on_every_view(self):
+        with fake_object_storage() as storage:
+            experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
+            with patch('digitaltwins.ber.services.results._compute_ber_kpis', side_effect=ValueError('bug')):
+                build(experiment_request)
+            first = self._view(experiment_request)
+            second = self._view(experiment_request)
+
+        for response in (first, second):
+            self.assertContains(response, 'Something went wrong while preparing the results')
+        self.assertEqual(queued_task_funcs(), [], 'a bug must not trigger a re-parse on every view')
+
+    def test_a_build_is_queued_again_once_the_storage_failure_is_forgotten(self):
+        with fake_object_storage() as storage:
+            experiment_request = make_completed_request(self.owner, storage, data=SAMPLE_LP)
+            storage.fail_reads = True
+            build(experiment_request)
+            cache.clear()  # the short-lived failure marker has expired
+            response = self._view(experiment_request)
+
+        self.assertContains(response, 'results are being prepared')
+        self.assertEqual(queued_task_funcs(), ['digitaltwins.ber.tasks.warm_ber_results_cache'])
 
     def test_completed_without_a_file_says_so(self):
         experiment_request = make_request(self.owner, status=Status.COMPLETED)

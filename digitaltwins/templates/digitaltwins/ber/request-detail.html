@@ -68,6 +68,23 @@
                 </div>
             </div>
         </div>
+        {% elif results_preparing %}
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="alert alert-subtle-info rounded-3 mb-4 d-flex align-items-center gap-2" role="status">
+                    <span class="spinner-border spinner-border-sm flex-shrink-0" aria-hidden="true"></span>
+                    <span>The results are being prepared from the experiment's data. For large experiments this can take a few minutes. This page refreshes on its own.</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'ber-hydrogen-dt' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <span class="fas fa-arrow-left"></span>Back to Experiment Request
+                    </a>
+                    <a href="{% url 'ber-hydrogen-runs' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        View all requests<span class="fas fa-arrow-right"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
         {% elif result_error %}
         <div class="card mb-4">
             <div class="card-body p-4">
@@ -118,6 +135,12 @@
 {% endblock content %}
 
 {% block scripts %}
+{% if results_preparing %}
+<script>
+// Each reload only reads the cache; the build itself runs in the background.
+setTimeout(function () { window.location.reload(); }, 15000);
+</script>
+{% endif %}
 {% if experiment_request.status == 'pending' %}
 <script>
 (function () {

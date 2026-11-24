@@ -46,20 +46,11 @@
         <input type="hidden" name="action" value="complete">
         <input type="hidden" name="status" value="{{ status_filter }}">
         <input type="hidden" name="page" value="{{ page_number }}">
-        <div class="row g-2 mb-3">
-            <div class="col-6">
-                <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="actual-start">Actual start (UTC)</label>
-                <input type="datetime-local" class="form-control" id="actual-start" name="actual_start" required>
-            </div>
-            <div class="col-6">
-                <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="actual-end">Actual end (UTC)</label>
-                <input type="datetime-local" class="form-control" id="actual-end" name="actual_end" required>
-            </div>
-        </div>
         <div class="mb-3">
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="result-file">Result file</label>
-            <input type="file" class="form-control" id="result-file" name="result_file" required>
-            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max 50 MB.</span>
+            <input type="file" class="form-control" id="result-file" name="result_file" required
+                   data-max-bytes="{{ result_file_max_bytes }}" data-max-label="{{ result_file_max_label }}">
+            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max {{ result_file_max_label }}.</span>
         </div>
         <div class="d-none mb-3" data-upload-progress>
             <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
@@ -98,14 +89,6 @@
     </div>
 
     {% elif selected.status == 'completed' %}
-    <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Execution details</h6>
-    <dl class="row g-0 fs-9 mb-3">
-        <dt class="col-5 text-body-tertiary fw-normal">Actual start</dt>
-        <dd class="col-7 fw-semibold text-body-emphasis mb-1">{% if selected.actual_start %}{{ selected.actual_start|date:"d M Y, H:i" }} UTC{% else %}—{% endif %}</dd>
-        <dt class="col-5 text-body-tertiary fw-normal">Actual end</dt>
-        <dd class="col-7 fw-semibold text-body-emphasis mb-0">{% if selected.actual_end %}{{ selected.actual_end|date:"d M Y, H:i" }} UTC{% else %}—{% endif %}</dd>
-    </dl>
-
     <h6 class="fw-bold text-body-emphasis border-bottom border-translucent pb-2 mb-3">Result file</h6>
     {% if selected.result_key %}
     <a href="{% url 'ber-management-download' selected.pk %}" class="d-flex align-items-center gap-3 border border-translucent rounded-3 p-3 mb-4 text-decoration-none">
@@ -133,8 +116,9 @@
         <input type="hidden" name="page" value="{{ page_number }}">
         <div class="mb-3">
             <label class="form-label fs-9 text-body-tertiary fw-normal ps-0" for="replace-result-file">New result file</label>
-            <input type="file" class="form-control" id="replace-result-file" name="result_file" required>
-            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max 50 MB.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
+            <input type="file" class="form-control" id="replace-result-file" name="result_file" required
+                   data-max-bytes="{{ result_file_max_bytes }}" data-max-label="{{ result_file_max_label }}">
+            <span class="form-text fs-10">The experiment's .lp file with its power signals. Max {{ result_file_max_label }}.{% if selected.result_key %} The current file is deleted once the new one is saved.{% endif %}</span>
         </div>
         <div class="d-none mb-3" data-upload-progress>
             <div class="progress" style="height:6px;" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">

@@ -102,9 +102,12 @@ def send_ber_notification_email(experiment_request_id, platform_url=None):
 
 
 def warm_ber_results_cache(experiment_request_id):
-    """Runs in the qcluster worker right after BER uploads a result file: parses the
-    .lp and fills the results cache, so the requester's first view (usually from the
-    notification link) doesn't pay the multi-second parse."""
+    """Runs in the qcluster worker: parses the .lp and fills the results cache.
+
+    Queued right after BER uploads a result file, and by the results page if it
+    finds nothing cached. This is the only place the file is parsed: at ~500 MB
+    that takes a minute or more, which no web request should wait for.
+    """
     experiment_request = BerExperimentRequest.objects.filter(pk=experiment_request_id).first()
     if (experiment_request is None or experiment_request.status != BerExperimentRequest.Status.COMPLETED
             or not experiment_request.result_key):
@@ -113,9 +116,9 @@ def warm_ber_results_cache(experiment_request_id):
     try:
         build_ber_results_context(experiment_request)
     except Exception:
-        # The results page retries the same build on first view and shows the
-        # requester a proper message if it fails there too.
-        logger.exception('Could not pre-build BER results for request %s', experiment_request.pk)
+        # The outcome is already recorded for the results page, which shows the
+        # requester a proper message (see build_ber_results_context).
+        logger.exception('Could not build BER results for request %s', experiment_request.pk)
 
 
 def send_ber_cancellation_email(experiment_request_id, platform_url=None):

@@ -1,26 +1,60 @@
 """BER experiment results: parsing the uploaded .lp file into chart data and KPIs.
 
-Used by the requester's results page and by the qcluster task that pre-builds
-the same context right after BER uploads a file.
+The file is parsed only by the qcluster task (warm_ber_results_cache), queued
+when BER uploads a file and again whenever the results page finds nothing
+cached. The page itself only reads the cache: see get_ber_results.
 """
 
 import bisect
 import hashlib
+import heapq
+import logging
+import time
+from array import array
 from datetime import datetime, timezone
 from math import ceil
+from typing import NamedTuple
 
 from django.core.cache import cache
+from django_q.tasks import async_task
 
+from core.services.object_storage import MinioUploadError
 from digitaltwins.common import RESULT_STREAM_CHUNK, format_duration
 
 from .storage import open_result_file
 
+logger = logging.getLogger(__name__)
+
 _BER_POWER_TAGS = ('JT_3001', 'JT_3002', 'JT_3003', 'ET_1001', 'IT_1101')
 _BER_CHART_MAX_POINTS = 1500
-# The parsed/downsampled chart data is cached instead of re-reading the .lp per view.
-# The cache key includes the result_key, so replacing the file (which always writes
-# a fresh key) makes the next view rebuild from the new file.
-_BER_RESULTS_CACHE_TIMEOUT = 7 * 24 * 3600
+# Result files reach ~500 MB, so building the context takes a minute or more and
+# runs only in the qcluster (see warm_ber_results_cache), never in a web request.
+# The key includes the result_key and replacing the file always writes a fresh
+# key, so a cached context is never stale. It still expires, so that contexts of
+# replaced files and deleted requests don't pile up in the cache table (where the
+# DatabaseCache would cull by key order, live entries included); an expired one
+# is rebuilt in the background on the next view.
+_BER_RESULTS_CACHE_TIMEOUT = 90 * 24 * 3600
+# Each failure is remembered so the page can say what happened, for as long as
+# a retry is not worth it:
+# - the file has no power signals: retrying won't change that;
+_UNREADABLE = 'unreadable'
+# - object storage could not be read: likely transient, retried soon;
+_STORAGE_FAILED = 'storage-failed'
+_STORAGE_FAILURE_TIMEOUT = 5 * 60
+# - anything else is a bug: retrying would re-parse the whole file only to fail
+#   the same way, so it is retried rarely (a fix gets picked up within hours).
+_BUILD_FAILED = 'build-failed'
+_BUILD_FAILURE_TIMEOUT = 6 * 3600
+_FAILURE_TIMEOUTS = {
+    _UNREADABLE: _BER_RESULTS_CACHE_TIMEOUT,
+    _STORAGE_FAILED: _STORAGE_FAILURE_TIMEOUT,
+    _BUILD_FAILED: _BUILD_FAILURE_TIMEOUT,
+}
+# Held while a build is queued or running, so repeated views of a page that is
+# still being prepared queue one build, not one per view. It outlives the
+# qcluster's 30-minute task timeout, after which a stuck build is given up on.
+_BUILD_LOCK_TIMEOUT = 35 * 60
 
 BER_SIGNAL_INFO = {
     'JT_3001': {'label': 'Total power',        'unit': 'kW', 'description': "The total electrical power drawn by the whole system, including the stack and all auxiliary equipment (pumps, cooling, controls)."},
@@ -60,13 +94,40 @@ def _power_point(parts):
         return None
 
 
+class Signal(NamedTuple):
+    """One power tag's samples as two parallel float arrays, sorted by time.
+
+    array('d') holds 8 bytes per number, against ~110 bytes for a (ts, value)
+    tuple in a list: a 500 MB file is ~9 million samples, so this is the
+    difference between ~150 MB and over 1 GB in the worker.
+    """
+    ts: array
+    values: array
+
+    def __len__(self):
+        return len(self.ts)
+
+
+def _sorted_by_time(ts, values):
+    """The arrays reordered by timestamp, keeping equal timestamps in file order.
+
+    Exports are normally already in time order, which is checked in one pass
+    without copying anything.
+    """
+    if all(ts[i] <= ts[i + 1] for i in range(len(ts) - 1)):
+        return Signal(ts, values)
+    order = sorted(range(len(ts)), key=ts.__getitem__)
+    return Signal(array('d', (ts[i] for i in order)), array('d', (values[i] for i in order)))
+
+
 def _parse_ber_power_signals(lines):
     """Parse the power signals out of a BER .lp (InfluxDB line protocol) file.
 
     `lines` yields bytes or str lines, e.g. `power,serialNumber=6 JT_3001=1.23 <ns>`.
-    Returns (series, serial_number); serial_number is None if no power line has one.
+    Returns (series, serial_number): a Signal per power tag, and None for the
+    serial number if no power line has one.
     """
-    series = {tag: [] for tag in _BER_POWER_TAGS}
+    raw = {tag: (array('d'), array('d')) for tag in _BER_POWER_TAGS}
     serial_number = None
     for line in lines:
         parts = _split_power_line(line)
@@ -81,9 +142,10 @@ def _parse_ber_power_signals(lines):
         if point is None:
             continue
         tag, ts_seconds, value = point
-        series[tag].append((ts_seconds, value))
-    for tag in series:
-        series[tag].sort(key=lambda point: point[0])
+        ts, values = raw[tag]
+        ts.append(ts_seconds)
+        values.append(value)
+    series = {tag: _sorted_by_time(ts, values) for tag, (ts, values) in raw.items()}
     return series, serial_number
 
 
@@ -100,34 +162,59 @@ def has_power_signals(lines):
     return False
 
 
-def _downsample(points, max_points=_BER_CHART_MAX_POINTS):
-    n = len(points)
+def _sample_indices(n, max_points=_BER_CHART_MAX_POINTS):
+    """Positions of an every-stride-th downsample of n points, always keeping the last."""
     if n <= max_points:
-        return list(points)
+        return range(n)
     stride = ceil(n / max_points)
-    sampled = points[::stride]
+    indices = list(range(0, n, stride))
     if (n - 1) % stride != 0:
-        sampled = list(sampled) + [points[-1]]
-    return list(sampled)
+        indices.append(n - 1)
+    return indices
 
 
-def _forward_fill(points, timestamps):
-    """Sample a step-wise (last-known-value) series at the given timestamps."""
-    ts_list = [ts for ts, _ in points]
-    values = [value for _, value in points]
+def _forward_fill(signal, timestamps):
+    """Sample a step-wise (last-known-value) signal at the given timestamps.
+
+    A tag missing from the file contributes 0 to the stack, so a file without,
+    say, auxiliaries power still shows the stack power it does have.
+    """
+    if not signal:
+        return [0.0] * len(timestamps)
     result = []
     for t in timestamps:
-        i = bisect.bisect_right(ts_list, t) - 1
-        result.append(values[i] if i >= 0 else values[0])
+        i = bisect.bisect_right(signal.ts, t) - 1
+        result.append(signal.values[i] if i >= 0 else signal.values[0])
     return result
+
+
+def _merged_timestamps(signals):
+    """The distinct timestamps of several sorted signals, in order, without
+    building the union in memory (a set of every timestamp of a 500 MB file is
+    itself hundreds of MB)."""
+    previous = None
+    for ts in heapq.merge(*(signal.ts for signal in signals)):
+        if ts != previous:
+            yield ts
+            previous = ts
 
 
 def _aligned_stacked_series(series, tags, max_points=_BER_CHART_MAX_POINTS):
     """Resample several tags onto one shared timestamp grid so their values can be
     stacked (summed) correctly in a stacked area chart, even though each tag was
     originally logged at its own, differing sample rate."""
-    merged_ts = sorted({ts for tag in tags for ts, _ in series[tag]})
-    merged_ts = _downsample(merged_ts, max_points)
+    signals = [series[tag] for tag in tags]
+    # Two passes over the merge: one to count, one to pick the sampled positions.
+    count = sum(1 for _ in _merged_timestamps(signals))
+    wanted = iter(_sample_indices(count, max_points))
+    next_wanted = next(wanted, None)
+    merged_ts = []
+    for position, ts in enumerate(_merged_timestamps(signals)):
+        if position == next_wanted:
+            merged_ts.append(ts)
+            next_wanted = next(wanted, None)
+            if next_wanted is None:
+                break
     return {
         tag: [[round(ts * 1000), round(value, 3)]
               for ts, value in zip(merged_ts, _forward_fill(series[tag], merged_ts))]
@@ -136,15 +223,16 @@ def _aligned_stacked_series(series, tags, max_points=_BER_CHART_MAX_POINTS):
 
 
 def _compute_ber_kpis(series):
-    def values(tag):
-        return [value for _, value in series[tag]]
+    def average(tag):
+        values = series[tag].values
+        return sum(values) / len(values) if values else 0.0
 
     return {
-        'peak_total_power':   max(values('JT_3001'), default=0.0),
-        'avg_stack_power':    (sum(values('JT_3002')) / len(series['JT_3002'])) if series['JT_3002'] else 0.0,
-        'avg_aux_power':      (sum(values('JT_3003')) / len(series['JT_3003'])) if series['JT_3003'] else 0.0,
-        'peak_stack_current': max(values('IT_1101'), default=0.0),
-        'peak_stack_voltage': max(values('ET_1001'), default=0.0),
+        'peak_total_power':   max(series['JT_3001'].values, default=0.0),
+        'avg_stack_power':    average('JT_3002'),
+        'avg_aux_power':      average('JT_3003'),
+        'peak_stack_current': max(series['IT_1101'].values, default=0.0),
+        'peak_stack_voltage': max(series['ET_1001'].values, default=0.0),
     }
 
 
@@ -168,35 +256,124 @@ def _power_chart_axis_range(peak_total_power, step=2):
     return {'min': 0, 'max': axis_max}
 
 
-def build_ber_results_context(experiment_request):
-    """Chart/KPI context for a completed request, parsed from its uploaded .lp file.
+def _cache_keys(request_id, result_key):
+    suffix = f'{request_id}_{hashlib.sha256(result_key.encode()).hexdigest()[:16]}'
+    return f'ber_results_ctx_{suffix}', f'ber_results_failed_{suffix}', f'ber_results_building_{suffix}'
 
-    Raises MinioUploadError if the file can't be read from object storage, and
-    BerResultUnreadable if it contains no power signals.
+
+def queue_results_build(request_id, result_key):
+    """Queue the qcluster build of this file's results, unless one already is.
+
+    The claim is what keeps two builds of the same 500 MB file from ever running
+    side by side, however often the page is viewed meanwhile. It is held until
+    the build ends, or for _BUILD_LOCK_TIMEOUT if the worker dies mid-build.
+
+    Called inside the transaction that stores a new file too: the cache is the
+    DatabaseCache on the default database, so there the claim commits or rolls
+    back together with the queued task row (see services.requests).
     """
-    result_key = experiment_request.result_key
-    cache_key = f'ber_results_ctx_{experiment_request.pk}_{hashlib.sha256(result_key.encode()).hexdigest()[:16]}'
-    context = cache.get(cache_key)
-    if context is not None:
-        return context
+    building_key = _cache_keys(request_id, result_key)[2]
+    if not cache.add(building_key, 1, timeout=_BUILD_LOCK_TIMEOUT):
+        return False
+    try:
+        async_task('digitaltwins.ber.tasks.warm_ber_results_cache', request_id)
+    except Exception:
+        cache.delete(building_key)  # nothing was queued: the next view must retry
+        raise
+    return True
 
-    body, _ = open_result_file(result_key)
+
+class ResultsState(NamedTuple):
+    """What the results page can show right now: `context` once built; otherwise
+    the recorded `failure`, or neither, meaning it is being built."""
+    context: dict | None = None
+    failure: str | None = None
+
+    @property
+    def unreadable(self):
+        return self.failure == _UNREADABLE
+
+    @property
+    def storage_failed(self):
+        return self.failure == _STORAGE_FAILED
+
+    @property
+    def build_failed(self):
+        return self.failure == _BUILD_FAILED
+
+
+def get_ber_results(experiment_request):
+    """The results page's view of a completed request, without ever parsing the file.
+
+    If nothing is cached, no failure is recorded and no build is in flight, it
+    queues one.
+    """
+    request_id, result_key = experiment_request.pk, experiment_request.result_key
+    context_key, failed_key, _ = _cache_keys(request_id, result_key)
+    found = cache.get_many([context_key, failed_key])
+    if context_key in found:
+        return ResultsState(context=found[context_key])
+    if found.get(failed_key) in _FAILURE_TIMEOUTS:
+        return ResultsState(failure=found[failed_key])
+    queue_results_build(request_id, result_key)
+    return ResultsState()
+
+
+def build_ber_results_context(experiment_request):
+    """Parse the request's .lp file and cache the chart/KPI context. qcluster only:
+    a 500 MB file takes a minute or more and ~150 MB of memory.
+
+    Records the outcome for get_ber_results either way, and re-raises any
+    failure so the task logs it.
+    """
+    context_key, failed_key, building_key = _cache_keys(experiment_request.pk, experiment_request.result_key)
+    failure = None
+    try:
+        if cache.get(context_key) is None:
+            context = _build_context(experiment_request)
+            cache.set(context_key, context, timeout=_BER_RESULTS_CACHE_TIMEOUT)
+            cache.delete(failed_key)
+    except BerResultUnreadable:
+        failure = _UNREADABLE
+        raise
+    except MinioUploadError:
+        failure = _STORAGE_FAILED
+        raise
+    except Exception:
+        failure = _BUILD_FAILED
+        raise
+    finally:
+        # Recording the outcome must not replace the exception being raised.
+        try:
+            if failure is not None:
+                cache.set(failed_key, failure, timeout=_FAILURE_TIMEOUTS[failure])
+            cache.delete(building_key)
+        except Exception:
+            logger.exception('Could not record the BER results build outcome for request %s', experiment_request.pk)
+
+
+def _build_context(experiment_request):
+    result_key = experiment_request.result_key
+    started = time.monotonic()
+    body, content_length = open_result_file(result_key)
     try:
         series, serial_number = _parse_ber_power_signals(body.iter_lines(chunk_size=RESULT_STREAM_CHUNK))
     finally:
         body.close()
 
-    all_timestamps = [ts for points in series.values() for ts, _ in points]
-    if not all_timestamps:
+    non_empty = [signal for signal in series.values() if signal]
+    if not non_empty:
         raise BerResultUnreadable(f'No power signals in {result_key}')
 
-    run_start = min(all_timestamps)
-    run_end = max(all_timestamps)
+    # Each signal is sorted, so its first and last samples bound the run.
+    run_start = min(signal.ts[0] for signal in non_empty)
+    run_end = max(signal.ts[-1] for signal in non_empty)
 
     kpis = _compute_ber_kpis(series)
 
     def _chart_points(tag):
-        return [[round(ts * 1000), round(value, 3)] for ts, value in _downsample(series[tag])]
+        signal = series[tag]
+        return [[round(signal.ts[i] * 1000), round(signal.values[i], 3)] for i in _sample_indices(len(signal))]
 
     experiment_id = ber_experiment_id(experiment_request)
     serial_number = serial_number or '—'
@@ -220,5 +397,8 @@ def build_ber_results_context(experiment_request):
         'chart_power_axis': _power_chart_axis_range(kpis['peak_total_power']),
         'chart_electrical': {tag: _chart_points(tag) for tag in ('ET_1001', 'IT_1101')},
     }
-    cache.set(cache_key, context, timeout=_BER_RESULTS_CACHE_TIMEOUT)
+    logger.info(
+        'Built BER results for request %s: %s bytes, %s samples in %.1fs',
+        experiment_request.pk, content_length, sum(len(signal) for signal in non_empty), time.monotonic() - started,
+    )
     return context

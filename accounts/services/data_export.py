@@ -90,7 +90,7 @@ def collect_user_data(user):
         'digital_twin_exports': _rows(DtExport.objects.filter(user=user), 'twin_slug', 'created_at'),
         'ber_experiment_requests': _rows(
             BerExperimentRequest.objects.filter(user=user),
-            'experiment_json', 'status', 'rejection_reason', 'actual_start', 'actual_end', 'cancelled_at', 'created_at',
+            'experiment_json', 'status', 'rejection_reason', 'cancelled_at', 'created_at',
         ),
         'rdn_simulation_jobs': _rows(
             RdnSimulationJob.objects.filter(user=user),

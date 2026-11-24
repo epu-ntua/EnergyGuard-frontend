@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -33,10 +31,6 @@ def make_completed_request(user, storage, *, data, key=None, **extra):
     experiment_request = make_request(user, status=BerExperimentRequest.Status.COMPLETED, **extra)
     key = key or f'ber-hydrogen/{experiment_request.pk}/result-existing.lp'
     storage.objects[(settings.OBJECT_STORAGE_BUCKET_SIMULATIONS, key)] = data
-    BerExperimentRequest.objects.filter(pk=experiment_request.pk).update(
-        result_key=key,
-        actual_start=datetime(2026, 1, 1, 9, 0, tzinfo=timezone.utc),
-        actual_end=datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc),
-    )
+    BerExperimentRequest.objects.filter(pk=experiment_request.pk).update(result_key=key)
     experiment_request.refresh_from_db()
     return experiment_request
