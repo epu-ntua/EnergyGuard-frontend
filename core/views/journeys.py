@@ -113,15 +113,17 @@ JOURNEYS = [
                     'Then choose "Load in Project", select your project and press Load. Because this is the '
                     'tutorial dataset, the example notebook smart_building_forecasting.ipynb is copied into '
                     'your workspace together with the data.',
+                    'JupyterHub then opens in a new tab. A sign-in page might appear instead of '
+                    'your workspace: click the sign-in button to continue.',
                     'With your own model, you can load this dataset as well, or load your own or another '
                     'public dataset instead. Only the tutorial dataset comes with the example notebook: '
                     'any other dataset is loaded without one.',
                 ],
                 'link': {'label': 'Browse datasets', 'url_name': 'datasets_list'},
-                'result': 'JupyterHub opens in a new tab, which can take up to about 15 seconds the first '
-                          'time. The data is in your read-only "datasets" folder and, if you loaded the '
-                          'tutorial dataset, the example notebook is in your "notebooks" folder. The dataset '
-                          'is listed under "Datasets used" on your project page.',
+                'result': 'Your workspace opens in JupyterHub. The data is in your read-only "datasets" '
+                          'folder and, if you loaded the tutorial dataset, the example notebook is in your '
+                          '"notebooks" folder. The dataset is listed under "Datasets used" on your project '
+                          'page.',
             },
             {
                 'title': 'Run a notebook that logs your models',
@@ -175,7 +177,10 @@ JOURNEYS = [
                 'body': [
                     'In the Settings cell of the notebook (section 1), change a setting of a model or the '
                     'features it uses, for example LAGS, NN_INPUT_LENGTH or NN_EPOCHS, as section 5 '
-                    '"Try it yourself" suggests. Then run the Settings cell and step 4 again.',
+                    '"Try it yourself" suggests. Then click the Settings cell and choose "Run Selected Cell '
+                    'and All Below" in the Run menu: the notebook runs again from the Settings down, with '
+                    'your change. Section 6 then writes config.yaml again, for the neural network of the '
+                    'new runs.',
                     'With your own model, change a setting of your model and run your notebook again in '
                     'the same experiment.',
                 ],
@@ -207,15 +212,15 @@ JOURNEYS = [
                     'With your own model, write a config.yaml of your own, starting from "Download example '
                     'config.yaml" on the same page or from the one the example notebook writes. The '
                     'configuration points to your model and to a test set in MLflow, and names the feature '
-                    'and target columns of the test set, the task type and the range of the input values. '
-                    'The attacks it lists, FGSM and PGD, are computed from the gradients of the model.',
+                    'and target columns of the test set, the task type and the range of the input values.',
                 ],
                 'link': {'label': 'Trustworthiness Assessments', 'url_name': 'trustworthiness:trustworthiness'},
-                'result': 'When the test finishes, the Robustness Report opens after the processing page '
-                          'and shows how much the attacks degrade the forecasts of your model, one attack at '
-                          'a time. "Download Report" saves the metrics as JSON, and a CSV per attack holds the '
-                          'attacked windows and both forecasts. The "Results" tab of Trustworthiness '
-                          'Assessments lists your past assessments.',
+                'result': 'When the test finishes, the Robustness Report opens after the processing page. It '
+                          'summarises the first attack listed in the config, FGSM in the config.yaml of the '
+                          'example notebook, and shows how much it degrades the forecasts of your model. '
+                          '"Download Report" saves its metrics as JSON, and a CSV for each attack that ran '
+                          'holds the attacked windows and both forecasts. The "Results" tab of '
+                          'Trustworthiness Assessments lists your past assessments.',
             },
             {
                 'title': 'Analyse the code of your model',
